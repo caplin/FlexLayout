@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <meta http-equiv='Content-type' content='text/html; charset=utf-8'>
+    <title>Flex Layout</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="grid.css" />
+    <style>
+        html,body
+        {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow:hidden;
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+        }
+
+        #container  {
+            left:10px;
+            top:10px;
+            right:10px;
+            bottom:10px;
+            position:absolute;
+            display:flex;
+            display:-webkit-flex;
+            overflow:hidden;
+            background-color: white;
+        }
+
+        .app
+        {
+            display:flex;
+            flex-direction: column;
+            flex-grow:1;
+            display:-webkit-flex;
+            -webkit-flex-direction: column;
+            -webkit-flex-grow:1;
+        }
+
+        .toolbar
+        {
+            margin:2px;
+        }
+
+        .contents
+        {
+            flex-grow:1;
+            -webkit-flex-grow:1;
+            left:0px;
+            top:0px;
+            right:0px;
+            bottom:0px;
+            position:relative;
+            border:1px solid green;
+        }
+
+        /* simple table styling*/
+        .simple_table {
+            background-color: white;
+            color: #333;
+            border-collapse: collapse;
+        }
+
+        .simple_table th {
+            background-color: #e0e0e0;
+            border-right: 1px solid #ddd;
+            padding:4px;
+            border-bottom-color: transparent;
+            text-align: left;
+            width:100px;
+            min-width: 100px;
+        }
+
+        .simple_table td {
+            border-right: 1px solid #ddd;
+            border-bottom-color: transparent;
+            padding:4px;
+        }
+        .simple_table tr:nth-child(even) {background: #f0f0f0}
+        .simple_table tr:nth-child(odd) {background: white}
+
+        /* slickgrid styling */
+        .slick-header-columns
+        {
+            background-color: #eeeeee;
+        }
+        .slick-header-columns, .slick-cell
+        {
+            color:gray;
+            border: 1px solid transparent;
+            border-right: 1px solid #aaa;
+            border-bottom-color: #aaa;
+        }
+        .slick-header-column.ui-state-default
+        {
+            border-right: 1px solid #aaa;
+            color:black;
+        }
+
+        .slickgrid
+        {
+            position:absolute;
+            top:0px;
+            left:0px;
+            bottom:0px;
+            right:0px;
+        }
+
+    </style>
+
+    <!-- needed for slickgrid-->
+    <script src="jquery-1.11.3.js"></script>
+    <script src="jquery.event.drag-2.2.js"></script>
+
+</head>
+<body>
+    <div id="container"></div>
+    <script src="main.js"></script>
+</body>
+</html>
