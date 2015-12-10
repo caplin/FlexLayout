@@ -3,13 +3,13 @@
 FlexLayout is a React layout manager that arranges panels in multiple tab sets, these can be
 resized and moved, much like the windowing system found in many IDE's.
 
-![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
+[FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
-![More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
+[More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
 
-![Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.01/index.html)
+[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.01/index.html)
 
-![Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.01/index_dark.html)
+[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.01/index_dark.html)
 
 This project is currently in early development, there is still a lot to do:
 
