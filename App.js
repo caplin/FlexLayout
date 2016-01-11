@@ -242,13 +242,13 @@ class Main extends React.Component
 
     onAddClick(event)
     {
-        //this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
-        //this.setState({adding:true});
+        this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
+        this.setState({adding:true});
         //
         //this.refs.layout.addTabWhereClicked("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
         //this.setState({adding:true});
 
-        this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
+        //this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
 
         //Perf.stop();
         //var measurements = Perf.getLastMeasurements();
