@@ -32,16 +32,12 @@ Features so far:
 
 
 todo:
-* customizable tabs, tabset header, action menu?
 *	mobile - touch events
-* undo/redo
+*	less styling
 *	more lifecycle events... save, beforeclose...
-* split tabset into tabsetcontainer and tabset (= container of tabs only) components, then tabset can be docked to top/bottom of tabset...
-*	simple panel component (can split but not drag over)
-*	? fixed sized components
-*	? minimize to edge (like eclipse/visual studio), popout edge... (could be used for responsive layout?)
-*	? maybe change model to redux/immutable
-*	? allow model tree to be built using child react components
+*	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
+*	customizable tabs, tabset header, action menu?
+*	split tabset into tabsetcontainer and tabset (= container of tabs only) components, then tabset can be docked to top/bottom of tabset...
 *	full set of jasmine tests
 *	test in browsers/versions
 
