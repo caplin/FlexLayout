@@ -11,8 +11,27 @@ class Model
 		this._root = new RowNode(this);
 		this._listeners = [];
 		this._rect = null;
+		this._activeTabSet = null;
 
 		this._addNode(this._root);
+	}
+
+	getActiveTabset()
+	{
+		// check activeTabSet is still in tree
+		var found = false;
+		this.visitNodes((node)=>{
+			if (!found && node == this._activeTabSet)
+			{
+				found = true;
+			}
+		});
+
+		if (!found)
+		{
+			this._activeTabSet = null;
+		}
+		return this._activeTabSet;
 	}
 
 	getRoot()
@@ -23,6 +42,11 @@ class Model
 	getRect()
 	{
 		return this._rect;
+	}
+
+	visitNodes(fn)
+	{
+		this._root._forEachNode(fn);
 	}
 
 	_addNode(node)
@@ -60,12 +84,15 @@ class Model
 				let toNode =  this._nodeMap[action.toNode];
 				let fromNode =  this._nodeMap[action.fromNode];
 				toNode._drop(fromNode, action.location, action.index);
+				this._activeTabSet = toNode._parent;
 				break;
 			}
 			case Actions.SELECT_TAB:
 			{
 				let tabNode =  this._nodeMap[action.tabset];
 				tabNode._setSelected(action.index);
+				this._activeTabSet = tabNode;
+
 				break;
 			}
 			case Actions.MAXIMIZE_TOGGLE:
@@ -73,6 +100,7 @@ class Model
 				let node =  this._nodeMap[action.node];
 				node._setMaximized(!node.isMaximized());
 				node._fireEvent("maximize", {maximized: node.isMaximized()});
+				this._activeTabSet = node;
 
 				break;
 			}
@@ -94,9 +122,18 @@ class Model
 				var newNode =  this._nodeMap[action.tabNode];
 				var pos = tabsetNode._addChild(newNode);
 				tabsetNode._setSelected(pos);
+				this._activeTabSet = tabsetNode;
 
 				break;
 			}
+			case Actions.SET_ACTIVE_TABSET:
+			{
+				let tabsetNode =  this._nodeMap[action.tabsetNode];
+				this._activeTabSet = tabsetNode;
+
+				break;
+			}
+
 		}
 		this._layout(this._rect);
 		this._fireChange();

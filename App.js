@@ -243,14 +243,21 @@ class Main extends React.Component
 
     onAddClick(event)
     {
-        this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
-        this.setState({adding:true});
-        //
+        // try indirect add (where drag div is shown that must be dragged to location)
+        //this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
+        //this.setState({adding:true});
+
+        // try direct drag
         //this.refs.layout.addTabWhereClicked("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
         //this.setState({adding:true});
 
+        // try add to named tabset
         //this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
 
+        // try add to active tabset
+        this.refs.layout.addTabToActiveTabSet({component:"grid", name:"grid"});
+
+        // react performance gathering
         //Perf.stop();
         //var measurements = Perf.getLastMeasurements();
         //Perf.printWasted(measurements);
