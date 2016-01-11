@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Caplin Systems Ltd",
+  "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
   "dependencies": {
     "extract-text-webpack-plugin": "^0.8.0",
     "less": "^2.5.1",
     "less-loader": "^2.2.0",
     "react": "^0.14.0",
+    "react-dom": "^0.14.6",
     "slickgrid": "^2.1.0-1",
     "underscore": "^1.8.3"
   },
