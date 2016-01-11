@@ -4,11 +4,15 @@ class SplitterNode extends Node
 {
     constructor(model)
     {
-        super("splitter", model);
-
-        this.size = 8;
-        this.fixed = true;
+        super(model);
+        this._type = SplitterNode.TYPE;
+        this._width = 8;
+        this._height = 8;
+        this._fixed = true;
+        model._addNode(this);
     }
 }
+
+SplitterNode.TYPE = "splitter";
 
 export default SplitterNode;

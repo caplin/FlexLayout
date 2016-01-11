@@ -1,11 +1,15 @@
 {
 	"type": "row",
-	"size": 100,
+	"weight": 100,
 	"children": [
 		{
 			"type": "tabset",
-			"size": 50,
+			"weight": 50,
+			"name":"Navigation",
 			"selected": 0,
+			"allowDrag":false,
+			"allowDrop":false,
+			"allowSplit":false,
 			"children": [
 				{
 					"type": "tab",
@@ -19,7 +23,7 @@
 		},
 		{
 			"type": "tabset",
-			"size": 50,
+			"weight": 50,
 			"color": "#ffcccc",
 			"selected": 0,
 			"children": [
@@ -29,6 +33,25 @@
 					"component":"grid",
 					"config": {
 						"id": "2"
+					}
+				}
+			]
+		},
+		{
+			"type": "tabset",
+			"weight": 50,
+			"name":"Blotters",
+			"selected": 0,
+			"allowDrag":false,
+			"allowDrop":false,
+			"allowSplit":false,
+			"children": [
+				{
+					"type": "tab",
+					"name": "FX",
+					"component":"grid",
+					"config": {
+						"id": "1"
 					}
 				}
 			]

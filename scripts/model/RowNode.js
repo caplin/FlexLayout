@@ -1,52 +1,69 @@
 import Rect from "../Rect.js";
+import JsonConverter from "../JsonConverter.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 import SplitterNode from "./SplitterNode.js";
 import Node from "./Node.js";
 import TabSetNode from "./TabSetNode.js";
-import DropInfo from "./DropInfo.js";
+import DropInfo from "./../DropInfo.js";
 
 class RowNode extends Node
 {
     constructor(model)
     {
-        super("row", model);
-        this.dirty = true;
-        this.drawChildren = [];
-        this.orientation = Orientation.HORZ;
-		this.splitterCache = [];
+        super(model);
+        jsonConverter.setDefaults(this);
+
+        this._dirty = true;
+        this._drawChildren = [];
+        this._orientation = Orientation.HORZ;
+		this._splitterCache = [];
     }
 
-    layout(rect)
+    _layout(rect)
     {
-		super.layout(rect);
+		super._layout(rect);
 
-        var pixelSize = this.rect.width;
-        if (this.orientation == Orientation.VERT)
-        {
-            pixelSize = this.rect.height;
-        }
+        var pixelSize = this._rect._getSize(this._orientation);
 
-        var totalSize = 0;
+        var totalWeight = 0;
         var fixedPixels = 0;
+        var prefPixels = 0;
         var numVariable = 0;
-        var drawChildren = this.getDrawChildren();
+        var totalPrefWeight = 0;
+        var drawChildren = this._getDrawChildren();
 
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
-            if (!child.fixed)
+            var prefSize = child._getPrefSize(this._orientation)
+            if (child._fixed)
             {
-                totalSize += child.size;
-                numVariable++;
+                fixedPixels += prefSize;
             }
             else
             {
-                fixedPixels += child.size;
+                if (prefSize == null )
+                {
+                    totalWeight += child._weight;
+                }
+                else
+                {
+                    prefPixels += prefSize;
+                    totalPrefWeight+= child._weight;
+                }
+                numVariable++;
             }
         }
 
-        var availablePixels = pixelSize - fixedPixels;
+        var resizePreferred = false;
+        var availablePixels = pixelSize - fixedPixels - prefPixels;
+        if (availablePixels < 0)
+        {
+            availablePixels = pixelSize - fixedPixels;
+            resizePreferred = true;
+            totalWeight += totalPrefWeight;
+        }
 
         // assign actual pixel sizes
         var totalSizeGiven = 0;
@@ -54,17 +71,32 @@ class RowNode extends Node
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
-            if (!child.fixed)
+            var prefSize = child._getPrefSize(this._orientation)
+            if (child._fixed)
             {
-                child.tempsize = Math.floor(availablePixels * (child.size / totalSize));
-                totalSizeGiven += child.tempsize;
-                variableSize += child.tempsize;
+                child.tempsize = prefSize;
             }
             else
             {
-                child.tempsize = child.size;
-                totalSizeGiven += child.tempsize;
+                if (prefSize == null || resizePreferred)
+                {
+                    if (totalWeight == 0)
+                    {
+                        child.tempsize= 0;
+                    }
+                    else
+                    {
+                        child.tempsize = Math.floor(availablePixels * (child._weight / totalWeight));
+                    }
+                    variableSize += child.tempsize;
+                }
+                else
+                {
+                    child.tempsize = prefSize;
+                }
             }
+
+            totalSizeGiven += child.tempsize;
         }
 
         // adjust sizes to exactly fit
@@ -75,7 +107,8 @@ class RowNode extends Node
                 for (var i = 0; i < drawChildren.length; i++)
                 {
                     var child = drawChildren[i];
-                    if (!child.fixed && totalSizeGiven < pixelSize)
+                    var prefSize = child._getPrefSize(this._orientation)
+                    if (!child._fixed && (prefSize == null || resizePreferred) && totalSizeGiven < pixelSize)
                     {
                         child.tempsize++;
                         totalSizeGiven++;
@@ -84,21 +117,22 @@ class RowNode extends Node
             }
         }
 
-        var childOrientation = Orientation.flip(this.orientation);
+        var childOrientation = Orientation.flip(this._orientation);
 
         // layout children
         var p = 0;
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
-            child.orientation = childOrientation;
-            if (this.orientation == Orientation.HORZ)
+            child._orientation = childOrientation;
+
+            if (this._orientation == Orientation.HORZ)
             {
-                child.layout(new Rect(this.rect.x + p, this.rect.y, child.tempsize, this.rect.height));
+                child._layout(new Rect(this._rect.x + p, this._rect.y, child.tempsize, this._rect.height));
             }
             else
             {
-                child.layout(new Rect(this.rect.x, this.rect.y + p, this.rect.width, child.tempsize));
+                child._layout(new Rect(this._rect.x, this._rect.y + p, this._rect.width, child.tempsize));
             }
             p += child.tempsize;
         }
@@ -106,31 +140,31 @@ class RowNode extends Node
         return true;
     }
 
-    getSplitterBounds(splitterNode)
+    _getSplitterBounds(splitterNode)
     {
         var pBounds = [0, 0];
-        var drawChildren = this.getDrawChildren();
+        var drawChildren = this._getDrawChildren();
         var p = drawChildren.indexOf(splitterNode);
-        if (this.orientation == Orientation.HORZ)
+        if (this._orientation == Orientation.HORZ)
         {
-            pBounds[0] = drawChildren[p - 1].rect.x;
-            pBounds[1] = drawChildren[p + 1].rect.getRight() - splitterNode.size;
+            pBounds[0] = drawChildren[p - 1]._rect.x;
+            pBounds[1] = drawChildren[p + 1]._rect.getRight() - splitterNode._width;
         }
         else
         {
-            pBounds[0] = drawChildren[p - 1].rect.y;
-            pBounds[1] = drawChildren[p + 1].rect.getBottom() - splitterNode.size;
+            pBounds[0] = drawChildren[p - 1]._rect.y;
+            pBounds[1] = drawChildren[p + 1]._rect.getBottom() - splitterNode._height;
         }
         return pBounds;
     }
 
-    adjustSplit(splitter, splitterPos)
+    _adjustSplit(splitter, splitterPos)
     {
-        var drawChildren = this.getDrawChildren();
+        var drawChildren = this._getDrawChildren();
         var p = drawChildren.indexOf(splitter);
-        var pBounds = this.getSplitterBounds(splitter);
+        var pBounds = this._getSplitterBounds(splitter);
 
-        var weightedLength = drawChildren[p - 1].size + drawChildren[p + 1].size;
+        var weightedLength = drawChildren[p - 1]._weight + drawChildren[p + 1]._weight;
 
         var pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
         var pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
@@ -140,22 +174,34 @@ class RowNode extends Node
             var weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
             var weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
 
-            drawChildren[p - 1].size = weight1;
-            drawChildren[p + 1].size = weight2;
+            this._adjustSplitSide(drawChildren[p - 1], weight1, pixelWidth1);
+            this._adjustSplitSide(drawChildren[p + 1], weight2, pixelWidth2);
         }
-        this.model.fireChange();
     }
 
-    getDrawChildren()
+    _adjustSplitSide(node, weight, pixels)
     {
-        if (this.dirty)
+        node._weight = weight;
+        if (node._width != null && this._orientation == Orientation.HORZ)
         {
-			this.drawChildren = [];
-			var oldSplitters = [].concat(this.splitterCache);
+            node._width = pixels;
+        }
+        else if (node._height != null && this._orientation == Orientation.VERT)
+        {
+            node._height = pixels;
+        }
+    }
 
-            for (var i = 0; i < this.children.length; i++)
+    _getDrawChildren()
+    {
+        if (this._dirty)
+        {
+			this._drawChildren = [];
+			var oldSplitters = [].concat(this._splitterCache);
+
+            for (var i = 0; i < this._children.length; i++)
             {
-                var child = this.children[i];
+                var child = this._children[i];
                 if (i != 0)
                 {
 					var newSplitter = null;
@@ -165,58 +211,58 @@ class RowNode extends Node
 					}
 					else
 					{
-						newSplitter = new SplitterNode(this.model);
-						this.splitterCache.push(newSplitter);
+						newSplitter = new SplitterNode(this._model);
+						this._splitterCache.push(newSplitter);
 					}
-                    newSplitter.parent = this;
-                    this.drawChildren.push(newSplitter);
+                    newSplitter._parent = this;
+                    this._drawChildren.push(newSplitter);
                 }
-                this.drawChildren.push(child);
+                this._drawChildren.push(child);
             }
-            this.dirty = false;
+            this._dirty = false;
         }
 
-        return this.drawChildren;
+        return this._drawChildren;
     }
 
-    tidy()
+    _tidy()
     {
         var i = 0;
-        while (i < this.children.length)
+        while (i < this._children.length)
         {
-            var child = this.children[i];
-            if (child.type == "row")
+            var child = this._children[i];
+            if (child._type === RowNode.TYPE)
             {
-                child.tidy();
+                child._tidy();
 
-                if (child.children.length == 0 )
+                if (child._children.length == 0 )
                 {
-					this.removeChild(child);
+					this._removeChild(child);
                 }
-                else if (child.children.length == 1)
+                else if (child._children.length == 1)
                 {
                     // hoist child/children up to this level
-                    var subchild = child.children[0];
-                    this.removeChild(child);
-                    if (subchild.type == "row")
+                    var subchild = child._children[0];
+                    this._removeChild(child);
+                    if (subchild._type === RowNode.TYPE)
                     {
                         var subChildrenTotal = 0;
-                        for (var j = 0; j < subchild.children.length; j++)
+                        for (var j = 0; j < subchild._children.length; j++)
                         {
-                            var subsubChild = subchild.children[j];
-                            subChildrenTotal += subsubChild.size;
+                            var subsubChild = subchild._children[j];
+                            subChildrenTotal += subsubChild._weight;
                         }
-                        for (var j = 0; j < subchild.children.length; j++)
+                        for (var j = 0; j < subchild._children.length; j++)
                         {
-                            var subsubChild = subchild.children[j];
-                            subsubChild.size = child.size * subsubChild.size / subChildrenTotal;
-                            this.addChild(subsubChild, i + j);
+                            var subsubChild = subchild._children[j];
+                            subsubChild._weight = child._weight * subsubChild._weight / subChildrenTotal;
+                            this._addChild(subsubChild, i + j);
                         }
                     }
                     else
                     {
-                        subchild.size = child.size;
-                        this.addChild(subchild, i);
+                        subchild._weight = child._weight;
+                        this._addChild(subchild, i);
                     }
                 }
                 else
@@ -224,11 +270,13 @@ class RowNode extends Node
                     i++;
                 }
             }
-            else if (child.type == "tabset" && child.children.length == 0)
+            else if (child._type == TabSetNode.TYPE && child._children.length == 0)
             {
-				if (!(this == this.model.root && this.children.length == 1))
+                // prevent removal of last tabset
+				if (!(this == this._model._root && this._children.length == 1)
+                && child._name == null)
 				{
-					this.removeChild(child);
+					this._removeChild(child);
 				}
 				else
 				{
@@ -242,85 +290,41 @@ class RowNode extends Node
         }
     }
 
-    toJson()
+    _canDrop(dragNode, x, y)
     {
-        var json = {};
-        json.type = this.type;
-        json.size = this.size;
-        json.children = [];
-
-		this.children.forEach((child) => {json.children.push(child.toJson())});
-
-        return json;
-    }
-
-    static fromJson(json,model)
-    {
-        var newLayoutNode = new RowNode(model);
-
-        if (json.size != null)
-        {
-            newLayoutNode.size = json.size;
-        }
-
-        if (json.children != undefined)
-        {
-            for (var i = 0; i < json.children.length; i++)
-            {
-                var jsonChild = json.children[i];
-                if (jsonChild.type === "tabset")
-                {
-                    var child = TabSetNode.fromJson(jsonChild, model);
-                    child.parent = newLayoutNode;
-                    newLayoutNode.children.push(child);
-                }
-                else
-                {
-                    var child = RowNode.fromJson(jsonChild, model);
-                    child.parent = newLayoutNode;
-                    newLayoutNode.children.push(child);
-                }
-            }
-        }
-
-        return newLayoutNode;
-    }
-
-    canDrop(dragNode, x, y)
-    {
-        var w = this.rect.width;
-        var h = this.rect.height;
+        var w = this._rect.width;
+        var h = this._rect.height;
         var margin = 10; // height of edge rect
         var half =  50; // half width of edge rect
 
-        if (this.parent == null) // root row
+        if (this._parent == null) // _root row
         {
-            if (x < this.rect.x+margin && (y>h/2-half && y<h/2+half))
+            if (x < this._rect.x+margin && (y>h/2-half && y<h/2+half))
             {
                 var dockLocation = DockLocation.LEFT;
-                var outlineRect = dockLocation.getDockRect(this.rect);
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width/2;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (x > this.rect.getRight()-margin && (y>h/2-half && y<h/2+half))
+            else if (x > this._rect.getRight()-margin && (y>h/2-half && y<h/2+half))
             {
                 var dockLocation = DockLocation.RIGHT;
-                var outlineRect = dockLocation.getDockRect(this.rect);
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width/2;
                 outlineRect.x +=outlineRect.width;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (y < this.rect.y+margin && (x>w/2-half && x<w/2+half))
+            else if (y < this._rect.y+margin && (x>w/2-half && x<w/2+half))
             {
                 var dockLocation = DockLocation.TOP;
-                var outlineRect = dockLocation.getDockRect(this.rect);
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height/2;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (y > this.rect.getBottom()-margin && (x>w/2-half && x<w/2+half))
+            else if (y > this._rect.getBottom()-margin && (x>w/2-half && x<w/2+half))
             {
                 var dockLocation = DockLocation.BOTTOM;
-                var outlineRect = dockLocation.getDockRect(this.rect);
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height/2;
                 outlineRect.y +=outlineRect.height;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
@@ -330,83 +334,128 @@ class RowNode extends Node
         return null;
     }
 
-    drop(dropInfo, dragNode)
+    _drop(dragNode, location, index)
     {
-        var dockLocation = dropInfo.location;
+        var dockLocation = location;
 
 		var fromIndex = 0;
-		if (dragNode.parent)
+		if (dragNode._parent)
 		{
-			fromIndex = dragNode.parent.removeChild(dragNode);
+			fromIndex = dragNode._parent._removeChild(dragNode);
 		}
 
-        if (dragNode.parent != null && dragNode.parent.type == "tabset")
+        if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE)
         {
-            dragNode.parent.selected = 0;
+            dragNode._parent._selected = 0;
         }
 
         var tabSet = null;
-        if (dragNode.type == "tabset")
+        if (dragNode._type === TabSetNode.TYPE)
         {
             tabSet = dragNode;
         }
         else
         {
-            tabSet = new TabSetNode(this.model);
-            tabSet.addChild(dragNode);
+            tabSet = new TabSetNode(this._model);
+            tabSet._addChild(dragNode);
         }
 
         var size = 0;
-        for (var i=0; i<this.children.length; i++)
+        for (var i=0; i<this._children.length; i++)
         {
-            size += this.children[i].size;
+            size += this._children[i]._weight;
         }
 
-        tabSet.size = size/3;
+        tabSet._weight = size/3;
 
         if (dockLocation == DockLocation.LEFT)
         {
-            this.addChild(tabSet, 0);
+            this._addChild(tabSet, 0);
         }
         else if (dockLocation == DockLocation.RIGHT)
         {
-            this.addChild(tabSet);
+            this._addChild(tabSet);
         }
         else if (dockLocation == DockLocation.TOP)
         {
-            var vrow = new RowNode(this.model);
-            var hrow = new RowNode(this.model);
-            hrow.size = 75;
-            tabSet.size = 25;
-            for (var i=0; i<this.children.length; i++)
+            var vrow = new RowNode(this._model);
+            var hrow = new RowNode(this._model);
+            hrow._weight = 75;
+            tabSet._weight = 25;
+            for (var i=0; i<this._children.length; i++)
             {
-                hrow.addChild(this.children[i]);
+                hrow._addChild(this._children[i]);
             }
-            this.removeAll();
-            vrow.addChild(tabSet);
-            vrow.addChild(hrow);
-            this.addChild(vrow);
+            this._removeAll();
+            vrow._addChild(tabSet);
+            vrow._addChild(hrow);
+            this._addChild(vrow);
         }
         else if (dockLocation == DockLocation.BOTTOM)
         {
-            var vrow = new RowNode(this.model);
-            var hrow = new RowNode(this.model);
-            hrow.size = 75;
-            tabSet.size = 25;
-            for (var i=0; i<this.children.length; i++)
+            var vrow = new RowNode(this._model);
+            var hrow = new RowNode(this._model);
+            hrow._weight = 75;
+            tabSet._weight = 25;
+            for (var i=0; i<this._children.length; i++)
             {
-                hrow.addChild(this.children[i]);
+                hrow._addChild(this._children[i]);
             }
-            this.removeAll();
-            vrow.addChild(hrow);
-            vrow.addChild(tabSet);
-            this.addChild(vrow);
+            this._removeAll();
+            vrow._addChild(hrow);
+            vrow._addChild(tabSet);
+            this._addChild(vrow);
         }
 
-        this.model.tidy();
-        this.model.fireChange();
+        this._model._tidy();
+    }
+
+    _toJson()
+    {
+        var json = {};
+        jsonConverter.toJson(json, this);
+
+        json.children = [];
+        this._children.forEach((child) => {json.children.push(child._toJson())});
+
+        return json;
+    }
+
+    static _fromJson(json,model)
+    {
+        var newLayoutNode = new RowNode(model);
+
+        jsonConverter.fromJson(json, newLayoutNode);
+
+        if (json.children != undefined)
+        {
+            for (var i = 0; i < json.children.length; i++)
+            {
+                var jsonChild = json.children[i];
+                if (jsonChild.type === TabSetNode.TYPE)
+                {
+                    var child = TabSetNode._fromJson(jsonChild, model);
+                    newLayoutNode._addChild(child);
+                }
+                else
+                {
+                    var child = RowNode._fromJson(jsonChild, model);
+                    newLayoutNode._addChild(child);
+                }
+            }
+        }
+
+        return newLayoutNode;
     }
 }
+
+RowNode.TYPE = "row";
+
+var jsonConverter = new JsonConverter();
+jsonConverter.addConversion("_type", "type", RowNode.TYPE, true);
+jsonConverter.addConversion("_weight", "weight", 100);
+jsonConverter.addConversion("_width", "width", null);
+jsonConverter.addConversion("_height", "height", null);
 
 export default RowNode;
 

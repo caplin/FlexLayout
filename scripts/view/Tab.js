@@ -11,12 +11,12 @@ class Tab extends React.Component
 
 	componentDidMount()
 	{
-		console.log("mount " + this.props.node.name);
+		console.log("mount " + this.props.node.getName());
 	}
 
 	componentWillUnmount()
 	{
-		console.log("unmount " + this.props.node.name);
+		console.log("unmount " + this.props.node.getName());
 	}
 
 	componentWillReceiveProps(newProps)
@@ -24,7 +24,7 @@ class Tab extends React.Component
 		if (!this.state.renderComponent && newProps.selected)
 		{
 			// load on demand
-			console.log("load on demand: " + this.props.node.name);
+			console.log("load on demand: " + this.props.node.getName());
 			this.setState({renderComponent:true});
 		}
 	}
@@ -32,11 +32,11 @@ class Tab extends React.Component
     render()
     {
         var node = this.props.node;
-        var style = node.styleWithPosition({
+        var style = node._styleWithPosition({
             	display: this.props.selected ? "block" : "none"
             });
 
-		if (this.props.node.parent.maximized)
+		if (this.props.node.getParent().isMaximized())
 		{
 			style.zIndex = 100;
 		}

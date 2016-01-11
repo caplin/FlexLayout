@@ -1,0 +1,89 @@
+{
+	"type": "row",
+	"weight": 100,
+	"children": [
+		{
+			"type": "tabset",
+			"name": "Navigation",
+			"weight": 18.564176939811457,
+			"selected": 0,
+			"children": [
+				{
+					"type": "tab",
+					"name": "Options",
+					"component": "grid",
+					"config": {
+						"id": "1"
+					}
+				}
+			]
+		},
+		{
+			"type": "row",
+			"weight": 81.43582306018854,
+			"children": [
+				{
+					"type": "tabset",
+					"weight": 74.36260623229462,
+					"selected": 2,
+					"children": [
+						{
+							"type": "tab",
+							"name": "FI",
+							"component": "grid",
+							"config": {
+								"id": "2"
+							}
+						},
+						{
+							"type": "tab",
+							"name": "Metals",
+							"component": "grid",
+							"config": {}
+						},
+						{
+							"type": "tab",
+							"name": "Gold",
+							"component": "grid",
+							"config": {}
+						}
+					]
+				},
+				{
+					"type": "tabset",
+					"name": "Blotters",
+					"weight": 25.637393767705383,
+					"selected": 0,
+					"children": [
+						{
+							"type": "tab",
+							"name": "Activity",
+							"component": "grid",
+							"config": {}
+						},
+						{
+							"type": "tab",
+							"name": "Execution",
+							"component": "grid",
+							"config": {
+								"id": "1"
+							}
+						},
+						{
+							"type": "tab",
+							"name": "Orders",
+							"component": "grid",
+							"config": {}
+						},
+						{
+							"type": "tab",
+							"name": "Historic",
+							"component": "grid",
+							"config": {}
+						}
+					]
+				}
+			]
+		}
+	]
+}

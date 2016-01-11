@@ -1,10 +1,10 @@
 {
 	"type": "row",
-	"size": 100,
+	"weight": 100,
 	"children": [
 		{
 			"type": "tabset",
-			"size": 50,
+			"weight": 50,
 			"selected": 0,
 			"children": [
 				{
@@ -19,7 +19,7 @@
 		},
 		{
 			"type": "tabset",
-			"size": 50,
+			"weight": 50,
 			"color": "#ffcccc",
 			"selected": 0,
 			"children": [

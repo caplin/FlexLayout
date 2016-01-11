@@ -1,10 +1,10 @@
 {
 	"type": "row",
-	"size": 100,
+	"weight": 100,
 	"children": [
 		{
 			"type": "tabset",
-			"size": 50,
+			"weight": 50,
 			"selected": 0,
 			"children": [
 				{
@@ -19,15 +19,15 @@
 		},
 		{
 			"type": "row",
-			"size": 150,
+			"weight": 150,
 			"children": [
 				{
 					"type": "row",
-					"size": 30,
+					"weight": 30,
 					"children": [
 						{
 							"type": "tabset",
-							"size": 50,
+							"weight": 50,
 							"color": "#ffcccc",
 							"selected": 0,
 							"children": [
@@ -43,11 +43,11 @@
 				},
 				{
 					"type": "row",
-					"size": 30,
+					"weight": 30,
 					"children": [
 						{
 							"type": "tabset",
-							"size": 50,
+							"weight": 50,
 							"selected": 0,
 							"children": [
 								{
@@ -69,15 +69,15 @@
 				},
 				{
 					"type": "row",
-					"size": 50,
+					"weight": 50,
 					"children": [
 						{
 							"type": "row",
-							"size": 30,
+							"weight": 30,
 							"children": [
 								{
 									"type": "tabset",
-									"size": 50,
+									"weight": 50,
 									"color": "#fccccf",
 									"selected": 0,
 									"children": [
@@ -93,11 +93,11 @@
 						},
 						{
 							"type": "row",
-							"size": 30,
+							"weight": 30,
 							"children": [
 								{
 									"type": "tabset",
-									"size": 50,
+									"weight": 50,
 									"selected": 0,
 									"children": [
 										{
@@ -110,15 +110,15 @@
 								},
 								{
 									"type": "row",
-									"size": 50,
+									"weight": 50,
 									"children": [
 										{
 											"type": "row",
-											"size": 30,
+											"weight": 30,
 											"children": [
 												{
 													"type": "tabset",
-													"size": 50,
+													"weight": 50,
 													"color": "#ffffcc",
 													"selected": 0,
 													"children": [
@@ -134,11 +134,11 @@
 										},
 										{
 											"type": "row",
-											"size": 30,
+											"weight": 30,
 											"children": [
 												{
 													"type": "tabset",
-													"size": 50,
+													"weight": 50,
 													"selected": 0,
 													"children": [
 														{

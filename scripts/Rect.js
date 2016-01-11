@@ -1,3 +1,5 @@
+import Orientation from "./Orientation.js";
+
 class Rect
 {
     constructor(x, y, width, height)
@@ -64,6 +66,23 @@ class Rect
         {
             return false;
         }
+    }
+
+    centerInRect(outerRect)
+    {
+        this.x = (outerRect.width-this.width)/2;
+        this.y = (outerRect.height-this.height)/2;
+    }
+
+
+    _getSize(orientation)
+    {
+        var prefSize = this.width;
+        if (orientation == Orientation.VERT)
+        {
+            prefSize = this.height;
+        }
+        return prefSize;
     }
 
     toString()

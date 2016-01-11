@@ -7,6 +7,10 @@ import DragDrop from "../DragDrop.js";
 import Rect from "../Rect.js";
 import Utils from "../Utils.js";
 import TabNode from "../model/TabNode.js";
+import TabSetNode from "../model/TabSetNode.js";
+import SplitterNode from "../model/SplitterNode.js";
+import Actions from "../model/Actions.js";
+import Model from "../model/Model.js";
 
 class Layout extends React.Component
 {
@@ -14,17 +18,28 @@ class Layout extends React.Component
     {
         super(props);
 
-        this.state = {rect:null, maximizeNode: null};
+        this.state = {maximizeNode: null};
 
         // listen for model changes
         this.props.model.addListener(this);
 		this.logLayout();
 	}
 
+    doAction(action)
+    {
+        if (this.props.onAction) // if onAction prop defined then send actions to that
+        {
+            this.props.onAction(action);
+        }
+        else // otherwise directly send action to model
+        {
+            this.props.model.doAction(action);
+        }
+    }
+
     onLayoutChange(model)
     {
 		this.logLayout();
-
 		this.forceUpdate();
     }
 
@@ -56,36 +71,35 @@ class Layout extends React.Component
     {
         var domRect = this.refs.self.getBoundingClientRect();
         var rect = new Rect(0, 0, domRect.width, domRect.height);
-        this.setState({rect:rect});
+        this.doAction(Actions.setRect(rect));
     }
 
     renderChild(node, childComponents)
     {
-        var drawChildren = node.getDrawChildren();
+        var drawChildren = node._getDrawChildren();
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
 
-            if (child.type == "splitter")
+            if (child.getType() === SplitterNode.TYPE)
             {
-                childComponents.push(<Splitter key={child.key} layout={this} node={child}></Splitter>);
+                childComponents.push(<Splitter key={child.getKey()} layout={this} node={child}></Splitter>);
             }
-            else if (child.type == "tabset")
+            else if (child.getType() === TabSetNode.TYPE)
             {
-                childComponents.push(<TabSet key={child.key} layout={this} node={child}></TabSet>);
+                childComponents.push(<TabSet key={child.getKey()} layout={this} node={child}></TabSet>);
                 this.renderChild(child, childComponents);
             }
-            else if (child.type == "tab")
+            else if (child.getType() === TabNode.TYPE)
             {
-                var selectedTab = child.parent.children[child.parent.selected];
+                var selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
                 if (selectedTab == null)
                 {
                     debugger; // this should not happen!
                 }
-                childComponents.push(<Tab key={child.key} layout={this} node={child}
+                childComponents.push(<Tab key={child.getKey()} layout={this} node={child}
                                           selected={child == selectedTab}
                                           factory={this.props.factory}></Tab>);
-				child.setVisible(child === selectedTab);
             }
             else // is row
             {
@@ -98,10 +112,9 @@ class Layout extends React.Component
     {
         var childComponents = [];
 
-        if (this.state.rect != null)
+        if (this.props.model.getRect() != null)
         {
-			this.props.model.layout(this.state.rect);
-            this.renderChild(this.props.model.root, childComponents);
+            this.renderChild(this.props.model.getRoot(), childComponents);
         }
         else
         {
@@ -111,25 +124,89 @@ class Layout extends React.Component
         return <div ref="self" className="flexlayout__layout" >{childComponents}</div>;
     }
 
-	addTabWhereClicked(component, name, onDrop)
-	{
-		this.fnNewNodeDropped = onDrop;
-		this.newNode = new TabNode(this.props.model);
-		this.newNode.component = component;
-		this.newNode.name=name;
-		this.dragStart(null, this.newNode, null, null);
-	}
-
-    dragStart(event, node, onClick, onDoubleClick)
+    addTabToTabSet(tabsetId, json)
     {
-        if (this.state.maximizeNode != null)
+        var tabsetNode = this.props.model.getNodeById(tabsetId);
+        if (tabsetNode != null)
+        {
+            var newNode = TabNode._create(this.props.model, json);
+            this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
+        }
+    }
+
+    addTabWhereClicked(dragText, json, onDrop)
+    {
+        this.fnNewNodeDropped = onDrop;
+        this.newNode = TabNode._create(this.props.model, json);
+        this.dragStart(null, dragText, this.newNode, null, null);
+    }
+
+	addTabWhereClickedIndirect(dragText, json, onDrop)
+	{
+        this.fnNewNodeDropped = onDrop;
+        this.newNode = TabNode._create(this.props.model, json);
+
+        DragDrop.instance.addGlass(this.onCancelAdd.bind(this));
+
+        this.dragDivText = dragText;
+        this.dragDiv = document.createElement("div");
+        this.dragDiv.className = "flexlayout__drag_rect";
+        this.dragDiv.innerHTML = this.dragDivText;
+        this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown.bind(this));
+
+        var r = new Rect(10,10,150,50);
+        r.centerInRect(this.props.model.getRect());
+        r.positionElement(this.dragDiv);
+
+        var rootdiv =  ReactDOM.findDOMNode(this);
+        rootdiv.appendChild(this.dragDiv);
+    }
+
+    onCancelAdd()
+    {
+        var rootdiv =  ReactDOM.findDOMNode(this);
+        rootdiv.removeChild(this.dragDiv);
+        this.dragDiv=null;
+        if (this.fnNewNodeDropped != null)
+        {
+            this.fnNewNodeDropped(null)
+            this.fnNewNodeDropped = null;
+        }
+        DragDrop.instance.hideGlass();
+    }
+
+    onCancelDrag()
+    {
+        var rootdiv = ReactDOM.findDOMNode(this);
+        try {rootdiv.removeChild(this.outlineDiv);} catch(e){}
+        try {rootdiv.removeChild(this.dragDiv);} catch(e){}
+        this.dragDiv = null;
+        this.hideEdges(rootdiv);
+        if (this.fnNewNodeDropped != null)
+        {
+            this.fnNewNodeDropped(null)
+            this.fnNewNodeDropped = null;
+        }
+        DragDrop.instance.hideGlass();
+    }
+
+    onDragDivMouseDown(event)
+    {
+        event.preventDefault();
+        this.dragStart(event, this.dragDivText, this.newNode, null, null);
+    }
+
+    dragStart(event, dragDivText, node, onClick, onDoubleClick)
+    {
+        if (this.state.maximizeNode != null || !node._allowDrag)
         {
             DragDrop.instance.startDrag(event, null, null, null, null, onClick, onDoubleClick);
         }
         else
         {
             this.dragNode = node;
-            DragDrop.instance.startDrag(event, this.onDragStart.bind(this), this.onDragMove.bind(this), this.onDragEnd.bind(this), null, onClick, onDoubleClick);
+            this.dragDivText = dragDivText;
+            DragDrop.instance.startDrag(event, this.onDragStart.bind(this), this.onDragMove.bind(this), this.onDragEnd.bind(this), this.onCancelDrag.bind(this), onClick, onDoubleClick);
         }
     }
 
@@ -137,16 +214,22 @@ class Layout extends React.Component
     {
         var rootdiv =  ReactDOM.findDOMNode(this);
         this.outlineDiv = document.createElement("div");
-        this.outlineDiv.style.position = "absolute";
         this.outlineDiv.className = "flexlayout__outline_rect";
         rootdiv.appendChild(this.outlineDiv);
 
+        if (this.dragDiv == null)
+        {
+            this.dragDiv = document.createElement("div");
+            this.dragDiv.className = "flexlayout__drag_rect";
+            this.dragDiv.innerHTML = this.dragDivText;
+            rootdiv.appendChild(this.dragDiv);
+        }
         // add edge indicators
         this.showEdges(rootdiv);
 
-		if (this.dragNode.tabRect != null)
+		if (this.dragNode.getType() == TabNode.TYPE && this.dragNode.getTabRect() != null)
 		{
-			this.dragNode.tabRect.positionElement(this.outlineDiv);
+			this.dragNode.getTabRect().positionElement(this.outlineDiv);
 		}
 		this.firstMove = true;
 
@@ -157,7 +240,7 @@ class Layout extends React.Component
     {
 		if (this.firstMove === false)
 		{
-			this.outlineDiv.style.transition = "top .2s, left .2s, width .2s, height .2s";
+			this.outlineDiv.style.transition = "top .3s, left .3s, width .3s, height .3s";
 		}
 		this.firstMove = false;
         var clientRect = this.refs.self.getBoundingClientRect();
@@ -166,8 +249,11 @@ class Layout extends React.Component
             y: event.clientY - clientRect.top
         };
 
-        var root = this.props.model.root;
-        var dropInfo = root.findDropTargetNode(this.dragNode, pos.x, pos.y);
+        this.dragDiv.style.left = (pos.x-75) + "px";
+        this.dragDiv.style.top = pos.y + "px";
+
+        var root = this.props.model.getRoot();
+        var dropInfo = root._findDropTargetNode(this.dragNode, pos.x, pos.y);
         if (dropInfo)
         {
             this.dropInfo = dropInfo;
@@ -180,16 +266,21 @@ class Layout extends React.Component
     {
         var rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.removeChild(this.outlineDiv);
+        rootdiv.removeChild(this.dragDiv);
+        this.dragDiv = null;
         this.hideEdges(rootdiv);
+        DragDrop.instance.hideGlass();
+
 
         if (this.dropInfo)
         {
-            this.dropInfo.node.drop(this.dropInfo, this.dragNode);
+            this.doAction(Actions.moveNode(this.dragNode, this.dropInfo.node,this.dropInfo.location,this.dropInfo.index));
 
 			if (this.newNode != null && this.fnNewNodeDropped != null)
 			{
 				this.fnNewNodeDropped(this.newNode)
 				this.newNode = null;
+                this.fnNewNodeDropped = null;
 			}
         }
     }
@@ -242,23 +333,31 @@ class Layout extends React.Component
         rootdiv.appendChild(this.edgeLeftDiv);
         rootdiv.appendChild(this.edgeBottomDiv);
         rootdiv.appendChild(this.edgeRightDiv);
-
     }
 
     hideEdges(rootdiv)
     {
-        rootdiv.removeChild(this.edgeTopDiv);
-        rootdiv.removeChild(this.edgeLeftDiv);
-        rootdiv.removeChild(this.edgeBottomDiv);
-        rootdiv.removeChild(this.edgeRightDiv);
+        try
+        {
+            rootdiv.removeChild(this.edgeTopDiv);
+            rootdiv.removeChild(this.edgeLeftDiv);
+            rootdiv.removeChild(this.edgeBottomDiv);
+            rootdiv.removeChild(this.edgeRightDiv);
+        }
+        catch (e)
+        {
+        }
     }
 
     maximize(maximizeNode)
     {
-        maximizeNode.maximized = !maximizeNode.maximized;
-		maximizeNode.fireEvent("maximize", {maximized: maximizeNode.maximized});
-		this.setState({maximizeNode:maximizeNode.maximized===true?maximizeNode:null});
+        this.doAction(Actions.maximizeToggle(maximizeNode));
+		this.setState({maximizeNode:maximizeNode.isMaximized()?maximizeNode:null});
     }
 }
+
+Layout.propTypes = { model: React.PropTypes.instanceOf(Model),
+                     factory: React.PropTypes.func,
+                     onAction: React.PropTypes.func};
 
 export default Layout;

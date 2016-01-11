@@ -5,9 +5,9 @@ class DockLocation
 {
     constructor(name, orientation, indexPlus)
     {
-        this.name = name;
-        this.orientation = orientation;
-        this.indexPlus = indexPlus;
+        this._name = name;
+        this._orientation = orientation;
+        this._indexPlus = indexPlus;
     }
 
     static getLocation(rect, x, y)
@@ -63,7 +63,7 @@ class DockLocation
 
     toString()
     {
-        return "(DockLocation: name=" + this.name + ", orientation=" + this.orientation + ")";
+        return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
     }
 }
 

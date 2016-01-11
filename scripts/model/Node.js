@@ -1,78 +1,143 @@
 import Rect from "../Rect.js";
+import Utils from "../Utils.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 
 var NextKey = 0;
 
+
 class Node
 {
-    constructor(type, model)
+    constructor(model)
     {
-        this.type = type;
-        this.model = model;
-        this.parent = null;
-        this.children = [];
-        this.size = 100;
-        this.fixed = false;
-        this.rect = new Rect();
-        this.key = NextKey++;
-        this.listeners = {};
-		this.visible = false;
+        this._type = null;
+        this._model = model;
+        this._parent = null;
+        this._children = [];
+        this._weight = 100;
+        this._height = null;
+        this._width = null;
+        this._fixed = false;
+        this._rect = new Rect();
+        this._key = NextKey++;
+        this._listeners = {};
+		this._visible = false;
+        this._orientation = Orientation.HORZ;
+        this._allowDrag = true;
+        this._id = null;
+    }
+
+    _forEachNode(fn)
+    {
+        this._children.forEach((node) => {
+            fn(node);
+            node._forEachNode(fn);
+        })
+    }
+
+    _getPrefSize(orientation)
+    {
+        var prefSize = this._width;
+        if (orientation == Orientation.VERT)
+        {
+            prefSize = this._height;
+        }
+        return prefSize;
+    }
+
+    getModel()
+    {
+        return this._model;
+    }
+
+    getType()
+    {
+        return this._type;
+    }
+
+    getParent()
+    {
+        return this._parent;
+    }
+
+    getChildren()
+    {
+        return this._children;
+    }
+
+    getRect()
+    {
+        return this._rect;
+    }
+
+    getKey()
+    {
+        return this._key;
+    }
+
+    isVisible()
+    {
+        return this._visible;
+    }
+
+    getOrientation()
+    {
+        return this._orientation;
+    }
+
+    _setVisible(visible)
+    {
+        if (visible != this._visible)
+        {
+            this._fireEvent("visibility", {visible: visible});
+            this._visible = visible;
+        }
+    }
+
+    _getDrawChildren()
+    {
+        return this._children;
     }
 
 	// event can be: resize, visibility, maximize (on tabset), close
     setEventListener(event, callback)
     {
-        this.listeners[event] = callback;
+        this._listeners[event] = callback;
     }
 
     removeEventListener(event)
     {
-        delete this.listeners[event];
+        delete this._listeners[event];
     }
 
-    fireEvent(event, params)
+    _fireEvent(event, params)
     {
-		if (this.listeners[event] != null)
+        console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
+		if (this._listeners[event] != null)
 		{
-			//console.log(this, " fireEvent " + event + " " + JSON.stringify(params));
-			this.listeners[event](params);
+			this._listeners[event](params);
 		}
     }
 
-	setVisible(visible)
-	{
-		if (visible != this.visible)
-		{
-			this.fireEvent("visibility", {visible: visible});
-			this.visible = visible;
-		}
-	}
-
-    getDrawChildren()
+    _layout(rect)
     {
-        return this.children;
+        this._rect = rect;
     }
 
-    layout(rect)
-    {
-        this.rect = rect;
-    }
-
-    findDropTargetNode(dragNode, x, y)
+    _findDropTargetNode(dragNode, x, y)
     {
         var rtn = null;
-        if (this.rect.contains(x, y))
+        if (this._rect.contains(x, y))
         {
-            rtn = this.canDrop(dragNode, x, y);
+            rtn = this._canDrop(dragNode, x, y);
             if (rtn == null)
             {
-                if (this.children.length !== 0)
+                if (this._children.length !== 0)
                 {
-                    for (var i = 0; i < this.children.length; i++)
+                    for (var i = 0; i < this._children.length; i++)
                     {
-                        var child = this.children[i];
-                        rtn = child.findDropTargetNode(dragNode,x, y);
+                        var child = this._children[i];
+                        rtn = child._findDropTargetNode(dragNode,x, y);
                         if (rtn != null)
                         {
                             break;
@@ -85,58 +150,66 @@ class Node
         return rtn;
     }
 
-    canDrop(dragNode, x, y)
+    _canDrop(dragNode, x, y)
     {
         return null;
     }
 
-    removeChild(childNode)
+    _canDockInto(dropNode, dropInfo)
     {
-        var pos = this.children.indexOf(childNode);
+        return true;
+    }
+
+    _removeChild(childNode)
+    {
+        var pos = this._children.indexOf(childNode);
         if (pos != -1)
         {
-            this.children.splice(pos, 1);
+            this._children.splice(pos, 1);
         }
-        this.dirty = true;
+        this._dirty = true;
         return pos;
     }
 
-    addChild(childNode, pos)
+    _addChild(childNode, pos)
     {
         if (pos != undefined)
         {
-            this.children.splice(pos, 0, childNode);
+            this._children.splice(pos, 0, childNode);
         }
         else
         {
-            this.children.push(childNode);
+            this._children.push(childNode);
+            pos = this._children.length-1;
         }
-        childNode.parent = this;
-        this.dirty = true;
+        childNode._parent = this;
+        this._dirty = true;
+        this._model._addNode(childNode);
+        return pos;
     }
 
-    removeAll()
+    _removeAll()
     {
-        this.children = [];
-        this.dirty = true;
+        this._children = [];
+        this._dirty = true;
     }
 
-    styleWithPosition(style)
+    _styleWithPosition(style)
     {
         if (style == undefined)
         {
             style = {};
         }
-        return this.rect.styleWithPosition(style);
+        return this._rect.styleWithPosition(style);
     }
 
     toString(lines, indent)
     {
-        lines.push(indent + this.type + " " + this.size.toFixed(2));
+        lines.push(indent + this._type + " " + this._weight.toFixed(2));
         indent = indent + "\t";
-        for (var i = 0; i < this.children.length; i++)
+        for (var i = 0; i < this._children.length; i++)
         {
-            var child = this.children[i];
+            var child = this._children[i];
             child.toString(lines, indent);
         }
     }

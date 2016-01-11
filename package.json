@@ -1,5 +1,5 @@
 {
-  "name": "flexlayout",
+  "_name": "flexlayout",
   "version": "0.0.1",
   "description": "a layout manager for rich client applications",
   "main": "index.js",

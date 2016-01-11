@@ -50,9 +50,30 @@
     /*box-sizing:border-box;*/
 }
 
+.flexlayout__drag_rect {
+    position: absolute;
+    width:150px;
+    height:50px;
+    cursor: move;
+    border: 2px solid #aaaaaa;
+    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .3);
+    border-radius: 5px;
+    z-index: 1000;
+    box-sizing: border-box;
+    background-color:#eeeeee;
+    opacity: 0.9;
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
 .flexlayout__tabset {
     overflow: hidden;
+    background-color: white;
 }
+
 
 .flexlayout__tab {
     overflow: auto;
@@ -132,6 +153,28 @@
     background: transparent url("images/more.png") no-repeat left;
 }
 
+.flexlayout__tabset_header
+{
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    height:20px;
+    background-color: #e8e8e8;
+    padding:3px 3px 3px 5px;
+    box-shadow: inset 0px 0px 3px 0px rgba(136, 136, 136, 0.54);
+    box-sizing: border-box;
+}
+
+.flexlayout__tab_header_outer {
+    background-color: white;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+
+    height: 20px;
+    overflow: hidden;
+}
+
 .flexlayout__tab_header_inner {
     position: absolute;
     left: 0px;
@@ -140,15 +183,6 @@
     width: 10000px;
 }
 
-.flexlayout__tab_header_outer {
-    background-color: white;
-    position: absolute;
-    left: 0px;
-    right: 0px;
-    top: 0px;
-    height: 20px;
-    overflow: hidden;
-}
 
 .flexlayout__tab_toolbar {
     position:absolute;

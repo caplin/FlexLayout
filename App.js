@@ -4,6 +4,8 @@ import Model from "./scripts/model/Model.js";
 import Layout from "./scripts/view/Layout.js";
 import Utils from "./scripts/Utils.js";
 import SlickGrid from "slickgrid/grid";
+import Perf from "react-addons-perf";
+//import ImmutableModel from "./experiments/ImmutableModel.js";
 
 var fields=["Name", "ISIN", "Bid", "Ask", "Last","Yield"];
 
@@ -11,20 +13,20 @@ class App
 {
     constructor(containerElement)
     {
-		console.log("available query parameters: ?layout=<name>&reload=true&log=true&grid=slick");
+        console.log("available query parameters: ?layout=<name>&reload=true&log=true&grid=slick");
         this.containerElement = containerElement;
         this.layoutFile = "default";
-		this.grid = "table";
+        this.grid = "table";
 
         var params = Utils.getQueryParams();
         if (params["layout"])
         {
             this.layoutFile = params["layout"];
         }
-		if (params["grid"])
-		{
-			this.grid = params["grid"];
-		}
+        if (params["grid"])
+        {
+            this.grid = params["grid"];
+        }
 
         if (params["reload"])
         {
@@ -55,7 +57,7 @@ class App
                 children: [
                     {
                         type: "tabset", size: 50, color: "#ccccff", children: [
-                        {type: "tab", name: "simple2", component: "simple2"},
+                        {type: "tab", name: "blaa", component: "grid"},
                     ]
                     },
                     {
@@ -129,7 +131,10 @@ class App
             }
         );
 
-        this.render();
+        setTimeout(function()
+        {
+            this.render();
+        }.bind(this), 0); // so you get proper stack traces when things so wrong (ref use of promises)
 
         // save layout when unloading page
         window.onbeforeunload = function(event)
@@ -153,39 +158,40 @@ class App
 
     factory(node)
     {
-		// log lifecycle events
-		//node.setEventListener("resize", function(p){console.log("resize");});
-		//node.setEventListener("maximize", function(p){console.log("maximize");});
-		//node.setEventListener("visibility", function(p){console.log("visibility");});
-		//node.setEventListener("close", function(p){console.log("close");});
+        // log lifecycle events
+        //node.setEventListener("resize", function(p){console.log("resize");});
+        //node.setEventListener("maximize", function(p){console.log("maximize");});
+        //node.setEventListener("visibility", function(p){console.log("visibility");});
+        //node.setEventListener("close", function(p){console.log("close");});
 
         //console.log("factory: " + node.component);
-		if (node.component == "grid")
+        var component = node.getComponent();
+        if (component == "grid")
         {
-            if (node.extra.data == null)
+            if (node.getExtraData().data == null)
             {
                 // create data in node extra data first time accessed
-                node.extra.data = this.makeFakeData();
+                node.getExtraData().data = this.makeFakeData();
             }
 
-			if (this.grid == "table")
-			{
-				return <SimpleTable fields={fields} node={node} data={node.extra.data}/>;
-			}
-			else if (this.grid == "slick")
-			{
-				return <SlickGridWrapper fields={fields} data={node.extra.data}/>;
-			}
+            if (this.grid == "table")
+            {
+                return <SimpleTable fields={fields} node={node} data={node.getExtraData().data}/>;
+            }
+            else if (this.grid == "slick")
+            {
+                return <SlickGridWrapper fields={fields} data={node.getExtraData().data}/>;
+            }
         }
-        else if (node.component == "simple1" )
+        else if (component == "simple1" )
         {
-            return <Simple1 config={node.config}/>;
+            return <Simple1 config={node._config}/>;
         }
-		else if (node.component == "simple2")
-		{
-			return <Simple2 config={node.config} node={node}/>;
-		}
-        else if (node.component == "sub")
+        else if (component == "simple2")
+        {
+            return <Simple2 config={node._config} node={node}/>;
+        }
+        else if (component == "sub")
         {
             return <SubApp model={this.submodel} node={node} factory={this.factory.bind(this)}/>;
         }
@@ -198,7 +204,7 @@ class App
         for (var i = 0; i<r; i++)
         {
             var rec = {};
-			rec.Name = this.randomString(5,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            rec.Name = this.randomString(5,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
             rec.ISIN = rec.Name + this.randomString(7,"1234567890");
             for (var j=2; j<fields.length; j++)
             {
@@ -217,42 +223,58 @@ class App
             a.push(chars[Math.floor(Math.random()*chars.length)]);
         }
 
-		return a.join("");
+        return a.join("");
     }
 }
 
 class Main extends React.Component
 {
-	constructor(props)
-	{
-		super(props);
-		this.state = {adding:false};
-	}
+    constructor(props)
+    {
+        super(props);
+        this.state = {adding: false};
+    }
 
-	onAddClick(event)
-	{
-		this.refs.layout.addTabWhereClicked("grid", "added", this.onAdded.bind(this));
-		this.setState({adding:true});
-	}
+    componentDidMount()
+    {
+        //Perf.start()
+    }
 
-	onAdded(addedNode)
-	{
-		this.setState({adding:false});
-	}
+    onAddClick(event)
+    {
+        //this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
+        //this.setState({adding:true});
+        //
+        //this.refs.layout.addTabWhereClicked("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
+        //this.setState({adding:true});
 
-	render()
-	{
-		var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
-		return <div className="app">
-			<div className="toolbar">
-				<button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add</button>
-				{message}
-			</div>
-			<div className="contents">
-				<Layout ref="layout" model={this.props.model} factory={this.props.factory}/>
-			</div>
-		</div>;
-	}
+        this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
+
+        //Perf.stop();
+        //var measurements = Perf.getLastMeasurements();
+        //Perf.printWasted(measurements);
+        //Perf.start();
+        //this.props.model.toJson();
+    }
+
+    onAdded(addedNode)
+    {
+        this.setState({adding:false});
+    }
+
+    render()
+    {
+        var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
+        return <div className="app">
+            <div className="toolbar">
+                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add</button>
+                {message}
+            </div>
+            <div className="contents">
+                <Layout ref="layout" model={this.props.model} factory={this.props.factory}/>
+            </div>
+        </div>;
+    }
 }
 
 class SubApp extends React.Component
@@ -276,45 +298,45 @@ setInterval(function()
 
 class Simple1 extends React.Component
 {
-	render()
-	{
-		return <button>{this.props.config.name}</button>;
-	}
+    render()
+    {
+        return <button>{this.props.config.name}</button>;
+    }
 }
 
 class Simple2 extends React.Component
 {
-	constructor(props)
-	{
-		super(props);
-		this.visible = false;
-		this.state = {value:store.value};
-	}
+    constructor(props)
+    {
+        super(props);
+        this.visible = false;
+        this.state = {value:store.value};
+    }
 
     componentDidMount()
     {
-		store.callback = function()
+        store.callback = function()
         {
-			if (this.visible)
-			{
-				this.setState({value:store.value});
-			}
+            if (this.visible)
+            {
+                this.setState({value:store.value});
+            }
         }.bind(this);
 
-		this.visible = true;
-		this.props.node.setEventListener("visibility", this.onVisibilityChange.bind(this));
+        this.visible = true;
+        this.props.node.setEventListener("visibility", this.onVisibilityChange.bind(this));
     }
 
-	componentWillUnmount()
-	{
-		this.visible = false;
-		store.callback = null;
-	}
+    componentWillUnmount()
+    {
+        this.visible = false;
+        store.callback = null;
+    }
 
-	onVisibilityChange(event)
-	{
-		this.visible = event.visible;
-	}
+    onVisibilityChange(event)
+    {
+        this.visible = event.visible;
+    }
 
     render()
     {
@@ -324,11 +346,11 @@ class Simple2 extends React.Component
 
 class SimpleTable extends React.Component
 {
-	shouldComponentUpdate()
-	{
-		return false;
-	}
-	
+    shouldComponentUpdate()
+    {
+        return false;
+    }
+
     render()
     {
         var headercells = this.props.fields.map(function(field)
@@ -345,8 +367,8 @@ class SimpleTable extends React.Component
 
         return <table className="simple_table">
             <tbody>
-				<tr>{headercells}</tr>
-				{rows}
+            <tr>{headercells}</tr>
+            {rows}
             </tbody>
         </table>;
     }
@@ -354,38 +376,38 @@ class SimpleTable extends React.Component
 
 class SlickGridWrapper extends React.Component {
 
-	componentDidMount()
-	{
-		var container = ReactDOM.findDOMNode(this.refs.slickgrid);
+    componentDidMount()
+    {
+        var container = ReactDOM.findDOMNode(this.refs.slickgrid);
 
-		var columns = fields.map(function(field)
-		{
-			return {name: field,
-				field: field,
-				width: 130,
-				id: field,
-				sortable: true
-			};
-		});
+        var columns = fields.map(function(field)
+        {
+            return {name: field,
+                field: field,
+                width: 130,
+                id: field,
+                sortable: true
+            };
+        });
 
-		var options = {
-			enableCellNavigation: true,
-			enableColumnReorder: false,
-			forceFitColumns: false
-		};
+        var options = {
+            enableCellNavigation: true,
+            enableColumnReorder: false,
+            forceFitColumns: false
+        };
 
-		this.slickgrid = new Slick.Grid(container, this.props.data, columns, options);
-	}
+        this.slickgrid = new Slick.Grid(container, this.props.data, columns, options);
+    }
 
-	componentWillReceiveProps(newprops)
-	{
-		this.slickgrid.resizeCanvas();
-	}
+    componentWillReceiveProps(newprops)
+    {
+        this.slickgrid.resizeCanvas();
+    }
 
-	render()
-	{
-		return <div ref="slickgrid" className="slickgrid"></div>
-	}
+    render()
+    {
+        return <div ref="slickgrid" className="slickgrid"></div>
+    }
 }
 
 new App(document.getElementById("container"));
