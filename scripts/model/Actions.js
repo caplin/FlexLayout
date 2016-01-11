@@ -39,6 +39,11 @@ class Actions
 	{
 		return {name: Actions.ADD_TAB, tabsetNode:tabsetNode.getKey(), tabNode:tabNode.getKey()};
 	}
+
+	static setActiveTabset(tabsetNode)
+	{
+		return {name: Actions.SET_ACTIVE_TABSET, tabsetNode:tabsetNode.getKey()};
+	}
 }
 
 Actions.SET_RECT = "setRect";
@@ -49,5 +54,6 @@ Actions.MAXIMIZE_TOGGLE = "maximizeToggle";
 Actions.RENAME_TAB = "renameTab";
 Actions.DELETE_TAB = "deleteTab";
 Actions.ADD_TAB = "addTab";
+Actions.SET_ACTIVE_TABSET = "setActiveTabset";
 
 export default Actions;

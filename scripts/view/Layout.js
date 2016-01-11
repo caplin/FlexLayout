@@ -134,6 +134,16 @@ class Layout extends React.Component
         }
     }
 
+    addTabToActiveTabSet(json)
+    {
+        var tabsetNode = this.props.model.getActiveTabset();
+        if (tabsetNode != null)
+        {
+            var newNode = TabNode._create(this.props.model, json);
+            this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
+        }
+    }
+
     addTabWhereClicked(dragText, json, onDrop)
     {
         this.fnNewNodeDropped = onDrop;
