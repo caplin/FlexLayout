@@ -4,6 +4,7 @@ import Model from "./scripts/model/Model.js";
 import Layout from "./scripts/view/Layout.js";
 import Utils from "./scripts/Utils.js";
 import SlickGrid from "slickgrid/grid";
+import 'jquery.event.drag'; //Slickgrid dependency, needs to be bundled
 import Perf from "react-addons-perf";
 //import ImmutableModel from "./experiments/ImmutableModel.js";
 
