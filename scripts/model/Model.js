@@ -84,7 +84,6 @@ class Model
 				let toNode =  this._nodeMap[action.toNode];
 				let fromNode =  this._nodeMap[action.fromNode];
 				toNode._drop(fromNode, action.location, action.index);
-				this._activeTabSet = toNode._parent;
 				break;
 			}
 			case Actions.SELECT_TAB:

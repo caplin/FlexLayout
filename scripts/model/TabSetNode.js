@@ -202,6 +202,8 @@ class TabSetNode extends Node
                     insertPos++;
                 }
             }
+            this._model._activeTabSet = this;
+
         }
         else
         {
@@ -245,6 +247,8 @@ class TabSetNode extends Node
                 parentRow._removeChild(this);
                 parentRow._addChild(newRow, pos);
             }
+            this._model._activeTabSet = tabSet;
+
         }
         this._model._tidy();
 

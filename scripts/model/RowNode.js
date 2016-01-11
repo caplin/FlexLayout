@@ -407,6 +407,8 @@ class RowNode extends Node
             this._addChild(vrow);
         }
 
+        this._model._activeTabSet = tabSet;
+
         this._model._tidy();
     }
 
