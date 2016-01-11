@@ -25,13 +25,15 @@ Features so far:
 *	tab renaming
 *	themeing
 *	lifecycle events
+*   esc cancels drag
+*   add tabs using drag, indirect drag, add to active tabset, add to named tabset
+*   preferred size tabsets
+*   headed tabsets
 
 
 todo:
-*	convert model to take actions (so can be used in flux)
 * customizable tabs, tabset header, action menu?
 *	mobile - touch events
-* esc cancels drag
 * undo/redo
 *	more lifecycle events... save, beforeclose...
 * split tabset into tabsetcontainer and tabset (= container of tabs only) components, then tabset can be docked to top/bottom of tabset...
