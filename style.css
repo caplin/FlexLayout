@@ -184,6 +184,11 @@
 }
 
 
+.flexlayout__tabset-selected
+{
+    background-color: #d0f4d4;
+}
+
 .flexlayout__tab_toolbar {
     position:absolute;
     top:0px;

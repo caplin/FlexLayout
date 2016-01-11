@@ -161,6 +161,7 @@
     /*box-shadow: inset 0px 0px 3px 0px rgba(136, 136, 136, 0.54);*/
     box-sizing: border-box;
 }
+
 .flexlayout__tab_header_inner {
     position: absolute;
     left: 0px;
@@ -178,6 +179,12 @@
     height: 20px;
     overflow: hidden;
 }
+
+.flexlayout__tabset-selected
+{
+    background-color: #253325;
+}
+
 
 .flexlayout__tab_toolbar {
     position:absolute;
