@@ -366,6 +366,10 @@ class RowNode extends Node
             size += this._children[i]._weight;
         }
 
+        if (size == 0) {
+            size = 100;
+        }
+
         tabSet._weight = size/3;
 
         if (dockLocation == DockLocation.LEFT)
