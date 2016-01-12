@@ -23,9 +23,10 @@ class Utils {
                         reject(xhr.status + " " + xhr.statusText);
                     }
                 };
-                xhr.onerror = function ()
+                xhr.onerror = function (e)
                 {
-                    reject(null);
+                    console.log(e.getMessage, e);
+                    reject(e);
                 };
                 xhr.send();
             }
