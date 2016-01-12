@@ -30,22 +30,21 @@ class TabSetNode extends Node
         return this._selected;
     }
 
+    isMaximized()
+    {
+        return this._maximized;
+    }
+
     _setSelected(index)
     {
         this._selected = index;
         this._model._fireChange();
     }
 
-    isMaximized()
-    {
-        return this._maximized;
-    }
-
     _setMaximized(maximized)
     {
         this._maximized = maximized;
     }
-
 
     _canDockInto(dropNode, dropInfo)
     {

@@ -15,13 +15,6 @@ class TabNode extends Node
         this._extra = {};  // extra data added to node not saved in json
     }
 
-    static _create(model, json)
-    {
-        var node = TabNode._fromJson(json,model);
-        model._addNode(node);
-        return node;
-    }
-
     getTabRect()
     {
         return this._tabRect;
@@ -35,11 +28,6 @@ class TabNode extends Node
     getName()
     {
         return this._name;
-    }
-
-    _setName(name)
-    {
-        this._name = name;
     }
 
     getComponent()
@@ -57,6 +45,18 @@ class TabNode extends Node
         return this._config;
     }
 
+    static _create(model, json)
+    {
+        var node = TabNode._fromJson(json,model);
+        model._addNode(node);
+        return node;
+    }
+
+    _setName(name)
+    {
+        this._name = name;
+    }
+
 	_layout(rect)
 	{
 		if ( !rect.equals(this._rect))
@@ -72,11 +72,6 @@ class TabNode extends Node
         this._fireEvent("close", {});
     }
 
-    toString(lines, indent)
-    {
-        lines.push(indent + this._type + " " + this._name);
-    }
-
     static _fromJson(json, model)
     {
         var newLayoutNode = new TabNode(model);
@@ -89,6 +84,11 @@ class TabNode extends Node
         var json = {};
         jsonConverter.toJson(json, this);
         return json;
+    }
+
+    toString(lines, indent)
+    {
+        lines.push(indent + this._type + " " + this._name);
     }
 }
 
