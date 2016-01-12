@@ -89,7 +89,9 @@ class Model
 			case Actions.SELECT_TAB:
 			{
 				let tabNode =  this._nodeMap[action.tabset];
-				tabNode._setSelected(action.index);
+				if (tabNode.getSelected() != action.index) {
+					tabNode._setSelected(action.index);
+				}
 				this._activeTabSet = tabNode;
 
 				break;
