@@ -25,6 +25,7 @@ Features so far:
 *	tab renaming
 *	themeing
 *	lifecycle events
+*	touch events - works on mobile devices
 *   esc cancels drag
 *   add tabs using drag, indirect drag, add to active tabset, add to named tabset
 *   preferred size tabsets
@@ -32,7 +33,6 @@ Features so far:
 
 
 todo:
-*	mobile - touch events
 *	less styling
 *	more lifecycle events... save, beforeclose...
 *	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
