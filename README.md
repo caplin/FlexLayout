@@ -7,9 +7,9 @@ resized and moved, much like the windowing system found in many IDE's.
 
 [More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
 
-[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index.html?layout=trader)
+[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index.html)
 
-[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index_dark.html?layout=trader)
+[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index_dark.html)
 
 Note: this demo uses wide splitters to work well on iPad (this will be configurable in future)
 
