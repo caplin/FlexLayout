@@ -11,9 +11,9 @@ import TabSetNode from "../model/TabSetNode.js";
 import SplitterNode from "../model/SplitterNode.js";
 import Actions from "../model/Actions.js";
 import Model from "../model/Model.js";
-import injectTapEventPlugin from "react-tap-event-plugin";
+//import injectTapEventPlugin from "react-tap-event-plugin";
 
-injectTapEventPlugin();
+//injectTapEventPlugin();
 
 class Layout extends React.Component
 {
