@@ -338,6 +338,11 @@ class RowNode extends Node
     {
         var dockLocation = location;
 
+        if (dragNode._parent)
+        {
+            dragNode._parent._removeChild(dragNode);
+        }
+
         if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE)
         {
             dragNode._parent._selected = 0;
