@@ -91,7 +91,7 @@ class Splitter extends React.Component
             }
         );
 
-        return <div style={style} onMouseDown={this.onMouseDown.bind(this)} className="flexlayout__splitter"></div>;
+        return <div style={style} onTouchStart={this.onMouseDown.bind(this)} onMouseDown={this.onMouseDown.bind(this)} className="flexlayout__splitter"></div>;
     }
 }
 

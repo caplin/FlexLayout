@@ -135,7 +135,11 @@ class TabSet extends React.Component
         var selectedTabsetClass = (this.props.node.getModel().getActiveTabset() === this.props.node)?" flexlayout__tabset-selected":"";
         if (showHeader)
         {
-            var header = <div className={"flexlayout__tabset_header" + selectedTabsetClass} onMouseDown={this.onMouseDown.bind(this)}>{node.getName()}</div>
+            var header = <div className={"flexlayout__tabset_header" + selectedTabsetClass}
+                              onMouseDown={this.onMouseDown.bind(this)}
+                              onTouchStart={this.onMouseDown.bind(this)}>
+                            {node.getName()}
+                        </div>
             var tabStrip = <div className="flexlayout__tab_header_outer"  style={{top:"20px"}} >
                 <div ref="header" className="flexlayout__tab_header_inner">
                     {tabs}
@@ -145,7 +149,8 @@ class TabSet extends React.Component
         else
         {
             var tabStrip = <div className={"flexlayout__tab_header_outer" + selectedTabsetClass}  style={{top:"0px"}}
-                                onMouseDown={this.onMouseDown.bind(this)}>
+                                onMouseDown={this.onMouseDown.bind(this)}
+                                onTouchStart={this.onMouseDown.bind(this)}>
                 <div ref="header" className="flexlayout__tab_header_inner">
                     {tabs}
                 </div>

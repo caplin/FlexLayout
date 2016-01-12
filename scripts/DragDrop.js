@@ -13,6 +13,7 @@ class DragDrop
 
 		this.onMouseMove = this.onMouseMove.bind(this);
 		this.onMouseUp = this.onMouseUp.bind(this);
+
 		this.onKeyPress = this.onKeyPress.bind(this);
 
 		this.lastClick = 0;
@@ -62,19 +63,57 @@ class DragDrop
 		}
 	}
 
-	startDrag(mouseEvent, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick)
+	getLocationEvent(event)
 	{
+		var posEvent = event;
+		if (event.touches)
+		{
+			posEvent = event.touches[0]
+		}
+		return posEvent;
+	}
+
+	getLocationEventEnd(event)
+	{
+		var posEvent = event;
+		if (event.changedTouches)
+		{
+			posEvent = event.changedTouches[0]
+		}
+		return posEvent;
+	}
+
+	stopPropagation(event)
+	{
+		if (event.stopPropagation)
+		{
+			event.stopPropagation();
+		}
+	}
+
+	preventDefault(event)
+	{
+		if (event.preventDefault)
+		{
+			event.preventDefault();
+		}
+		return event;
+	}
+
+	startDrag(event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick)
+	{
+		var posEvent = this.getLocationEvent(event);
 		this.addGlass(fDragCancel);
 
 		if (this.dragging) debugger; // should never happen
 
-		if (mouseEvent != null)
+		if (event != null)
 		{
-			this.startX = mouseEvent.clientX;
-			this.startY = mouseEvent.clientY;
-			this.glass.style.cursor = getComputedStyle(mouseEvent.target).cursor;
-			mouseEvent.stopPropagation();
-			mouseEvent.preventDefault();
+			this.startX = posEvent.clientX;
+			this.startY = posEvent.clientY;
+			this.glass.style.cursor = getComputedStyle(event.target).cursor;
+			this.stopPropagation(event);
+			this.preventDefault(event);
 		}
 		else
 		{
@@ -93,13 +132,16 @@ class DragDrop
 
 		document.addEventListener("mouseup", this.onMouseUp);
 		document.addEventListener("mousemove", this.onMouseMove);
+		document.addEventListener("touchend", this.onMouseUp);
+		document.addEventListener("touchmove", this.onMouseMove);
 	}
 
-	onMouseMove(mouseEvent)
+	onMouseMove(event)
 	{
-		mouseEvent.stopPropagation();
+		var posEvent = this.getLocationEvent(event);
+		this.stopPropagation(event);
 
-		if (!this.dragging && (Math.abs(this.startX - mouseEvent.clientX) > 5 || Math.abs(this.startY - mouseEvent.clientY) > 5))
+		if (!this.dragging && (Math.abs(this.startX - posEvent.clientX) > 5 || Math.abs(this.startY - posEvent.clientY) > 5))
 		{
 			this.dragging = true;
 			if (this.fDragStart)
@@ -113,15 +155,17 @@ class DragDrop
 		{
 			if (this.fDragMove)
 			{
-				this.fDragMove(mouseEvent);
+				this.fDragMove(posEvent);
 			}
 		}
 		return false;
 	}
 
-	onMouseUp(mouseEvent)
+	onMouseUp(event)
 	{
-		mouseEvent.stopPropagation();
+		var posEvent = this.getLocationEventEnd(event);
+
+		this.stopPropagation(event);
 
 		if (!this.manualGlassManagement)
 		{
@@ -130,40 +174,42 @@ class DragDrop
 
 		document.removeEventListener("mousemove", this.onMouseMove);
 		document.removeEventListener("mouseup", this.onMouseUp);
+		document.removeEventListener("touchend", this.onMouseUp);
+		document.removeEventListener("touchmove", this.onMouseMove);
 
 		if (this.dragging)
 		{
 			this.dragging = false;
 			if (this.fDragEnd)
 			{
-				this.fDragEnd(mouseEvent);
+				this.fDragEnd(event);
 			}
 			//dump("set dragging = false\n");
 		}
 		else
 		{
-			if (Math.abs(this.startX - mouseEvent.clientX) <= 5 && Math.abs(this.startY - mouseEvent.clientY) <= 5)
+			if (Math.abs(this.startX - posEvent.clientX) <= 5 && Math.abs(this.startY - posEvent.clientY) <= 5)
 			{
 				var clickTime = new Date().getTime();
 				// check for double click
-				if (Math.abs(this.clickX - mouseEvent.clientX) <= 5 && Math.abs(this.clickY - mouseEvent.clientY) <= 5)
+				if (Math.abs(this.clickX - posEvent.clientX) <= 5 && Math.abs(this.clickY - posEvent.clientY) <= 5)
 				{
 					if (clickTime - this.lastClick < 500)
 					{
 						if (this.fDblClick)
 						{
-							this.fDblClick(mouseEvent);
+							this.fDblClick(event);
 						}
 					}
 				}
 
 				if (this.fClick)
 				{
-					this.fClick(mouseEvent);
+					this.fClick(event);
 				}
 				this.lastClick = clickTime;
-				this.clickX = mouseEvent.clientX;
-				this.clickY = mouseEvent.clientY;
+				this.clickX = posEvent.clientX;
+				this.clickY = posEvent.clientY;
 			}
 		}
 		return false;

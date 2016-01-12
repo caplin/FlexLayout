@@ -11,6 +11,9 @@ import TabSetNode from "../model/TabSetNode.js";
 import SplitterNode from "../model/SplitterNode.js";
 import Actions from "../model/Actions.js";
 import Model from "../model/Model.js";
+import injectTapEventPlugin from "react-tap-event-plugin";
+
+injectTapEventPlugin();
 
 class Layout extends React.Component
 {
@@ -163,6 +166,7 @@ class Layout extends React.Component
         this.dragDiv.className = "flexlayout__drag_rect";
         this.dragDiv.innerHTML = this.dragDivText;
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown.bind(this));
+        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown.bind(this));
 
         var r = new Rect(10,10,150,50);
         r.centerInRect(this.props.model.getRect());

@@ -121,17 +121,24 @@ class TabButton extends React.Component
 							 autoFocus
 							 defaultValue={this.props.node.getName()}
 							 onKeyDown={this.onTextBoxKeyPress.bind(this)}
-							 onMouseDown={this.onTextBoxMouseDown.bind(this)}
+							 onMouseDown={this.onTextBoxMouseDown.bind(this)
+							 }
 				/>;
 		}
 
 		return <div ref="self"
 					style={{visibility:this.props.show?"visible":"hidden"}}
 					className={classNames}
-					onMouseDown={this.onMouseDown.bind(this)}>
+					onMouseDown={this.onMouseDown.bind(this)}
+					onTouchStart={this.onMouseDown.bind(this)}>
 			<div className={"flexlayout__tab_button_leading"}></div>
 			{content}
-			<div className={"flexlayout__tab_button_trailing"} onMouseDown={this.onCloseMouseDown.bind(this)} onClick={this.onClose.bind(this)}></div>
+			<div className={"flexlayout__tab_button_trailing"}
+				 onMouseDown={this.onCloseMouseDown.bind(this)}
+				 onClick={this.onClose.bind(this)}
+				 onTouchStart={this.onCloseMouseDown.bind(this)}
+				>
+			</div>
 		</div>;
 	}
 }
