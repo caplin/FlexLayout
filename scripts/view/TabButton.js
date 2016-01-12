@@ -31,6 +31,7 @@ class TabButton extends React.Component
 	{
 		this.setState({editing:true});
 		document.body.addEventListener("mousedown", this.onEndEdit);
+		document.body.addEventListener("touchstart", this.onEndEdit);
 	}
 
 	onEndEdit(event)
@@ -39,6 +40,7 @@ class TabButton extends React.Component
 		{
 			this.setState({editing:false});
 			document.body.removeEventListener("mousedown", this.onEndEdit);
+			document.body.removeEventListener("touchstart", this.onEndEdit);
 		}
 	}
 
@@ -121,8 +123,8 @@ class TabButton extends React.Component
 							 autoFocus
 							 defaultValue={this.props.node.getName()}
 							 onKeyDown={this.onTextBoxKeyPress.bind(this)}
-							 onMouseDown={this.onTextBoxMouseDown.bind(this)
-							 }
+							 onMouseDown={this.onTextBoxMouseDown.bind(this)}
+							 onTouchStart={this.onTextBoxMouseDown.bind(this)}
 				/>;
 		}
 
