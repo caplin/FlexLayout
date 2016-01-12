@@ -186,7 +186,7 @@
 
 .flexlayout__tabset-selected
 {
-    background-color: #d0f4d4;
+    background-image: linear-gradient(#fff, #aaa);
 }
 
 .flexlayout__tab_toolbar {

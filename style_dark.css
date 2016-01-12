@@ -182,7 +182,7 @@
 
 .flexlayout__tabset-selected
 {
-    background-color: #253325;
+    background-image: linear-gradient(#111, #444);
 }
 
 
