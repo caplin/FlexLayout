@@ -5,7 +5,6 @@ import DockLocation from "../DockLocation.js";
 
 var NextKey = 0;
 
-
 class Node
 {
     constructor(model)
@@ -25,24 +24,6 @@ class Node
         this._orientation = Orientation.HORZ;
         this._allowDrag = true;
         this._id = null;
-    }
-
-    _forEachNode(fn)
-    {
-        this._children.forEach((node) => {
-            fn(node);
-            node._forEachNode(fn);
-        })
-    }
-
-    _getPrefSize(orientation)
-    {
-        var prefSize = this._width;
-        if (orientation == Orientation.VERT)
-        {
-            prefSize = this._height;
-        }
-        return prefSize;
     }
 
     getModel()
@@ -85,6 +66,35 @@ class Node
         return this._orientation;
     }
 
+    // event can be: resize, visibility, maximize (on tabset), close
+    setEventListener(event, callback)
+    {
+        this._listeners[event] = callback;
+    }
+
+    removeEventListener(event)
+    {
+        delete this._listeners[event];
+    }
+
+    _forEachNode(fn)
+    {
+        this._children.forEach((node) => {
+            fn(node);
+            node._forEachNode(fn);
+        })
+    }
+
+    _getPrefSize(orientation)
+    {
+        var prefSize = this._width;
+        if (orientation == Orientation.VERT)
+        {
+            prefSize = this._height;
+        }
+        return prefSize;
+    }
+
     _setVisible(visible)
     {
         if (visible != this._visible)
@@ -99,16 +109,6 @@ class Node
         return this._children;
     }
 
-	// event can be: resize, visibility, maximize (on tabset), close
-    setEventListener(event, callback)
-    {
-        this._listeners[event] = callback;
-    }
-
-    removeEventListener(event)
-    {
-        delete this._listeners[event];
-    }
 
     _fireEvent(event, params)
     {

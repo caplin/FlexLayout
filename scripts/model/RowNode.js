@@ -36,7 +36,7 @@ class RowNode extends Node
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
-            var prefSize = child._getPrefSize(this._orientation)
+            var prefSize = child._getPrefSize(this._orientation);
             if (child._fixed)
             {
                 fixedPixels += prefSize;
@@ -71,7 +71,7 @@ class RowNode extends Node
         for (var i = 0; i < drawChildren.length; i++)
         {
             var child = drawChildren[i];
-            var prefSize = child._getPrefSize(this._orientation)
+            var prefSize = child._getPrefSize(this._orientation);
             if (child._fixed)
             {
                 child.tempsize = prefSize;
@@ -107,7 +107,7 @@ class RowNode extends Node
                 for (var i = 0; i < drawChildren.length; i++)
                 {
                     var child = drawChildren[i];
-                    var prefSize = child._getPrefSize(this._orientation)
+                    var prefSize = child._getPrefSize(this._orientation);
                     if (!child._fixed && (prefSize == null || resizePreferred) && totalSizeGiven < pixelSize)
                     {
                         child.tempsize++;
@@ -337,12 +337,6 @@ class RowNode extends Node
     _drop(dragNode, location, index)
     {
         var dockLocation = location;
-
-		var fromIndex = 0;
-		if (dragNode._parent)
-		{
-			fromIndex = dragNode._parent._removeChild(dragNode);
-		}
 
         if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE)
         {

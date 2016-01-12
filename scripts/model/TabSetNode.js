@@ -275,12 +275,10 @@ class TabSetNode extends Node
 
         if (json.children != undefined)
         {
-            var selected = 0;
             for (var i = 0; i < json.children.length; i++)
             {
                 var child = TabNode._fromJson(json.children[i], model);
                 newLayoutNode._addChild(child);
-
             }
         }
 

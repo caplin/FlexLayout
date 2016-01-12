@@ -2,6 +2,9 @@ import RowNode from "./RowNode.js";
 import Actions from "./Actions.js";
 import TabNode from "./TabNode.js";
 
+/**
+ * Class containing the Model used by the FlexLayout component
+ */
 class Model
 {
 	constructor()
@@ -16,6 +19,10 @@ class Model
 		this._addNode(this._root);
 	}
 
+	/**
+	 * Get the currently active tabset node
+	 * @returns {null|tabsetNode}
+	 */
 	getActiveTabset()
 	{
 		// check activeTabSet is still in tree
@@ -34,35 +41,49 @@ class Model
 		return this._activeTabSet;
 	}
 
+	/**
+	 * Gets the root RowNode of the model
+	 * @returns {RowNode|*}
+	 */
 	getRoot()
 	{
 		return this._root;
 	}
 
+	/**
+	 * Gets the rectangle of the associated Layout control
+	 * @returns {Rect}
+	 */
 	getRect()
 	{
 		return this._rect;
 	}
 
+	/**
+	 * Visits all the nodes in the model and call the given function for each
+	 * @param fn a function that takes visited node as its only parameter
+	 */
 	visitNodes(fn)
 	{
 		this._root._forEachNode(fn);
 	}
 
-	_addNode(node)
-	{
-		this._nodeMap[node._key] = node;
-		if (node._id != null)
-		{
-			this._idMap[node._id] = node;
-		}
-	}
 
+	/**
+	 * Gets a node by its id (where an id has been set in the initial json)
+	 * @param id the id to find
+	 * @returns {null|Node}
+	 */
 	getNodeById(id)
 	{
 		return this._idMap[id];
 	}
 
+	/**
+	 * Update the model by performing the given action,
+	 * Actions should be generated via static methods on the Actions class
+	 * @param action the action to perform
+	 */
 	doAction(action)
 	{
 		console.log(action);
@@ -140,12 +161,21 @@ class Model
 		this._fireChange();
 	}
 
+	/**
+	 * Converts the model to json that can be serialized and restored via the fromJson() method
+	 * @returns {*} json object that represents this model
+	 */
 	toJson()
 	{
 		this._root._forEachNode((node)=>{node._fireEvent("save", null);});
 		return this._root._toJson();
 	}
 
+	/**
+	 * Loads the model from the given json representation
+	 * @param json the json model to load
+	 * @returns {Model} a new Model object
+	 */
 	static fromJson(json)
 	{
 		var model = new Model();
@@ -154,17 +184,34 @@ class Model
 		return model;
 	}
 
+	/**
+	 * Adds a change listener to the model
+	 * @param listener function with a onLayoutChange method, that will be called when the model changes
+	 */
 	addListener(listener)
 	{
 		this._listeners.push(listener);
 	}
 
+	/**
+	 * Remove a previously added change listener
+	 * @param listener
+	 */
 	removeListener(listener)
 	{
 		var index = this._listeners.indexOf(listener);
 		if (index != -1)
 		{
 			this._listeners.splice(index, 1);
+		}
+	}
+
+	_addNode(node)
+	{
+		this._nodeMap[node._key] = node;
+		if (node._id != null)
+		{
+			this._idMap[node._id] = node;
 		}
 	}
 

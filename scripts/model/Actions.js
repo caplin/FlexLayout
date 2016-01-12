@@ -1,3 +1,6 @@
+/**
+ * The Action creator class for FlexLayout model actions
+ */
 class Actions
 {
 	static setRect(rect)
