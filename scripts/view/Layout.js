@@ -301,65 +301,71 @@ class Layout extends React.Component
 
     showEdges(rootdiv)
     {
-        var domRect = rootdiv.getBoundingClientRect();
-        var size = 100;
-        var length = size + "px";
-        var radius = "50px";
-        var width = "10px";
+        if ( this.props.model.isEnableEdgeDock())
+        {
+            var domRect = rootdiv.getBoundingClientRect();
+            var size = 100;
+            var length = size + "px";
+            var radius = "50px";
+            var width = "10px";
 
-        this.edgeTopDiv = document.createElement("div");
-        this.edgeTopDiv.className = "flexlayout__edge_rect";
-        this.edgeTopDiv.style.top = "0px";
-        this.edgeTopDiv.style.left = (domRect.width-size)/2 + "px";
-        this.edgeTopDiv.style.width = length;
-        this.edgeTopDiv.style.height = width;
-        this.edgeTopDiv.style.borderBottomLeftRadius = radius;
-        this.edgeTopDiv.style.borderBottomRightRadius = radius;
+            this.edgeTopDiv = document.createElement("div");
+            this.edgeTopDiv.className = "flexlayout__edge_rect";
+            this.edgeTopDiv.style.top = "0px";
+            this.edgeTopDiv.style.left = (domRect.width - size) / 2 + "px";
+            this.edgeTopDiv.style.width = length;
+            this.edgeTopDiv.style.height = width;
+            this.edgeTopDiv.style.borderBottomLeftRadius = radius;
+            this.edgeTopDiv.style.borderBottomRightRadius = radius;
 
-        this.edgeLeftDiv = document.createElement("div");
-        this.edgeLeftDiv.className = "flexlayout__edge_rect";
-        this.edgeLeftDiv.style.top = (domRect.height-size)/2 + "px";
-        this.edgeLeftDiv.style.left = "0px";
-        this.edgeLeftDiv.style.width = width;
-        this.edgeLeftDiv.style.height = length;
-        this.edgeLeftDiv.style.borderTopRightRadius = radius;
-        this.edgeLeftDiv.style.borderBottomRightRadius = radius;
+            this.edgeLeftDiv = document.createElement("div");
+            this.edgeLeftDiv.className = "flexlayout__edge_rect";
+            this.edgeLeftDiv.style.top = (domRect.height - size) / 2 + "px";
+            this.edgeLeftDiv.style.left = "0px";
+            this.edgeLeftDiv.style.width = width;
+            this.edgeLeftDiv.style.height = length;
+            this.edgeLeftDiv.style.borderTopRightRadius = radius;
+            this.edgeLeftDiv.style.borderBottomRightRadius = radius;
 
-        this.edgeBottomDiv = document.createElement("div");
-        this.edgeBottomDiv.className = "flexlayout__edge_rect";
-        this.edgeBottomDiv.style.bottom = "0px";
-        this.edgeBottomDiv.style.left = (domRect.width-size)/2 + "px";
-        this.edgeBottomDiv.style.width = length;
-        this.edgeBottomDiv.style.height = width;
-        this.edgeBottomDiv.style.borderTopLeftRadius = radius;
-        this.edgeBottomDiv.style.borderTopRightRadius = radius;
+            this.edgeBottomDiv = document.createElement("div");
+            this.edgeBottomDiv.className = "flexlayout__edge_rect";
+            this.edgeBottomDiv.style.bottom = "0px";
+            this.edgeBottomDiv.style.left = (domRect.width - size) / 2 + "px";
+            this.edgeBottomDiv.style.width = length;
+            this.edgeBottomDiv.style.height = width;
+            this.edgeBottomDiv.style.borderTopLeftRadius = radius;
+            this.edgeBottomDiv.style.borderTopRightRadius = radius;
 
-        this.edgeRightDiv = document.createElement("div");
-        this.edgeRightDiv.className = "flexlayout__edge_rect";
-        this.edgeRightDiv.style.top = (domRect.height-size)/2 + "px";
-        this.edgeRightDiv.style.right = "0px";
-        this.edgeRightDiv.style.width = width;
-        this.edgeRightDiv.style.height = length;
-        this.edgeRightDiv.style.borderTopLeftRadius = radius;
-        this.edgeRightDiv.style.borderBottomLeftRadius = radius;
+            this.edgeRightDiv = document.createElement("div");
+            this.edgeRightDiv.className = "flexlayout__edge_rect";
+            this.edgeRightDiv.style.top = (domRect.height - size) / 2 + "px";
+            this.edgeRightDiv.style.right = "0px";
+            this.edgeRightDiv.style.width = width;
+            this.edgeRightDiv.style.height = length;
+            this.edgeRightDiv.style.borderTopLeftRadius = radius;
+            this.edgeRightDiv.style.borderBottomLeftRadius = radius;
 
-        rootdiv.appendChild(this.edgeTopDiv);
-        rootdiv.appendChild(this.edgeLeftDiv);
-        rootdiv.appendChild(this.edgeBottomDiv);
-        rootdiv.appendChild(this.edgeRightDiv);
+            rootdiv.appendChild(this.edgeTopDiv);
+            rootdiv.appendChild(this.edgeLeftDiv);
+            rootdiv.appendChild(this.edgeBottomDiv);
+            rootdiv.appendChild(this.edgeRightDiv);
+        }
     }
 
     hideEdges(rootdiv)
     {
-        try
+        if ( this.props.model.isEnableEdgeDock())
         {
-            rootdiv.removeChild(this.edgeTopDiv);
-            rootdiv.removeChild(this.edgeLeftDiv);
-            rootdiv.removeChild(this.edgeBottomDiv);
-            rootdiv.removeChild(this.edgeRightDiv);
-        }
-        catch (e)
-        {
+            try
+            {
+                rootdiv.removeChild(this.edgeTopDiv);
+                rootdiv.removeChild(this.edgeLeftDiv);
+                rootdiv.removeChild(this.edgeBottomDiv);
+                rootdiv.removeChild(this.edgeRightDiv);
+            }
+            catch (e)
+            {
+            }
         }
     }
 

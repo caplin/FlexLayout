@@ -297,7 +297,7 @@ class RowNode extends Node
         var margin = 10; // height of edge rect
         var half =  50; // half width of edge rect
 
-        if (this._parent == null) // _root row
+        if (this._model.isEnableEdgeDock() && this._parent == null) // _root row
         {
             if (x < this._rect.x+margin && (y>h/2-half && y<h/2+half))
             {

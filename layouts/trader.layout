@@ -1,7 +1,11 @@
 {
 "config":
 	{
-		"splitterSize":20
+		"splitterSize":8,
+		"enableEdgeDock":true,
+		"tabSetEnableMaximize":true,
+		"tabEnableClose":false,
+		"tabSetEnableTabStrip":true
 	},
 "layout":
 {
@@ -11,11 +15,16 @@
 		{
 			"type": "tabset",
 			"name": "Navigation",
+			"enableDrop":false,
+			"enableDrag":false,
+			"enableClose":false,
+			"enableDivide":false,
 			"weight": 18.564176939811457,
 			"selected": 0,
 			"children": [
 				{
 					"type": "tab",
+					"enableDrag":false,
 					"name": "Options",
 					"component": "grid",
 					"config": {
@@ -58,17 +67,23 @@
 				{
 					"type": "tabset",
 					"name": "Blotters",
+					"enableDrop":false,
+					"enableDrag":false,
+					"enableClose":false,
+					"enableDivide":false,
 					"weight": 25.637393767705383,
 					"selected": 0,
 					"children": [
 						{
 							"type": "tab",
+							"enableDrag":false,
 							"name": "Activity",
 							"component": "grid",
 							"config": {}
 						},
 						{
 							"type": "tab",
+							"enableDrag":false,
 							"name": "Execution",
 							"component": "grid",
 							"config": {
@@ -77,12 +92,14 @@
 						},
 						{
 							"type": "tab",
+							"enableDrag":false,
 							"name": "Orders",
 							"component": "grid",
 							"config": {}
 						},
 						{
 							"type": "tab",
+							"enableDrag":false,
 							"name": "Historic",
 							"component": "grid",
 							"config": {}

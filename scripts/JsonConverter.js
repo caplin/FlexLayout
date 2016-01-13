@@ -50,6 +50,20 @@ class JsonConverter
         }
     }
 
+    static getValue(localValue, parentValue)
+    {
+        if (localValue == JsonConverter.inherit)
+        {
+            return parentValue;
+        }
+        else
+        {
+            return localValue;
+        }
+    }
+
 }
+
+//JsonConverter.inherit = "*inherit*";
 
 export default JsonConverter;

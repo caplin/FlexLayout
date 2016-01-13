@@ -70,7 +70,6 @@ class Model
 		this._root._forEachNode(fn);
 	}
 
-
 	/**
 	 * Gets a node by its id (where an id has been set in the initial json)
 	 * @param id the id to find
@@ -218,6 +217,11 @@ class Model
 		return this._splitterSize;
 	}
 
+	isEnableEdgeDock()
+	{
+		return this._enableEdgeDock;
+	}
+
 	_addNode(node)
 	{
 		this._nodeMap[node._key] = node;
@@ -255,6 +259,27 @@ class Model
 }
 
 var jsonConverter = new JsonConverter();
+
+// splitter
 jsonConverter.addConversion("_splitterSize", "splitterSize", 5);
+jsonConverter.addConversion("_enableEdgeDock", "enableEdgeDock", true);
+
+// tab
+jsonConverter.addConversion("_tabEnableClose", "tabEnableClose", true);
+jsonConverter.addConversion("_tabEnableDrag", "tabEnableDrag", true);
+jsonConverter.addConversion("_tabEnableRename", "tabEnableRename", true);
+jsonConverter.addConversion("_tabClassName", "tabClassName", null);
+
+// tabset
+jsonConverter.addConversion("_tabSetEnableClose", "tabSetEnableClose", true);
+jsonConverter.addConversion("_tabSetEnableDrop", "tabSetEnableDrop", true);
+jsonConverter.addConversion("_tabSetEnableDrag", "tabSetEnableDrag", true);
+jsonConverter.addConversion("_tabSetEnableDivide", "tabSetEnableDivide", true);
+jsonConverter.addConversion("_tabSetEnableMaximize", "tabSetEnableMaximize", true);
+jsonConverter.addConversion("_tabSetClassNameTabStrip", "tabSetClassNameTabStrip", null);
+jsonConverter.addConversion("_tabSetClassNameHeader", "tabSetClassNameHeader", null);
+jsonConverter.addConversion("_tabSetEnableTabStrip", "tabSetEnableTabStrip", true);
+jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
+jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
 
 export default Model;

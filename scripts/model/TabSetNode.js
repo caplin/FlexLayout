@@ -37,47 +37,52 @@ class TabSetNode extends Node
 
     isEnableClose()
     {
-        return this._enableClose;
+        return this._getAttr("_tabSetEnableClose");
     }
 
     isEnableDrop()
     {
-        return this._enableDrop;
+        return this._getAttr("_tabSetEnableDrop");
     }
 
     isEnableDrag()
     {
-        return this._enableDrag;
+        return this._getAttr("_tabSetEnableDrag");
+    }
+
+    isEnableDivide()
+    {
+        return this._getAttr("_tabSetEnableDivide");
     }
 
     isEnableMaximize()
     {
-        return this._enableMaximize;
+        return this._getAttr("_tabSetEnableMaximize");
     }
 
     isEnableTabStrip()
     {
-        return this._enableTabStrip;
+        return this._getAttr("_tabSetEnableTabStrip");
     }
 
     getClassNameTabStrip()
     {
-        return this._classNameTabStrip;
+        return this._getAttr("_tabSetClassNameTabStrip");
     }
 
     getClassNameHeader()
     {
-        return this._classNameHeader;
+        return this._getAttr("_tabSetClassNameHeader");
     }
 
     getHeaderHeight()
     {
-        return this._headerHeight;
+        return this._getAttr("_tabSetHeaderHeight");
     }
 
     getTabStripHeight()
     {
-        return this._tabStripHeight;
+        return this._getAttr("_tabSetTabStripHeight");
     }
 
     _setSelected(index)
@@ -103,11 +108,6 @@ class TabSetNode extends Node
 
     _canDrop(dragNode, x, y)
     {
-        if (this._enableDrop == false)
-        {
-            return null;
-        }
-
         var dropInfo = null;
 
         if (dragNode == this)
@@ -116,13 +116,13 @@ class TabSetNode extends Node
             var outlineRect = this._tabHeaderRect;
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
-        else if (this._contentRect.contains(x, y))
+        else if ( this._contentRect.contains(x, y))
         {
             var dockLocation = DockLocation.getLocation(this._contentRect, x, y);
             var outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
-        else if (this._children.length > 0 && this._tabHeaderRect.contains(x, y))
+        else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y))
         {
             var p = this._tabHeaderRect.x;
             var y = this._children[0]._tabRect.y;
@@ -156,6 +156,16 @@ class TabSetNode extends Node
             return null;
         }
 
+        if (dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
+        {
+            return null;
+        }
+
+        if (dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
+        {
+            return null;
+        }
+
         return dropInfo;
     }
 
@@ -173,11 +183,11 @@ class TabSetNode extends Node
         if (showHeader)
         {
             this._headerRect = new Rect(rect.x, rect.y, rect.width, 20);
-            y += this._headerHeight;
+            y += this.getHeaderHeight();
         }
-        if (this._enableTabStrip) {
+        if (this.isEnableTabStrip()) {
             this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, 20);
-            y += this._tabStripHeight;
+            y += this.getTabStripHeight();
         }
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
 
@@ -344,16 +354,17 @@ jsonConverter.addConversion("_selected", "selected", 0);
 jsonConverter.addConversion("_maximized", "maximized", false);
 jsonConverter.addConversion("_id", "id", null);
 
-jsonConverter.addConversion("_enableClose", "enableClose", true);
-jsonConverter.addConversion("_enableDrop", "enableDrop", true);
-jsonConverter.addConversion("_enableDrag", "enableDrag", true);
-jsonConverter.addConversion("_enableMaximize", "enableMaximize", true);
-jsonConverter.addConversion("_classNameTabStrip", "classNameTabStrip", null);
-jsonConverter.addConversion("_classNameHeader", "classNameHeader", null);
-jsonConverter.addConversion("_enableTabStrip", "enableTabStrip", true);
+jsonConverter.addConversion("_tabSetEnableClose", "enableClose", undefined);
+jsonConverter.addConversion("_tabSetEnableDrop", "enableDrop", undefined);
+jsonConverter.addConversion("_tabSetEnableDrag", "enableDrag", undefined);
+jsonConverter.addConversion("_tabSetEnableDivide", "enableDivide", undefined);
+jsonConverter.addConversion("_tabSetEnableMaximize", "enableMaximize", undefined);
+jsonConverter.addConversion("_tabSetClassNameTabStrip", "classNameTabStrip", undefined);
+jsonConverter.addConversion("_tabSetClassNameHeader", "classNameHeader", undefined);
+jsonConverter.addConversion("_tabSetEnableTabStrip", "enableTabStrip", undefined);
 
-jsonConverter.addConversion("_headerHeight", "headerHeight", 20);
-jsonConverter.addConversion("_tabStripHeight", "tabStripHeight", 20);
+jsonConverter.addConversion("_tabSetHeaderHeight", "headerHeight", undefined);
+jsonConverter.addConversion("_tabSetTabStripHeight", "tabStripHeight", undefined);
 
 
 export default TabSetNode;

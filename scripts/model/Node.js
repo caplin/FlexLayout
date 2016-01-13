@@ -87,6 +87,22 @@ class Node
         return this._height;
     }
 
+    _getAttr(name)
+    {
+        var val = undefined;
+        if (this[name] === undefined)
+        {
+            val = this._model[name];
+        }
+        else
+        {
+            val = this[name];
+        }
+
+        //console.log(name + "=" + val);
+        return val;
+    }
+
     _forEachNode(fn)
     {
         this._children.forEach((node) => {
