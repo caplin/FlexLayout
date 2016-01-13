@@ -98,10 +98,17 @@ class TabSetNode extends Node
 
     _canDockInto(dropNode, dropInfo)
     {
-        // cannot drop to center if named tabset
-        if (dropInfo!= null && dropInfo.location == DockLocation.CENTER && this._name != null)
+        if (dropInfo!= null)
         {
-            return false;
+            if (dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
+            {
+                return false;
+            }
+
+            if (dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
+            {
+                return false;
+            }
         }
         return true;
     }
@@ -156,15 +163,6 @@ class TabSetNode extends Node
             return null;
         }
 
-        if (dropInfo!= null && dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
-        {
-            return null;
-        }
-
-        if (dropInfo!= null && dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
-        {
-            return null;
-        }
 
         return dropInfo;
     }
