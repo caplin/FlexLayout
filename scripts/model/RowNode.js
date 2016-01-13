@@ -274,7 +274,7 @@ class RowNode extends Node
             {
                 // prevent removal of last tabset
 				if (!(this == this._model._root && this._children.length == 1)
-                && child._name == null)
+                && child.isEnableClose())
 				{
 					this._removeChild(child);
 				}

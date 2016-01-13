@@ -35,6 +35,16 @@ class TabSetNode extends Node
         return this._maximized;
     }
 
+    isEnableClose()
+    {
+        return this._enableClose;
+    }
+
+    isEnableDrop()
+    {
+        return this._enableDrop;
+    }
+
     isEnableDrag()
     {
         return this._enableDrag;
@@ -45,6 +55,11 @@ class TabSetNode extends Node
         return this._enableMaximize;
     }
 
+    isEnableTabStrip()
+    {
+        return this._enableTabStrip;
+    }
+
     getClassNameTabStrip()
     {
         return this._classNameTabStrip;
@@ -53,6 +68,16 @@ class TabSetNode extends Node
     getClassNameHeader()
     {
         return this._classNameHeader;
+    }
+
+    getHeaderHeight()
+    {
+        return this._headerHeight;
+    }
+
+    getTabStripHeight()
+    {
+        return this._tabStripHeight;
     }
 
     _setSelected(index)
@@ -78,7 +103,7 @@ class TabSetNode extends Node
 
     _canDrop(dragNode, x, y)
     {
-        if (this._allowDrop == false)
+        if (this._enableDrop == false)
         {
             return null;
         }
@@ -148,10 +173,12 @@ class TabSetNode extends Node
         if (showHeader)
         {
             this._headerRect = new Rect(rect.x, rect.y, rect.width, 20);
-            y += 20;
+            y += this._headerHeight;
         }
-        this._tabHeaderRect = new Rect(rect.x, rect.y+y, rect.width, 20);
-        y += 20;
+        if (this._enableTabStrip) {
+            this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, 20);
+            y += this._tabStripHeight;
+        }
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
 
         for (var i = 0; i < this._children.length; i++)
@@ -317,14 +344,16 @@ jsonConverter.addConversion("_selected", "selected", 0);
 jsonConverter.addConversion("_maximized", "maximized", false);
 jsonConverter.addConversion("_id", "id", null);
 
+jsonConverter.addConversion("_enableClose", "enableClose", true);
+jsonConverter.addConversion("_enableDrop", "enableDrop", false);
 jsonConverter.addConversion("_enableDrag", "enableDrag", false);
 jsonConverter.addConversion("_enableMaximize", "enableMaximize", true);
 jsonConverter.addConversion("_classNameTabStrip", "classNameTabStrip", null);
 jsonConverter.addConversion("_classNameHeader", "classNameHeader", null);
-
 jsonConverter.addConversion("_enableTabStrip", "enableTabStrip", true);
-jsonConverter.addConversion("_enableDrop", "enableDrop", true);
-jsonConverter.addConversion("_enableClose", "enableClose", true);
+
+jsonConverter.addConversion("_headerHeight", "headerHeight", 20);
+jsonConverter.addConversion("_tabStripHeight", "tabStripHeight", 20);
 
 
 export default TabSetNode;

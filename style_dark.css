@@ -154,7 +154,6 @@
     position: absolute;
     left: 0px;
     right: 0px;
-    height:20px;
     color:#eee;
     background-color: #212121;
     padding:3px 3px 3px 5px;
@@ -175,8 +174,8 @@
     position: absolute;
     left: 0px;
     right: 0px;
-    top: 0px;
-    height: 20px;
+    /*top: 0px;*/
+    /*height: 100px;*/
     overflow: hidden;
 }
 

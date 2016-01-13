@@ -158,7 +158,6 @@
     position: absolute;
     left: 0px;
     right: 0px;
-    height:20px;
     background-color: #e8e8e8;
     padding:3px 3px 3px 5px;
     box-shadow: inset 0px 0px 3px 0px rgba(136, 136, 136, 0.54);
@@ -170,8 +169,6 @@
     position: absolute;
     left: 0px;
     right: 0px;
-
-    height: 20px;
     overflow: hidden;
 }
 
@@ -182,7 +179,6 @@
     bottom: 0px;
     width: 10000px;
 }
-
 
 .flexlayout__tabset-selected
 {
