@@ -45,6 +45,26 @@ class TabNode extends Node
         return this._config;
     }
 
+    isEnableClose()
+    {
+        return this._enableClose;
+    }
+
+    isEnableDrag()
+    {
+        return this._enableDrag;
+    }
+
+    isEnableRename()
+    {
+        return this._enableRename;
+    }
+
+    getClassName()
+    {
+        return this._className;
+    }
+
     static _create(model, json)
     {
         var node = TabNode._fromJson(json,model);
@@ -100,5 +120,10 @@ jsonConverter.addConversion("_name", "name", null);
 jsonConverter.addConversion("_component", "component", null);
 jsonConverter.addConversion("_config", "config", null);
 jsonConverter.addConversion("_id", "id", null);
+
+jsonConverter.addConversion("_enableClose", "enableClose", true);
+jsonConverter.addConversion("_enableDrag", "enableDrag", true);
+jsonConverter.addConversion("_enableRename", "enableRename", false);
+jsonConverter.addConversion("_className", "className", null);
 
 export default TabNode;

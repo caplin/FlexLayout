@@ -207,12 +207,12 @@ class Layout extends React.Component
     onDragDivMouseDown(event)
     {
         event.preventDefault();
-        this.dragStart(event, this.dragDivText, this.newNode, null, null);
+        this.dragStart(event, this.dragDivText, this.newNode, true, null, null);
     }
 
-    dragStart(event, dragDivText, node, onClick, onDoubleClick)
+    dragStart(event, dragDivText, node, allowDrag, onClick, onDoubleClick)
     {
-        if (this.state.maximizeNode != null || !node._allowDrag)
+        if (this.state.maximizeNode != null || !allowDrag)
         {
             DragDrop.instance.startDrag(event, null, null, null, null, onClick, onDoubleClick);
         }

@@ -35,6 +35,26 @@ class TabSetNode extends Node
         return this._maximized;
     }
 
+    isEnableDrag()
+    {
+        return this._enableDrag;
+    }
+
+    isEnableMaximize()
+    {
+        return this._enableMaximize;
+    }
+
+    getClassNameTabStrip()
+    {
+        return this._classNameTabStrip;
+    }
+
+    getClassNameHeader()
+    {
+        return this._classNameHeader;
+    }
+
     _setSelected(index)
     {
         this._selected = index;
@@ -296,5 +316,15 @@ jsonConverter.addConversion("_name", "name", null);
 jsonConverter.addConversion("_selected", "selected", 0);
 jsonConverter.addConversion("_maximized", "maximized", false);
 jsonConverter.addConversion("_id", "id", null);
+
+jsonConverter.addConversion("_enableDrag", "enableDrag", false);
+jsonConverter.addConversion("_enableMaximize", "enableMaximize", true);
+jsonConverter.addConversion("_classNameTabStrip", "classNameTabStrip", null);
+jsonConverter.addConversion("_classNameHeader", "classNameHeader", null);
+
+jsonConverter.addConversion("_enableTabStrip", "enableTabStrip", true);
+jsonConverter.addConversion("_enableDrop", "enableDrop", true);
+jsonConverter.addConversion("_enableClose", "enableClose", true);
+
 
 export default TabSetNode;

@@ -115,10 +115,15 @@ class TabSet extends React.Component
         var toolbar = null;
         if (this.showToolbar === true)
         {
+            var buttons = null;
+            if (this.props.node.isEnableMaximize())
+            {
+                buttons = <button key="max" className={"flexlayout__tab_toolbar_button-" + (node.isMaximized()?"max":"min")}
+                                  onClick={this.onMaximizeToggle.bind(this)}></button>;
+            }
             toolbar = <div key="toolbar" ref="toolbar" className="flexlayout__tab_toolbar"
 							onMouseDown={this.onInterceptMouseDown.bind(this)}>
-							<button key="max" className={"flexlayout__tab_toolbar_button-" + (node.isMaximized()?"max":"min")}
-									onClick={this.onMaximizeToggle.bind(this)}></button>
+                            {buttons}
 						</div>;
         }
 		if (this.showOverflow === true)
@@ -132,15 +137,36 @@ class TabSet extends React.Component
         var showHeader = node.getName() != null;
         var header = null;
         var tabStrip = null;
-        var selectedTabsetClass = (this.props.node.getModel().getActiveTabset() === this.props.node)?" flexlayout__tabset-selected":"";
+
+        var tabStripClasses = "flexlayout__tab_header_outer";
+        if (this.props.node.getClassNameTabStrip() != null)
+        {
+            tabStripClasses += " " + this.props.node.getClassNameTabStrip();
+        }
+        if (node.getModel().getActiveTabset() === node && !showHeader)
+        {
+            tabStripClasses += " flexlayout__tabset-selected"
+        }
+
+
         if (showHeader)
         {
-            var header = <div className={"flexlayout__tabset_header" + selectedTabsetClass}
+            var tabHeaderClasses = "flexlayout__tabset_header";
+            if (node.getModel().getActiveTabset() === node)
+            {
+                tabHeaderClasses += " flexlayout__tabset-selected"
+            }
+            if (this.props.node.getClassNameHeader() != null)
+            {
+                tabHeaderClasses += " " + this.props.node.getClassNameHeader();
+            }
+
+            var header = <div className={tabHeaderClasses}
                               onMouseDown={this.onMouseDown.bind(this)}
                               onTouchStart={this.onMouseDown.bind(this)}>
                             {node.getName()}
                         </div>
-            var tabStrip = <div className="flexlayout__tab_header_outer"  style={{top:"20px"}} >
+            var tabStrip = <div className={tabStripClasses}  style={{top:"20px"}} >
                 <div ref="header" className="flexlayout__tab_header_inner">
                     {tabs}
                 </div>
@@ -148,7 +174,7 @@ class TabSet extends React.Component
         }
         else
         {
-            var tabStrip = <div className={"flexlayout__tab_header_outer" + selectedTabsetClass}  style={{top:"0px"}}
+            var tabStrip = <div className={tabStripClasses}  style={{top:"0px"}}
                                 onMouseDown={this.onMouseDown.bind(this)}
                                 onTouchStart={this.onMouseDown.bind(this)}>
                 <div ref="header" className="flexlayout__tab_header_inner">
@@ -189,7 +215,7 @@ class TabSet extends React.Component
             name = ": " + name;
         }
         this.props.node.getModel().doAction(Actions.setActiveTabset(this.props.node));
-        this.props.layout.dragStart(event, "Move tabset" + name ,this.props.node, null, this.onDoubleClick.bind(this));
+        this.props.layout.dragStart(event, "Move tabset" + name ,this.props.node, this.props.node.isEnableDrag(), null, this.onDoubleClick.bind(this));
     }
 
 	onInterceptMouseDown(event)
@@ -199,12 +225,18 @@ class TabSet extends React.Component
 
 	onMaximizeToggle()
 	{
-		this.props.layout.maximize(this.props.node);
+        if (this.props.node.isEnableMaximize())
+        {
+            this.props.layout.maximize(this.props.node);
+        }
 	}
 
     onDoubleClick()
     {
-        this.props.layout.maximize(this.props.node);
+        if (this.props.node.isEnableMaximize())
+        {
+            this.props.layout.maximize(this.props.node);
+        }
     }
 }
 

@@ -15,23 +15,23 @@ class TabButton extends React.Component
 
 	onMouseDown(event)
 	{
-		this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.onClick.bind(this), this.onDoubleClick.bind(this));
+		this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node,this.props.node.isEnableDrag(), this.onClick.bind(this), this.onDoubleClick.bind(this));
 	}
 
 	onClick(event)
 	{
 		var node = this.props.node;
-		//if (node.getParent().getSelected() != this.props.pos)
-		{
-			this.props.layout.doAction(Actions.selectTab(node.getParent(), this.props.pos));
-		}
+		this.props.layout.doAction(Actions.selectTab(node.getParent(), this.props.pos));
 	}
 
 	onDoubleClick(event)
 	{
-		this.setState({editing:true});
-		document.body.addEventListener("mousedown", this.onEndEdit);
-		document.body.addEventListener("touchstart", this.onEndEdit);
+		if (this.props.node.isEnableRename())
+		{
+			this.setState({editing: true});
+			document.body.addEventListener("mousedown", this.onEndEdit);
+			document.body.addEventListener("touchstart", this.onEndEdit);
+		}
 	}
 
 	onEndEdit(event)
@@ -112,6 +112,11 @@ class TabButton extends React.Component
 			classNames += " flexlayout__tab_button--unselected";
 		}
 
+		if (this.props.node.getClassName() != null)
+		{
+			classNames += " " + this.props.node.getClassName();
+		}
+
 		var content = <div ref="contents" className="flexlayout__tab_button_content">{this.props.node._name}</div>;
 		if (this.state.editing)
 		{
@@ -128,6 +133,17 @@ class TabButton extends React.Component
 				/>;
 		}
 
+		var closeButton = null;
+		if (this.props.node.isEnableClose())
+		{
+			closeButton = 			<div className={"flexlayout__tab_button_trailing"}
+										  onMouseDown={this.onCloseMouseDown.bind(this)}
+										  onClick={this.onClose.bind(this)}
+										  onTouchStart={this.onCloseMouseDown.bind(this)}
+				>
+			</div>;
+		}
+
 		return <div ref="self"
 					style={{visibility:this.props.show?"visible":"hidden"}}
 					className={classNames}
@@ -135,12 +151,7 @@ class TabButton extends React.Component
 					onTouchStart={this.onMouseDown.bind(this)}>
 			<div className={"flexlayout__tab_button_leading"}></div>
 			{content}
-			<div className={"flexlayout__tab_button_trailing"}
-				 onMouseDown={this.onCloseMouseDown.bind(this)}
-				 onClick={this.onClose.bind(this)}
-				 onTouchStart={this.onCloseMouseDown.bind(this)}
-				>
-			</div>
+			{closeButton}
 		</div>;
 	}
 }
