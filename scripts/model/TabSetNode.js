@@ -156,12 +156,12 @@ class TabSetNode extends Node
             return null;
         }
 
-        if (dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
+        if (dropInfo!= null && dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
         {
             return null;
         }
 
-        if (dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
+        if (dropInfo!= null && dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
         {
             return null;
         }
