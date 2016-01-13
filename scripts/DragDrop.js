@@ -107,16 +107,14 @@ class DragDrop
 
 		if (this.dragging) debugger; // should never happen
 
-		if (event != null)
-		{
+		if (event != null) {
 			this.startX = posEvent.clientX;
 			this.startY = posEvent.clientY;
 			this.glass.style.cursor = getComputedStyle(event.target).cursor;
 			this.stopPropagation(event);
 			this.preventDefault(event);
 		}
-		else
-		{
+		else {
 			this.startX = 0;
 			this.startY = 0;
 			this.glass.style.cursor = "default";
@@ -140,6 +138,7 @@ class DragDrop
 	{
 		var posEvent = this.getLocationEvent(event);
 		this.stopPropagation(event);
+		this.preventDefault(event);
 
 		if (!this.dragging && (Math.abs(this.startX - posEvent.clientX) > 5 || Math.abs(this.startY - posEvent.clientY) > 5))
 		{
@@ -166,6 +165,7 @@ class DragDrop
 		var posEvent = this.getLocationEventEnd(event);
 
 		this.stopPropagation(event);
+		this.preventDefault(event);
 
 		if (!this.manualGlassManagement)
 		{
