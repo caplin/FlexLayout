@@ -11,9 +11,7 @@ resized and moved, much like the windowing system found in many IDE's.
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index_dark.html?layout=trader)
 
-Note: this demo does not run in safari (when hosted on github)
-
-This project is currently in early development, there is still a lot to do:
+Note: this demo does not run in safari when hosted on github (for some reason!)
 
 Features so far:
 *	splitters
@@ -27,19 +25,18 @@ Features so far:
 *	tab renaming
 *	themeing
 *	lifecycle events
-*	touch events - works on mobile devices
+*	touch events - works on mobile devices (iPad, Android)
 *   esc cancels drag
 *   add tabs using drag, indirect drag, add to active tabset, add to named tabset
 *   preferred size tabsets
 *   headed tabsets
+*	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
 
 
 todo:
 *	less styling
 *	more lifecycle events... save, beforeclose...
-*	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
 *	customizable tabs, tabset header, action menu?
-*	split tabset into tabsetcontainer and tabset (= container of tabs only) components, then tabset can be docked to top/bottom of tabset...
 *	full set of jasmine tests
 *	test in browsers/versions
 
