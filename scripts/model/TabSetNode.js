@@ -96,23 +96,6 @@ class TabSetNode extends Node
         this._maximized = maximized;
     }
 
-    _canDockInto(dropNode, dropInfo)
-    {
-        if (dropInfo!= null)
-        {
-            if (dropInfo.location == DockLocation.CENTER && this.isEnableDrop() == false)
-            {
-                return false;
-            }
-
-            if (dropInfo.location != DockLocation.CENTER && this.isEnableDivide() == false)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     _canDrop(dragNode, x, y)
     {
         var dropInfo = null;

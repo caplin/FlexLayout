@@ -283,4 +283,5 @@ jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
 jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
 
 // model callbacks allowDrag, allowDrop(from, to, location), using _canDockInto
+// or model listener for all attributes enables etc
 export default Model;

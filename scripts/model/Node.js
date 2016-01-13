@@ -183,6 +183,18 @@ class Node
 
     _canDockInto(dropNode, dropInfo)
     {
+        if (dropInfo!= null)
+        {
+            if (dropInfo.location == DockLocation.CENTER && dropNode.isEnableDrop() == false)
+            {
+                return false;
+            }
+
+            if (dropInfo.location != DockLocation.CENTER && dropNode.isEnableDivide() == false)
+            {
+                return false;
+            }
+        }
         return true;
     }
 
