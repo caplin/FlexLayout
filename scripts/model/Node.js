@@ -77,6 +77,16 @@ class Node
         delete this._listeners[event];
     }
 
+    getWidth()
+    {
+        return this._width;
+    }
+
+    getHeight()
+    {
+        return this._height;
+    }
+
     _forEachNode(fn)
     {
         this._children.forEach((node) => {
@@ -87,10 +97,10 @@ class Node
 
     _getPrefSize(orientation)
     {
-        var prefSize = this._width;
+        var prefSize = this.getWidth();
         if (orientation == Orientation.VERT)
         {
-            prefSize = this._height;
+            prefSize = this.getHeight();
         }
         return prefSize;
     }

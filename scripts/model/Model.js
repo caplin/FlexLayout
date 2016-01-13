@@ -1,6 +1,7 @@
 import RowNode from "./RowNode.js";
 import Actions from "./Actions.js";
 import TabNode from "./TabNode.js";
+import JsonConverter from "../JsonConverter.js";
 
 /**
  * Class containing the Model used by the FlexLayout component
@@ -15,6 +16,7 @@ class Model
 		this._listeners = [];
 		this._rect = null;
 		this._activeTabSet = null;
+		jsonConverter.setDefaults(this);
 
 		this._addNode(this._root);
 	}
@@ -167,8 +169,11 @@ class Model
 	 */
 	toJson()
 	{
+		var json = {config:{}, layout:{}};
+		jsonConverter.toJson(json.config, this);
 		this._root._forEachNode((node)=>{node._fireEvent("save", null);});
-		return this._root._toJson();
+		json.layout = this._root._toJson();
+		return json;
 	}
 
 	/**
@@ -179,7 +184,9 @@ class Model
 	static fromJson(json)
 	{
 		var model = new Model();
-		model._root = RowNode._fromJson(json, model);
+		jsonConverter.fromJson(json.config, model);
+
+		model._root = RowNode._fromJson(json.layout, model);
 		model._addNode(model._root);
 		return model;
 	}
@@ -204,6 +211,11 @@ class Model
 		{
 			this._listeners.splice(index, 1);
 		}
+	}
+
+	getSplitterSize()
+	{
+		return this._splitterSize;
 	}
 
 	_addNode(node)
@@ -241,5 +253,8 @@ class Model
 		return lines.join("\n");
 	}
 }
+
+var jsonConverter = new JsonConverter();
+jsonConverter.addConversion("_splitterSize", "splitterSize", 5);
 
 export default Model;

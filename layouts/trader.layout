@@ -1,4 +1,10 @@
 {
+"config":
+	{
+		"splitterSize":20
+	},
+"layout":
+{
 	"type": "row",
 	"weight": 100,
 	"children": [
@@ -86,4 +92,4 @@
 			]
 		}
 	]
-}
+}}

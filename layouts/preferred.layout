@@ -1,4 +1,6 @@
 {
+"config": {},
+"layout":{
   "type": "row",
   "weight": 100,
   "children": [
@@ -57,4 +59,4 @@
       ]
     }
   ]
-}
+}}

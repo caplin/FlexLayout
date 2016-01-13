@@ -54,70 +54,79 @@ class App
         // fixed submodel for sub layout example
         this.submodel = Model.fromJson(
             {
-                size: 100,
-                children: [
-                    {
-                        type: "tabset", size: 50, color: "#ccccff", children: [
-                        {type: "tab", name: "blaa", component: "grid"},
-                    ]
-                    },
-                    {
-                        size: 150, children: [
+                config: {},
+                layout: {
+                    size: 100,
+                    children: [
                         {
-                            size: 30, children: [
-                            {
-                                type: "tabset", size: 50, color: "#ffcccc", children: [
-                                {type: "tab", name: "grida", component: "grid"},
-                            ]
-                            },
+                            type: "tabset", size: 50, color: "#ccccff", children: [
+                            {type: "tab", name: "blaa", component: "grid"},
                         ]
                         },
                         {
-                            size: 30, children: [
-                            {
-                                type: "tabset", size: 50, color: "#ccffcc", children: [
-                                {type: "tab", name: "simple1", component: "simple1", config: {name: "a simple button"}},
-                                {type: "tab", name: "simple2", component: "simple2"}
-                            ]
-                            },
-                        ]
-                        },
-                        {
-                            size: 50, children: [
+                            size: 150, children: [
                             {
                                 size: 30, children: [
                                 {
-                                    type: "tabset", size: 50, color: "#fccccf", children: [
-                                    {type: "tab", name: "gridb", component: "grid"},
+                                    type: "tabset", size: 50, color: "#ffcccc", children: [
+                                    {type: "tab", name: "grida", component: "grid"},
                                 ]
                                 },
                             ]
                             },
                             {
-                                size: 30, color: "yellow", children: [
+                                size: 30, children: [
                                 {
-                                    type: "tabset", size: 50, color: "#ccffff", children: [
-                                    {type: "tab", name: "gridc", component: "grid"},
+                                    type: "tabset", size: 50, color: "#ccffcc", children: [
+                                    {
+                                        type: "tab",
+                                        name: "simple1",
+                                        component: "simple1",
+                                        config: {name: "a simple button"}
+                                    },
+                                    {type: "tab", name: "simple2", component: "simple2"}
+                                ]
+                                },
+                            ]
+                            },
+                            {
+                                size: 50, children: [
+                                {
+                                    size: 30, children: [
+                                    {
+                                        type: "tabset", size: 50, color: "#fccccf", children: [
+                                        {type: "tab", name: "gridb", component: "grid"},
+                                    ]
+                                    },
                                 ]
                                 },
                                 {
-                                    size: 50, children: [
+                                    size: 30, color: "yellow", children: [
                                     {
-                                        size: 30, children: [
-                                        {
-                                            type: "tabset", size: 50, color: "#ffffcc", children: [
-                                            {type: "tab", name: "gridd", component: "grid"},
-                                        ]
-                                        },
+                                        type: "tabset", size: 50, color: "#ccffff", children: [
+                                        {type: "tab", name: "gridc", component: "grid"},
                                     ]
                                     },
                                     {
-                                        size: 30, color: "yellow", children: [
+                                        size: 50, children: [
                                         {
-                                            type: "tabset", size: 50, color: "#ffccff", children: [
-                                            {type: "tab", name: "gride", component: "grid"},
+                                            size: 30, children: [
+                                            {
+                                                type: "tabset", size: 50, color: "#ffffcc", children: [
+                                                {type: "tab", name: "gridd", component: "grid"},
+                                            ]
+                                            },
                                         ]
                                         },
+                                        {
+                                            size: 30, color: "yellow", children: [
+                                            {
+                                                type: "tabset", size: 50, color: "#ffccff", children: [
+                                                {type: "tab", name: "gride", component: "grid"},
+                                            ]
+                                            },
+                                        ]
+                                        }
                                     ]
                                     }
                                 ]
@@ -127,8 +136,7 @@ class App
                         ]
                         }
                     ]
-                    }
-                ]
+                }
             }
         );
 

@@ -148,12 +148,12 @@ class RowNode extends Node
         if (this._orientation == Orientation.HORZ)
         {
             pBounds[0] = drawChildren[p - 1]._rect.x;
-            pBounds[1] = drawChildren[p + 1]._rect.getRight() - splitterNode._width;
+            pBounds[1] = drawChildren[p + 1]._rect.getRight() - splitterNode.getWidth();
         }
         else
         {
             pBounds[0] = drawChildren[p - 1]._rect.y;
-            pBounds[1] = drawChildren[p + 1]._rect.getBottom() - splitterNode._height;
+            pBounds[1] = drawChildren[p + 1]._rect.getBottom() - splitterNode.getHeight();
         }
         return pBounds;
     }
