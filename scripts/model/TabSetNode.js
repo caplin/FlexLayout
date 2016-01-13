@@ -345,8 +345,8 @@ jsonConverter.addConversion("_maximized", "maximized", false);
 jsonConverter.addConversion("_id", "id", null);
 
 jsonConverter.addConversion("_enableClose", "enableClose", true);
-jsonConverter.addConversion("_enableDrop", "enableDrop", false);
-jsonConverter.addConversion("_enableDrag", "enableDrag", false);
+jsonConverter.addConversion("_enableDrop", "enableDrop", true);
+jsonConverter.addConversion("_enableDrag", "enableDrag", true);
 jsonConverter.addConversion("_enableMaximize", "enableMaximize", true);
 jsonConverter.addConversion("_classNameTabStrip", "classNameTabStrip", null);
 jsonConverter.addConversion("_classNameHeader", "classNameHeader", null);
