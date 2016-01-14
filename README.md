@@ -11,7 +11,7 @@ resized and moved, much like the windowing system found in many IDE's.
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index_dark.html?layout=trader)
 
-Note: this demo does not run in safari when hosted on github (for some reason!)
+Note: this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
 
 Features so far:
 *	splitters
