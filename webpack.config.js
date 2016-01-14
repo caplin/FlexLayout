@@ -4,7 +4,7 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
 	entry: {
 		main: "./App.js",
-		//mainslickgrid: "./AppSlickGrid.js"
+		simplest: "./examples/simplest/simplest.js"
 	},
 
 	output: {
