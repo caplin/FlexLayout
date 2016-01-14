@@ -114,7 +114,7 @@ factory(node)
 
 render()
 {
-	<Layout model={model} factory={factory.bind(this)}/> 
+	<Layout model={model} factory={factory}/> 
 }
 ```		
 
