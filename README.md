@@ -64,7 +64,7 @@ If the onAction prop is not specified then the layout will send the layout chang
 
 ```javascript
 var json = {
-	config: {},
+	global: {},
 	layout:{ 
 		"type": "row",
 		"weight": 100,
@@ -134,7 +134,7 @@ Weights on rows and tabsets specify the relative weight of these nodes within th
 
 ## Global Config attributes
 
-Attributes allowed in the global 'config' element
+Attributes allowed in the 'global' element
 
 
 | Attribute | Default | Description  |

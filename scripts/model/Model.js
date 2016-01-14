@@ -168,7 +168,7 @@ class Model
 	 */
 	toJson()
 	{
-		var json = {config:{}, layout:{}};
+		var json = {global:{}, layout:{}};
 		jsonConverter.toJson(json.config, this);
 		this._root._forEachNode((node)=>{node._fireEvent("save", null);});
 		json.layout = this._root._toJson();
@@ -183,7 +183,7 @@ class Model
 	static fromJson(json)
 	{
 		var model = new Model();
-		jsonConverter.fromJson(json.config, model);
+		jsonConverter.fromJson(json.global, model);
 
 		model._root = RowNode._fromJson(json.layout, model);
 		model._addNode(model._root);

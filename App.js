@@ -54,7 +54,7 @@ class App
         // fixed submodel for sub layout example
         this.submodel = Model.fromJson(
             {
-                config: {},
+                global: {},
                 layout: {
                     size: 100,
                     children: [
