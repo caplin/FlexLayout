@@ -60,7 +60,7 @@ The factory is a function that takes a Node object and returns a React component
 
 If the onAction prop is not specified then the layout will send the layout change action directly to the model.
 
-Example:
+## Example Json Configuration:
 
 ```javascript
 var json = {
@@ -97,6 +97,40 @@ var json = {
 	}
 };
 ```
+
+## Example Code
+
+```
+var model = Model.fromJson(JSON.parse(json));
+
+factory(node)
+{
+    var component = node.getComponent();
+	if (component == "grid")
+    {
+			return <MyGrid node={node}/>
+    }
+}
+
+render()
+{
+	<Layout model={model} factory={factory.bind(this)}/> 
+}
+```		
+
+
+The above code would render two tabsets horizontally each containing a single tab that hosts a grid component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
+
+The JSON model is built up using 3 types of 'node':
+
+* row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child rows will render in the opposite orientation to their parent.
+
+* tabset - tabsets contain a list of tabs and the index of the selected tab
+
+* tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
+
+Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
+
 
 ## Global Config attributes
 
@@ -179,35 +213,3 @@ Inherited defaults will take there value from the associated global attributes (
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | |
 
-## Example Code
-
-```
-var model = Model.fromJson(JSON.parse(json));
-
-factory(node)
-{
-    var component = node.getComponent();
-	if (component == "grid")
-    {
-			return <MyGrid node={node}/>
-    }
-}
-
-render()
-{
-	<Layout model={model} factory={factory.bind(this)}/> 
-}
-```		
-
-
-The above code would render two tabsets horizontally each containing a single tab that hosts a grid component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
-
-The JSON model is built up using 3 types of 'node':
-
-* row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child rows will render in the opposite orientation to their parent.
-
-* tabset - tabsets contain a list of tabs and the index of the selected tab
-
-* tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
-
-Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
