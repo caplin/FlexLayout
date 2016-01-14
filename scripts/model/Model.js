@@ -261,7 +261,7 @@ class Model
 var jsonConverter = new JsonConverter();
 
 // splitter
-jsonConverter.addConversion("_splitterSize", "splitterSize", 5);
+jsonConverter.addConversion("_splitterSize", "splitterSize", 8);
 jsonConverter.addConversion("_enableEdgeDock", "enableEdgeDock", true);
 
 // tab
