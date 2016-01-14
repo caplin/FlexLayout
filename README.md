@@ -21,22 +21,22 @@ Features so far:
 *	dock to tabset or edge
 *	maximize tabset
 *	tab overflow
-*	submodels
+*	submodels, allow layouts inside layouts
 *	tab renaming
-*	themeing
+*	themeing - light and dark
 *	lifecycle events
 *	touch events - works on mobile devices (iPad, Android)
 *   esc cancels drag
 *   add tabs using drag, indirect drag, add to active tabset, add to named tabset
-*   preferred size tabsets
+*   preferred pixel size tabsets
 *   headed tabsets
-*	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
-*	customizable tabs, tabset header
+*	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
+*	customizable tabs and tabset header rendering
 
 
 todo:
 *	less styling
-*	more lifecycle events... save, beforeclose...
+*	more lifecycle events... beforeclose...
 *	full set of jasmine tests
 *	test in browsers/versions
 
@@ -171,7 +171,8 @@ Attributes allowed in nodes of type 'row'.
 ## Tab Attributes
 
 Attributes allowed in nodes of type 'tab'.
-Inherited defaults will take there value from the associated global attributes (see above).
+
+Inherited defaults will take their value from the associated global attributes (see above).
 
 
 | Attribute | Default | Description  |
@@ -190,7 +191,8 @@ Inherited defaults will take there value from the associated global attributes (
 ## TabSet Attributes
 
 Attributes allowed in nodes of type 'tabset'.
-Inherited defaults will take there value from the associated global attributes (see above).
+
+Inherited defaults will take their value from the associated global attributes (see above).
 
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
