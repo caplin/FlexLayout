@@ -114,20 +114,28 @@ class TabSet extends React.Component
         }
         //tabs.forEach(c => console.log(c.key));
 
+        var buttons = [];
+
+        // allow customization of header contents and buttons
+        var renderState = {headerContent:node.getName(), buttons:buttons};
+        this.props.layout.customizeTabSet(this.props.node, renderState);
+        var headerContent = renderState.headerContent;
+        buttons = renderState.buttons;
+
         var toolbar = null;
         if (this.showToolbar === true)
         {
-            var buttons = null;
             if (this.props.node.isEnableMaximize())
             {
-                buttons = <button key="max" className={"flexlayout__tab_toolbar_button-" + (node.isMaximized()?"max":"min")}
-                                  onClick={this.onMaximizeToggle.bind(this)}></button>;
+                buttons.push(<button key="max" className={"flexlayout__tab_toolbar_button-" + (node.isMaximized()?"max":"min")}
+                                  onClick={this.onMaximizeToggle.bind(this)}></button>);
             }
             toolbar = <div key="toolbar" ref="toolbar" className="flexlayout__tab_toolbar"
 							onMouseDown={this.onInterceptMouseDown.bind(this)}>
                             {buttons}
 						</div>;
         }
+
 		if (this.showOverflow === true)
 		{
 			tabs.push(<button key="overflowbutton" ref="overflowbutton" className="flexlayout__tab_button_overflow"
@@ -167,7 +175,7 @@ class TabSet extends React.Component
                               style={{height:node.getHeaderHeight()+ "px"}}
                               onMouseDown={this.onMouseDown.bind(this)}
                               onTouchStart={this.onMouseDown.bind(this)}>
-                            {node.getName()}
+                            {headerContent}
                         </div>
             var tabStrip = <div className={tabStripClasses}
                                 style={{height:node.getTabStripHeight()+ "px", top:node.getHeaderHeight()+ "px"}} >

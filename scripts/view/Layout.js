@@ -374,10 +374,29 @@ class Layout extends React.Component
         this.doAction(Actions.maximizeToggle(maximizeNode));
 		this.setState({maximizeNode:maximizeNode.isMaximized()?maximizeNode:null});
     }
+
+    customizeTab(tabNode, renderValues)
+    {
+        if (this.props.onRenderTab)
+        {
+            this.props.onRenderTab(tabNode, renderValues);
+        }
+    }
+
+    customizeTabSet(tabSetNode, renderValues)
+    {
+        if (this.props.onRenderTabSet)
+        {
+            this.props.onRenderTabSet(tabSetNode, renderValues);
+        }
+
+    }
 }
 
 Layout.propTypes = { model: React.PropTypes.instanceOf(Model),
                      factory: React.PropTypes.func,
+                     onRenderTab:  React.PropTypes.func,
+                     onRenderTabSet:  React.PropTypes.func,
                      onAction: React.PropTypes.func};
 
 export default Layout;

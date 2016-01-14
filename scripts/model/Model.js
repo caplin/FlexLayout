@@ -269,6 +269,7 @@ jsonConverter.addConversion("_tabEnableClose", "tabEnableClose", true);
 jsonConverter.addConversion("_tabEnableDrag", "tabEnableDrag", true);
 jsonConverter.addConversion("_tabEnableRename", "tabEnableRename", true);
 jsonConverter.addConversion("_tabClassName", "tabClassName", null);
+jsonConverter.addConversion("_tabIcon", "tabIcon", null);
 
 // tabset
 jsonConverter.addConversion("_tabSetEnableClose", "tabSetEnableClose", true);

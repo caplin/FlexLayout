@@ -45,6 +45,11 @@ class TabNode extends Node
         return this._config;
     }
 
+    getIcon()
+    {
+        return this._getAttr("_tabIcon");
+    }
+
     isEnableClose()
     {
         return this._getAttr("_tabEnableClose");
@@ -125,5 +130,6 @@ jsonConverter.addConversion("_tabEnableClose", "enableClose",undefined);
 jsonConverter.addConversion("_tabEnableDrag", "enableDrag", undefined);
 jsonConverter.addConversion("_tabEnableRename", "enableRename", undefined);
 jsonConverter.addConversion("_tabClassName", "className", undefined);
+jsonConverter.addConversion("_tabIcon", "icon", undefined);
 
 export default TabNode;

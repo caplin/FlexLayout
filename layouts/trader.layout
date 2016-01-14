@@ -4,8 +4,9 @@
 		"splitterSize":8,
 		"enableEdgeDock":true,
 		"tabSetEnableMaximize":true,
-		"tabEnableClose":false,
+		"tabEnableClose":true,
 		"tabSetEnableTabStrip":true
+
 	},
 "layout":
 {
@@ -78,6 +79,7 @@
 							"type": "tab",
 							"enableDrag":false,
 							"name": "Activity",
+							"icon":"images/grey_ball.png",
 							"component": "grid",
 							"config": {}
 						},
@@ -85,6 +87,7 @@
 							"type": "tab",
 							"enableDrag":false,
 							"name": "Execution",
+							"icon":"images/grey_ball.png",
 							"component": "grid",
 							"config": {
 								"id": "1"
@@ -94,6 +97,7 @@
 							"type": "tab",
 							"enableDrag":false,
 							"name": "Orders",
+							"icon":"images/grey_ball.png",
 							"component": "grid",
 							"config": {}
 						},
@@ -101,6 +105,7 @@
 							"type": "tab",
 							"enableDrag":false,
 							"name": "Historic",
+							"icon":"images/grey_ball.png",
 							"component": "grid",
 							"config": {}
 						}

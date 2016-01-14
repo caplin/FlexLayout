@@ -280,6 +280,17 @@ class Main extends React.Component
 
     render()
     {
+        var onRenderTab = function(node, renderValues)
+        {
+          //renderValues.content += " *";
+        };
+
+        var onRenderTabSet = function(node, renderValues)
+        {
+            //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
+            //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
+        };
+
         var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
         return <div className="app">
             <div className="toolbar">
@@ -287,7 +298,7 @@ class Main extends React.Component
                 {message}
             </div>
             <div className="contents">
-                <Layout ref="layout" model={this.props.model} factory={this.props.factory}/>
+                <Layout ref="layout" model={this.props.model} factory={this.props.factory} onRenderTab={onRenderTab} onRenderTabSet={onRenderTabSet}/>
             </div>
         </div>;
     }
