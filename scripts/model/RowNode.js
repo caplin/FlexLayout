@@ -462,5 +462,8 @@ jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);
 jsonConverter.addConversion("_height", "height", null);
 
+console.log(jsonConverter.toTable());
+
+
 export default RowNode;
 

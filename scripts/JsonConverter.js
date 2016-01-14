@@ -50,20 +50,23 @@ class JsonConverter
         }
     }
 
-    static getValue(localValue, parentValue)
+
+    toTable()
     {
-        if (localValue == JsonConverter.inherit)
+        var lines = [];
+        lines.push("| Attribute | Default | Description  |");
+        lines.push("| ------------- |:-------------:| -----|");
+        for (var i=0; i<this.conversions.length; i++)
         {
-            return parentValue;
+            var c = this.conversions[i];
+            lines.push("| " + c.jsonName + " | " + c.defaultValue + " | |");
         }
-        else
-        {
-            return localValue;
-        }
+
+        return lines.join("\n");
+
     }
 
 }
 
-//JsonConverter.inherit = "*inherit*";
 
 export default JsonConverter;

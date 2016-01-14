@@ -31,12 +31,12 @@ Features so far:
 *   preferred size tabsets
 *   headed tabsets
 *	tab and tabset options: showHeader, showTabs, enableDock, enableDrop...
+*	customizable tabs, tabset header
 
 
 todo:
 *	less styling
 *	more lifecycle events... save, beforeclose...
-*	customizable tabs, tabset header, action menu?
 *	full set of jasmine tests
 *	test in browsers/versions
 
@@ -51,6 +51,8 @@ A single component `<Layout>` contains the tabsets and splitters. The `<Layout>`
 | model    | required | the layout model (a tree of Nodes) |
 | factory      | required | a factory function for creating React components |
 | onAction | optional     |  function called whenever the layout generates an action to update the model |
+| onTabRender | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
+| onTabSetRender | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
 
 The model is tree of Node objects that define the structure of the layout. The model is created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
 
@@ -62,36 +64,124 @@ Example:
 
 ```javascript
 var json = {
-	"type": "row",
-	"weight": 100,
-	"children": [
-		{
-			"type": "tabset",
-			"weight": 50,
-			"selected": 0,
-			"children": [
-				{
-					"type": "tab",
-					"name": "FX",
-					"component":"grid",
-				}
-			]
-		},
-		{
-			"type": "tabset",
-			"weight": 50,
-			"selected": 0,
-			"children": [
-				{
-					"type": "tab",
-					"name": "FI",
-					"component":"grid",
-				}
-			]
-		}
-	]
+	config: {},
+	layout:{ 
+		"type": "row",
+		"weight": 100,
+		"children": [
+			{
+				"type": "tabset",
+				"weight": 50,
+				"selected": 0,
+				"children": [
+					{
+						"type": "tab",
+						"name": "FX",
+						"component":"grid",
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"weight": 50,
+				"selected": 0,
+				"children": [
+					{
+						"type": "tab",
+						"name": "FI",
+						"component":"grid",
+					}
+				]
+			}
+		]
+	}
 };
+```
 
+## Global Config attributes
+
+Attributes allowed in the global 'config' element
+
+
+| Attribute | Default | Description  |
+| ------------- |:-------------:| -----|
+| splitterSize | 5 | |
+| enableEdgeDock | true | |
+| tabEnableClose | true | |
+| tabEnableDrag | true | |
+| tabEnableRename | true | |
+| tabClassName | null | |
+| tabIcon | null | |
+| tabSetEnableClose | true | |
+| tabSetEnableDrop | true | |
+| tabSetEnableDrag | true | |
+| tabSetEnableDivide | true | |
+| tabSetEnableMaximize | true | |
+| tabSetClassNameTabStrip | null | |
+| tabSetClassNameHeader | null | |
+| tabSetEnableTabStrip | true | |
+| tabSetHeaderHeight | 20 | |
+| tabSetTabStripHeight | 20 | |
+
+## Row Attributes
+
+Attributes allowed in nodes of type 'row'.
+
+| Attribute | Default | Description  |
+| ------------- |:-------------:| -----|
+| type | row | |
+| weight | 100 | |
+| width | null | |
+| height | null | |
+
+## Tab Attributes
+
+Attributes allowed in nodes of type 'tab'.
+Inherited defaults will take there value from the associated global attributes (see above).
+
+
+| Attribute | Default | Description  |
+| ------------- |:-------------:| -----|
+| type | tab | |
+| name | null | |
+| component | null | |
+| config | null | |
+| id | null | |
+| enableClose | *inherited* | |
+| enableDrag | *inherited* | |
+| enableRename | *inherited* | |
+| className | *inherited* | |
+| icon | *inherited* | |
+
+## TabSet Attributes
+
+Attributes allowed in nodes of type 'tabset'.
+Inherited defaults will take there value from the associated global attributes (see above).
+
+| Attribute | Default | Description  |
+| ------------- |:-------------:| -----|
+| type | tabset | |
+| weight | 100 | |
+| width | null | |
+| height | null | |
+| name | null | |
+| selected | 0 | |
+| maximized | false | |
+| id | null | |
+| enableClose | *inherited* | |
+| enableDrop | *inherited* | |
+| enableDrag | *inherited* | |
+| enableDivide | *inherited* | |
+| enableMaximize | *inherited* | |
+| classNameTabStrip | *inherited* | |
+| classNameHeader | *inherited* | |
+| enableTabStrip | *inherited* | |
+| headerHeight | *inherited* | |
+| tabStripHeight | *inherited* | |
+
+## Example Code
+
+```
 var model = Model.fromJson(JSON.parse(json));
 
 factory(node)
@@ -107,8 +197,8 @@ render()
 {
 	<Layout model={model} factory={factory.bind(this)}/> 
 }
-		
-```
+```		
+
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a grid component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
