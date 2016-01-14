@@ -167,6 +167,7 @@ Attributes allowed in nodes of type 'row'.
 | weight | 100 | |
 | width | null | |
 | height | null | |
+| children | *required* | a list of row and tabset nodes |
 
 ## Tab Attributes
 
@@ -204,6 +205,7 @@ Inherited defaults will take their value from the associated global attributes (
 | selected | 0 | |
 | maximized | false | |
 | id | null | |
+| children | *required* | a list of tab nodes |
 | enableClose | *inherited* | |
 | enableDrop | *inherited* | |
 | enableDrag | *inherited* | |
