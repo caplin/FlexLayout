@@ -139,7 +139,7 @@ Attributes allowed in the global 'config' element
 
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
-| splitterSize | 5 | |
+| splitterSize | 8 | |
 | enableEdgeDock | true | |
 | tabEnableClose | true | |
 | tabEnableDrag | true | |
