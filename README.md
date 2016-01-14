@@ -179,8 +179,8 @@ Inherited defaults will take their value from the associated global attributes (
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | tab | |
-| name | null | |
-| component | null | |
+| name | *required* | |
+| component | *required* | |
 | config | null | |
 | id | null | |
 | enableClose | *inherited* | |
