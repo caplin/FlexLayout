@@ -4,8 +4,8 @@
 
     <meta http-equiv='Content-type' content='text/html; charset=utf-8'>
     <title>Flex Layout</title>
-    <link rel="stylesheet" href="style_dark.css" />
-    <link rel="stylesheet" href="node_modules/slickgrid/grid.css" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../../node_modules/slickgrid/grid.css" />
     <style>
         html,body
         {
@@ -15,8 +15,8 @@
             overflow:hidden;
             font-size: 12px;
             font-family: Arial, sans-serif;
-            background-color:black;
         }
+
         #container  {
             left:10px;
             top:10px;
@@ -26,15 +26,8 @@
             display:flex;
             display:-webkit-flex;
             overflow:hidden;
-            background-color:black;
+            background-color: white;
         }
-        ::-webkit-scrollbar { width: 8px; height: 8px;}
-        ::-webkit-scrollbar-button {  background-color: #222; }
-        ::-webkit-scrollbar-track {  background-color: #444;}
-        ::-webkit-scrollbar-track-piece { background-color: #333;}
-        ::-webkit-scrollbar-thumb { height: 50px; background-color: #666; border-radius: 3px;}
-        ::-webkit-scrollbar-corner { background-color: #333;}}
-        ::-webkit-resizer { background-color: #666;}
 
         .app
         {
@@ -60,19 +53,19 @@
             right:0px;
             bottom:0px;
             position:relative;
-            border:1px solid gray;
+            border:1px solid green;
         }
 
         /* simple table styling*/
         .simple_table {
-            background-color: #222;
-            color: gray;
+            background-color: white;
+            color: #333;
             border-collapse: collapse;
         }
+
         .simple_table th {
-            color: #ddd;
-            background-color: #282828;
-            border-right: 1px solid #333;
+            background-color: #e0e0e0;
+            border-right: 1px solid #ddd;
             padding:4px;
             border-bottom-color: transparent;
             text-align: left;
@@ -81,30 +74,29 @@
         }
 
         .simple_table td {
-            border-right: 1px solid #333;
-            border-bottom: 1px solid #333;
+            border-right: 1px solid #ddd;
+            border-bottom-color: transparent;
             padding:4px;
         }
-        .simple_table tr:nth-child(even) {background: #242424}
-        .simple_table tr:nth-child(odd) {background: #222}
+        .simple_table tr:nth-child(even) {background: #f0f0f0}
+        .simple_table tr:nth-child(odd) {background: white}
 
         /* slickgrid styling */
         .slick-header-columns
         {
-            background-color: #222;
+            background-color: #eeeeee;
         }
-
         .slick-header-columns, .slick-cell
         {
             color:gray;
             border: 1px solid transparent;
-            border-right: 1px solid #333;
-            border-bottom-color: #333;
+            border-right: 1px solid #aaa;
+            border-bottom-color: #aaa;
         }
         .slick-header-column.ui-state-default
         {
-            border-right: 1px solid #333;
-            color:#ddd;
+            border-right: 1px solid #aaa;
+            color:black;
         }
 
         .slickgrid
@@ -115,13 +107,15 @@
             bottom:0px;
             right:0px;
         }
+
     </style>
 
     <!-- needed for slickgrid-->
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="../../node_modules/jquery/dist/jquery.min.js"></script>
+
 </head>
 <body>
     <div id="container"></div>
-    <script src="bundles/main.js"></script>
+    <script src="../../bundles/demo.js"></script>
 </body>
 </html>
