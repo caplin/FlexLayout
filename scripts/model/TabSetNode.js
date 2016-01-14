@@ -141,7 +141,7 @@ class TabSetNode extends Node
             }
         }
 
-        if (!dragNode._canDockInto(this, dropInfo))
+        if (!dragNode._canDockInto(dragNode, dropInfo))
         {
             return null;
         }

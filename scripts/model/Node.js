@@ -181,16 +181,22 @@ class Node
         return null;
     }
 
-    _canDockInto(dropNode, dropInfo)
+    _canDockInto(dragNode, dropInfo)
     {
         if (dropInfo!= null)
         {
-            if (dropInfo.location == DockLocation.CENTER && dropNode.isEnableDrop() == false)
+            if (dropInfo.location == DockLocation.CENTER && dropInfo.node.isEnableDrop() == false)
             {
                 return false;
             }
 
-            if (dropInfo.location != DockLocation.CENTER && dropNode.isEnableDivide() == false)
+            // prevent named tabset docking into another tabset, since this would loose the header
+            if (dropInfo.location == DockLocation.CENTER && dragNode._type == "tabset" && dragNode.getName() !== null)
+            {
+                return false;
+            }
+
+            if (dropInfo.location != DockLocation.CENTER && dropInfo.node.isEnableDivide() == false)
             {
                 return false;
             }
