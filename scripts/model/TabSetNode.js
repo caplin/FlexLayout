@@ -351,7 +351,7 @@ jsonConverter.addConversion("_tabSetEnableTabStrip", "enableTabStrip", undefined
 
 jsonConverter.addConversion("_tabSetHeaderHeight", "headerHeight", undefined);
 jsonConverter.addConversion("_tabSetTabStripHeight", "tabStripHeight", undefined);
-console.log(jsonConverter.toTable());
+//console.log(jsonConverter.toTable());
 
 
 export default TabSetNode;

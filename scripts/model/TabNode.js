@@ -136,6 +136,6 @@ jsonConverter.addConversion("_tabEnableDrag", "enableDrag", undefined);
 jsonConverter.addConversion("_tabEnableRename", "enableRename", undefined);
 jsonConverter.addConversion("_tabClassName", "className", undefined);
 jsonConverter.addConversion("_tabIcon", "icon", undefined);
-console.log(jsonConverter.toTable());
+//console.log(jsonConverter.toTable());
 
 export default TabNode;
