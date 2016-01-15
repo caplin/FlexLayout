@@ -108,6 +108,7 @@ class TabSet extends React.Component
                                          key={child.getKey()}
                                          selected={isSelected}
                                          show={showTab}
+                                         height={node.getTabStripHeight()}
                                          pos={i}/>);
                 }
             }

@@ -158,7 +158,8 @@ class TabButton extends React.Component
 		}
 
 		return <div ref="self"
-					style={{visibility:this.props.show?"visible":"hidden"}}
+					style={{visibility:this.props.show?"visible":"hidden",
+							height:this.props.height}}
 					className={classNames}
 					onMouseDown={this.onMouseDown.bind(this)}
 					onTouchStart={this.onMouseDown.bind(this)}>
