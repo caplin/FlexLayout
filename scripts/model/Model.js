@@ -87,7 +87,7 @@ class Model
 	 */
 	doAction(action)
 	{
-		console.log(action);
+		console.log("doAction: " + JSON.stringify(action));
 		switch (action.name)
 		{
 			case Actions.SET_RECT:

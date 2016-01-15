@@ -246,11 +246,10 @@ class Node {
         return this._rect.styleWithPosition(style);
     }
 
+    // implemented by subclasses
     _updateAttrs(json)
     {
-
     }
-
 
     toString(lines, indent)
     {
