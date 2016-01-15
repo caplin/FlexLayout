@@ -144,14 +144,14 @@ class Layout extends React.Component
         }
     }
 
-    addTabWhereClicked(dragText, json, onDrop)
+    addTabWithDragAndDrop(dragText, json, onDrop)
     {
         this.fnNewNodeDropped = onDrop;
         this.newNode = TabNode._create(this.props.model, json);
         this.dragStart(null, dragText, this.newNode, null, null);
     }
 
-	addTabWhereClickedIndirect(dragText, json, onDrop)
+	addTabWithDragAndDropIndirect(dragText, json, onDrop)
 	{
         this.fnNewNodeDropped = onDrop;
         this.newNode = TabNode._create(this.props.model, json);

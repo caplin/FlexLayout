@@ -263,7 +263,7 @@ class Main extends React.Component
     onAddClick(event)
     {
         // try indirect add (where drag div is shown that must be dragged to location)
-        this.refs.layout.addTabWhereClickedIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
+        this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
         this.setState({adding:true});
 
         // try direct drag

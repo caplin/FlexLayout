@@ -75,6 +75,7 @@
     overflow: auto;
     position:absolute;
     background-color: #222;
+    color:white;
 }
 
 .flexlayout__tab_button {

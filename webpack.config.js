@@ -4,7 +4,8 @@ var ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = {
 	entry: {
 		demo: "./examples/demo/App.js",
-		simplest: "./examples/simplest/simplest.js"
+		simple: "./examples/simple/main.js",
+		simpleWithAdd: "./examples/simpleWithAdd/main.js"
 	},
 
 	output: {
