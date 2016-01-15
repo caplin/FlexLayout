@@ -39,6 +39,9 @@ todo:
 *	more lifecycle events... beforeclose...
 *	full set of jasmine tests
 *	test in browsers/versions
+*	layout designer gui, drag and drop + set properties to design initial layout
+*	border dock layer (could be used for minimize to edge)
+
 
 
 ##Usage
