@@ -89,6 +89,8 @@
     box-sizing: border-box;
     font-size: 12px;
     font-family: Arial, sans-serif;
+    height:100px;
+
 }
 
 .flexlayout__tab_button--selected {

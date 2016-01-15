@@ -47,6 +47,16 @@ class Actions
 	{
 		return {name: Actions.SET_ACTIVE_TABSET, tabsetNode:tabsetNode.getKey()};
 	}
+
+	static updateModelAttributes(attributes)
+	{
+		return {name: Actions.UPDATE_MODEL_ATTRIBUTES, json:attributes};
+	}
+
+	static updateNodeAttributes(node, attributes)
+	{
+		return {name: Actions.UPDATE_NODE_ATTRIBUTES, node: node.getKey(), json:attributes};
+	}
 }
 
 Actions.SET_RECT = "setRect";
@@ -58,5 +68,7 @@ Actions.RENAME_TAB = "renameTab";
 Actions.DELETE_TAB = "deleteTab";
 Actions.ADD_TAB = "addTab";
 Actions.SET_ACTIVE_TABSET = "setActiveTabset";
+Actions.UPDATE_MODEL_ATTRIBUTES = "updateModelAttributes";
+Actions.UPDATE_NODE_ATTRIBUTES = "updateNodeAttributes";
 
 export default Actions;

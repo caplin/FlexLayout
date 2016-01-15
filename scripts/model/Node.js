@@ -5,8 +5,7 @@ import DockLocation from "../DockLocation.js";
 
 var NextKey = 0;
 
-class Node
-{
+class Node {
     constructor(model)
     {
         this._type = null;
@@ -20,7 +19,7 @@ class Node
         this._rect = new Rect();
         this._key = NextKey++;
         this._listeners = {};
-		this._visible = false;
+        this._visible = false;
         this._orientation = Orientation.HORZ;
         this._allowDrag = true;
         this._id = null;
@@ -105,7 +104,8 @@ class Node
 
     _forEachNode(fn)
     {
-        this._children.forEach((node) => {
+        this._children.forEach((node) =>
+        {
             fn(node);
             node._forEachNode(fn);
         })
@@ -139,10 +139,10 @@ class Node
     _fireEvent(event, params)
     {
         console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
-		if (this._listeners[event] != null)
-		{
-			this._listeners[event](params);
-		}
+        if (this._listeners[event] != null)
+        {
+            this._listeners[event](params);
+        }
     }
 
     _layout(rect)
@@ -163,7 +163,7 @@ class Node
                     for (var i = 0; i < this._children.length; i++)
                     {
                         var child = this._children[i];
-                        rtn = child._findDropTargetNode(dragNode,x, y);
+                        rtn = child._findDropTargetNode(dragNode, x, y);
                         if (rtn != null)
                         {
                             break;
@@ -183,7 +183,7 @@ class Node
 
     _canDockInto(dragNode, dropInfo)
     {
-        if (dropInfo!= null)
+        if (dropInfo != null)
         {
             if (dropInfo.location == DockLocation.CENTER && dropInfo.node.isEnableDrop() == false)
             {
@@ -224,7 +224,7 @@ class Node
         else
         {
             this._children.push(childNode);
-            pos = this._children.length-1;
+            pos = this._children.length - 1;
         }
         childNode._parent = this;
         this._dirty = true;
@@ -246,6 +246,12 @@ class Node
         }
         return this._rect.styleWithPosition(style);
     }
+
+    _updateAttrs(json)
+    {
+
+    }
+
 
     toString(lines, indent)
     {

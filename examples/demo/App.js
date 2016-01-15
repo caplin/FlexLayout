@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import Model from "../../scripts/model/Model.js";
+import Actions from "../../scripts/model/Actions.js";
 import Layout from "../../scripts/view/Layout.js";
 import Utils from "../../scripts/Utils.js";
 import SlickGrid from "slickgrid/grid";
@@ -240,12 +241,23 @@ class Main extends React.Component
     constructor(props)
     {
         super(props);
-        this.state = {adding: false};
+        this.state = {adding: false, zoom:false};
     }
 
     componentDidMount()
     {
         //Perf.start()
+    }
+
+    onZoomClick(event)
+    {
+        var zoom = !this.state.zoom;
+        this.setState({zoom:zoom});
+        this.props.model.doAction(Actions.updateModelAttributes({
+            splitterSize:zoom?40:8,
+            tabSetHeaderHeight:zoom?40:20,
+            tabSetTabStripHeight:zoom?40:20
+        }));
     }
 
     onAddClick(event)
@@ -290,11 +302,11 @@ class Main extends React.Component
             //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
         };
 
-        var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
+        //var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
         return <div className="app">
             <div className="toolbar">
                 <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add</button>
-                {message}
+                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onZoomClick.bind(this)}>Zoom Toggle</button>
             </div>
             <div className="contents">
                 <Layout ref="layout" model={this.props.model} factory={this.props.factory} onRenderTab={onRenderTab} onRenderTabSet={onRenderTabSet}/>

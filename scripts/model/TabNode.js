@@ -111,6 +111,11 @@ class TabNode extends Node
         return json;
     }
 
+    _updateAttrs(json)
+    {
+        jsonConverter.updateAttrs(json, this);
+    }
+
     toString(lines, indent)
     {
         lines.push(indent + this._type + " " + this._name);

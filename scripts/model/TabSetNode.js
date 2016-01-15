@@ -304,6 +304,11 @@ class TabSetNode extends Node
         return json;
     }
 
+    _updateAttrs(json)
+    {
+        jsonConverter.updateAttrs(json, this);
+    }
+
     static _fromJson(json, model)
     {
         var newLayoutNode = new TabSetNode(model);

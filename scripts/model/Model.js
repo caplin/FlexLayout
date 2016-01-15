@@ -146,17 +146,25 @@ class Model
 				var pos = tabsetNode._addChild(newNode);
 				tabsetNode._setSelected(pos);
 				this._activeTabSet = tabsetNode;
-
 				break;
 			}
 			case Actions.SET_ACTIVE_TABSET:
 			{
 				let tabsetNode =  this._nodeMap[action.tabsetNode];
 				this._activeTabSet = tabsetNode;
-
 				break;
 			}
-
+			case Actions.UPDATE_MODEL_ATTRIBUTES:
+			{
+				this._updateAttrs(action.json);
+				break;
+			}
+			case Actions.UPDATE_NODE_ATTRIBUTES:
+			{
+				let node =  this._nodeMap[action.node];
+				node._updateAttrs(action.json);
+				break;
+			}
 		}
 		this._layout(this._rect);
 		this._fireChange();
@@ -248,6 +256,11 @@ class Model
 		//console.log("before _tidy", this.toString());
 		this._root._tidy();
 		//console.log("after _tidy", this.toString());
+	}
+
+	_updateAttrs(json)
+	{
+		jsonConverter.updateAttrs(json, this);
 	}
 
 	toString()

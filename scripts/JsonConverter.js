@@ -41,6 +41,18 @@ class JsonConverter
         }
     }
 
+    updateAttrs(jsonObj, obj)
+    {
+        for (var i=0; i<this.conversions.length; i++)
+        {
+            var c = this.conversions[i];
+            var fromValue = jsonObj[c.jsonName];
+            if (fromValue !== undefined)
+            {
+                obj[c.name] = fromValue;
+            }
+        }
+    }
     setDefaults(obj)
     {
         for (var i=0; i<this.conversions.length; i++)
