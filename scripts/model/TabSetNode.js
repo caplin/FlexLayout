@@ -163,11 +163,11 @@ class TabSetNode extends Node
         var y = 0;
         if (showHeader)
         {
-            this._headerRect = new Rect(rect.x, rect.y, rect.width, 20);
+            this._headerRect = new Rect(rect.x, rect.y, rect.width, this.getHeaderHeight());
             y += this.getHeaderHeight();
         }
         if (this.isEnableTabStrip()) {
-            this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, 20);
+            this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this.getTabStripHeight());
             y += this.getTabStripHeight();
         }
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
