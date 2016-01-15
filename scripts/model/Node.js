@@ -21,7 +21,6 @@ class Node {
         this._listeners = {};
         this._visible = false;
         this._orientation = Orientation.HORZ;
-        this._allowDrag = true;
         this._id = null;
     }
 
