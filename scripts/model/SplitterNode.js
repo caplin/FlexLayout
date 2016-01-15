@@ -6,8 +6,6 @@ class SplitterNode extends Node
     {
         super(model);
         this._type = SplitterNode.TYPE;
-        //this._width = 20;
-        //this._height = 20;
         this._fixed = true;
         model._addNode(this);
     }
@@ -21,7 +19,6 @@ class SplitterNode extends Node
     {
         return this._model.getSplitterSize();
     }
-
 }
 
 SplitterNode.TYPE = "splitter";

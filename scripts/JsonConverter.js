@@ -53,6 +53,7 @@ class JsonConverter
             }
         }
     }
+
     setDefaults(obj)
     {
         for (var i=0; i<this.conversions.length; i++)
@@ -61,7 +62,6 @@ class JsonConverter
             obj[c.name] = c.defaultValue;
         }
     }
-
 
     toTable()
     {
@@ -75,10 +75,7 @@ class JsonConverter
         }
 
         return lines.join("\n");
-
     }
-
 }
-
 
 export default JsonConverter;

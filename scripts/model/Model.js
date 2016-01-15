@@ -23,7 +23,7 @@ class Model
 
 	/**
 	 * Get the currently active tabset node
-	 * @returns {null|tabsetNode}
+	 * @returns {null|TabSetNode}
 	 */
 	getActiveTabset()
 	{
@@ -295,7 +295,6 @@ jsonConverter.addConversion("_tabSetClassNameHeader", "tabSetClassNameHeader", n
 jsonConverter.addConversion("_tabSetEnableTabStrip", "tabSetEnableTabStrip", true);
 jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
 jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
-
 
 //console.log(jsonConverter.toTable());
 
