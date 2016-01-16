@@ -1,6 +1,7 @@
 import RowNode from "./RowNode.js";
 import Actions from "./Actions.js";
 import TabNode from "./TabNode.js";
+import TabSetNode from "./TabSetNode.js";
 import JsonConverter from "../JsonConverter.js";
 
 /**
@@ -19,6 +20,11 @@ class Model
 		jsonConverter.setDefaults(this);
 
 		this._addNode(this._root);
+
+		// add a tabset
+		var node = new TabSetNode(this);
+		this._addNode(node);
+		this._root._addChild(node);
 	}
 
 	/**
