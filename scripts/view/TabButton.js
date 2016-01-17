@@ -21,7 +21,7 @@ class TabButton extends React.Component
 	onClick(event)
 	{
 		var node = this.props.node;
-		this.props.layout.doAction(Actions.selectTab(node.getParent(), this.props.pos));
+		this.props.layout.doAction(Actions.selectTab(node));
 	}
 
 	onDoubleClick(event)

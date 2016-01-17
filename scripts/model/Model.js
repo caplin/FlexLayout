@@ -116,11 +116,14 @@ class Model
 			}
 			case Actions.SELECT_TAB:
 			{
-				let tabNode =  this._nodeMap[action.tabset];
-				if (tabNode.getSelected() != action.index) {
-					tabNode._setSelected(action.index);
+				let tabNode =  this._nodeMap[action.tabNode];
+				let parent = tabNode.getParent();
+				let pos = parent.getChildren().indexOf(tabNode);
+
+				if (parent.getSelected() != pos) {
+					parent._setSelected(pos);
 				}
-				this._activeTabSet = tabNode;
+				this._activeTabSet = parent;
 
 				break;
 			}

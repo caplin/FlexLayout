@@ -213,7 +213,7 @@ class TabSet extends React.Component
     onOverflowItemSelect(item)
     {
         var node = this.props.node;
-        this.props.layout.doAction(Actions.selectTab(node, item.index));
+        this.props.layout.doAction(Actions.selectTab(item.node));
     }
 
     onMouseDown(event)

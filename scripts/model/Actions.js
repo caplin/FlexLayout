@@ -13,19 +13,19 @@ class Actions
 		return {name: Actions.MOVE_NODE, fromNode: fromNode.getKey(), toNode: toNode.getKey(), location:location, index:index};
 	}
 
-	static deleteTab(node)
+	static deleteTab(tabNode)
 	{
-		return {name: Actions.DELETE_TAB, node:node.getKey()};
+		return {name: Actions.DELETE_TAB, node:tabNode.getKey()};
 	}
 
-	static renameTab(node, text)
+	static renameTab(tabNode, text)
 	{
-		return {name: Actions.RENAME_TAB, node:node.getKey(), text: text};
+		return {name: Actions.RENAME_TAB, node:tabNode.getKey(), text: text};
 	}
 
-	static selectTab(tabSetNode, index)
+	static selectTab(tabNode)
 	{
-		return {name: Actions.SELECT_TAB, tabset:tabSetNode.getKey(), index: index};
+		return {name: Actions.SELECT_TAB, tabNode:tabNode.getKey()};
 	}
 
 	static setActiveTabset(tabsetNode)
@@ -38,9 +38,9 @@ class Actions
 		return {name: Actions.SET_RECT, rect: rect};
 	}
 
-	static adjustSplit(node, value)
+	static adjustSplit(splitterNode, value)
 	{
-		return {name: Actions.ADJUST_SPLIT, node: node.getKey(), value:value};
+		return {name: Actions.ADJUST_SPLIT, node: splitterNode.getKey(), value:value};
 	}
 
 	static maximizeToggle(node)
