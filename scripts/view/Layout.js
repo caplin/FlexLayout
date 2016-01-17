@@ -6,6 +6,7 @@ import TabSet from "./TabSet.js";
 import DragDrop from "../DragDrop.js";
 import Rect from "../Rect.js";
 import Utils from "../Utils.js";
+import DockLocation from "../DockLocation.js";
 import TabNode from "../model/TabNode.js";
 import TabSetNode from "../model/TabSetNode.js";
 import SplitterNode from "../model/SplitterNode.js";
@@ -130,7 +131,7 @@ class Layout extends React.Component
         if (tabsetNode != null)
         {
             var newNode = new TabNode(this.props.model, json);
-            this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
+            this.props.model.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
         }
     }
 
@@ -140,7 +141,7 @@ class Layout extends React.Component
         if (tabsetNode != null)
         {
             var newNode = new TabNode(this.props.model, json);
-            this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
+            this.props.model.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
         }
     }
 

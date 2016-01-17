@@ -94,23 +94,24 @@ class Model
 		console.log("doAction: " + JSON.stringify(action));
 		switch (action.name)
 		{
-			case Actions.SET_RECT:
-			{
-				this._rect = action.rect;
-				break;
-			}
-			case Actions.ADJUST_SPLIT:
-			{
-				let splitterNode = this._nodeMap[action.nodeKey];
-				splitterNode.getParent()._adjustSplit(splitterNode, action.value);
-				break;
-			}
-			case Actions.MOVE_NODE:
 			case Actions.ADD_NODE: // add is an alias for move node where fromnode has no parent
+			case Actions.MOVE_NODE:
 			{
 				let toNode =  this._nodeMap[action.toNode];
 				let fromNode =  this._nodeMap[action.fromNode];
 				toNode._drop(fromNode, action.location, action.index);
+				break;
+			}
+			case Actions.DELETE_TAB:
+			{
+				let node =  this._nodeMap[action.node];
+				node._delete();
+				break;
+			}
+			case Actions.RENAME_TAB:
+			{
+				let node =  this._nodeMap[action.node];
+				node._setName(action.text);
 				break;
 			}
 			case Actions.SELECT_TAB:
@@ -123,6 +124,23 @@ class Model
 
 				break;
 			}
+			case Actions.SET_ACTIVE_TABSET:
+			{
+				let tabsetNode =  this._nodeMap[action.tabsetNode];
+				this._activeTabSet = tabsetNode;
+				break;
+			}
+			case Actions.SET_RECT:
+			{
+				this._rect = action.rect;
+				break;
+			}
+			case Actions.ADJUST_SPLIT:
+			{
+				let splitterNode = this._nodeMap[action.node];
+				splitterNode.getParent()._adjustSplit(splitterNode, action.value);
+				break;
+			}
 			case Actions.MAXIMIZE_TOGGLE:
 			{
 				let node =  this._nodeMap[action.node];
@@ -130,33 +148,6 @@ class Model
 				node._fireEvent("maximize", {maximized: node.isMaximized()});
 				this._activeTabSet = node;
 
-				break;
-			}
-			case Actions.RENAME_TAB:
-			{
-				let node =  this._nodeMap[action.node];
-				node._setName(action.text);
-				break;
-			}
-			case Actions.DELETE_TAB:
-			{
-				let node =  this._nodeMap[action.node];
-				node._delete();
-				break;
-			}
-			case Actions.ADD_TAB:
-			{
-				let tabsetNode =  this._nodeMap[action.tabsetNode];
-				var newNode =  this._nodeMap[action.tabNode];
-				var pos = tabsetNode._addChild(newNode);
-				tabsetNode._setSelected(pos);
-				this._activeTabSet = tabsetNode;
-				break;
-			}
-			case Actions.SET_ACTIVE_TABSET:
-			{
-				let tabsetNode =  this._nodeMap[action.tabsetNode];
-				this._activeTabSet = tabsetNode;
 				break;
 			}
 			case Actions.UPDATE_MODEL_ATTRIBUTES:
