@@ -100,7 +100,7 @@ describe("Model", function()
 		expect(m.getNodeById(2) instanceof TabSetNode).toBeTruthy();
 	})
 
-	it("add tab to center of tabset using move action", function()
+	it("add tab to center of tabset using add action", function()
 	{
 		var m = Model.fromJson({
 			global:{},
@@ -123,22 +123,22 @@ describe("Model", function()
 		var tabset = m.getNodeById(1);
 
 		var tab = new TabNode(m, {name:"newtab1", component:"grid"});
-		m.doAction(Actions.moveNode(tab, tabset, DockLocation.CENTER, -1));
+		m.doAction(Actions.addNode(tab, tabset, DockLocation.CENTER, -1));
 		checkNodePath(tab, "R0(Id:0)/S0(Id:1)", ["Id"]);
 		checkChildren(tabset, "(Name:newtab1)", ["Name"]);
 
 		tab = new TabNode(m, {name:"newtab2", component:"grid"});
-		m.doAction(Actions.moveNode(tab, tabset, DockLocation.CENTER, -1));
+		m.doAction(Actions.addNode(tab, tabset, DockLocation.CENTER, -1));
 		checkNodePath(tab, "R0(Id:0)/S1(Id:1)", ["Id"]);
 		checkChildren(tabset, "(Name:newtab1),(Name:newtab2)", ["Name"]);
 
 		tab = new TabNode(m, {name:"newtab3", component:"grid"});
-		m.doAction(Actions.moveNode(tab, tabset, DockLocation.CENTER, 0));
+		m.doAction(Actions.addNode(tab, tabset, DockLocation.CENTER, 0));
 		checkNodePath(tab, "R0(Id:0)/S0(Id:1)", ["Id"]);
 		checkChildren(tabset, "(Name:newtab3),(Name:newtab1),(Name:newtab2)", ["Name"]);
 
 		tab = new TabNode(m, {name:"newtab4", component:"grid"});
-		m.doAction(Actions.moveNode(tab, tabset, DockLocation.CENTER, 1));
+		m.doAction(Actions.addNode(tab, tabset, DockLocation.CENTER, 1));
 		checkNodePath(tab, "R0(Id:0)/S1(Id:1)", ["Id"]);
 		checkChildren(tabset, "(Name:newtab3),(Name:newtab4),(Name:newtab1),(Name:newtab2)", ["Name"]);
 

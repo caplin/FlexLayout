@@ -106,6 +106,7 @@ class Model
 				break;
 			}
 			case Actions.MOVE_NODE:
+			case Actions.ADD_NODE: // add is an alias for move node where fromnode has no parent
 			{
 				let toNode =  this._nodeMap[action.toNode];
 				let fromNode =  this._nodeMap[action.fromNode];

@@ -18,6 +18,11 @@ class Actions
 		return {name: Actions.MOVE_NODE, fromNode: fromNode.getKey(), toNode: toNode.getKey(), location:location, index:index};
 	}
 
+	static addNode(newNode, toNode, location, index)
+	{
+		return {name: Actions.ADD_NODE, fromNode: newNode.getKey(), toNode: toNode.getKey(), location:location, index:index};
+	}
+
 	static selectTab(tabSetNode, index)
 	{
 		return {name: Actions.SELECT_TAB, tabset:tabSetNode.getKey(), index: index};
@@ -62,6 +67,7 @@ class Actions
 Actions.SET_RECT = "setRect";
 Actions.ADJUST_SPLIT = "adjustSplit";
 Actions.MOVE_NODE = "moveNode";
+Actions.ADD_NODE = "addNode";
 Actions.SELECT_TAB = "selectTab";
 Actions.MAXIMIZE_TOGGLE = "maximizeToggle";
 Actions.RENAME_TAB = "renameTab";
