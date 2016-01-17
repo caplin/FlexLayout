@@ -9,15 +9,16 @@ import DropInfo from "./../DropInfo.js";
 
 class RowNode extends Node
 {
-    constructor(model)
+    constructor(model, json)
     {
         super(model);
-        jsonConverter.setDefaults(this);
 
         this._dirty = true;
         this._drawChildren = [];
         this._orientation = Orientation.HORZ;
 		this._splitterCache = [];
+        jsonConverter.fromJson(json, this);
+        model._addNode(this);
     }
 
     _layout(rect)
@@ -355,7 +356,7 @@ class RowNode extends Node
         }
         else
         {
-            tabSet = new TabSetNode(this._model);
+            tabSet = new TabSetNode(this._model, {});
             tabSet._addChild(dragNode);
         }
 
@@ -381,8 +382,8 @@ class RowNode extends Node
         }
         else if (dockLocation == DockLocation.TOP)
         {
-            var vrow = new RowNode(this._model);
-            var hrow = new RowNode(this._model);
+            var vrow = new RowNode(this._model, {});
+            var hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
             for (var i=0; i<this._children.length; i++)
@@ -396,8 +397,8 @@ class RowNode extends Node
         }
         else if (dockLocation == DockLocation.BOTTOM)
         {
-            var vrow = new RowNode(this._model);
-            var hrow = new RowNode(this._model);
+            var vrow = new RowNode(this._model, {});
+            var hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
             for (var i=0; i<this._children.length; i++)
@@ -428,9 +429,7 @@ class RowNode extends Node
 
     static _fromJson(json,model)
     {
-        var newLayoutNode = new RowNode(model);
-
-        jsonConverter.fromJson(json, newLayoutNode);
+        var newLayoutNode = new RowNode(model, json);
 
         if (json.children != undefined)
         {
@@ -461,6 +460,7 @@ jsonConverter.addConversion("_type", "type", RowNode.TYPE, true);
 jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);
 jsonConverter.addConversion("_height", "height", null);
+jsonConverter.addConversion("_id", "id", null);
 
 //console.log(jsonConverter.toTable());
 

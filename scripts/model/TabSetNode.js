@@ -2,7 +2,6 @@ import Rect from "../Rect.js";
 import JsonConverter from "../JsonConverter.js";
 import DockLocation from "../DockLocation.js";
 import Orientation from "../Orientation.js";
-import DragDrop from "../DragDrop.js";
 import DropInfo from "./../DropInfo.js";
 import Node from "./Node.js";
 import TabNode from "./TabNode.js";
@@ -10,14 +9,16 @@ import RowNode from "./RowNode.js";
 
 class TabSetNode extends Node
 {
-    constructor(model)
+    constructor(model, json)
     {
         super(model);
-        jsonConverter.setDefaults(this);
 
         this._contentRect = null;
         this._headerRect = null;
         this._tabHeaderRect = null;
+
+        jsonConverter.fromJson(json, this);
+        model._addNode(this);
     }
 
     getName()
@@ -249,7 +250,7 @@ class TabSetNode extends Node
             {
                 // create new tabset parent
                 //console.log("create a new tabset");
-                tabSet = new TabSetNode(this._model);
+                tabSet = new TabSetNode(this._model, {});
                 tabSet._addChild(dragNode);
                 //console.log("added child at end");
                 dragNode._parent = tabSet;
@@ -273,7 +274,7 @@ class TabSetNode extends Node
             {
                 // create a new row to host the new tabset (it will go in the opposite direction)
                 //console.log("create a new row");
-                var newRow = new RowNode(this._model);
+                var newRow = new RowNode(this._model, {});
                 newRow._weight = this._weight;
                 newRow._addChild(this);
                 this._weight = 50;
@@ -311,9 +312,7 @@ class TabSetNode extends Node
 
     static _fromJson(json, model)
     {
-        var newLayoutNode = new TabSetNode(model);
-
-        jsonConverter.fromJson(json, newLayoutNode);
+        var newLayoutNode = new TabSetNode(model, json);
 
         if (json.children != undefined)
         {

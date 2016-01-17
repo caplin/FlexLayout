@@ -24,6 +24,11 @@ class Node {
         this._id = null;
     }
 
+    getId()
+    {
+        return this._id;
+    }
+
     getModel()
     {
         return this._model;
@@ -101,12 +106,14 @@ class Node {
         return val;
     }
 
-    _forEachNode(fn)
+    _forEachNode(fn, level)
     {
+        fn(this, level);
+        level++;
         this._children.forEach((node) =>
         {
-            fn(node);
-            node._forEachNode(fn);
+            fn(node, level);
+            node._forEachNode(fn, level);
         })
     }
 
@@ -227,7 +234,6 @@ class Node {
         }
         childNode._parent = this;
         this._dirty = true;
-        this._model._addNode(childNode);
         return pos;
     }
 

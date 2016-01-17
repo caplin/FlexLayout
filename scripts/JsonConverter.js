@@ -26,6 +26,10 @@ class JsonConverter
 
     fromJson(jsonObj, obj)
     {
+        if (jsonObj == null)
+        {
+            debugger;
+        }
         for (var i=0; i<this.conversions.length; i++)
         {
             var c = this.conversions[i];

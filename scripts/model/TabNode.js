@@ -6,13 +6,15 @@ import RowNode from "./RowNode.js";
 
 class TabNode extends Node
 {
-    constructor(model)
+    constructor(model, json)
     {
         super(model);
-        jsonConverter.setDefaults(this);
 
         this._tabRect = null; // rect of the tab rather than the tab contents=
         this._extra = {};  // extra data added to node not saved in json
+
+        jsonConverter.fromJson(json, this);
+        model._addNode(this);
     }
 
     getTabRect()
@@ -70,13 +72,6 @@ class TabNode extends Node
         return this._getAttr("_tabClassName");
     }
 
-    static _create(model, json)
-    {
-        var node = TabNode._fromJson(json,model);
-        model._addNode(node);
-        return node;
-    }
-
     _setName(name)
     {
         this._name = name;
@@ -99,8 +94,7 @@ class TabNode extends Node
 
     static _fromJson(json, model)
     {
-        var newLayoutNode = new TabNode(model);
-        jsonConverter.fromJson(json, newLayoutNode);
+        var newLayoutNode = new TabNode(model, json);
         return newLayoutNode;
     }
 

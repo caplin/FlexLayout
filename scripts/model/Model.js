@@ -3,27 +3,25 @@ import Actions from "./Actions.js";
 import TabNode from "./TabNode.js";
 import TabSetNode from "./TabSetNode.js";
 import JsonConverter from "../JsonConverter.js";
+import Rect from "../Rect.js";
 
 /**
  * Class containing the Model used by the FlexLayout component
  */
 class Model
 {
-	constructor()
+	constructor(json)
 	{
 		this._nodeMap = {};
 		this._idMap = {};
-		this._root = new RowNode(this);
+		this._root = new RowNode(this, {});
 		this._listeners = [];
-		this._rect = null;
+		this._rect = new Rect(0,0,0,0);
 		this._activeTabSet = null;
-		jsonConverter.setDefaults(this);
-
-		this._addNode(this._root);
+		jsonConverter.fromJson(json, this);
 
 		// add a tabset
-		var node = new TabSetNode(this);
-		this._addNode(node);
+		var node = new TabSetNode(this, {});
 		this._root._addChild(node);
 	}
 
@@ -69,11 +67,11 @@ class Model
 
 	/**
 	 * Visits all the nodes in the model and call the given function for each
-	 * @param fn a function that takes visited node as its only parameter
+	 * @param fn a function that takes visited node and a integer level as parameters
 	 */
 	visitNodes(fn)
 	{
-		this._root._forEachNode(fn);
+		this._root._forEachNode(fn, 0);
 	}
 
 	/**
@@ -196,11 +194,9 @@ class Model
 	 */
 	static fromJson(json)
 	{
-		var model = new Model();
-		jsonConverter.fromJson(json.global, model);
+		var model = new Model(json.global);
 
 		model._root = RowNode._fromJson(json.layout, model);
-		model._addNode(model._root);
 		return model;
 	}
 

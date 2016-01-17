@@ -129,7 +129,7 @@ class Layout extends React.Component
         var tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode != null)
         {
-            var newNode = TabNode._create(this.props.model, json);
+            var newNode = new TabNode(this.props.model, json);
             this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
         }
     }
@@ -139,7 +139,7 @@ class Layout extends React.Component
         var tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode != null)
         {
-            var newNode = TabNode._create(this.props.model, json);
+            var newNode = new TabNode(this.props.model, json);
             this.props.model.doAction(Actions.addTab(tabsetNode, newNode));
         }
     }
@@ -147,14 +147,14 @@ class Layout extends React.Component
     addTabWithDragAndDrop(dragText, json, onDrop)
     {
         this.fnNewNodeDropped = onDrop;
-        this.newNode = TabNode._create(this.props.model, json);
+        this.newNode = new TabNode(this.props.model, json);
         this.dragStart(null, dragText, this.newNode, null, null);
     }
 
 	addTabWithDragAndDropIndirect(dragText, json, onDrop)
 	{
         this.fnNewNodeDropped = onDrop;
-        this.newNode = TabNode._create(this.props.model, json);
+        this.newNode = new TabNode(this.props.model, json);
 
         DragDrop.instance.addGlass(this.onCancelAdd.bind(this));
 
