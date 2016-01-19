@@ -12,7 +12,6 @@ class Model
 {
 	constructor(json)
 	{
-		this._nodeMap = {};
 		this._idMap = {};
 		this._root = new RowNode(this, {});
 		this._listeners = [];
@@ -91,32 +90,32 @@ class Model
 	 */
 	doAction(action)
 	{
-		console.log("doAction: " + JSON.stringify(action));
+		console.log("doAction: " + action.name);
 		switch (action.name)
 		{
 			case Actions.ADD_NODE: // add is an alias for move node where fromnode has no parent
 			case Actions.MOVE_NODE:
 			{
-				let toNode =  this._nodeMap[action.toNode];
-				let fromNode =  this._nodeMap[action.fromNode];
+				let toNode =  action.toNode;
+				let fromNode =  action.fromNode;
 				toNode._drop(fromNode, action.location, action.index);
 				break;
 			}
 			case Actions.DELETE_TAB:
 			{
-				let node =  this._nodeMap[action.node];
+				let node =  action.node;
 				node._delete();
 				break;
 			}
 			case Actions.RENAME_TAB:
 			{
-				let node =  this._nodeMap[action.node];
+				let node =  action.node;
 				node._setName(action.text);
 				break;
 			}
 			case Actions.SELECT_TAB:
 			{
-				let tabNode =  this._nodeMap[action.tabNode];
+				let tabNode =  action.tabNode;
 				let parent = tabNode.getParent();
 				let pos = parent.getChildren().indexOf(tabNode);
 
@@ -129,7 +128,7 @@ class Model
 			}
 			case Actions.SET_ACTIVE_TABSET:
 			{
-				let tabsetNode =  this._nodeMap[action.tabsetNode];
+				let tabsetNode =  action.tabsetNode;
 				this._activeTabSet = tabsetNode;
 				break;
 			}
@@ -140,13 +139,13 @@ class Model
 			}
 			case Actions.ADJUST_SPLIT:
 			{
-				let splitterNode = this._nodeMap[action.node];
+				let splitterNode = action.node;
 				splitterNode.getParent()._adjustSplit(splitterNode, action.value);
 				break;
 			}
 			case Actions.MAXIMIZE_TOGGLE:
 			{
-				let node =  this._nodeMap[action.node];
+				let node =  action.node;
 				node._setMaximized(!node.isMaximized());
 				node._fireEvent("maximize", {maximized: node.isMaximized()});
 				this._activeTabSet = node;
@@ -160,7 +159,7 @@ class Model
 			}
 			case Actions.UPDATE_NODE_ATTRIBUTES:
 			{
-				let node =  this._nodeMap[action.node];
+				let node =  action.node;
 				node._updateAttrs(action.json);
 				break;
 			}
@@ -229,7 +228,6 @@ class Model
 
 	_addNode(node)
 	{
-		this._nodeMap[node._key] = node;
 		if (node._id != null)
 		{
 			this._idMap[node._id] = node;
