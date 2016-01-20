@@ -5,32 +5,32 @@ class Actions
 {
 	static addNode(newNode, toNode, location, index)
 	{
-		return {name: Actions.ADD_NODE, fromNode: newNode.getKey(), toNode: toNode.getKey(), location:location, index:index};
+		return {name: Actions.ADD_NODE, fromNode: newNode, toNode: toNode, location:location, index:index};
 	}
 
 	static moveNode(fromNode, toNode, location, index)
 	{
-		return {name: Actions.MOVE_NODE, fromNode: fromNode.getKey(), toNode: toNode.getKey(), location:location, index:index};
+		return {name: Actions.MOVE_NODE, fromNode: fromNode, toNode: toNode, location:location, index:index};
 	}
 
 	static deleteTab(tabNode)
 	{
-		return {name: Actions.DELETE_TAB, node:tabNode.getKey()};
+		return {name: Actions.DELETE_TAB, node:tabNode};
 	}
 
 	static renameTab(tabNode, text)
 	{
-		return {name: Actions.RENAME_TAB, node:tabNode.getKey(), text: text};
+		return {name: Actions.RENAME_TAB, node:tabNode, text: text};
 	}
 
 	static selectTab(tabNode)
 	{
-		return {name: Actions.SELECT_TAB, tabNode:tabNode.getKey()};
+		return {name: Actions.SELECT_TAB, tabNode:tabNode};
 	}
 
 	static setActiveTabset(tabsetNode)
 	{
-		return {name: Actions.SET_ACTIVE_TABSET, tabsetNode:tabsetNode.getKey()};
+		return {name: Actions.SET_ACTIVE_TABSET, tabsetNode:tabsetNode};
 	}
 
 	static setRect(rect)
@@ -40,12 +40,12 @@ class Actions
 
 	static adjustSplit(splitterNode, value)
 	{
-		return {name: Actions.ADJUST_SPLIT, node: splitterNode.getKey(), value:value};
+		return {name: Actions.ADJUST_SPLIT, node: splitterNode, value:value};
 	}
 
 	static maximizeToggle(node)
 	{
-		return {name: Actions.MAXIMIZE_TOGGLE, node: node.getKey()};
+		return {name: Actions.MAXIMIZE_TOGGLE, node: node};
 	}
 
 	static updateModelAttributes(attributes)
@@ -55,7 +55,7 @@ class Actions
 
 	static updateNodeAttributes(node, attributes)
 	{
-		return {name: Actions.UPDATE_NODE_ATTRIBUTES, node: node.getKey(), json:attributes};
+		return {name: Actions.UPDATE_NODE_ATTRIBUTES, node: node, json:attributes};
 	}
 }
 
