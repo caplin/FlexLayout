@@ -15,8 +15,45 @@
 					"name": "sub",
 					"component": "sub",
 					"config": {
-						"id": "1"
-					}
+                              "global": {},
+                              "layout":
+                              	{
+                              		"type": "row",
+                              		"weight": 100,
+                              		"children": [
+                              			{
+                              				"type": "tabset",
+                              				"weight": 50,
+                              				"selected": 0,
+                              				"children": [
+                              					{
+                              						"type": "tab",
+                              						"name": "FX",
+                              						"component":"grid",
+                              						"config": {
+                              							"id": "1"
+                              						}
+                              					}
+                              				]
+                              			},
+                              			{
+                              				"type": "tabset",
+                              				"weight": 50,
+                              				"selected": 0,
+                              				"children": [
+                              					{
+                              						"type": "tab",
+                              						"name": "FI",
+                              						"component":"grid",
+                              						"config": {
+                              							"id": "2"
+                              						}
+                              					}
+                              				]
+                              			}
+                              		]
+                              	}
+                              }
 				}
 			]
 		},

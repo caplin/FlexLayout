@@ -51,95 +51,6 @@ class App
     {
         this.model = Model.fromJson(JSON.parse(jsonText));
 
-        // fixed submodel for sub layout example
-        this.submodel = Model.fromJson(
-            {
-                global: {},
-                layout: {
-                    size: 100,
-                    children: [
-                        {
-                            type: "tabset", size: 50, color: "#ccccff", children: [
-                            {type: "tab", name: "blaa", component: "grid"},
-                        ]
-                        },
-                        {
-                            size: 150, children: [
-                            {
-                                size: 30, children: [
-                                {
-                                    type: "tabset", size: 50, color: "#ffcccc", children: [
-                                    {type: "tab", name: "grida", component: "grid"},
-                                ]
-                                },
-                            ]
-                            },
-                            {
-                                size: 30, children: [
-                                {
-                                    type: "tabset", size: 50, color: "#ccffcc", children: [
-                                    {
-                                        type: "tab",
-                                        name: "simple1",
-                                        component: "simple1",
-                                        config: {name: "a simple button"}
-                                    },
-                                    {type: "tab", name: "simple2", component: "simple2"}
-                                ]
-                                },
-                            ]
-                            },
-                            {
-                                size: 50, children: [
-                                {
-                                    size: 30, children: [
-                                    {
-                                        type: "tabset", size: 50, color: "#fccccf", children: [
-                                        {type: "tab", name: "gridb", component: "grid"},
-                                    ]
-                                    },
-                                ]
-                                },
-                                {
-                                    size: 30, color: "yellow", children: [
-                                    {
-                                        type: "tabset", size: 50, color: "#ccffff", children: [
-                                        {type: "tab", name: "gridc", component: "grid"},
-                                    ]
-                                    },
-                                    {
-                                        size: 50, children: [
-                                        {
-                                            size: 30, children: [
-                                            {
-                                                type: "tabset", size: 50, color: "#ffffcc", children: [
-                                                {type: "tab", name: "gridd", component: "grid"},
-                                            ]
-                                            },
-                                        ]
-                                        },
-                                        {
-                                            size: 30, color: "yellow", children: [
-                                            {
-                                                type: "tabset", size: 50, color: "#ffccff", children: [
-                                                {type: "tab", name: "gride", component: "grid"},
-                                            ]
-                                            },
-                                        ]
-                                        }
-                                    ]
-                                    }
-                                ]
-                                }
-                            ]
-                            }
-                        ]
-                        }
-                    ]
-                }
-            }
-        );
-
         setTimeout(function()
         {
             this.render();
@@ -194,15 +105,22 @@ class App
         }
         else if (component == "simple1" )
         {
-            return <Simple1 config={node._config}/>;
+            return <Simple1 config={node.getConfig}/>;
         }
         else if (component == "simple2")
         {
-            return <Simple2 config={node._config} node={node}/>;
+            return <Simple2 config={node.getConfig()} node={node}/>;
         }
         else if (component == "sub")
         {
-            return <SubApp model={this.submodel} node={node} factory={this.factory.bind(this)}/>;
+            var model = node.getExtraData().data;
+            if (model == null)
+            {
+                node.getExtraData().data = Model.fromJson(node.getConfig());
+                model = node.getExtraData().data;
+            }
+
+            return <Layout model={model} factory={this.factory.bind(this)}/>;
         }
     }
 
@@ -312,14 +230,6 @@ class Main extends React.Component
                 <Layout ref="layout" model={this.props.model} factory={this.props.factory} onRenderTab={onRenderTab} onRenderTabSet={onRenderTabSet}/>
             </div>
         </div>;
-    }
-}
-
-class SubApp extends React.Component
-{
-    render()
-    {
-        return <Layout model={this.props.model} factory={this.props.factory}/>;
     }
 }
 
