@@ -14,7 +14,8 @@
 					"type": "tab",
 					"name": "sub",
 					"component": "sub",
-					"config": {
+					"config": {"model":
+							{
                               "global": {},
                               "layout":
                               	{
@@ -54,6 +55,7 @@
                               		]
                               	}
                               }
+                         }
 				}
 			]
 		},

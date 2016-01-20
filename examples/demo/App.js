@@ -113,11 +113,17 @@ class App
         }
         else if (component == "sub")
         {
-            var model = node.getExtraData().data;
+            var model = node.getExtraData().model;
             if (model == null)
             {
-                node.getExtraData().data = Model.fromJson(node.getConfig());
-                model = node.getExtraData().data;
+                node.getExtraData().model = Model.fromJson(node.getConfig().model);
+                model = node.getExtraData().model;
+                // save submodel on save event
+                node.setEventListener("save", function(p)
+                    {
+                        node.getConfig().model = node.getExtraData().model.toJson();
+                    }
+                );
             }
 
             return <Layout model={model} factory={this.factory.bind(this)}/>;
