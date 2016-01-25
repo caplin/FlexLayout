@@ -7,9 +7,9 @@ resized and moved, much like the windowing system found in many IDE's.
 
 [More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
 
-[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index.html?layout=trader)
+[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=sub)
 
-[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.02/index_dark.html?layout=trader)
+[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html?layout=sub)
 
 Note: this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
 
