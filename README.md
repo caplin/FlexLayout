@@ -11,7 +11,31 @@ resized and moved, much like the windowing system found in many IDE's.
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
 
-Note: this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
+
+Available demo url parameters:
+
+*	reload=true  - reload layout from file, rather than localstorage
+*	grid=slick   - use wrapped slickgrid for the demo grid control
+*	log=true     - log the basic model tree to the console after each change
+*	layout=sub   - load a given layout (from file/localstorage)
+
+
+Possible layout values:
+ 
+*	simple - a simple layout of 3 tabsets
+*	complex - a more complex layout with multiple tabsets
+*	preferred - shows tabsets with preferred sizes
+*	sub - shows a tab containing a sub layout
+
+Example url with parameters:
+
+https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=simple&reload=true
+
+Notes:
+ 
+*	this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
+*	the demo js file is large because it is unminified and includes slickgrid and jquery (a slickgrid dependency)
+*	FlexLayout's only dependency is React
 
 Features so far:
 *	splitters
