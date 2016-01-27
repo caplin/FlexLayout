@@ -128,7 +128,7 @@ var json = {
 ## Example Code
 
 ```
-var model = Model.fromJson(JSON.parse(json));
+var model = Model.fromJson(json);
 
 factory(node)
 {
