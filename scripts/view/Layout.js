@@ -22,12 +22,12 @@ class Layout extends React.Component
         this.state = {maximizeNode: null};
 
         // listen for model changes
-        this.props.model.addListener(this);
-		this.logLayout();
-	}
+        this.logLayout();
+    }
 
-    doAction(action)
+    doAction(action, nextProps) // next props is optional arg
     {
+        var props = nextProps || this.props;
         if (this.props.onAction) // if onAction prop defined then send actions to that
         {
             this.props.onAction(action);
@@ -40,39 +40,47 @@ class Layout extends React.Component
 
     onLayoutChange(model)
     {
-		this.logLayout();
-		this.forceUpdate();
+        this.logLayout();
+        this.forceUpdate();
     }
 
-	logLayout()
-	{
-		var params = Utils.getQueryParams();
-		if (params["log"] == "true")
-		{
-			console.log(this.props.model.toString());
-		}
-	}
+    logLayout()
+    {
+        var params = Utils.getQueryParams();
+        if (params["log"] == "true")
+        {
+            console.log(this.props.model.toString());
+        }
+    }
 
     componentDidMount()
     {
-		this.resize();
-		// need to re-render if size changed
-		window.addEventListener("resize", function (event)
-		{
-			this.resize();
+        this.props.model.addListener(this);
+        this.resize(this.props);
+        // need to re-render if size changed
+        window.addEventListener("resize", function (event)
+        {
+            this.resize(this.props);
         }.bind(this));
     }
 
     componentWillReceiveProps(newProps)
     {
-        this.resize();
+        if (this.props.model != newProps.model)
+        {
+            this.props.model.removeListener(this);
+            newProps.model.addListener(this);
+        }
+        this.resize(newProps);
     }
 
-    resize()
+    resize(props)
     {
-        var domRect = this.refs.self.getBoundingClientRect();
-        var rect = new Rect(0, 0, domRect.width, domRect.height);
-        this.doAction(Actions.setRect(rect));
+        if (this.refs.self != null) {
+            var domRect = this.refs.self.getBoundingClientRect();
+            var rect = new Rect(0, 0, domRect.width, domRect.height);
+            this.doAction(Actions.setRect(rect), props);
+        }
     }
 
     renderChild(node, childComponents)
@@ -121,7 +129,6 @@ class Layout extends React.Component
         {
             childComponents.push(<span key="loading">loading...</span>);
         }
-        //childComponents.forEach(c => console.log(c.key));
         return <div ref="self" className="flexlayout__layout" >{childComponents}</div>;
     }
 
@@ -152,8 +159,8 @@ class Layout extends React.Component
         this.dragStart(null, dragText, this.newNode, null, null);
     }
 
-	addTabWithDragAndDropIndirect(dragText, json, onDrop)
-	{
+    addTabWithDragAndDropIndirect(dragText, json, onDrop)
+    {
         this.fnNewNodeDropped = onDrop;
         this.newNode = new TabNode(this.props.model, json);
 
@@ -239,22 +246,22 @@ class Layout extends React.Component
         // add edge indicators
         this.showEdges(rootdiv);
 
-		if (this.dragNode.getType() == TabNode.TYPE && this.dragNode.getTabRect() != null)
-		{
-			this.dragNode.getTabRect().positionElement(this.outlineDiv);
-		}
-		this.firstMove = true;
+        if (this.dragNode.getType() == TabNode.TYPE && this.dragNode.getTabRect() != null)
+        {
+            this.dragNode.getTabRect().positionElement(this.outlineDiv);
+        }
+        this.firstMove = true;
 
         return true;
     }
 
     onDragMove(event)
     {
-		if (this.firstMove === false)
-		{
-			this.outlineDiv.style.transition = "top .3s, left .3s, width .3s, height .3s";
-		}
-		this.firstMove = false;
+        if (this.firstMove === false)
+        {
+            this.outlineDiv.style.transition = "top .3s, left .3s, width .3s, height .3s";
+        }
+        this.firstMove = false;
         var clientRect = this.refs.self.getBoundingClientRect();
         var pos = {
             x: event.clientX - clientRect.left,
@@ -288,12 +295,12 @@ class Layout extends React.Component
         {
             this.doAction(Actions.moveNode(this.dragNode, this.dropInfo.node,this.dropInfo.location,this.dropInfo.index));
 
-			if (this.newNode != null && this.fnNewNodeDropped != null)
-			{
-				this.fnNewNodeDropped(this.newNode)
-				this.newNode = null;
+            if (this.newNode != null && this.fnNewNodeDropped != null)
+            {
+                this.fnNewNodeDropped(this.newNode)
+                this.newNode = null;
                 this.fnNewNodeDropped = null;
-			}
+            }
         }
     }
 
@@ -370,7 +377,7 @@ class Layout extends React.Component
     maximize(maximizeNode)
     {
         this.doAction(Actions.maximizeToggle(maximizeNode));
-		this.setState({maximizeNode:maximizeNode.isMaximized()?maximizeNode:null});
+        this.setState({maximizeNode:maximizeNode.isMaximized()?maximizeNode:null});
     }
 
     customizeTab(tabNode, renderValues)
@@ -392,9 +399,9 @@ class Layout extends React.Component
 }
 
 Layout.propTypes = { model: React.PropTypes.instanceOf(Model),
-                     factory: React.PropTypes.func,
-                     onRenderTab:  React.PropTypes.func,
-                     onRenderTabSet:  React.PropTypes.func,
-                     onAction: React.PropTypes.func};
+    factory: React.PropTypes.func,
+    onRenderTab:  React.PropTypes.func,
+    onRenderTabSet:  React.PropTypes.func,
+    onAction: React.PropTypes.func};
 
 export default Layout;

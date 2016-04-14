@@ -216,6 +216,11 @@ class Model
 		}
 	}
 
+	getActiveTabset()
+	{
+		return this._activeTabSet;
+	}
+
 	getSplitterSize()
 	{
 		return this._splitterSize;
