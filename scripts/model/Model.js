@@ -175,7 +175,7 @@ class Model
 	toJson()
 	{
 		var json = {global:{}, layout:{}};
-		jsonConverter.toJson(json.config, this);
+		jsonConverter.toJson(json.global, this);
 		this._root._forEachNode((node)=>{node._fireEvent("save", null);});
 		json.layout = this._root._toJson();
 		return json;
