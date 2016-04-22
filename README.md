@@ -244,3 +244,48 @@ Inherited defaults will take their value from the associated global attributes (
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | |
 
+
+## Model Actions
+
+The Model accepts a set of actions via its doAction() method.
+
+#Example
+
+```
+        this.props.model.doAction(Actions.updateModelAttributes({
+            splitterSize:40,
+            tabSetHeaderHeight:40,
+            tabSetTabStripHeight:400
+        }));
+```
+
+| Action Creator | Description  |
+| ------------- | -----|
+|	Actions.addNode(newNode, toNode, location, index) | add a new tab node to the given tabset node  |
+|	Actions.moveNode(fromNode, toNode, location, index) | move a tab node from its current location to the new node and location |
+|	Actions.deleteTab(tabNode) | delete the given node |
+|	Actions.renameTab(tabNode, text) | rename the given tab node |
+|	Actions.selectTab(tabNode) | select the given tab |
+|	Actions.setActiveTabset(tabsetNode) | set the tabset as the active tabset |
+|	Actions.setRect(rect) | update the layout rectangle (causes a relayout in the new rectangle) |
+|	Actions.adjustSplit(splitterNode, value) | adjust the size of the given splitter |
+|	Actions.maximizeToggle(node) | toggles whether the current node is maximized |
+|	Actions.updateModelAttributes(attributes) | updates the global attributes |
+|	Actions.updateNodeAttributes(node, attributes) | updates the attributes of the given node |
+
+##Layout Component Methods to Create New Tabs
+
+Methods on the Layout Component for adding tabs, the tabs are specified by their layout json.
+
+Example:
+
+```
+this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
+```
+
+| Layout Method | Description  |
+| ------------- | -----|
+| addTabToTabSet(tabsetId, json) | adds a new tab to the tabset with the given Id |
+| addTabToActiveTabSet(json) | adds a new tab to the active tabset |
+| addTabWithDragAndDrop(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the drag starts immediately |
+| addTabWithDragAndDropIndirect(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the marker is shown and must be clicked on to start dragging |
