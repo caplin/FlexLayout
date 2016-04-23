@@ -84,10 +84,10 @@ var Layout = FlexLayout.Layout;
 var Model = FlexLayout.Model;
 ```
 
-Include the light or dark style in you html:
+Include the light or dark style in your html:
 
 ```
-   <link rel="stylesheet" href="node_modules/flexLayout-react/style/dark.css" />
+<link rel="stylesheet" href="node_modules/flexLayout-react/style/dark.css" />
 ```
 
 ##Usage
