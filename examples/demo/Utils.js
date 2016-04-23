@@ -1,42 +1,31 @@
-import 'babel-core/polyfill';
-
 
 class Utils {
 
-    static downloadFile(downloadUrl)
+    static downloadFile(downloadUrl, onSuccess, onError)
     {
         console.log("DownloadFile: " + downloadUrl);
-        var promise = new Promise(function (resolve, reject)
+        if (downloadUrl)
         {
-            if (downloadUrl)
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', downloadUrl);
+            xhr.onload = function ()
             {
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', downloadUrl);
-                xhr.onload = function ()
+                if (xhr.status == 200)
                 {
-                    if (xhr.status == 200)
-                    {
-                        resolve(xhr.responseText);
-                    }
-                    else
-                    {
-                        reject(xhr.status + " " + xhr.statusText);
-                    }
-                };
-                xhr.onerror = function (e)
+                    onSuccess(xhr.responseText);
+                }
+                else
                 {
-                    console.log(e.getMessage, e);
-                    reject(e);
-                };
-                xhr.send();
-            }
-            else
+                    onError(xhr.status + " " + xhr.statusText);
+                }
+            };
+            xhr.onerror = function (e)
             {
-                reject(null);
-            }
-        });
-
-        return promise;
+                console.log(e.getMessage, e);
+                onError(e);
+            };
+            xhr.send();
+        }
     }
 
     static getQueryParams()

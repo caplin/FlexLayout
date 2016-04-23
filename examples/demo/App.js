@@ -29,7 +29,7 @@ class App
 
         if (params["reload"])
         {
-            Utils.downloadFile("layouts/" + this.layoutFile + ".layout").then(this.load.bind(this), this.error.bind(this));
+            Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
         }
         else
         {
@@ -40,7 +40,7 @@ class App
             }
             else
             {
-                Utils.downloadFile("layouts/" + this.layoutFile + ".layout").then(this.load.bind(this), this.error.bind(this));
+                Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
             }
         }
     }
