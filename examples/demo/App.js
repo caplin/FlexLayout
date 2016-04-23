@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Model from "../../scripts/model/Model.js";
-import Actions from "../../scripts/model/Actions.js";
-import Layout from "../../scripts/view/Layout.js";
+import Model from "../../src/model/Model.js";
+import Actions from "../../src/model/Actions.js";
+import Layout from "../../src/view/Layout.js";
 import Utils from "Utils.js";
 //import Perf from "react-addons-perf";
 

@@ -1,9 +1,9 @@
-import Model from "../scripts/model/Model.js";
-import RowNode from "../scripts/model/RowNode.js";
-import TabSetNode from "../scripts/model/TabSetNode.js";
-import TabNode from "../scripts/model/TabNode.js";
-import Actions from "../scripts/model/Actions.js";
-import DockLocation from "../scripts/DockLocation.js";
+import Model from "../src/model/Model.js";
+import RowNode from "../src/model/RowNode.js";
+import TabSetNode from "../src/model/TabSetNode.js";
+import TabNode from "../src/model/TabNode.js";
+import Actions from "../src/model/Actions.js";
+import DockLocation from "../src/DockLocation.js";
 
 function formatAttributes(node, attrs)
 {

@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Model from "../../scripts/model/Model.js";
-import Layout from "../../scripts/view/Layout.js";
+import Model from "../../src/model/Model.js";
+import Layout from "../../src/view/Layout.js";
 
  var model = Model.fromJson({
             global: {},
