@@ -10,7 +10,7 @@
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
-  "dependencies": {
+  "peerDependencies": {
     "react": "^15.0.0",
     "react-dom": "^15.0.0"
   },

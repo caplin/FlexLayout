@@ -128,6 +128,12 @@ var json = {
 ## Example Code
 
 ```
+var React = require("react");
+var ReactDOM = require("react-dom");
+var FlexLayout = require("FlexLayout");
+var Layout = FlexLayout.Layout;
+var Model = FlexLayout.Model;
+
 var model = Model.fromJson(json);
 
 factory(node)

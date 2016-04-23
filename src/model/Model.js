@@ -90,7 +90,7 @@ class Model
 	 */
 	doAction(action)
 	{
-		console.log("doAction: " + action.name);
+		//console.log("doAction: " + action.name);
 		switch (action.name)
 		{
 			case Actions.ADD_NODE: // add is an alias for move node where fromnode has no parent
@@ -248,7 +248,7 @@ class Model
 	{
 		var start = Date.now();
 		this._root._layout(rect);
-		console.log("layout time: " + (Date.now() - start));
+		//console.log("layout time: " + (Date.now() - start));
 	}
 
 	_tidy()

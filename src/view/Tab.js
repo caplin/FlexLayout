@@ -11,12 +11,12 @@ class Tab extends React.Component
 
 	componentDidMount()
 	{
-		console.log("mount " + this.props.node.getName());
+		//console.log("mount " + this.props.node.getName());
 	}
 
 	componentWillUnmount()
 	{
-		console.log("unmount " + this.props.node.getName());
+		//console.log("unmount " + this.props.node.getName());
 	}
 
 	componentWillReceiveProps(newProps)
@@ -24,7 +24,7 @@ class Tab extends React.Component
 		if (!this.state.renderComponent && newProps.selected)
 		{
 			// load on demand
-			console.log("load on demand: " + this.props.node.getName());
+			//console.log("load on demand: " + this.props.node.getName());
 			this.setState({renderComponent:true});
 		}
 	}

@@ -205,7 +205,7 @@ class TabSet extends React.Component
 
     onOverflowClick(hiddenTabs, event)
     {
-        console.log("hidden tabs: " + hiddenTabs);
+        //console.log("hidden tabs: " + hiddenTabs);
         var element = this.refs.overflowbutton;
         PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this));
     }

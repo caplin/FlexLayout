@@ -143,7 +143,7 @@ class Node {
 
     _fireEvent(event, params)
     {
-        console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
+        //console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this._listeners[event] != null)
         {
             this._listeners[event](params);
