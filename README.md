@@ -77,7 +77,7 @@ npm install flexlayout-react --save
 Require React and FlexLayout in your modules:
 
 ```
-var React = require("react");
+var React = require("react");       
 var ReactDOM = require("react-dom");
 var FlexLayout = require("flexlayout-react");
 var Layout = FlexLayout.Layout;
