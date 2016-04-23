@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import Model from "../../src/model/Model.js";
 import Actions from "../../src/model/Actions.js";
 import Layout from "../../src/view/Layout.js";
-import Utils from "Utils.js";
+import Utils from "./Utils.js";
 //import Perf from "react-addons-perf";
 
 var fields=["Name", "ISIN", "Bid", "Ask", "Last","Yield"];
