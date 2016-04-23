@@ -1,5 +1,4 @@
 import Rect from "../Rect.js";
-import Utils from "../Utils.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 

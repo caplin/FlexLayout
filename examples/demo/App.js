@@ -3,10 +3,8 @@ import ReactDOM from "react-dom";
 import Model from "../../scripts/model/Model.js";
 import Actions from "../../scripts/model/Actions.js";
 import Layout from "../../scripts/view/Layout.js";
-import Utils from "../../scripts/Utils.js";
-import SlickGrid from "slickgrid/grid";
-import 'jquery.event.drag'; //Slickgrid dependency, needs to be bundled
-import Perf from "react-addons-perf";
+import Utils from "Utils.js";
+//import Perf from "react-addons-perf";
 
 var fields=["Name", "ISIN", "Bid", "Ask", "Last","Yield"];
 
@@ -97,10 +95,6 @@ class App
             if (this.grid == "table")
             {
                 return <SimpleTable fields={fields} node={node} data={node.getExtraData().data}/>;
-            }
-            else if (this.grid == "slick")
-            {
-                return <SlickGridWrapper fields={fields} data={node.getExtraData().data}/>;
             }
         }
         else if (component == "simple1" )
@@ -328,40 +322,5 @@ class SimpleTable extends React.Component
     }
 }
 
-class SlickGridWrapper extends React.Component {
-
-    componentDidMount()
-    {
-        var container = ReactDOM.findDOMNode(this.refs.slickgrid);
-
-        var columns = fields.map(function(field)
-        {
-            return {name: field,
-                field: field,
-                width: 130,
-                id: field,
-                sortable: true
-            };
-        });
-
-        var options = {
-            enableCellNavigation: true,
-            enableColumnReorder: false,
-            forceFitColumns: false
-        };
-
-        this.slickgrid = new Slick.Grid(container, this.props.data, columns, options);
-    }
-
-    componentWillReceiveProps(newprops)
-    {
-        this.slickgrid.resizeCanvas();
-    }
-
-    render()
-    {
-        return <div ref="slickgrid" className="slickgrid"></div>
-    }
-}
 
 new App(document.getElementById("container"));

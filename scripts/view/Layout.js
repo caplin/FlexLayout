@@ -5,7 +5,6 @@ import Tab from "./Tab.js";
 import TabSet from "./TabSet.js";
 import DragDrop from "../DragDrop.js";
 import Rect from "../Rect.js";
-import Utils from "../Utils.js";
 import DockLocation from "../DockLocation.js";
 import TabNode from "../model/TabNode.js";
 import TabSetNode from "../model/TabSetNode.js";
@@ -46,11 +45,11 @@ class Layout extends React.Component
 
     logLayout()
     {
-        var params = Utils.getQueryParams();
-        if (params["log"] == "true")
-        {
-            console.log(this.props.model.toString());
-        }
+        //var params = Utils.getQueryParams();
+        //if (params["log"] == "true")
+        //{
+        //    console.log(this.props.model.toString());
+        //}
     }
 
     componentDidMount()
