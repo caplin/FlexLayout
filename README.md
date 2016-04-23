@@ -74,7 +74,7 @@ npm install react-dom --save
 npm install flexlayout-react --save
 ```
 
-From there, require React and FlexLayout in your modules:
+Require React and FlexLayout in your modules:
 
 ```
 var React = require("react");
@@ -82,6 +82,12 @@ var ReactDOM = require("react-dom");
 var FlexLayout = require("flexlayout-react");
 var Layout = FlexLayout.Layout;
 var Model = FlexLayout.Model;
+```
+
+Include the light or dark style in you html:
+
+```
+   <link rel="stylesheet" href="node_modules/flexLayout-react/style/dark.css" />
 ```
 
 ##Usage
