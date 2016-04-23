@@ -17,17 +17,17 @@ class App
         this.layoutFile = "default";
         this.grid = "table";
 
-        var params = Utils.getQueryParams();
-        if (params["layout"])
+        this.params = Utils.getQueryParams();
+        if (this.params["layout"])
         {
-            this.layoutFile = params["layout"];
+            this.layoutFile = this.params["layout"];
         }
-        if (params["grid"])
+        if (this.params["grid"])
         {
-            this.grid = params["grid"];
+            this.grid = this.params["grid"];
         }
 
-        if (params["reload"])
+        if (this.params["reload"])
         {
             Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
         }

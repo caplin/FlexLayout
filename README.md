@@ -15,8 +15,6 @@ resized and moved, much like the windowing system found in many IDE's.
 Available demo url parameters:
 
 *	reload=true  - reload layout from file, rather than localstorage
-*	grid=slick   - use wrapped slickgrid for the demo grid control
-*	log=true     - log the basic model tree to the console after each change
 *	layout=sub   - load a given layout (from file/localstorage)
 
 
@@ -34,7 +32,7 @@ https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=simple&
 Notes:
  
 *	this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
-*	the demo js file is large because it is unminified and includes slickgrid and jquery (a slickgrid dependency)
+*	the demo js file is large because it is unminified.
 *	FlexLayout's only dependency is React
 
 Features so far:
@@ -66,7 +64,25 @@ todo:
 *	layout designer gui, drag and drop + set properties to design initial layout
 *	border dock layer (could be used for minimize to edge)
 
+## Installation
 
+FlexLayout is in the npm repository. Simply install React and FlexLayout from npm:
+
+```
+npm install react --save
+npm install react-dom --save
+npm install FlexLayout --save
+```
+
+From there, require React and FlexLayout in your modules:
+
+```
+var React = require("react");
+var ReactDOM = require("react-dom");
+var FlexLayout = require("FlexLayout");
+var Layout = FlexLayout.Layout;
+var Model = FlexLayout.Model;
+```
 
 ##Usage
 
