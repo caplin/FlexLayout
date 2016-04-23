@@ -1,6 +1,6 @@
 # FlexLayout
 
-FlexLayout is a React layout manager that arranges panels in multiple tab sets, these can be
+FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be
 resized and moved, much like the windowing system found in many IDE's.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
@@ -71,7 +71,7 @@ FlexLayout is in the npm repository. Simply install React and FlexLayout from np
 ```
 npm install react --save
 npm install react-dom --save
-npm install flexlayout --save
+npm install flexlayout-react --save
 ```
 
 From there, require React and FlexLayout in your modules:
@@ -79,7 +79,7 @@ From there, require React and FlexLayout in your modules:
 ```
 var React = require("react");
 var ReactDOM = require("react-dom");
-var FlexLayout = require("flexlayout");
+var FlexLayout = require("flexlayout-react");
 var Layout = FlexLayout.Layout;
 var Model = FlexLayout.Model;
 ```

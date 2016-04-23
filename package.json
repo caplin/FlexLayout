@@ -1,5 +1,5 @@
 {
-  "name": "flexlayout",
+  "name": "flexlayout-react",
   "version": "0.0.1",
   "description": "A layout manager for rich client applications",
   "main": "dist/index.js",
