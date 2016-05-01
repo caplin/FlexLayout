@@ -11,16 +11,32 @@ import Orientation from './Orientation'
 import DragDrop from './DragDrop'
 import Rect from './Rect'
 
-export {  Layout,
-	Actions,
-	Model,
-	Node,
-	RowNode,
-	SplitterNode,
-	TabNode,
-	TabSetNode,
-	DockLocation,
-	Orientation,
-	DragDrop,
-	Rect
+export {
+    Layout,
+    Actions,
+    Model,
+    Node,
+    RowNode,
+    SplitterNode,
+    TabNode,
+    TabSetNode,
+    DockLocation,
+    Orientation,
+    DragDrop,
+    Rect
+};
+
+export default {
+    Layout,
+    Actions,
+    Model,
+    Node,
+    RowNode,
+    SplitterNode,
+    TabNode,
+    TabSetNode,
+    DockLocation,
+    Orientation,
+    DragDrop,
+    Rect
 };

@@ -9,7 +9,6 @@
 
 .flexlayout__splitter {
     background-color: #ddd;
-    background-color: #ddd;
 }
 
 .flexlayout__splitter:hover {
@@ -26,7 +25,7 @@
     position: absolute;
     cursor: move;
     border: 2px solid red;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -35,7 +34,7 @@
 .flexlayout__outline_rect_edge {
     cursor: move;
     border: 2px solid green;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -45,7 +44,7 @@
     position: absolute;
     z-index: 1000;
     /*border: 2px solid gray;*/
-    box-shadow: inset 0px 0px 5px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .2);
     background-color: lightgray;
     /*box-sizing:border-box;*/
 }
@@ -56,7 +55,7 @@
     /*height:50px;*/
     cursor: move;
     border: 2px solid #aaaaaa;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .3);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .3);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -87,7 +86,7 @@
     cursor: pointer;
     padding: 2px 8px 3px 8px;
     margin: 2px;
-    box-shadow: inset 0px 0px 5px rgba(0, 0, 0, .15);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     float: left;
@@ -154,27 +153,27 @@
 .flexlayout__tabset_header
 {
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     background-color: #e8e8e8;
     padding:3px 3px 3px 5px;
-    box-shadow: inset 0px 0px 3px 0px rgba(136, 136, 136, 0.54);
+    box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
     box-sizing: border-box;
 }
 
 .flexlayout__tab_header_outer {
     background-color: white;
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     overflow: hidden;
 }
 
 .flexlayout__tab_header_inner {
     position: absolute;
-    left: 0px;
-    top: 0px;
-    bottom: 0px;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 10000px;
 }
 
@@ -185,8 +184,8 @@
 
 .flexlayout__tab_toolbar {
     position:absolute;
-    top:0px;
-    right:0px;
+    top:0;
+    right:0;
 }
 
 .flexlayout__tab_toolbar_button-min {
@@ -218,7 +217,7 @@
 }
 
 .flexlayout__popup_menu_container {
-    box-shadow: inset 0px 0px 5px rgba(0, 0, 0, .15);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border: 1px solid lightgrey;
     background: white;
     border-radius:3px;

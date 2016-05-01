@@ -1,13 +1,10 @@
-class Orientation
-{
-    static flip(from)
-    {
-        if (from === Orientation.HORZ)
-        {
+class Orientation {
+
+    static flip(from) {
+        if (from === Orientation.HORZ) {
             return Orientation.VERT;
         }
-        else
-        {
+        else {
             return Orientation.HORZ;
         }
     }

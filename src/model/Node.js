@@ -2,11 +2,9 @@ import Rect from "../Rect.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 
-var NextKey = 0;
-
 class Node {
-    constructor(model)
-    {
+
+    constructor(model) {
         this._type = null;
         this._model = model;
         this._parent = null;
@@ -16,88 +14,61 @@ class Node {
         this._width = null;
         this._fixed = false;
         this._rect = new Rect();
-        this._key = NextKey++;
-        this._listeners = {};
         this._visible = false;
-        this._orientation = Orientation.HORZ;
         this._id = null;
     }
 
-    getId()
-    {
+    getId() {
         return this._id;
     }
 
-    getModel()
-    {
+    getModel() {
         return this._model;
     }
 
-    getType()
-    {
+    getType() {
         return this._type;
     }
 
-    getParent()
-    {
+    getParent() {
         return this._parent;
     }
 
-    getChildren()
-    {
+    getChildren() {
         return this._children;
     }
 
-    getRect()
-    {
+    getRect() {
         return this._rect;
     }
 
-    getKey()
-    {
-        return this._key;
-    }
-
-    isVisible()
-    {
+    isVisible() {
         return this._visible;
     }
 
-    getOrientation()
-    {
-        return this._orientation;
+    getOrientation() {
+        if (this._parent == null) {
+            return Orientation.HORZ;
+        }
+        else {
+            return Orientation.flip(this._parent.getOrientation());
+        }
     }
 
-    // event can be: resize, visibility, maximize (on tabset), close
-    setEventListener(event, callback)
-    {
-        this._listeners[event] = callback;
-    }
-
-    removeEventListener(event)
-    {
-        delete this._listeners[event];
-    }
-
-    getWidth()
-    {
+    getWidth() {
         return this._width;
     }
 
-    getHeight()
-    {
+    getHeight() {
         return this._height;
     }
 
-    _getAttr(name)
-    {
-        var val = undefined;
-        if (this[name] === undefined)
-        {
+    _getAttr(name) {
+        let val = undefined;
+        if (this[name] === undefined) {
             val = this._model[name];
         }
-        else
-        {
+        else {
             val = this[name];
         }
 
@@ -105,72 +76,45 @@ class Node {
         return val;
     }
 
-    _forEachNode(fn, level)
-    {
+    _forEachNode(fn, level) {
         fn(this, level);
         level++;
-        this._children.forEach((node) =>
-        {
+        this._children.forEach((node) => {
             fn(node, level);
             node._forEachNode(fn, level);
         })
     }
 
-    _getPrefSize(orientation)
-    {
-        var prefSize = this.getWidth();
-        if (orientation == Orientation.VERT)
-        {
+    _getPrefSize(orientation) {
+        let prefSize = this.getWidth();
+        if (orientation === Orientation.VERT) {
             prefSize = this.getHeight();
         }
         return prefSize;
     }
 
-    _setVisible(visible)
-    {
-        if (visible != this._visible)
-        {
-            this._fireEvent("visibility", {visible: visible});
-            this._visible = visible;
-        }
+    _setVisible(visible) {
+        this._visible = visible;
     }
 
-    _getDrawChildren()
-    {
+    _getDrawChildren() {
         return this._children;
     }
 
-
-    _fireEvent(event, params)
-    {
-        //console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
-        if (this._listeners[event] != null)
-        {
-            this._listeners[event](params);
-        }
-    }
-
-    _layout(rect)
-    {
+    _layout(rect) {
         this._rect = rect;
     }
 
-    _findDropTargetNode(dragNode, x, y)
-    {
-        var rtn = null;
-        if (this._rect.contains(x, y))
-        {
+    _findDropTargetNode(dragNode, x, y) {
+        let rtn = null;
+        if (this._rect.contains(x, y)) {
             rtn = this._canDrop(dragNode, x, y);
-            if (rtn == null)
-            {
-                if (this._children.length !== 0)
-                {
-                    for (var i = 0; i < this._children.length; i++)
-                    {
-                        var child = this._children[i];
+            if (rtn == null) {
+                if (this._children.length !== 0) {
+                    for (let i = 0; i < this._children.length; i++) {
+                        let child = this._children[i];
                         rtn = child._findDropTargetNode(dragNode, x, y);
-                        if (rtn != null)
-                        {
+                        if (rtn != null) {
                             break;
                         }
                     }
@@ -181,53 +125,42 @@ class Node {
         return rtn;
     }
 
-    _canDrop(dragNode, x, y)
-    {
+    _canDrop(dragNode, x, y) {
         return null;
     }
 
-    _canDockInto(dragNode, dropInfo)
-    {
-        if (dropInfo != null)
-        {
-            if (dropInfo.location == DockLocation.CENTER && dropInfo.node.isEnableDrop() == false)
-            {
+    _canDockInto(dragNode, dropInfo) {
+        if (dropInfo != null) {
+            if (dropInfo.location === DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
                 return false;
             }
 
             // prevent named tabset docking into another tabset, since this would loose the header
-            if (dropInfo.location == DockLocation.CENTER && dragNode._type == "tabset" && dragNode.getName() !== null)
-            {
+            if (dropInfo.location === DockLocation.CENTER && dragNode._type === "tabset" && dragNode.getName() !== null) {
                 return false;
             }
 
-            if (dropInfo.location != DockLocation.CENTER && dropInfo.node.isEnableDivide() == false)
-            {
+            if (dropInfo.location !== DockLocation.CENTER && dropInfo.node.isEnableDivide() === false) {
                 return false;
             }
         }
         return true;
     }
 
-    _removeChild(childNode)
-    {
-        var pos = this._children.indexOf(childNode);
-        if (pos != -1)
-        {
+    _removeChild(childNode) {
+        let pos = this._children.indexOf(childNode);
+        if (pos !== -1) {
             this._children.splice(pos, 1);
         }
         this._dirty = true;
         return pos;
     }
 
-    _addChild(childNode, pos)
-    {
-        if (pos != undefined)
-        {
+    _addChild(childNode, pos) {
+        if (pos != undefined) {
             this._children.splice(pos, 0, childNode);
         }
-        else
-        {
+        else {
             this._children.push(childNode);
             pos = this._children.length - 1;
         }
@@ -236,33 +169,27 @@ class Node {
         return pos;
     }
 
-    _removeAll()
-    {
+    _removeAll() {
         this._children = [];
         this._dirty = true;
     }
 
-    _styleWithPosition(style)
-    {
-        if (style == undefined)
-        {
+    _styleWithPosition(style) {
+        if (style == undefined) {
             style = {};
         }
         return this._rect.styleWithPosition(style);
     }
 
     // implemented by subclasses
-    _updateAttrs(json)
-    {
+    _updateAttrs(json) {
     }
 
-    toString(lines, indent)
-    {
-        lines.push(indent + this._type + " " + this._weight.toFixed(2));
+    toString(lines, indent) {
+        lines.push(indent + this._type + " " + this._weight.toFixed(2) + " " + this._key);
         indent = indent + "\t";
-        for (var i = 0; i < this._children.length; i++)
-        {
-            var child = this._children[i];
+        for (let i = 0; i < this._children.length; i++) {
+            let child = this._children[i];
             child.toString(lines, indent);
         }
     }

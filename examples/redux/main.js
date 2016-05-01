@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import * as Redux from "redux";
 import FlexLayout from "../../src/index.js";
 
 var json = {
@@ -41,11 +42,34 @@ var json = {
     }
 };
 
+function reducer(state, action) {
+
+    console.log(action);
+    var newState = state;
+
+    if (action.type.startsWith("FlexLayout_")) {
+        var newLayoutJson = FlexLayout.Model.apply(action, state.layoutJson);
+        newState = Object.assign({}, state, {layoutJson: newLayoutJson});
+    }
+
+    console.log(JSON.stringify(newState, null, "\t"));
+    return newState;
+}
+
+var initialState = {layoutJson: json};
+var store = Redux.createStore(reducer, initialState,
+    window.devToolsExtension ? window.devToolsExtension() : undefined); // include redux dev tools: https://github.com/zalmoxisus/redux-devtools-extension
+
 class Main extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {json: json};
+        this.props.store.subscribe(this.onChange.bind(this));
+        this.state = {json: this.props.store.getState().layoutJson};
+    }
+
+    onChange() {
+        this.setState({json: this.props.store.getState().layoutJson});
     }
 
     factory(node) {
@@ -56,18 +80,17 @@ class Main extends React.Component {
     }
 
     onAction(action) {
-        console.log(action);
-
-        this.setState({json: FlexLayout.Model.apply(action, json)});
-
-        console.log(JSON.stringify(json, null, "\t"));
+        this.props.store.dispatch(action);
     }
 
     render() {
         return (
-            <FlexLayout.Layout model={this.state.json} factory={this.factory.bind(this)} onAction={this.onAction.bind(this)}/>
+            <FlexLayout.Layout
+                model={this.state.json}
+                factory={this.factory.bind(this)}
+                onAction={this.onAction.bind(this)}/>
         );
     }
 }
 
-ReactDOM.render(<Main/>, document.getElementById("container"));
+ReactDOM.render(<Main store={store}/>, document.getElementById("container"));

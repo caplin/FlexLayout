@@ -1,235 +1,201 @@
 import Rect from "./Rect.js";
 
-class DragDrop
-{
-	constructor()
-	{
-		this.glass = document.createElement("div");
-		this.glass.style.zIndex = 998;
-		this.glass.style.position = "absolute";
-		this.glass.style.backgroundColor = "white";
-		this.glass.style.opacity = ".00"; // may need to be .01 for IE???
-		this.glass.style.filter = "alpha(opacity=01)";
+class DragDrop {
 
-		this.onMouseMove = this.onMouseMove.bind(this);
-		this.onMouseUp = this.onMouseUp.bind(this);
+    constructor() {
+        this.glass = document.createElement("div");
+        this.glass.style.zIndex = 998;
+        this.glass.style.position = "absolute";
+        this.glass.style.backgroundColor = "white";
+        this.glass.style.opacity = ".00"; // may need to be .01 for IE???
+        this.glass.style.filter = "alpha(opacity=01)";
 
-		this.onKeyPress = this.onKeyPress.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
 
-		this.lastClick = 0;
-		this.clickX = 0;
-		this.clickY = 0;
-	}
+        this.onKeyPress = this.onKeyPress.bind(this);
 
-	// if you add the glass pane then you should remove it
-	addGlass(fCancel)
-	{
-		if (!this.glassShowing)
-		{
-			var glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight)
-			glassRect.positionElement(this.glass);
-			document.body.appendChild(this.glass);
-			this.glass.tabIndex = -1;
-			this.glass.focus();
-			this.glass.addEventListener("keydown", this.onKeyPress);
-			this.glassShowing = true;
-			this.fDragCancel = fCancel;
-			this.manualGlassManagement = false;
-		}
-		else // second call to addGlass (via dragstart)
-		{
-			this.manualGlassManagement = true;
-		}
-	}
+        this.lastClick = 0;
+        this.clickX = 0;
+        this.clickY = 0;
+    }
 
-	hideGlass()
-	{
-		if (this.glassShowing)
-		{
-			document.body.removeChild(this.glass);
-			this.glassShowing = false;
-		}
-	}
+    // if you add the glass pane then you should remove it
+    addGlass(fCancel) {
+        if (!this.glassShowing) {
+            let glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
+            glassRect.positionElement(this.glass);
+            document.body.appendChild(this.glass);
+            this.glass.tabIndex = -1;
+            this.glass.focus();
+            this.glass.addEventListener("keydown", this.onKeyPress);
+            this.glassShowing = true;
+            this.fDragCancel = fCancel;
+            this.manualGlassManagement = false;
+        }
+        else { // second call to addGlass (via dragstart)
+            this.manualGlassManagement = true;
+        }
+    }
 
-	onKeyPress(event)
-	{
-		if (this.fDragCancel != null && event.keyCode == 27) // esc
-		{
-			this.hideGlass();
-			document.removeEventListener("mousemove", this.onMouseMove);
-			document.removeEventListener("mouseup", this.onMouseUp);
-			this.dragging = false;
-			this.fDragCancel();
-		}
-	}
+    hideGlass() {
+        if (this.glassShowing) {
+            document.body.removeChild(this.glass);
+            this.glassShowing = false;
+        }
+    }
 
-	getLocationEvent(event)
-	{
-		var posEvent = event;
-		if (event.touches)
-		{
-			posEvent = event.touches[0]
-		}
-		return posEvent;
-	}
+    onKeyPress(event) {
+        if (this.fDragCancel != null && event.keyCode === 27) { // esc
+            this.hideGlass();
+            document.removeEventListener("mousemove", this.onMouseMove);
+            document.removeEventListener("mouseup", this.onMouseUp);
+            this.dragging = false;
+            this.fDragCancel();
+        }
+    }
 
-	getLocationEventEnd(event)
-	{
-		var posEvent = event;
-		if (event.changedTouches)
-		{
-			posEvent = event.changedTouches[0]
-		}
-		return posEvent;
-	}
+    getLocationEvent(event) {
+        let posEvent = event;
+        if (event.touches) {
+            posEvent = event.touches[0]
+        }
+        return posEvent;
+    }
 
-	stopPropagation(event)
-	{
-		if (event.stopPropagation)
-		{
-			event.stopPropagation();
-		}
-	}
+    getLocationEventEnd(event) {
+        let posEvent = event;
+        if (event.changedTouches) {
+            posEvent = event.changedTouches[0]
+        }
+        return posEvent;
+    }
 
-	preventDefault(event)
-	{
-		if (event.preventDefault)
-		{
-			event.preventDefault();
-		}
-		return event;
-	}
+    stopPropagation(event) {
+        if (event.stopPropagation) {
+            event.stopPropagation();
+        }
+    }
 
-	startDrag(event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick)
-	{
-		var posEvent = this.getLocationEvent(event);
-		this.addGlass(fDragCancel);
+    preventDefault(event) {
+        if (event.preventDefault) {
+            event.preventDefault();
+        }
+        return event;
+    }
 
-		if (this.dragging) debugger; // should never happen
+    startDrag(event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick) {
+        let posEvent = this.getLocationEvent(event);
+        this.addGlass(fDragCancel);
 
-		if (event != null) {
-			this.startX = posEvent.clientX;
-			this.startY = posEvent.clientY;
-			this.glass.style.cursor = getComputedStyle(event.target).cursor;
-			this.stopPropagation(event);
-			this.preventDefault(event);
-		}
-		else {
-			this.startX = 0;
-			this.startY = 0;
-			this.glass.style.cursor = "default";
-		}
+        if (this.dragging) debugger; // should never happen
 
-		this.dragging = false;
-		this.fDragStart = fDragStart;
-		this.fDragMove = fDragMove;
-		this.fDragEnd = fDragEnd;
-		this.fDragCancel = fDragCancel;
-		this.fClick = fClick;
-		this.fDblClick = fDblClick;
+        if (event != null) {
+            this.startX = posEvent.clientX;
+            this.startY = posEvent.clientY;
+            this.glass.style.cursor = getComputedStyle(event.target).cursor;
+            this.stopPropagation(event);
+            this.preventDefault(event);
+        }
+        else {
+            this.startX = 0;
+            this.startY = 0;
+            this.glass.style.cursor = "default";
+        }
 
-		document.addEventListener("mouseup", this.onMouseUp);
-		document.addEventListener("mousemove", this.onMouseMove);
-		document.addEventListener("touchend", this.onMouseUp);
-		document.addEventListener("touchmove", this.onMouseMove);
-	}
+        this.dragging = false;
+        this.fDragStart = fDragStart;
+        this.fDragMove = fDragMove;
+        this.fDragEnd = fDragEnd;
+        this.fDragCancel = fDragCancel;
+        this.fClick = fClick;
+        this.fDblClick = fDblClick;
 
-	onMouseMove(event)
-	{
-		var posEvent = this.getLocationEvent(event);
-		this.stopPropagation(event);
-		this.preventDefault(event);
+        document.addEventListener("mouseup", this.onMouseUp);
+        document.addEventListener("mousemove", this.onMouseMove);
+        document.addEventListener("touchend", this.onMouseUp);
+        document.addEventListener("touchmove", this.onMouseMove);
+    }
 
-		if (!this.dragging && (Math.abs(this.startX - posEvent.clientX) > 5 || Math.abs(this.startY - posEvent.clientY) > 5))
-		{
-			this.dragging = true;
-			if (this.fDragStart)
-			{
-				this.glass.style.cursor = "move";
-				this.dragging = this.fDragStart({"clientX": this.startX, "clientY": this.startY});
-			}
-		}
+    onMouseMove(event) {
+        let posEvent = this.getLocationEvent(event);
+        this.stopPropagation(event);
+        this.preventDefault(event);
 
-		if (this.dragging)
-		{
-			if (this.fDragMove)
-			{
-				this.fDragMove(posEvent);
-			}
-		}
-		return false;
-	}
+        if (!this.dragging && (Math.abs(this.startX - posEvent.clientX) > 5 || Math.abs(this.startY - posEvent.clientY) > 5)) {
+            this.dragging = true;
+            if (this.fDragStart) {
+                this.glass.style.cursor = "move";
+                this.dragging = this.fDragStart({"clientX": this.startX, "clientY": this.startY});
+            }
+        }
 
-	onMouseUp(event)
-	{
-		var posEvent = this.getLocationEventEnd(event);
+        if (this.dragging) {
+            if (this.fDragMove) {
+                this.fDragMove(posEvent);
+            }
+        }
+        return false;
+    }
 
-		this.stopPropagation(event);
-		this.preventDefault(event);
+    onMouseUp(event) {
+        let posEvent = this.getLocationEventEnd(event);
 
-		if (!this.manualGlassManagement)
-		{
-			this.hideGlass();
-		}
+        this.stopPropagation(event);
+        this.preventDefault(event);
 
-		document.removeEventListener("mousemove", this.onMouseMove);
-		document.removeEventListener("mouseup", this.onMouseUp);
-		document.removeEventListener("touchend", this.onMouseUp);
-		document.removeEventListener("touchmove", this.onMouseMove);
+        if (!this.manualGlassManagement) {
+            this.hideGlass();
+        }
 
-		if (this.dragging)
-		{
-			this.dragging = false;
-			if (this.fDragEnd)
-			{
-				this.fDragEnd(event);
-			}
-			//dump("set dragging = false\n");
-		}
-		else
-		{
-			if (Math.abs(this.startX - posEvent.clientX) <= 5 && Math.abs(this.startY - posEvent.clientY) <= 5)
-			{
-				var clickTime = new Date().getTime();
-				// check for double click
-				if (Math.abs(this.clickX - posEvent.clientX) <= 5 && Math.abs(this.clickY - posEvent.clientY) <= 5)
-				{
-					if (clickTime - this.lastClick < 500)
-					{
-						if (this.fDblClick)
-						{
-							this.fDblClick(event);
-						}
-					}
-				}
+        document.removeEventListener("mousemove", this.onMouseMove);
+        document.removeEventListener("mouseup", this.onMouseUp);
+        document.removeEventListener("touchend", this.onMouseUp);
+        document.removeEventListener("touchmove", this.onMouseMove);
 
-				if (this.fClick)
-				{
-					this.fClick(event);
-				}
-				this.lastClick = clickTime;
-				this.clickX = posEvent.clientX;
-				this.clickY = posEvent.clientY;
-			}
-		}
-		return false;
-	}
+        if (this.dragging) {
+            this.dragging = false;
+            if (this.fDragEnd) {
+                this.fDragEnd(event);
+            }
+            //dump("set dragging = false\n");
+        }
+        else {
+            if (Math.abs(this.startX - posEvent.clientX) <= 5 && Math.abs(this.startY - posEvent.clientY) <= 5) {
+                let clickTime = new Date().getTime();
+                // check for double click
+                if (Math.abs(this.clickX - posEvent.clientX) <= 5 && Math.abs(this.clickY - posEvent.clientY) <= 5) {
+                    if (clickTime - this.lastClick < 500) {
+                        if (this.fDblClick) {
+                            this.fDblClick(event);
+                        }
+                    }
+                }
 
-	isDragging()
-	{
-		return this.dragging;
-	}
+                if (this.fClick) {
+                    this.fClick(event);
+                }
+                this.lastClick = clickTime;
+                this.clickX = posEvent.clientX;
+                this.clickY = posEvent.clientY;
+            }
+        }
+        return false;
+    }
 
-	toString()
-	{
-		var rtn = "(DragDrop: " +
-			"startX=" + this.startX +
-			", startY=" + this.startY +
-			", dragging=" + this.dragging +
-			")";
+    isDragging() {
+        return this.dragging;
+    }
 
-		return rtn;
-	}
+    toString() {
+        let rtn = "(DragDrop: " +
+            "startX=" + this.startX +
+            ", startY=" + this.startY +
+            ", dragging=" + this.dragging +
+            ")";
+
+        return rtn;
+    }
 }
 DragDrop.instance = new DragDrop();
 

@@ -4,274 +4,272 @@ import TabNode from "./TabNode.js";
 import TabSetNode from "./TabSetNode.js";
 import JsonConverter from "../JsonConverter.js";
 import Rect from "../Rect.js";
+import DockLocation from "../DockLocation.js";
 
 /**
- * Class containing the Model used by the FlexLayout component
+ * Class containing the Tree of Nodes used by the FlexLayout component
  */
-class Model
-{
-	constructor(json)
-	{
-		this._idMap = {};
-		this._root = new RowNode(this, {});
-		this._listeners = [];
-		this._rect = new Rect(0,0,0,0);
-		this._activeTabSet = null;
-		jsonConverter.fromJson(json, this);
+class Model {
+    /**
+     * 'private' constructor
+     */
+    constructor() {
+        this._idMap = {};
+        this._nextId = 0;
+        this._listener = null;
+    }
 
-		// add a tabset
-		var node = new TabSetNode(this, {});
-		this._root._addChild(node);
-	}
+    setListener(listener) {
+        this._listener = listener;
+    }
 
-	/**
-	 * Get the currently active tabset node
-	 * @returns {null|TabSetNode}
-	 */
-	getActiveTabset()
-	{
-		// check activeTabSet is still in tree
-		var found = false;
-		this.visitNodes((node)=>{
-			if (!found && node == this._activeTabSet)
-			{
-				found = true;
-			}
-		});
+    /**
+     * Get the currently active tabset node
+     * @returns {null|TabSetNode}
+     */
+    getActiveTabset() {
+        let activeTabset = null;
+        this.visitNodes((node) => {
+            if (node.getType() === "tabset" && node.isActive()) {
+                activeTabset = node;
+            }
+        });
+        return activeTabset;
+    }
 
-		if (!found)
-		{
-			this._activeTabSet = null;
-		}
-		return this._activeTabSet;
-	}
+    _clearActiveTabset() {
+        this.visitNodes((node) => {
+            if (node.getType() === "tabset") {
+                node._active = false;
+            }
+        });
+    }
 
-	/**
-	 * Gets the root RowNode of the model
-	 * @returns {RowNode|*}
-	 */
-	getRoot()
-	{
-		return this._root;
-	}
+    /**
+     * Gets the root RowNode of the model
+     * @returns {RowNode}
+     */
+    getRoot() {
+        return this._root;
+    }
 
-	/**
-	 * Gets the rectangle of the associated Layout control
-	 * @returns {Rect}
-	 */
-	getRect()
-	{
-		return this._rect;
-	}
+    /**
+     * Visits all the model in the model and call the given function for each
+     * @param fn a function that takes visited node and a integer level as parameters
+     */
+    visitNodes(fn) {
+        this._root._forEachNode(fn, 0);
+    }
 
-	/**
-	 * Visits all the nodes in the model and call the given function for each
-	 * @param fn a function that takes visited node and a integer level as parameters
-	 */
-	visitNodes(fn)
-	{
-		this._root._forEachNode(fn, 0);
-	}
+    /**
+     * Gets a node by its id
+     * @param id the id to find
+     * @returns {null|Node}
+     */
+    getNodeById(id) {
+        return this._idMap[id];
+    }
 
-	/**
-	 * Gets a node by its id (where an id has been set in the initial json)
-	 * @param id the id to find
-	 * @returns {null|Node}
-	 */
-	getNodeById(id)
-	{
-		return this._idMap[id];
-	}
+    /**
+     * Update the json by performing the given action,
+     * Actions should be generated via static methods on the Actions class
+     * @param json the json to update
+     * @param action the action to perform
+     * @returns {*} a new json object with the action applied
+     */
+    static apply(action, json) {
+        console.log(json, action);
 
-	/**
-	 * Update the model by performing the given action,
-	 * Actions should be generated via static methods on the Actions class
-	 * @param action the action to perform
-	 */
-	doAction(action)
-	{
-		//console.log("doAction: " + action.name);
-		switch (action.name)
-		{
-			case Actions.ADD_NODE: // add is an alias for move node where fromnode has no parent
-			case Actions.MOVE_NODE:
-			{
-				let toNode =  action.toNode;
-				let fromNode =  action.fromNode;
-				toNode._drop(fromNode, action.location, action.index);
-				break;
-			}
-			case Actions.DELETE_TAB:
-			{
-				let node =  action.node;
-				node._delete();
-				break;
-			}
-			case Actions.RENAME_TAB:
-			{
-				let node =  action.node;
-				node._setName(action.text);
-				break;
-			}
-			case Actions.SELECT_TAB:
-			{
-				let tabNode =  action.tabNode;
-				let parent = tabNode.getParent();
-				let pos = parent.getChildren().indexOf(tabNode);
+        let model = Model.fromJson(json);
+        model.doAction(action);
+        return model.toJson();
+    }
 
-				if (parent.getSelected() != pos) {
-					parent._setSelected(pos);
-				}
-				this._activeTabSet = parent;
+    doAction(action) {
+        switch (action.type) {
+            case Actions.ADD_NODE:
+            {
+                let newNode = new TabNode(this, action.json);
+                let toNode = this._idMap[action.toNode];
+                toNode._drop(newNode, DockLocation.getByName(action.location), action.index);
+                break;
+            }
+            case Actions.MOVE_NODE:
+            {
+                let fromNode = this._idMap[action.fromNode];
+                let toNode = this._idMap[action.toNode];
+                toNode._drop(fromNode, DockLocation.getByName(action.location), action.index);
+                break;
+            }
+            case Actions.DELETE_TAB:
+            {
+                let node = this._idMap[action.node];
+                node._delete();
+                break;
+            }
+            case Actions.RENAME_TAB:
+            {
+                let node = this._idMap[action.node];
+                node._setName(action.text);
+                break;
+            }
+            case Actions.SELECT_TAB:
+            {
+                let tabNode = this._idMap[action.tabNode];
+                let parent = tabNode.getParent();
+                let pos = parent.getChildren().indexOf(tabNode);
 
-				break;
-			}
-			case Actions.SET_ACTIVE_TABSET:
-			{
-				let tabsetNode =  action.tabsetNode;
-				this._activeTabSet = tabsetNode;
-				break;
-			}
-			case Actions.SET_RECT:
-			{
-				this._rect = action.rect;
-				break;
-			}
-			case Actions.ADJUST_SPLIT:
-			{
-				let splitterNode = action.node;
-				splitterNode.getParent()._adjustSplit(splitterNode, action.value);
-				break;
-			}
-			case Actions.MAXIMIZE_TOGGLE:
-			{
-				let node =  action.node;
-				node._setMaximized(!node.isMaximized());
-				node._fireEvent("maximize", {maximized: node.isMaximized()});
-				this._activeTabSet = node;
+                if (parent.getSelected() !== pos) {
+                    parent._setSelected(pos);
+                }
+                this._clearActiveTabset();
+                parent._active = true;
 
-				break;
-			}
-			case Actions.UPDATE_MODEL_ATTRIBUTES:
-			{
-				this._updateAttrs(action.json);
-				break;
-			}
-			case Actions.UPDATE_NODE_ATTRIBUTES:
-			{
-				let node =  action.node;
-				node._updateAttrs(action.json);
-				break;
-			}
-		}
-		this._layout(this._rect);
-		this._fireChange();
-	}
+                break;
+            }
+            case Actions.SET_ACTIVE_TABSET:
+            {
+                let tabsetNode = this._idMap[action.tabsetNode];
+                this._clearActiveTabset();
+                tabsetNode._active = true;
+                break;
+            }
+            case Actions.ADJUST_SPLIT:
+            {
+                let node1 = this._idMap[action.node1];
+                let node2 = this._idMap[action.node2];
 
-	/**
-	 * Converts the model to json that can be serialized and restored via the fromJson() method
-	 * @returns {*} json object that represents this model
-	 */
-	toJson()
-	{
-		var json = {global:{}, layout:{}};
-		jsonConverter.toJson(json.global, this);
-		this._root._forEachNode((node)=>{node._fireEvent("save", null);});
-		json.layout = this._root._toJson();
-		return json;
-	}
+                this._adjustSplitSide(node1, action.weight1, action.pixelWidth1);
+                this._adjustSplitSide(node2, action.weight2, action.pixelWidth2);
+                break;
+            }
+            case Actions.MAXIMIZE_TOGGLE:
+            {
+                let node = this._idMap[action.node];
+                node._setMaximized(!node.isMaximized());
+                this._clearActiveTabset();
+                node._active = true;
 
-	/**
-	 * Loads the model from the given json representation
-	 * @param json the json model to load
-	 * @returns {Model} a new Model object
-	 */
-	static fromJson(json)
-	{
-		var model = new Model(json.global);
+                break;
+            }
+            case Actions.UPDATE_MODEL_ATTRIBUTES:
+            {
+                this._updateAttrs(action.json);
+                break;
+            }
+            case Actions.UPDATE_NODE_ATTRIBUTES:
+            {
+                let node = this._idMap[action.node];
+                node._updateAttrs(action.json);
+                break;
+            }
+        }
 
-		model._root = RowNode._fromJson(json.layout, model);
-		return model;
-	}
+        if (this._listener !== null) {
+            this._listener();
+        }
+    }
 
-	/**
-	 * Adds a change listener to the model
-	 * @param listener function with a onLayoutChange method, that will be called when the model changes
-	 */
-	addListener(listener)
-	{
-		this._listeners.push(listener);
-	}
+    _adjustSplitSide(node, weight, pixels) {
+        node._weight = weight;
+        if (node._width != null && node.getOrientation() === Orientation.HORZ) {
+            node._width = pixels;
+        }
+        else if (node._height != null && node.getOrientation() === Orientation.VERT) {
+            node._height = pixels;
+        }
+    }
 
-	/**
-	 * Remove a previously added change listener
-	 * @param listener
-	 */
-	removeListener(listener)
-	{
-		var index = this._listeners.indexOf(listener);
-		if (index != -1)
-		{
-			this._listeners.splice(index, 1);
-		}
-	}
+    /**
+     * Converts the model to a json object
+     * @returns {*} json object that represents this model
+     */
+    toJson() {
+        let json = {global: {}, layout: {}};
+        jsonConverter.toJson(json.global, this);
+        json.layout = this._root._toJson();
+        return json;
+    }
 
-	getActiveTabset()
-	{
-		return this._activeTabSet;
-	}
+    /**
+     * Loads the model from the given json object
+     * @param json the json model to load
+     * @returns {Model} a new Model object
+     */
+    static fromJson(json) {
+        let model = new Model();
+        jsonConverter.fromJson(json.global, model);
 
-	getSplitterSize()
-	{
-		return this._splitterSize;
-	}
+        model._root = RowNode._fromJson(json.layout, model);
+        return model;
+    }
 
-	isEnableEdgeDock()
-	{
-		return this._enableEdgeDock;
-	}
+    getSplitterSize() {
+        return this._splitterSize;
+    }
 
-	_addNode(node)
-	{
-		if (node._id != null)
-		{
-			this._idMap[node._id] = node;
-		}
-	}
+    isEnableEdgeDock() {
+        return this._enableEdgeDock;
+    }
 
-	_fireChange()
-	{
-		this._listeners.forEach((listener) => {listener.onLayoutChange(this)});
-	}
+    _addNode(node) {
+        if (node._id == null) {
+            node._id = this._nextUniqueId();
+        }
+        else {
+            if (this._idMap[node._id] !== undefined) {
+                throw "Error: each node must have a unique id, duplicate id: " + node._id;
+            }
 
-	_layout(rect)
-	{
-		var start = Date.now();
-		this._root._layout(rect);
-		//console.log("layout time: " + (Date.now() - start));
-	}
+        }
+        this._idMap[node._id] = node;
+    }
 
-	_tidy()
-	{
-		//console.log("before _tidy", this.toString());
-		this._root._tidy();
-		//console.log("after _tidy", this.toString());
-	}
+    _layout(rect) {
+        //let start = Date.now();
+        this._root._layout(rect);
+        //console.log("layout time: " + (Date.now() - start));
+    }
 
-	_updateAttrs(json)
-	{
-		jsonConverter.updateAttrs(json, this);
-	}
+    _tidy() {
+        //console.log("before _tidy", this.toString());
+        this._root._tidy();
+        //console.log("after _tidy", this.toString());
+    }
 
-	toString()
-	{
-		var lines = [];
-		this._root.toString(lines, "");
-		return lines.join("\n");
-	}
+    _updateAttrs(json) {
+        jsonConverter.updateAttrs(json, this);
+    }
+
+    _nextUniqueId() {
+        this._nextId++;
+        while (this._idMap["#" + this._nextId] !== undefined) {
+            this._nextId++;
+        }
+
+        return "#" + this._nextId;
+    }
+
+    _checkUniqueId(json) {
+        //if (json.id == undefined)
+        //{
+        //	throw "Error: each node must have an id: " + JSON.stringify(json, null, "\t");
+        //}
+        //
+        //if (this._idMap[json.id] !== undefined)
+        //{
+        //	throw "Error: each node must have a unique id, duplicate id: " + JSON.stringify(json, null, "\t");
+        //}
+    }
+
+    toString() {
+        let lines = [];
+        this._root.toString(lines, "");
+        return lines.join("\n");
+    }
 }
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 
 // splitter
 jsonConverter.addConversion("_splitterSize", "splitterSize", 8);
@@ -296,8 +294,4 @@ jsonConverter.addConversion("_tabSetEnableTabStrip", "tabSetEnableTabStrip", tru
 jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
 jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
 
-//console.log(jsonConverter.toTable());
-
-// model callbacks allowDrag, allowDrop(from, to, location), using _canDockInto
-// or model listener for all attributes enables etc
 export default Model;

@@ -1,7 +1,3 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import FlexLayout from "../../src/index.js";
-
 var json = {
     global: {},
     layout: {
@@ -41,33 +37,33 @@ var json = {
     }
 };
 
-class Main extends React.Component {
+var Main = React.createClass({
 
-    constructor(props) {
-        super(props);
-        this.state = {json: json};
-    }
+    getInitialState: function() {
+        return {json: json};
+    },
 
-    factory(node) {
+    factory: function (node) {
         var component = node.getComponent();
         if (component === "button") {
             return <button>{node.getName()}</button>;
         }
-    }
+    },
 
-    onAction(action) {
+    onAction: function (action) {
         console.log(action);
-
         this.setState({json: FlexLayout.Model.apply(action, json)});
-
         console.log(JSON.stringify(json, null, "\t"));
-    }
+    },
 
-    render() {
+    render: function () {
         return (
-            <FlexLayout.Layout model={this.state.json} factory={this.factory.bind(this)} onAction={this.onAction.bind(this)}/>
+            <FlexLayout.Layout
+                model={this.state.json}
+                factory={this.factory.bind(this)}
+                onAction={this.onAction.bind(this)}/>
         );
     }
-}
+});
 
 ReactDOM.render(<Main/>, document.getElementById("container"));

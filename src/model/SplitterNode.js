@@ -1,22 +1,19 @@
 import Node from "./Node.js";
 
-class SplitterNode extends Node
-{
-    constructor(model)
-    {
+class SplitterNode extends Node {
+
+    constructor(model) {
         super(model);
         this._type = SplitterNode.TYPE;
         this._fixed = true;
         model._addNode(this);
     }
 
-    getWidth()
-    {
+    getWidth() {
         return this._model.getSplitterSize();
     }
 
-    getHeight()
-    {
+    getHeight() {
         return this._model.getSplitterSize();
     }
 }

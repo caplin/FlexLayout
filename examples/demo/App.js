@@ -1,221 +1,115 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Model from "../../src/model/Model.js";
-import Actions from "../../src/model/Actions.js";
-import Layout from "../../src/view/Layout.js";
+import FlexLayout from "../../src/index.js";
 import Utils from "./Utils.js";
-//import Perf from "react-addons-perf";
 
-var fields=["Name", "ISIN", "Bid", "Ask", "Last","Yield"];
+var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App
-{
-    constructor(containerElement)
-    {
-        console.log("available query parameters: ?layout=<name>&reload=true&log=true&grid=slick");
+class App {
+    constructor(containerElement) {
+        console.log("available query parameters: ?layout=<name>&reload=true");
+
         this.containerElement = containerElement;
         this.layoutFile = "default";
-        this.grid = "table";
 
         this.params = Utils.getQueryParams();
-        if (this.params["layout"])
-        {
+        if (this.params["layout"]) {
             this.layoutFile = this.params["layout"];
         }
-        if (this.params["grid"])
-        {
-            this.grid = this.params["grid"];
-        }
 
-        if (this.params["reload"])
-        {
+        if (this.params["reload"]) {
             Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
         }
-        else
-        {
+        else {
             var json = localStorage.getItem(this.layoutFile);
-            if (json != null)
-            {
+            if (json != null) {
                 this.load(json);
             }
-            else
-            {
+            else {
                 Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
             }
         }
     }
 
-    load(jsonText)
-    {
-        this.model = Model.fromJson(JSON.parse(jsonText));
-
-        setTimeout(function()
-        {
-            this.render();
-        }.bind(this), 0); // so you get proper stack traces when things so wrong (ref use of promises)
-
-        // save layout when unloading page
-        window.onbeforeunload = function(event)
-        {
-            var json = this.model.toJson();
-            var jsonStr = JSON.stringify(json,null, "\t");
-            localStorage.setItem(this.layoutFile, jsonStr);
-        }.bind(this);
+    load(jsonText) {
+        this.json = JSON.parse(jsonText);
+        ReactDOM.render(<Main initialJson={this.json} layoutFile={this.layoutFile}/>, this.containerElement);
     }
 
-    error(reason)
-    {
+    error(reason) {
         alert("Error loading json config file: " + this.layoutFile + "\n" + reason);
-    }
-
-    render()
-    {
-        ReactDOM.render(<Main model={this.model} factory={this.factory.bind(this)}/>,
-            this.containerElement);
-    }
-
-    factory(node)
-    {
-        // log lifecycle events
-        //node.setEventListener("resize", function(p){console.log("resize");});
-        //node.setEventListener("maximize", function(p){console.log("maximize");});
-        //node.setEventListener("visibility", function(p){console.log("visibility");});
-        //node.setEventListener("close", function(p){console.log("close");});
-
-        //console.log("factory: " + node.component);
-        var component = node.getComponent();
-        if (component == "grid")
-        {
-            if (node.getExtraData().data == null)
-            {
-                // create data in node extra data first time accessed
-                node.getExtraData().data = this.makeFakeData();
-            }
-
-            if (this.grid == "table")
-            {
-                return <SimpleTable fields={fields} node={node} data={node.getExtraData().data}/>;
-            }
-        }
-        else if (component == "simple1" )
-        {
-            return <Simple1 config={node.getConfig}/>;
-        }
-        else if (component == "simple2")
-        {
-            return <Simple2 config={node.getConfig()} node={node}/>;
-        }
-        else if (component == "sub")
-        {
-            var model = node.getExtraData().model;
-            if (model == null)
-            {
-                node.getExtraData().model = Model.fromJson(node.getConfig().model);
-                model = node.getExtraData().model;
-                // save submodel on save event
-                node.setEventListener("save", function(p)
-                    {
-                        node.getConfig().model = node.getExtraData().model.toJson();
-                    }
-                );
-            }
-
-            return <Layout model={model} factory={this.factory.bind(this)}/>;
-        }
-    }
-
-    makeFakeData()
-    {
-        var data = [];
-        var r = Math.random() * 50;
-        for (var i = 0; i<r; i++)
-        {
-            var rec = {};
-            rec.Name = this.randomString(5,"ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            rec.ISIN = rec.Name + this.randomString(7,"1234567890");
-            for (var j=2; j<fields.length; j++)
-            {
-                rec[fields[j]] =  (1.5 + Math.random()*2).toFixed(2);
-            };
-            data.push(rec);
-        }
-        return data;
-    }
-
-    randomString(len, chars)
-    {
-        var a = [];
-        for (var i=0; i<len; i++)
-        {
-            a.push(chars[Math.floor(Math.random()*chars.length)]);
-        }
-
-        return a.join("");
     }
 }
 
-class Main extends React.Component
-{
-    constructor(props)
-    {
+class Main extends React.Component {
+    constructor(props) {
         super(props);
-        this.state = {adding: false, zoom:false};
+        this.state = {json: this.props.initialJson, adding: false, zoom: false};
+        this.nodeStateMap = {};
+
+        // save layout when unloading page
+        window.onbeforeunload = function (event) {
+            var jsonStr = JSON.stringify(this.state.json, null, "\t");
+            localStorage.setItem(this.props.layoutFile, jsonStr);
+        }.bind(this);
     }
 
-    componentDidMount()
-    {
-        //Perf.start()
-    }
-
-    onZoomClick(event)
+    onZoomClick(event) // expand tabs and splitters for easier selection on mobile devices!
     {
         var zoom = !this.state.zoom;
-        this.setState({zoom:zoom});
-        this.props.model.doAction(Actions.updateModelAttributes({
-            splitterSize:zoom?40:8,
-            tabSetHeaderHeight:zoom?40:20,
-            tabSetTabStripHeight:zoom?40:20
+        this.setState({zoom: zoom});
+        this.onAction(FlexLayout.Actions.updateModelAttributes({
+            splitterSize: zoom ? 40 : 8,
+            tabSetHeaderHeight: zoom ? 40 : 20,
+            tabSetTabStripHeight: zoom ? 40 : 20
         }));
     }
 
-    onAddClick(event)
-    {
-        // try indirect add (where drag div is shown that must be dragged to location)
-        this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
-        this.setState({adding:true});
-
-        // try direct drag
-        //this.refs.layout.addTabWhereClicked("Add grid<br>(Drag to location)", {component:"grid", name:"grid"}, this.onAdded.bind(this));
-        //this.setState({adding:true});
-
-        // try add to named tabset
-        //this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
-
-        // try add to active tabset
-        //this.refs.layout.addTabToActiveTabSet({component:"grid", name:"grid"});
-
-        // react performance gathering
-        //Perf.stop();
-        //var measurements = Perf.getLastMeasurements();
-        //Perf.printWasted(measurements);
-        //Perf.start();
-        //this.props.model.toJson();
+    onAddClick(event) {
+        this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
+            component: "grid",
+            name: "a new grid"
+        }, this.onAdded.bind(this));
+        this.setState({adding: true});
     }
 
-    onAdded(addedNode)
-    {
-        this.setState({adding:false});
+    onAdded() {
+        this.setState({adding: false});
     }
 
-    render()
-    {
-        var onRenderTab = function(node, renderValues)
+    onAction(action) {
+        this.setState({json: FlexLayout.Model.apply(action, this.state.json)});
+    }
+
+    factory(node) {
+        var component = node.getComponent();
+        var nodeState = this.nodeStateMap[node.getId()];
+
+        if (component === "grid") {
+            if (nodeState === undefined) {
+                nodeState = this.makeFakeData();
+                this.nodeStateMap[node.getId()] = nodeState;
+            }
+
+            return <SimpleTable fields={fields} data={nodeState}/>;
+        }
+        else if (component === "sub")
         {
-          //renderValues.content += " *";
+            if (nodeState === undefined) {
+                nodeState = FlexLayout.Model.fromJson(node.getConfig().model);
+                //console.log(JSON.stringify(nodeState.toJson(), null, "\t"));
+                this.nodeStateMap[node.getId()] = nodeState;
+            }
+            return <FlexLayout.Layout id={"sub:" + node.getId()} model={nodeState} factory={this.factory.bind(this)}/>;
+        }
+    }
+
+    render() {
+        var onRenderTab = function (node, renderValues) {
+            //renderValues.content += " *";
         };
 
-        var onRenderTabSet = function(node, renderValues)
-        {
+        var onRenderTabSet = function (node, renderValues) {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
             //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
         };
@@ -223,92 +117,62 @@ class Main extends React.Component
         //var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
         return <div className="app">
             <div className="toolbar">
-                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add</button>
-                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onZoomClick.bind(this)}>Zoom Toggle</button>
+                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add
+                </button>
+                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onZoomClick.bind(this)}>Zoom
+                    Toggle
+                </button>
             </div>
             <div className="contents">
-                <Layout ref="layout" model={this.props.model} factory={this.props.factory} onRenderTab={onRenderTab} onRenderTabSet={onRenderTabSet}/>
+                <FlexLayout.Layout
+                        ref="layout"
+                        id="main"
+                        model={this.state.json}
+                        factory={this.factory.bind(this)}
+                        onAction={this.onAction.bind(this)}
+                        onRenderTab={onRenderTab}
+                        onRenderTabSet={onRenderTabSet}/>
             </div>
         </div>;
     }
-}
 
-// pretend store to keep track of a value independent of component lifecycle
-var store = {value:0};
-setInterval(function()
-{
-    store.value++;
-    if (store.callback)
-    {
-        store.callback();
-    }
-},1000);
-
-class Simple1 extends React.Component
-{
-    render()
-    {
-        return <button>{this.props.config.name}</button>;
-    }
-}
-
-class Simple2 extends React.Component
-{
-    constructor(props)
-    {
-        super(props);
-        this.visible = false;
-        this.state = {value:store.value};
-    }
-
-    componentDidMount()
-    {
-        store.callback = function()
-        {
-            if (this.visible)
-            {
-                this.setState({value:store.value});
+    makeFakeData() {
+        var data = [];
+        var r = Math.random() * 50;
+        for (var i = 0; i < r; i++) {
+            var rec = {};
+            rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            rec.ISIN = rec.Name + this.randomString(7, "1234567890");
+            for (var j = 2; j < fields.length; j++) {
+                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
             }
-        }.bind(this);
-
-        this.visible = true;
-        this.props.node.setEventListener("visibility", this.onVisibilityChange.bind(this));
+            data.push(rec);
+        }
+        return data;
     }
 
-    componentWillUnmount()
-    {
-        this.visible = false;
-        store.callback = null;
-    }
+    randomString(len, chars) {
+        var a = [];
+        for (var i = 0; i < len; i++) {
+            a.push(chars[Math.floor(Math.random() * chars.length)]);
+        }
 
-    onVisibilityChange(event)
-    {
-        this.visible = event.visible;
-    }
-
-    render()
-    {
-        return <div>a counter component {this.state.value}</div>;
+        return a.join("");
     }
 }
 
-class SimpleTable extends React.Component
-{
-    shouldComponentUpdate()
-    {
+class SimpleTable extends React.Component {
+    shouldComponentUpdate() {
         return false;
     }
 
-    render()
-    {
-        var headercells = this.props.fields.map(function(field)
-        {
+    render() {
+        var headercells = this.props.fields.map(function (field) {
             return <th key={field}>{field}</th>;
         });
 
         var rows = [];
-        for (var i=0; i< this.props.data.length; i++)
-        {
+        for (var i = 0; i < this.props.data.length; i++) {
             var row = this.props.fields.map(field => <td key={field}>{this.props.data[i][field]}</td>);
             rows.push(<tr key={i}>{row}</tr>);
         }
@@ -321,6 +185,5 @@ class SimpleTable extends React.Component
         </table>;
     }
 }
-
 
 new App(document.getElementById("container"));

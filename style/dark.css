@@ -25,7 +25,7 @@
     position: absolute;
     cursor: move;
     border: 2px solid #cfe8ff;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -34,7 +34,7 @@
 .flexlayout__outline_rect_edge {
     cursor: move;
     border: 2px solid #b7d1b5;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -43,7 +43,7 @@
 .flexlayout__edge_rect {
     position: absolute;
     z-index: 1000;
-    box-shadow: inset 0px 0px 5px rgba(0, 0, 0, .2);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .2);
     background-color: lightgray;
 }
 
@@ -53,7 +53,7 @@
     /*height:50px;*/
     cursor: move;
     border: 2px solid #aaaaaa;
-    box-shadow: inset 0px 0px 60px rgba(0, 0, 0, .3);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .3);
     border-radius: 5px;
     z-index: 1000;
     box-sizing: border-box;
@@ -153,8 +153,8 @@
 .flexlayout__tabset_header
 {
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     color:#eee;
     background-color: #212121;
     padding:3px 3px 3px 5px;
@@ -164,17 +164,17 @@
 
 .flexlayout__tab_header_inner {
     position: absolute;
-    left: 0px;
-    top: 0px;
-    bottom: 0px;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 10000px;
 }
 
 .flexlayout__tab_header_outer {
     background-color: black;
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     /*top: 0px;*/
     /*height: 100px;*/
     overflow: hidden;
@@ -188,8 +188,8 @@
 
 .flexlayout__tab_toolbar {
     position:absolute;
-    top:0px;
-    right:0px;
+    top:0;
+    right:0;
 }
 .flexlayout__tab_toolbar_button-min {
     width:20px;
@@ -220,7 +220,7 @@
 }
 
 .flexlayout__popup_menu_container {
-    box-shadow: inset 0px 0px 5px rgba(0, 0, 0, .15);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border: 1px solid #555;
     background: #222;
     border-radius:3px;
@@ -229,7 +229,3 @@
 }
 
 
-.ChangeBackground
-{
-    background: #179;
-}

@@ -1,7 +1,7 @@
 # FlexLayout
 
 FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be
-resized and moved, much like the windowing system found in many IDE's.
+resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
@@ -32,7 +32,6 @@ https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=simple&
 Notes:
  
 *	this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
-*	the demo js file is large because it is unminified.
 *	FlexLayout's only dependency is React
 
 Features so far:
@@ -46,7 +45,6 @@ Features so far:
 *	submodels, allow layouts inside layouts
 *	tab renaming
 *	themeing - light and dark
-*	lifecycle events
 *	touch events - works on mobile devices (iPad, Android)
 *   esc cancels drag
 *   add tabs using drag, indirect drag, add to active tabset, add to named tabset
@@ -57,9 +55,8 @@ Features so far:
 
 
 todo:
-*	less styling
-*	more lifecycle events... beforeclose...
 *	full set of jasmine tests
+*	less styling
 *	test in browsers/versions
 *	layout designer gui, drag and drop + set properties to design initial layout
 *	border dock layer (could be used for minimize to edge)
@@ -74,14 +71,12 @@ npm install react-dom --save
 npm install flexlayout-react --save
 ```
 
-Require React and FlexLayout in your modules:
+Import React and FlexLayout in your modules:
 
 ```
-var React = require("react");       
-var ReactDOM = require("react-dom");
-var FlexLayout = require("flexlayout-react");
-var Layout = FlexLayout.Layout;
-var Model = FlexLayout.Model;
+import React from "react";
+import ReactDOM from "react-dom";
+import FlexLayout from "flexlayout-react";
 ```
 
 Include the light or dark style in your html:
@@ -97,34 +92,66 @@ A single component `<Layout>` contains the tabsets and splitters. The `<Layout>`
 
 | Prop       | Required/Optional           | Description  |
 | ------------- |:-------------:| -----|
-| model    | required | the layout model (a tree of Nodes) |
+| model    | required | the layout model (a Model object) or a json object |
 | factory      | required | a factory function for creating React components |
 | onAction | optional     |  function called whenever the layout generates an action to update the model |
 | onTabRender | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onTabSetRender | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
 
-The model is tree of Node objects that define the structure of the layout. The model is created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
+The model is tree of Node objects that define the structure of the layout. 
 
 The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout. 
 
+### Using a Model object in the model prop
+The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
+
 If the onAction prop is not specified then the layout will send the layout change action directly to the model.
 
-## Example Json Configuration:
+```javascript
+this.state = {model: Model.fromJson(json)};
+
+render() {
+	<Layout model={this.state.model} factory={factory}/> 
+}
+```
+
+### Using a JSON object in the model prop
+
+Alternatively you can pass json in the model prop, in this case you must also add an onAction callback to 
+handle changes by calling Model.apply(json, action) to create a new json object.
+
+```javascript
+onAction(action) {
+    this.setState(json: FlexLayout.Model.apply(action, this.state.json));
+}
+
+render() {
+	return <FlexLayout.Layout model={this.state.json} factory={factory} onAction={onAction}/>;
+}
+```
+
+This variation works well with Redux where you can use Model.apply(action, layoutState) in your reducer to return a new layout json object.
+See the Redux example for more details.
+
+## Example Configuration:
 
 ```javascript
 var json = {
 	global: {},
 	layout:{ 
 		"type": "row",
+		"id":1,
 		"weight": 100,
 		"children": [
 			{
 				"type": "tabset",
+				"id":2,
 				"weight": 50,
 				"selected": 0,
 				"children": [
 					{
 						"type": "tab",
+						"id":3,
 						"name": "FX",
 						"component":"grid",
 					}
@@ -132,11 +159,13 @@ var json = {
 			},
 			{
 				"type": "tabset",
+				"id":4,
 				"weight": 50,
 				"selected": 0,
 				"children": [
 					{
 						"type": "tab",
+						"id":5,
 						"name": "FI",
 						"component":"grid",
 					}
@@ -150,31 +179,36 @@ var json = {
 ## Example Code
 
 ```
-var React = require("react");
-var ReactDOM = require("react-dom");
-var FlexLayout = require("flexlayout-react");
-var Layout = FlexLayout.Layout;
-var Model = FlexLayout.Model;
+import React from "react";
+import ReactDOM from "react-dom";
+import FlexLayout from "flexlayout-react";
 
-var model = Model.fromJson(json);
+class Main extends React.Component {
 
-factory(node)
-{
-    var component = node.getComponent();
-	if (component == "grid")
-    {
-			return <MyGrid node={node}/>
+    constructor(props) {
+        super(props);
+        this.state = {model: FlexLayout.Model.fromJson(json)}; 
+    }
+
+    factory(node) {
+        var component = node.getComponent();
+        if (component === "button") {
+            return <button>{node.getName()}</button>;
+        }
+    }
+
+    render() {
+        return (
+            <FlexLayout.Layout model={this.state.model} factory={this.factory.bind(this)}/>
+        )
     }
 }
 
-render()
-{
-	<Layout model={model} factory={factory}/> 
-}
+ReactDOM.render(<Main/>, document.getElementById("container"));
 ```		
+(See the examples for full source code)
 
-
-The above code would render two tabsets horizontally each containing a single tab that hosts a grid component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
+The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
 The JSON model is built up using 3 types of 'node':
 
@@ -186,6 +220,14 @@ The JSON model is built up using 3 types of 'node':
 
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
 
+By changing global or node attributes you can change the layout appearance and functionallity, for example:
+
+Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without 
+tabs or drag and drop).
+
+```
+ global: {tabSetEnableTabStrip:false},
+```
 
 ## Global Config attributes
 
@@ -280,10 +322,10 @@ The Model accepts a set of actions via its doAction() method.
 #Example
 
 ```
-        this.props.model.doAction(Actions.updateModelAttributes({
+        model.doAction(Actions.updateModelAttributes({
             splitterSize:40,
             tabSetHeaderHeight:40,
-            tabSetTabStripHeight:400
+            tabSetTabStripHeight:40
         }));
 ```
 
@@ -292,10 +334,8 @@ The Model accepts a set of actions via its doAction() method.
 |	Actions.addNode(newNode, toNode, location, index) | add a new tab node to the given tabset node  |
 |	Actions.moveNode(fromNode, toNode, location, index) | move a tab node from its current location to the new node and location |
 |	Actions.deleteTab(tabNode) | delete the given node |
-|	Actions.renameTab(tabNode, text) | rename the given tab node |
 |	Actions.selectTab(tabNode) | select the given tab |
 |	Actions.setActiveTabset(tabsetNode) | set the tabset as the active tabset |
-|	Actions.setRect(rect) | update the layout rectangle (causes a relayout in the new rectangle) |
 |	Actions.adjustSplit(splitterNode, value) | adjust the size of the given splitter |
 |	Actions.maximizeToggle(node) | toggles whether the current node is maximized |
 |	Actions.updateModelAttributes(attributes) | updates the global attributes |

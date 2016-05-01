@@ -1,68 +1,65 @@
 import Rect from "./Rect.js";
 import Orientation from "./Orientation.js";
 
-class DockLocation
-{
-    constructor(name, orientation, indexPlus)
-    {
+let values = {};
+
+class DockLocation {
+
+    constructor(name, orientation, indexPlus) {
         this._name = name;
         this._orientation = orientation;
         this._indexPlus = indexPlus;
+        values[this._name] = this;
     }
 
-    static getLocation(rect, x, y)
-    {
-        if (x < rect.x + rect.width / 4)
-        {
+    getName() {
+        return this._name;
+    }
+
+    static getByName(name) {
+        return values[name];
+    }
+
+    static getLocation(rect, x, y) {
+        if (x < rect.x + rect.width / 4) {
             return DockLocation.LEFT;
         }
 
-        else if (x > rect.getRight() - rect.width / 4)
-        {
+        else if (x > rect.getRight() - rect.width / 4) {
             return DockLocation.RIGHT;
         }
 
-        else if (y < rect.y + rect.height / 4)
-        {
+        else if (y < rect.y + rect.height / 4) {
             return DockLocation.TOP;
         }
 
-        else if (y > rect.getBottom() - rect.height / 4)
-        {
+        else if (y > rect.getBottom() - rect.height / 4) {
             return DockLocation.BOTTOM;
         }
-        else
-        {
+        else {
             return DockLocation.CENTER;
         }
     }
 
-    getDockRect(r)
-    {
-        if (this == DockLocation.TOP)
-        {
+    getDockRect(r) {
+        if (this === DockLocation.TOP) {
             return new Rect(r.x, r.y, r.width, r.height / 2);
         }
-        else if (this == DockLocation.BOTTOM)
-        {
+        else if (this === DockLocation.BOTTOM) {
             return new Rect(r.x, r.getBottom() - r.height / 2, r.width, r.height / 2);
         }
-        if (this == DockLocation.LEFT)
-        {
+        if (this === DockLocation.LEFT) {
             return new Rect(r.x, r.y, r.width / 2, r.height);
         }
-        else if (this == DockLocation.RIGHT)
-        {
+        else if (this === DockLocation.RIGHT) {
             return new Rect(r.getRight() - r.width / 2, r.y, r.width / 2, r.height);
         }
-        else
-        {
+        else {
             return r.clone();
         }
     }
 
-    toString()
-    {
+    toString() {
         return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
     }
 }

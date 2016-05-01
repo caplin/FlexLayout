@@ -45,7 +45,7 @@ class Main extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {json: json};
+        this.state = {model: FlexLayout.Model.fromJson(json)}; // Model.fromJson(json) creates a mutable Model object
     }
 
     factory(node) {
@@ -55,19 +55,16 @@ class Main extends React.Component {
         }
     }
 
-    onAction(action) {
-        console.log(action);
-
-        this.setState({json: FlexLayout.Model.apply(action, json)});
-
-        console.log(JSON.stringify(json, null, "\t"));
-    }
-
     render() {
+        // pass a mutable Model object to the model prop, now layout will send actions
+        // directly to to model to update the view
         return (
-            <FlexLayout.Layout model={this.state.json} factory={this.factory.bind(this)} onAction={this.onAction.bind(this)}/>
-        );
+            <FlexLayout.Layout
+                model={this.state.model}
+                factory={this.factory.bind(this)}/>
+        )
     }
 }
 
 ReactDOM.render(<Main/>, document.getElementById("container"));
+

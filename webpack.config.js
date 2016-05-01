@@ -4,7 +4,9 @@ module.exports = {
 		demo: "./examples/demo/App.js",
 		tests: "./spec/main.js",
 		simple: "./examples/simple/main.js",
-		simpleWithAdd: "./examples/simpleWithAdd/main.js"
+		redux: "./examples/redux/main.js",
+		simpleWithAdd: "./examples/simpleWithAdd/main.js",
+		simpleWithModel: "./examples/simpleWithModel/main.js"
 	},
 
 	output: {

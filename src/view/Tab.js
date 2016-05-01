@@ -1,51 +1,43 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-class Tab extends React.Component
-{
-	constructor(props)
-	{
-		super(props);
-		this.state = {renderComponent:props.selected};
-	}
+class Tab extends React.Component {
 
-	componentDidMount()
-	{
-		//console.log("mount " + this.props.node.getName());
-	}
+    constructor(props) {
+        super(props);
+        this.state = {renderComponent: props.selected};
+    }
 
-	componentWillUnmount()
-	{
-		//console.log("unmount " + this.props.node.getName());
-	}
+    componentDidMount() {
+        //console.log("mount " + this.props.node.getName());
+    }
 
-	componentWillReceiveProps(newProps)
-	{
-		if (!this.state.renderComponent && newProps.selected)
-		{
-			// load on demand
-			//console.log("load on demand: " + this.props.node.getName());
-			this.setState({renderComponent:true});
-		}
-	}
+    componentWillUnmount() {
+        //console.log("unmount " + this.props.node.getName());
+    }
 
-    render()
-    {
-        var node = this.props.node;
-        var style = node._styleWithPosition({
-            	display: this.props.selected ? "block" : "none"
-            });
+    componentWillReceiveProps(newProps) {
+        if (!this.state.renderComponent && newProps.selected) {
+            // load on demand
+            //console.log("load on demand: " + this.props.node.getName());
+            this.setState({renderComponent: true});
+        }
+    }
 
-		if (this.props.node.getParent().isMaximized())
-		{
-			style.zIndex = 100;
-		}
+    render() {
+        let node = this.props.node;
+        let style = node._styleWithPosition({
+            display: this.props.selected ? "block" : "none"
+        });
 
-		var child = null;
-		if (this.state.renderComponent )
-		{
-			child = this.props.factory(node);
-		}
+        if (this.props.node.getParent().isMaximized()) {
+            style.zIndex = 100;
+        }
+
+        let child = null;
+        if (this.state.renderComponent) {
+            child = this.props.factory(node);
+        }
 
         return <div className="flexlayout__tab" style={style}>{child}</div>;
     }
