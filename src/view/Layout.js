@@ -137,7 +137,7 @@ class Layout extends React.Component
         if (tabsetNode != null)
         {
             var newNode = new TabNode(this.props.model, json);
-            this.props.model.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
+            this.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
         }
     }
 
@@ -147,7 +147,7 @@ class Layout extends React.Component
         if (tabsetNode != null)
         {
             var newNode = new TabNode(this.props.model, json);
-            this.props.model.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
+            this.doAction(Actions.addNode(newNode, tabsetNode, DockLocation.CENTER,-1));
         }
     }
 

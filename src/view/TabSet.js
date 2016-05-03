@@ -227,7 +227,7 @@ class TabSet extends React.Component
         {
             name = ": " + name;
         }
-        this.props.node.getModel().doAction(Actions.setActiveTabset(this.props.node));
+        this.props.layout.doAction(Actions.setActiveTabset(this.props.node));
         this.props.layout.dragStart(event, "Move tabset" + name ,this.props.node, this.props.node.isEnableDrag(), null, this.onDoubleClick.bind(this));
     }
 
