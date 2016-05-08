@@ -58,9 +58,10 @@ class Main extends React.Component {
     onAction(action) {
         console.log(action);
 
-        this.setState({json: FlexLayout.Model.apply(action, json)});
+        var newJson = FlexLayout.Model.apply(action, this.state.json);
+        this.setState({json: newJson});
 
-        console.log(JSON.stringify(json, null, "\t"));
+        console.log(JSON.stringify(newJson, null, "\t"));
     }
 
     render() {
