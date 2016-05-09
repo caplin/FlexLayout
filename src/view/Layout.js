@@ -86,11 +86,13 @@ class Layout extends React.Component {
     }
 
     layout(model) {
-        let domRect = this.refs.self.getBoundingClientRect();
-        let rect = new Rect(0, 0, domRect.width, domRect.height);
-        //this.log("layout " + rect);
-        model._layout(rect);
-        this.setState({model: model, rect: rect});
+        if (this.refs.self != undefined) {
+            let domRect = this.refs.self.getBoundingClientRect();
+            let rect = new Rect(0, 0, domRect.width, domRect.height);
+            //this.log("layout " + rect);
+            model._layout(rect);
+            this.setState({model: model, rect: rect});
+        }
     }
 
     renderChild(node, childComponents) {

@@ -186,7 +186,7 @@ class Node {
     }
 
     toString(lines, indent) {
-        lines.push(indent + this._type + " " + this._weight.toFixed(2) + " " + this._key);
+        lines.push(indent + this._type + " " + this._weight.toFixed(2) + " " + this._id);
         indent = indent + "\t";
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];

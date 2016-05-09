@@ -80,7 +80,7 @@ class TabNode extends Node {
     }
 
     toString(lines, indent) {
-        lines.push(indent + this._type + " " + this._name + " " + this._key);
+        lines.push(indent + this._type + " " + this._name + " " + this._id);
     }
 }
 
