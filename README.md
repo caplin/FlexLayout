@@ -208,6 +208,8 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 ```		
 (See the examples for full source code)
 
+Try a simple example using JSFiddle: https://jsfiddle.net/69z2wepo/41883/
+
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
 The JSON model is built up using 3 types of 'node':
