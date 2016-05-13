@@ -11,8 +11,7 @@ resized and moved.
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
 
-Try using the component now using JSFiddle: https://jsfiddle.net/69z2wepo/41981/
-or Plunker: http://plnkr.co/edit/qRx4HN49k1Eh2ZdC35k8?p=preview
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
 
 Available demo url parameters:
 
@@ -212,7 +211,8 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try a simple example using JSFiddle: https://jsfiddle.net/69z2wepo/41981/
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
+
 
 The JSON model is built up using 3 types of 'node':
 
