@@ -11,7 +11,8 @@ resized and moved.
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
 
-JSFiddle: https://jsfiddle.net/69z2wepo/41981/
+Try using the component now using JSFiddle: https://jsfiddle.net/69z2wepo/41981/
+or Plunker: http://plnkr.co/edit/qRx4HN49k1Eh2ZdC35k8?p=preview
 
 Available demo url parameters:
 
