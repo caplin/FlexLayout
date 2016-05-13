@@ -5,13 +5,14 @@ resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
+
 [More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
 
 [Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html)
 
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
 
 Available demo url parameters:
 
