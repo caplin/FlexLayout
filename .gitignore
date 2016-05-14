@@ -1,3 +1,4 @@
 node_modules/
 bundles/
 dist/
+lib/
