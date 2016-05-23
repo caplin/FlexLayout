@@ -21,7 +21,7 @@ Available demo url parameters:
 
 
 Possible layout values:
- 
+
 *	simple - a simple layout of 3 tabsets
 *	complex - a more complex layout with multiple tabsets
 *	preferred - shows tabsets with preferred sizes
@@ -32,7 +32,7 @@ Example url with parameters:
 https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=simple&reload=true
 
 Notes:
- 
+
 *	this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
 *	FlexLayout's only dependency is React
 
@@ -100,9 +100,9 @@ A single component `<Layout>` contains the tabsets and splitters. The `<Layout>`
 | onTabRender | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onTabSetRender | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
 
-The model is tree of Node objects that define the structure of the layout. 
+The model is tree of Node objects that define the structure of the layout.
 
-The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout. 
+The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout.
 
 ### Using a Model object in the model prop
 The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
@@ -113,13 +113,13 @@ If the onAction prop is not specified then the layout will send the layout chang
 this.state = {model: Model.fromJson(json)};
 
 render() {
-	<Layout model={this.state.model} factory={factory}/> 
+	<Layout model={this.state.model} factory={factory}/>
 }
 ```
 
 ### Using a JSON object in the model prop
 
-Alternatively you can pass json in the model prop, in this case you must also add an onAction callback to 
+Alternatively you can pass json in the model prop, in this case you must also add an onAction callback to
 handle changes by calling Model.apply(json, action) to create a new json object.
 
 ```javascript
@@ -140,7 +140,7 @@ See the Redux example for more details.
 ```javascript
 var json = {
 	global: {},
-	layout:{ 
+	layout:{
 		"type": "row",
 		"id":1,
 		"weight": 100,
@@ -189,7 +189,7 @@ class Main extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {model: FlexLayout.Model.fromJson(json)}; 
+        this.state = {model: FlexLayout.Model.fromJson(json)};
     }
 
     factory(node) {
@@ -227,7 +227,7 @@ Weights on rows and tabsets specify the relative weight of these nodes within th
 
 By changing global or node attributes you can change the layout appearance and functionallity, for example:
 
-Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without 
+Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without
 tabs or drag and drop).
 
 ```
@@ -334,17 +334,30 @@ The Model accepts a set of actions via its doAction() method.
         }));
 ```
 
+The above example would increase the size of the splitters, tabset headers and tabs, this could be used to make
+adjusting the layout easier on a small device.
+
+
 | Action Creator | Description  |
 | ------------- | -----|
-|	Actions.addNode(newNode, toNode, location, index) | add a new tab node to the given tabset node  |
-|	Actions.moveNode(fromNode, toNode, location, index) | move a tab node from its current location to the new node and location |
-|	Actions.deleteTab(tabNode) | delete the given node |
-|	Actions.selectTab(tabNode) | select the given tab |
-|	Actions.setActiveTabset(tabsetNode) | set the tabset as the active tabset |
-|	Actions.adjustSplit(splitterNode, value) | adjust the size of the given splitter |
-|	Actions.maximizeToggle(node) | toggles whether the current node is maximized |
+|	Actions.addNode(newNodeJson, toNodeId, location, index) | add a new tab node to the given tabset node  |
+|	Actions.moveNode(fromNodeId, toNodeId, location, index) | move a tab node from its current location to the new node and location |
+|	Actions.deleteTab(tabNodeId) | delete the given node |
+|	Actions.selectTab(tabNodeId) | select the given tab |
+|	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |
+|	Actions.adjustSplit(splitterNodeId, value) | adjust the size of the given splitter |
+|	Actions.maximizeToggle(tabsetNodeId) | toggles whether the given tabset node is maximized |
 |	Actions.updateModelAttributes(attributes) | updates the global attributes |
-|	Actions.updateNodeAttributes(node, attributes) | updates the attributes of the given node |
+|	Actions.updateNodeAttributes(nodeId, attributes) | updates the attributes of the given node |
+
+for example:
+
+```
+model.doAction(Actions.addNode({component:"grid", name:"grid", id:"5"}, "1", DropLocation.CENTER, 0));
+```
+This would add a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
+Note: you can get the id of a node using the method node.getId(), if an id wasn't assigned when the node was created then one will be created for you of the form #<next available id> (e.g. #1, #2 ...).
+
 
 ##Layout Component Methods to Create New Tabs
 
@@ -355,6 +368,8 @@ Example:
 ```
 this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
 ```
+This would add a new grid component to the tabset with id "NAVIGATION".
+
 
 | Layout Method | Description  |
 | ------------- | -----|
