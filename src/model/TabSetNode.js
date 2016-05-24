@@ -185,7 +185,7 @@ class TabSetNode extends Node {
             dragNode._parent._selected = 0;
         }
 
-        // simple dock to existing tabset
+        // simple_bundled dock to existing tabset
         if (dockLocation === DockLocation.CENTER) {
             let insertPos = index;
             if (insertPos === -1) {
@@ -279,6 +279,10 @@ class TabSetNode extends Node {
 
         return newLayoutNode;
     }
+
+    //toAttributeString() {
+    //    return jsonConverter.toTableValues(this);
+    //}
 }
 
 TabSetNode.TYPE = "tabset";

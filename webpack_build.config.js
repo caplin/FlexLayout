@@ -1,4 +1,6 @@
 
+var JsDocPlugin = require('jsdoc-webpack-plugin');
+
 module.exports = {
 	entry: {
 		flexlayout: "./src/index.js"
@@ -31,5 +33,10 @@ module.exports = {
 				loader: "babel-loader"
 			}
 		]
-	}
+	},
+	plugins: [
+		new JsDocPlugin({
+			conf: './jsdoc.conf'
+		})
+	]
 };

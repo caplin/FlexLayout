@@ -1,3 +1,5 @@
+'use strict';
+
 import React from "react";
 import ReactDOM from "react-dom";
 import Rect from "../Rect.js";
@@ -76,10 +78,15 @@ class TabButton extends React.Component {
             this.setState({editing: false});
         }
         else if (event.keyCode === 13) { // enter
-            let node = this.props.node;
-            this.props.layout.doAction(Actions.renameTab(node.getId(), event.target.value));
             this.setState({editing: false});
+            let node = this.props.node;
+
+            this.props.layout.doAction(Actions.renameTab(node.getId(), event.target.value));
         }
+    }
+
+    doRename(node, newName) {
+        this.props.layout.doAction(Actions.renameTab(node.getId(), newName));
     }
 
     render() {

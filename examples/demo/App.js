@@ -5,64 +5,55 @@ import Utils from "./Utils.js";
 
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App {
-    constructor(containerElement) {
-        console.log("available query parameters: ?layout=<name>&reload=true");
+class App extends React.Component {
 
-        this.containerElement = containerElement;
-        this.layoutFile = "default";
+    constructor(props) {
+        super(props);
+        this.state = {layoutFile:null, model: null, adding: false};
 
-        this.params = Utils.getQueryParams();
-        if (this.params["layout"]) {
-            this.layoutFile = this.params["layout"];
+        // save layout when unloading page
+        window.onbeforeunload = function (event) {
+            this.save();
+        }.bind(this);
+
+    }
+
+    componentDidMount() {
+        this.loadLayout("default", false);
+    }
+
+    save() {
+        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
+        localStorage.setItem(this.state.layoutFile, jsonStr);
+    }
+
+    loadLayout(layoutName, reload) {
+        if (this.state.layoutFile !== null) {
+            this.save();
         }
 
-        if (this.params["reload"]) {
-            Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
-        }
-        else {
-            var json = localStorage.getItem(this.layoutFile);
+        this.loadingLayoutName = layoutName;
+        let loaded = false;
+        if (!reload) {
+            var json = localStorage.getItem(layoutName);
             if (json != null) {
                 this.load(json);
+                loaded = true;
             }
-            else {
-                Utils.downloadFile("layouts/" + this.layoutFile + ".layout", this.load.bind(this), this.error.bind(this));
-            }
+        }
+
+        if (!loaded) {
+             Utils.downloadFile("layouts/" + layoutName + ".layout", this.load.bind(this), this.error.bind(this));
         }
     }
 
     load(jsonText) {
-        this.json = JSON.parse(jsonText);
-        ReactDOM.render(<Main initialJson={this.json} layoutFile={this.layoutFile}/>, this.containerElement);
+        let json = JSON.parse(jsonText);
+        this.setState({layoutFile: this.loadingLayoutName, model: FlexLayout.Model.fromJson(json)});
     }
 
     error(reason) {
-        alert("Error loading json config file: " + this.layoutFile + "\n" + reason);
-    }
-}
-
-class Main extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {json: this.props.initialJson, adding: false, zoom: false};
-        this.nodeStateMap = {};
-
-        // save layout when unloading page
-        window.onbeforeunload = function (event) {
-            var jsonStr = JSON.stringify(this.state.json, null, "\t");
-            localStorage.setItem(this.props.layoutFile, jsonStr);
-        }.bind(this);
-    }
-
-    onZoomClick(event) // expand tabs and splitters for easier selection on mobile devices!
-    {
-        var zoom = !this.state.zoom;
-        this.setState({zoom: zoom});
-        this.onAction(FlexLayout.Actions.updateModelAttributes({
-            splitterSize: zoom ? 40 : 8,
-            tabSetHeaderHeight: zoom ? 40 : 20,
-            tabSetTabStripHeight: zoom ? 40 : 20
-        }));
+        alert("Error loading json config file: " + this.loadingLayoutName + "\n" + reason);
     }
 
     onAddClick(event) {
@@ -77,31 +68,48 @@ class Main extends React.Component {
         this.setState({adding: false});
     }
 
-    onAction(action) {
-        this.setState({json: FlexLayout.Model.apply(action, this.state.json)});
-    }
-
     factory(node) {
+        // log lifecycle events
+        //node.setEventListener("resize", function(p){console.log("resize");});
+        //node.setEventListener("visibility", function(p){console.log("visibility");});
+        //node.setEventListener("close", function(p){console.log("close");});
+
         var component = node.getComponent();
-        var nodeState = this.nodeStateMap[node.getId()];
 
         if (component === "grid") {
-            if (nodeState === undefined) {
-                nodeState = this.makeFakeData();
-                this.nodeStateMap[node.getId()] = nodeState;
+            if (node.getExtraData().data == null) {
+                // create data in node extra data first time accessed
+                node.getExtraData().data = this.makeFakeData();
             }
 
-            return <SimpleTable fields={fields} data={nodeState}/>;
+            return <SimpleTable fields={fields} data={node.getExtraData().data}/>;
         }
-        else if (component === "sub")
-        {
-            if (nodeState === undefined) {
-                nodeState = FlexLayout.Model.fromJson(node.getConfig().model);
-                //console.log(JSON.stringify(nodeState.toJson(), null, "\t"));
-                this.nodeStateMap[node.getId()] = nodeState;
+        else if (component === "sub") {
+            var model = node.getExtraData().model;
+            if (model == null) {
+                node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
+                model = node.getExtraData().model;
+                // save submodel on save event
+                node.setEventListener("save", function(p) {
+                        node.getConfig().model = node.getExtraData().model.toJson();
+                    }
+                );
             }
-            return <FlexLayout.Layout id={"sub:" + node.getId()} model={nodeState} factory={this.factory.bind(this)}/>;
+
+            return <FlexLayout.Layout model={model} factory={this.factory.bind(this)}/>;
         }
+        else if (component === "text") {
+            return <div dangerouslySetInnerHTML={{__html:node.getConfig().text}}/>;
+        }
+    }
+
+    onSelectLayout(event) {
+        this.loadLayout(event.target.value);
+    }
+
+    onReloadFromFile(event)
+    {
+        this.loadLayout(this.state.layoutFile, true);
     }
 
     render() {
@@ -114,24 +122,33 @@ class Main extends React.Component {
             //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
         };
 
-        //var message  = (this.state.adding)?<div style={{float:"right"}}>Click on location for new tab</div>:null;
+        let contents = "loading ...";
+        if (this.state.model !== null) {
+            contents = <FlexLayout.Layout
+                ref="layout"
+                model={this.state.model}
+                factory={this.factory.bind(this)}
+                    onRenderTab={onRenderTab}
+                onRenderTabSet={onRenderTabSet}/>;
+        }
+
         return <div className="app">
             <div className="toolbar">
+                <select onChange={this.onSelectLayout.bind(this)}>
+                    <option value="default">Default</option>
+                    <option value="simple">Simple</option>
+                    <option value="justsplitters">Just Splitters</option>
+                    <option value="sub">SubLayout</option>
+                    <option value="complex">Complex</option>
+                    <option value="preferred">Using Preferred size</option>
+                    <option value="trader">Trader</option>
+                </select>
+                <button onClick={this.onReloadFromFile.bind(this)}>reload from file</button>
                 <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add
-                </button>
-                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onZoomClick.bind(this)}>Zoom
-                    Toggle
                 </button>
             </div>
             <div className="contents">
-                <FlexLayout.Layout
-                        ref="layout"
-                        id="main"
-                        model={this.state.json}
-                        factory={this.factory.bind(this)}
-                        onAction={this.onAction.bind(this)}
-                        onRenderTab={onRenderTab}
-                        onRenderTabSet={onRenderTabSet}/>
+                {contents}
             </div>
         </div>;
     }
@@ -186,4 +203,4 @@ class SimpleTable extends React.Component {
     }
 }
 
-new App(document.getElementById("container"));
+ReactDOM.render(<App/>, document.getElementById("container"));

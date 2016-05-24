@@ -5,13 +5,14 @@ import TabSetNode from "./TabSetNode.js";
 import JsonConverter from "../JsonConverter.js";
 import Rect from "../Rect.js";
 import DockLocation from "../DockLocation.js";
+import Orientation from "../Orientation.js";
 
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
 class Model {
     /**
-     * 'private' constructor
+     * 'private' constructor. Use the static method Model.fromJson(json) to create a model
      */
     constructor() {
         this._idMap = {};
@@ -54,7 +55,7 @@ class Model {
     }
 
     /**
-     * Visits all the model in the model and call the given function for each
+     * Visits all the nodes in the model and calls the given function for each
      * @param fn a function that takes visited node and a integer level as parameters
      */
     visitNodes(fn) {
@@ -70,22 +71,23 @@ class Model {
         return this._idMap[id];
     }
 
-    /**
-     * Update the json by performing the given action,
-     * Actions should be generated via static methods on the Actions class
-     * @param json the json to update
-     * @param action the action to perform
-     * @returns {*} a new json object with the action applied
-     */
-    static apply(action, json) {
-        console.log(json, action);
-
-        let model = Model.fromJson(json);
-        model.doAction(action);
-        return model.toJson();
-    }
+    ///**
+    // * Update the json by performing the given action,
+    // * Actions should be generated via static methods on the Actions class
+    // * @param json the json to update
+    // * @param action the action to perform
+    // * @returns {*} a new json object with the action applied
+    // */
+    //static apply(action, json) {
+    //    console.log(json, action);
+    //
+    //    let model = Model.fromJson(json);
+    //    model.doAction(action);
+    //    return model.toJson();
+    //}
 
     doAction(action) {
+        //console.log(action);
         switch (action.type) {
             case Actions.ADD_NODE:
             {
@@ -172,10 +174,10 @@ class Model {
 
     _adjustSplitSide(node, weight, pixels) {
         node._weight = weight;
-        if (node._width != null && node.getOrientation() === Orientation.HORZ) {
+        if (node._width != null && node.getOrientation() === Orientation.VERT) {
             node._width = pixels;
         }
-        else if (node._height != null && node.getOrientation() === Orientation.VERT) {
+        else if (node._height != null && node.getOrientation() === Orientation.HORZ) {
             node._height = pixels;
         }
     }
@@ -187,6 +189,7 @@ class Model {
     toJson() {
         let json = {global: {}, layout: {}};
         jsonConverter.toJson(json.global, this);
+        this._root._forEachNode((node)=>{node._fireEvent("save", null);});
         json.layout = this._root._toJson();
         return json;
     }

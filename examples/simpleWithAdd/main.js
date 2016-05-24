@@ -6,18 +6,15 @@ var json = {
     global: {}, // {tabSetEnableTabStrip:false}, // to have just splitters
     layout: {
         "type": "row",
-        "id": 1,
         "weight": 100,
         "children": [
             {
                 "type": "tabset",
-                "id": 2,
                 "weight": 50,
                 "selected": 0,
                 "children": [
                     {
                         "type": "tab",
-                        "id": 3,
                         "name": "Things to try",
                         "component": "text",
                         "config": {"text": "<ul><li>drag tabs</li><li>drag splitters</li><li>double click on tab to rename</li><li>double click on tabstrip to maximize</li><li>use the Add button to add another tab</li></ul>"}
@@ -26,13 +23,11 @@ var json = {
             },
             {
                 "type": "tabset",
-                "id": 4,
                 "weight": 50,
                 "selected": 0,
                 "children": [
                     {
                         "type": "tab",
-                        "id": 5,
                         "name": "two",
                         "component": "text",
                         "config": {"text": ""}
@@ -41,13 +36,11 @@ var json = {
             },
             {
                 "type": "tabset",
-                "id": 6,
                 "weight": 50,
                 "selected": 0,
                 "children": [
                     {
                         "type": "tab",
-                        "id": 7,
                         "name": "three",
                         "component": "text",
                         "config": {"text": ""}
@@ -62,7 +55,7 @@ class Main extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {json: json};
+        this.state = {model: FlexLayout.Model.fromJson(json)};
     }
 
     factory(node) {
@@ -80,8 +73,10 @@ class Main extends React.Component {
         }, null);
     }
 
-    onAction(action) {
-        this.setState({json: FlexLayout.Model.apply(action, this.state.json)});
+    onTabClose(node, fnContinue) {
+        if ( window.confirm("Close tab, are you sure?")) {
+            fnContinue();
+        }
     }
 
     render() {
@@ -90,9 +85,9 @@ class Main extends React.Component {
                 <button onClick={this.onAdd.bind(this)}>Add</button>
                 <div className="inner">
                     <FlexLayout.Layout ref="layout"
-                                       model={this.state.json}
+                                       model={this.state.model}
                                        factory={this.factory.bind(this)}
-                                       onAction={this.onAction.bind(this)}/>
+                                       onTabClose={this.onTabClose.bind(this)}/>
                 </div>
             </div>
         );

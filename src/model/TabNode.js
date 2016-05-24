@@ -10,6 +10,7 @@ class TabNode extends Node {
         super(model);
 
         this._tabRect = null; // rect of the tab rather than the tab contents=
+        this._extra = {};  // extra data added to node not saved in json
 
         jsonConverter.fromJson(json, this);
         model._addNode(this);
@@ -33,6 +34,10 @@ class TabNode extends Node {
 
     getConfig() {
         return this._config;
+    }
+
+    getExtraData() {
+        return this._extra;
     }
 
     getIcon() {
@@ -59,8 +64,18 @@ class TabNode extends Node {
         this._name = name;
     }
 
+    _layout(rect)
+    {
+        if ( !rect.equals(this._rect))
+        {
+            this._fireEvent("resize", {rect:rect});
+        }
+        this._rect = rect;
+    }
+
     _delete() {
         this._parent._remove(this);
+        this._fireEvent("close", {});
     }
 
     static _fromJson(json, model) {
@@ -82,6 +97,11 @@ class TabNode extends Node {
     toString(lines, indent) {
         lines.push(indent + this._type + " " + this._name + " " + this._id);
     }
+
+    //toAttributeString() {
+    //    return jsonConverter.toTableValues(this, this._model);
+    //}
+
 }
 
 TabNode.TYPE = "tab";

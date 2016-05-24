@@ -12,21 +12,19 @@ import SplitterNode from "../model/SplitterNode.js";
 import Actions from "../model/Actions.js";
 import Model from "../model/Model.js";
 
+/**
+ * A React component that hosts a multi-tabbed layout
+ */
 class Layout extends React.Component {
 
+    /**
+     * @private
+     */
     constructor(props) {
         super(props);
-        let model = null;
         this.modelChanged = false;
-
-        if (this.props.model instanceof Model) { // passed mutable model
-            model = this.props.model;
-            model.setListener(this.onModelChange.bind(this));
-        }
-        else {  // passed json representation of node tree, create temporary model for layout
-            model = Model.fromJson(this.props.model);
-        }
-        this.state = {model: model, rect: new Rect(0, 0, 0, 0)};
+        this.props.model.setListener(this.onModelChange.bind(this));
+        this.state = {model: this.props.model, rect: new Rect(0, 0, 0, 0)};
     }
 
     onModelChange() {
@@ -35,9 +33,6 @@ class Layout extends React.Component {
     }
 
     doAction(action) {
-        if (this.props.id !== undefined) {
-            action.layoutId = this.props.id;
-        }
         if (this.props.onAction !== undefined) {
             this.props.onAction(action);
         }
@@ -57,21 +52,13 @@ class Layout extends React.Component {
 
     componentWillReceiveProps(newProps) {
         //this.log("componentWillReceiveProps");
-        if (newProps.model instanceof Model) {
-            this.layout(newProps.model);
-            if (this.props.model !== newProps.model) {
-                if (this.props.model != null && this.props.model instanceof Model) {
-                    this.props.model.setListener(null); // stop listening to old model
-                }
+        this.layout(newProps.model);
+        if (this.props.model !== newProps.model) {
+            if (this.props.model != null) {
+                this.props.model.setListener(null); // stop listening to old model
+            }
 
-                newProps.model.setListener(this.onModelChange.bind(this));
-            }
-        }
-        else {
-            if (this.props.model !== newProps.model) {
-                let model = Model.fromJson(newProps.model);
-                this.layout(model);
-            }
+            newProps.model.setListener(this.onModelChange.bind(this));
         }
     }
 
@@ -130,7 +117,7 @@ class Layout extends React.Component {
     }
 
     log(message) {
-        console.log(this.props.id, message);
+        console.log(message);
     }
 
     render() {
@@ -150,6 +137,11 @@ class Layout extends React.Component {
         return <div ref="self" className="flexlayout__layout">{childComponents}</div>;
     }
 
+    /**
+     * Adds a new tab to the given tabset
+     * @param tabsetId the id of the tabset where the new tab will be added
+     * @param json the json for the new tab node
+     */
     addTabToTabSet(tabsetId, json) {
         let tabsetNode = this.state.model.getNodeById(tabsetId);
         if (tabsetNode != null) {
@@ -157,6 +149,10 @@ class Layout extends React.Component {
         }
     }
 
+    /**
+     * Adds a new tab to the active tabset (if there is one)
+     * @param json the json for the new tab node
+     */
     addTabToActiveTabSet(json) {
         let tabsetNode = this.state.model.getActiveTabset();
         if (tabsetNode != null) {
@@ -164,12 +160,26 @@ class Layout extends React.Component {
         }
     }
 
+    /**
+     * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
+     * @param dragText the text to show on the drag panel
+     * @param json the json for the new tab node
+     * @param onDrop a callback to call when the drag is complete
+     */
     addTabWithDragAndDrop(dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(null, dragText, new TabNode(this.state.model, json), null, null);
     }
 
+    /**
+     * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
+     * mouse down on the panel
+     *
+     * @param dragText the text to show on the drag panel
+     * @param json the json for the new tab node
+     * @param onDrop a callback to call when the drag is complete
+     */
     addTabWithDragAndDropIndirect(dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
@@ -376,8 +386,8 @@ class Layout extends React.Component {
         }
     }
 
-    maximize(maximizeNode) {
-        this.doAction(Actions.maximizeToggle(maximizeNode.getId()));
+    maximize(tabsetNode) {
+        this.doAction(Actions.maximizeToggle(tabsetNode.getId()));
     }
 
     customizeTab(tabNode, renderValues) {
@@ -390,19 +400,15 @@ class Layout extends React.Component {
         if (this.props.onRenderTabSet) {
             this.props.onRenderTabSet(tabSetNode, renderValues);
         }
-
     }
 }
 
 Layout.propTypes = {
-    // model is either a Model object or simple json for model
-    model: React.PropTypes.oneOfType([
-        React.PropTypes.instanceOf(Model),
-        React.PropTypes.object
-    ]).isRequired,
+    model: React.PropTypes.instanceOf(Model).isRequired,
     factory: React.PropTypes.func.isRequired,
-    id: React.PropTypes.string,
+
     onAction: React.PropTypes.func,
+
     onRenderTab: React.PropTypes.func,
     onRenderTabSet: React.PropTypes.func
 };

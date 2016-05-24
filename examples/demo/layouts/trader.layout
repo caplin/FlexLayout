@@ -17,15 +17,16 @@
 			"enableDrag": false,
 			"enableClose": false,
 			"enableDivide": false,
+			"enableTabStrip":false,
 			"weight": 18.564176939811457,
 			"selected": 0,
 			"children": [{
 				"type": "tab",
 				"enableDrag": false,
 				"name": "Options",
-				"component": "grid",
+				"component": "text",
 				"config": {
-					"id": "1"
+					"text": "A named tabset with:<br>enableTabStrip:false<br>enableClose:false<br>enableDivide:false<br><br>Blotter tabset has:<br>name: Blotters,<br>enableDrop: false,<br>enableDrag: false,<br>enableClose: false,<br>enableDivide: false,"
 				}
 			}]
 		}, {

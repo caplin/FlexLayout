@@ -5,63 +5,35 @@ resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
-Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
-
-[More screenshots](https://rawgit.com/caplin/FlexLayout/screenshots/github_images/v0.01/images.html)
-
-[Demo (light theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html)
-
 [Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
 
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/3/)
 
-Available demo url parameters:
+FlexLayout's only dependency is React.
 
-*	reload=true  - reload layout from file, rather than localstorage
-*	layout=sub   - load a given layout (from file/localstorage)
-
-
-Possible layout values:
-
-*	simple - a simple layout of 3 tabsets
-*	complex - a more complex layout with multiple tabsets
-*	preferred - shows tabsets with preferred sizes
-*	sub - shows a tab containing a sub layout
-
-Example url with parameters:
-
-https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index.html?layout=simple&reload=true
-
-Notes:
-
-*	this demo does not run in safari when hosted on github (something to do with loading files via XHR from github!)
-*	FlexLayout's only dependency is React
-
-Features so far:
+Features:
 *	splitters
 *	tabs
 *	tab dragging and ordering
-*	tabset dragging
-*	dock to tabset or edge
-*	maximize tabset
-*	tab overflow
+*	tabset dragging (move all the tabs in a tabset in one operation)
+*	dock to tabset or edge of frame
+*	maximize tabset (double click tabset header or use icon)
+*	tab overflow (show menu when tabs overflow)
 *	submodels, allow layouts inside layouts
-*	tab renaming
+*	tab renaming (double click tab text to rename)
 *	themeing - light and dark
 *	touch events - works on mobile devices (iPad, Android)
-*   esc cancels drag
-*   add tabs using drag, indirect drag, add to active tabset, add to named tabset
+*   add tabs using drag, indirect drag, add to active tabset, add to tabset by id
 *   preferred pixel size tabsets
 *   headed tabsets
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
+*   esc cancels drag
 
 
 todo:
-*	full set of jasmine tests
-*	less styling
-*	test in browsers/versions
+*	minimize to edge
 *	layout designer gui, drag and drop + set properties to design initial layout
-*	border dock layer (could be used for minimize to edge)
 
 ## Installation
 
@@ -89,14 +61,14 @@ Include the light or dark style in your html:
 
 ##Usage
 
-A single component `<Layout>` contains the tabsets and splitters. The `<Layout>` component takes the following props:
+The `<Layout>` component renders the tabsets and splitters, it takes the following props:
 
 
 | Prop       | Required/Optional           | Description  |
 | ------------- |:-------------:| -----|
-| model    | required | the layout model (a Model object) or a json object |
+| model    | required | the layout model  |
 | factory      | required | a factory function for creating React components |
-| onAction | optional     |  function called whenever the layout generates an action to update the model |
+| onAction | optional     |  function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close) |
 | onTabRender | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onTabSetRender | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
 
@@ -104,36 +76,15 @@ The model is tree of Node objects that define the structure of the layout.
 
 The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout.
 
-### Using a Model object in the model prop
 The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
 
-If the onAction prop is not specified then the layout will send the layout change action directly to the model.
-
 ```javascript
-this.state = {model: Model.fromJson(json)};
+this.state = {model: FlexLayout.Model.fromJson(json)};
 
 render() {
 	<Layout model={this.state.model} factory={factory}/>
 }
 ```
-
-### Using a JSON object in the model prop
-
-Alternatively you can pass json in the model prop, in this case you must also add an onAction callback to
-handle changes by calling Model.apply(json, action) to create a new json object.
-
-```javascript
-onAction(action) {
-    this.setState(json: FlexLayout.Model.apply(action, this.state.json));
-}
-
-render() {
-	return <FlexLayout.Layout model={this.state.json} factory={factory} onAction={onAction}/>;
-}
-```
-
-This variation works well with Redux where you can use Model.apply(action, layoutState) in your reducer to return a new layout json object.
-See the Redux example for more details.
 
 ## Example Configuration:
 
@@ -142,18 +93,15 @@ var json = {
 	global: {},
 	layout:{
 		"type": "row",
-		"id":1,
 		"weight": 100,
 		"children": [
 			{
 				"type": "tabset",
-				"id":2,
 				"weight": 50,
 				"selected": 0,
 				"children": [
 					{
 						"type": "tab",
-						"id":3,
 						"name": "FX",
 						"component":"grid",
 					}
@@ -161,13 +109,11 @@ var json = {
 			},
 			{
 				"type": "tabset",
-				"id":4,
 				"weight": 50,
 				"selected": 0,
 				"children": [
 					{
 						"type": "tab",
-						"id":5,
 						"name": "FI",
 						"component":"grid",
 					}
@@ -212,12 +158,12 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/) or [Plunker](http://plnkr.co/edit/uk8nT3?p=preview)
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/3/) 
 
 
-The JSON model is built up using 3 types of 'node':
+The model is built up using 3 types of 'node':
 
-* row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child rows will render in the opposite orientation to their parent.
+* row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child 'rows' will render in the opposite orientation to their parent.
 
 * tabset - tabsets contain a list of tabs and the index of the selected tab
 
@@ -267,8 +213,8 @@ Attributes allowed in nodes of type 'row'.
 | ------------- |:-------------:| -----|
 | type | row | |
 | weight | 100 | |
-| width | null | |
-| height | null | |
+| width | null | preferred pixel width |
+| height | null | preferred pixel height |
 | children | *required* | a list of row and tabset nodes |
 
 ## Tab Attributes
@@ -283,13 +229,17 @@ Inherited defaults will take their value from the associated global attributes (
 | type | tab | |
 | name | *required* | |
 | component | *required* | |
-| config | null | |
-| id | null | |
+| config | null | a place to hold json config for the hosted component |
+| id | auto generated | |
 | enableClose | *inherited* | |
 | enableDrag | *inherited* | |
 | enableRename | *inherited* | |
 | className | *inherited* | |
 | icon | *inherited* | |
+
+Tab nodes have a getExtraData() method that initially returns an empty object, this is the place to 
+add extra data to a tab node that will not be saved.
+
 
 ## TabSet Attributes
 
@@ -297,16 +247,18 @@ Attributes allowed in nodes of type 'tabset'.
 
 Inherited defaults will take their value from the associated global attributes (see above).
 
+Note: tabsets can be dynamically created as tabs are moved and deleted when all their tabs are removed (unless enableClose is false).
+
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | tabset | |
 | weight | 100 | |
-| width | null | |
-| height | null | |
-| name | null | |
+| width | null | preferred pixel width |
+| height | null | preferred pixel height |
+| name | null | named tabsets will show a header bar above the tabs |
 | selected | 0 | |
 | maximized | false | |
-| id | null | |
+| id | auto generated | |
 | children | *required* | a list of tab nodes |
 | enableClose | *inherited* | |
 | enableDrop | *inherited* | |
@@ -342,7 +294,7 @@ adjusting the layout easier on a small device.
 | ------------- | -----|
 |	Actions.addNode(newNodeJson, toNodeId, location, index) | add a new tab node to the given tabset node  |
 |	Actions.moveNode(fromNodeId, toNodeId, location, index) | move a tab node from its current location to the new node and location |
-|	Actions.deleteTab(tabNodeId) | delete the given node |
+|	Actions.deleteTab(tabNodeId) | delete the given tab |
 |	Actions.selectTab(tabNodeId) | select the given tab |
 |	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |
 |	Actions.adjustSplit(splitterNodeId, value) | adjust the size of the given splitter |
@@ -353,7 +305,7 @@ adjusting the layout easier on a small device.
 for example:
 
 ```
-model.doAction(Actions.addNode({component:"grid", name:"grid", id:"5"}, "1", DropLocation.CENTER, 0));
+model.doAction(Actions.addNode({type:"tab", component:"grid", name:"a grid", id:"5"}, "1", DropLocation.CENTER, 0));
 ```
 This would add a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
 Note: you can get the id of a node using the method node.getId(), if an id wasn't assigned when the node was created then one will be created for you of the form #<next available id> (e.g. #1, #2 ...).
@@ -366,7 +318,7 @@ Methods on the Layout Component for adding tabs, the tabs are specified by their
 Example:
 
 ```
-this.refs.layout.addTabToTabSet("NAVIGATION", {component:"grid", name:"grid"});
+this.refs.layout.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
 ```
 This would add a new grid component to the tabset with id "NAVIGATION".
 
@@ -377,3 +329,38 @@ This would add a new grid component to the tabset with id "NAVIGATION".
 | addTabToActiveTabSet(json) | adds a new tab to the active tabset |
 | addTabWithDragAndDrop(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the drag starts immediately |
 | addTabWithDragAndDropIndirect(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the marker is shown and must be clicked on to start dragging |
+
+## Tab Node Events
+
+The factory is a good place to listen for node events:
+
+Example:
+```
+    factory(node) {
+        var component = node.getComponent();
+        ...
+        else if (component === "sub") {
+            var model = node.getExtraData().model;
+            if (model == null) {
+            
+                // convert JSON layout stored in config to a layout model and save it in the extra data
+                node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
+                model = node.getExtraData().model;
+                
+                // save submodel back to JSON on save event
+                node.setEventListener("save", function(p) {
+                        node.getConfig().model = node.getExtraData().model.toJson();
+                    }
+                );
+            }
+        ...    
+         }
+});
+```
+
+| Event        | parameters          | Description  |
+| ------------- |:-------------:| -----|
+| resize |      |  called when tab is resized during layout, called before it is rendered with the new size|
+| close |      |  called when a tab is closed |
+| visibility |      | called when the visibility of a tab changes |
+| save |      | called before a tabnode is serialized to json, use to save node config by adding data to the object returned by node.getConfig()|

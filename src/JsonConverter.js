@@ -67,6 +67,21 @@ class JsonConverter {
 
         return lines.join("\n");
     }
+
+    toTableValues(obj, model) {
+        let lines = [];
+        lines.push("<table border='1'>");
+        lines.push("<tr><th>Attribute</th><th>Default</th><th>Value</th></tr>");
+        for (let i = 0; i < this.conversions.length; i++) {
+            let c = this.conversions[i];
+            //if (obj[c.name] !== c.defaultValue) {
+                lines.push("<tr><td>" + c.jsonName + "</td><td>" + c.defaultValue + "</td><td>" + JSON.stringify(obj[c.name]) + "</td></tr>");
+            //}
+        }
+        lines.push("</table>");
+
+        return lines.join("\n");
+    }
 }
 
 export default JsonConverter;

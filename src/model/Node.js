@@ -1,4 +1,5 @@
 import Rect from "../Rect.js";
+import Utils from "../Utils.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 
@@ -6,6 +7,7 @@ class Node {
 
     constructor(model) {
         this._type = null;
+        this._id = null;
         this._model = model;
         this._parent = null;
         this._children = [];
@@ -15,7 +17,7 @@ class Node {
         this._fixed = false;
         this._rect = new Rect();
         this._visible = false;
-        this._id = null;
+        this._listeners = {};
     }
 
     getId() {
@@ -63,6 +65,22 @@ class Node {
         return this._height;
     }
 
+    // event can be: resize, visibility, maximize (on tabset), close
+    setEventListener(event, callback) {
+        this._listeners[event] = callback;
+    }
+
+    removeEventListener(event) {
+        delete this._listeners[event];
+    }
+
+    _fireEvent(event, params) {
+        //console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
+        if (this._listeners[event] != null) {
+            this._listeners[event](params);
+        }
+    }
+
     _getAttr(name) {
         let val = undefined;
         if (this[name] === undefined) {
@@ -94,7 +112,10 @@ class Node {
     }
 
     _setVisible(visible) {
-        this._visible = visible;
+        if (visible != this._visible) {
+            this._fireEvent("visibility", {visible: visible});
+            this._visible = visible;
+        }
     }
 
     _getDrawChildren() {
@@ -193,6 +214,12 @@ class Node {
             child.toString(lines, indent);
         }
     }
+
+    toAttributeString()
+    {
+        return "";
+    }
+
 }
 
 export default Node;

@@ -5,36 +5,81 @@ import DockLocation from "../DockLocation.js";
  */
 class Actions {
 
-    static addNode(json, toNode, location, index) {
-        return {type: Actions.ADD_NODE, json: json, toNode: toNode, location: location.getName(), index: index};
+    /**
+     * Adds a tab node to the given tabset node
+     * @param json the json for the new tab node e.g {type:"tab", component:"table"}
+     * @param toNodeId the new tab node will be added to the tabset with this node id
+     * @param location the location where the new tab will be added, one of the DockLocation enum values.
+     * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
+     * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *}}
+     */
+    static addNode(json, toNodeId, location, index) {
+        return {type: Actions.ADD_NODE, json: json, toNode: toNodeId, location: location.getName(), index: index};
     }
 
-    static moveNode(fromNode, toNode, location, index) {
+    /**
+     * Moves a noded (tab or tabset) from one location to another
+     * @param fromNodeId the id of the node to move
+     * @param toNodeId the id of the node to receive the moved node
+     * @param location the location where the moved node will be added, one of the DockLocation enum values.
+     * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
+     * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
+     */
+    static moveNode(fromNodeId, toNodeId, location, index) {
         return {
             type: Actions.MOVE_NODE,
-            fromNode: fromNode,
-            toNode: toNode,
+            fromNode: fromNodeId,
+            toNode: toNodeId,
             location: location.getName(),
             index: index
         };
     }
 
-    static deleteTab(tabNode) {
-        return {type: Actions.DELETE_TAB, node: tabNode};
+    /**
+     * Deletes a tab node from the layout
+     * @param tabNodeId the id of the node to delete
+     * @returns {{type: (string|string), node: *}}
+     */
+    static deleteTab(tabNodeId) {
+        return {type: Actions.DELETE_TAB, node: tabNodeId};
     }
 
-    static renameTab(tabNode, text) {
-        return {type: Actions.RENAME_TAB, node: tabNode, text: text};
+    /**
+     * Change the given nodes tab text
+     * @param tabNodeId the id of the node to rename
+     * @param text the test of the tab
+     * @returns {{type: (string|string), node: *, text: *}}
+     */
+    static renameTab(tabNodeId, text) {
+        return {type: Actions.RENAME_TAB, node: tabNodeId, text: text};
     }
 
-    static selectTab(tabNode) {
-        return {type: Actions.SELECT_TAB, tabNode: tabNode};
+    /**
+     * Selects the given tab in its parent tabset
+     * @param tabNodeId the id of the node to set selected
+     * @returns {{type: (string|string), tabNode: *}}
+     */
+    static selectTab(tabNodeId) {
+        return {type: Actions.SELECT_TAB, tabNode: tabNodeId};
     }
 
-    static setActiveTabset(tabsetNode) {
-        return {type: Actions.SET_ACTIVE_TABSET, tabsetNode: tabsetNode};
+    /**
+     * Set the given tabset node as the active tabset
+     * @param tabsetNodeId the id of the tabset node to set as active
+     * @returns {{type: (string|string), tabsetNode: *}}
+     */
+    static setActiveTabset(tabsetNodeId) {
+        return {type: Actions.SET_ACTIVE_TABSET, tabsetNode: tabsetNodeId};
     }
 
+    /**
+     * Adjust the splitter between two tabsets
+     * @example
+     *  Actions.adjustSplit({node1: "1", weight1:30, pixelWidth1:300, node2: "2", weight2:70, pixelWidth2:700});
+     *
+     * @param splitSpec an object the defines the new split between two tabsets, see example below.
+     * @returns {{type: (string|string), node1: *, weight1: *, pixelWidth1: *, node2: *, weight2: *, pixelWidth2: *}}
+     */
     static adjustSplit(splitSpec) {
         let node1 = splitSpec.node1;
         let node2 = splitSpec.node2;
@@ -46,16 +91,32 @@ class Actions {
         };
     }
 
-    static maximizeToggle(node) {
-        return {type: Actions.MAXIMIZE_TOGGLE, node: node};
+    /**
+     * Maximizes the given tabset
+     * @param tabsetNodeId the id of the tabset to maximize
+     * @returns {{type: (string|string), node: *}}
+     */
+    static maximizeToggle(tabsetNodeId) {
+        return {type: Actions.MAXIMIZE_TOGGLE, node: tabsetNodeId};
     }
 
+    /**
+     * Updates the global model jsone attributes
+     * @param attributes the json for the model attributes to update (merge into the existing attributes)
+     * @returns {{type: (string|string), json: *}}
+     */
     static updateModelAttributes(attributes) {
         return {type: Actions.UPDATE_MODEL_ATTRIBUTES, json: attributes};
     }
 
-    static updateNodeAttributes(node, attributes) {
-        return {type: Actions.UPDATE_NODE_ATTRIBUTES, node: node, json: attributes};
+    /**
+     * Updates the given nodes json attributes
+     * @param nodeId the id of the node to update
+     * @param attributes the json attributes to update (merge with the existing attributes)
+     * @returns {{type: (string|string), node: *, json: *}}
+     */
+    static updateNodeAttributes(nodeId, attributes) {
+        return {type: Actions.UPDATE_NODE_ATTRIBUTES, node: nodeId, json: attributes};
     }
 }
 
