@@ -5,9 +5,9 @@ resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
-[Demo (dark theme)](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.03/index_dark.html)
+[Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.07/demo/index.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/3/)
+Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/6/)
 
 FlexLayout's only dependency is React.
 
