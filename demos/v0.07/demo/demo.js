@@ -145,6 +145,11 @@
 	            this.setState({ adding: true });
 	        }
 	    }, {
+	        key: "onShowLayoutClick",
+	        value: function onShowLayoutClick(event) {
+	            console.log(JSON.stringify(this.state.model.toJson(), null, "\t"));
+	        }
+	    }, {
 	        key: "onAdded",
 	        value: function onAdded() {
 	            this.setState({ adding: false });
@@ -268,6 +273,11 @@
 	                        "button",
 	                        { disabled: this.state.adding, style: { float: "right" }, onClick: this.onAddClick.bind(this) },
 	                        "Add"
+	                    ),
+	                    _react2.default.createElement(
+	                        "button",
+	                        { style: { float: "right" }, onClick: this.onShowLayoutClick.bind(this) },
+	                        "Show Layout JSON in Console"
 	                    )
 	                ),
 	                _react2.default.createElement(
