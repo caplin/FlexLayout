@@ -64,6 +64,10 @@ class App extends React.Component {
         this.setState({adding: true});
     }
 
+    onShowLayoutClick(event) {
+        console.log(JSON.stringify(this.state.model.toJson(),null, "\t"));
+    }
+
     onAdded() {
         this.setState({adding: false});
     }
@@ -144,8 +148,8 @@ class App extends React.Component {
                     <option value="trader">Trader</option>
                 </select>
                 <button onClick={this.onReloadFromFile.bind(this)}>reload from file</button>
-                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add
-                </button>
+                <button disabled={this.state.adding} style={{float:"right"}} onClick={this.onAddClick.bind(this)}>Add</button>
+                <button style={{float:"right"}} onClick={this.onShowLayoutClick.bind(this)}>Show Layout JSON in Console</button>
             </div>
             <div className="contents">
                 {contents}
