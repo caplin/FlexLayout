@@ -332,7 +332,8 @@ This would add a new grid component to the tabset with id "NAVIGATION".
 
 ## Tab Node Events
 
-The factory is a good place to listen for node events:
+You can handle events on nodes by adding a listener, this would typically be done lazily in the 
+factory method when the node is first used.
 
 Example:
 ```
@@ -341,7 +342,7 @@ Example:
         ...
         else if (component === "sub") {
             var model = node.getExtraData().model;
-            if (model == null) {
+            if (model == null) { // lazy loading of sub layout and attachment of save listener
             
                 // convert JSON layout stored in config to a layout model and save it in the extra data
                 node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
