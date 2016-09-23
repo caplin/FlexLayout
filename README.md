@@ -5,7 +5,9 @@ resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.01/tab_overflow_menu.png?raw=true "FlexLayout Demo Screenshot")
 
-[Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.07/demo/index.html)
+[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.07/images/)
+
+[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.07/demo/index.html)
 
 Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/6/)
 
