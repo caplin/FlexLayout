@@ -14,8 +14,8 @@
   "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
   "peerDependencies": {
-    "react": "^15.0.0",
-    "react-dom": "^15.0.0"
+    "react": "^15.6.0",
+    "react-dom": "^15.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.7.7",
@@ -27,5 +27,8 @@
     "jasmine": "^2.4.1",
     "jsdoc-webpack-plugin": "0.0.1",
     "webpack": "^1.12.14"
+  },
+  "dependencies": {
+    "prop-types": "^15.5.10"
   }
 }
