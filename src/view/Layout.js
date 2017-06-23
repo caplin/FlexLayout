@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import ReactDOM from "react-dom";
 import Splitter from "./Splitter.js";
@@ -404,13 +405,13 @@ class Layout extends React.Component {
 }
 
 Layout.propTypes = {
-    model: React.PropTypes.instanceOf(Model).isRequired,
-    factory: React.PropTypes.func.isRequired,
+    model: PropTypes.instanceOf(Model).isRequired,
+    factory: PropTypes.func.isRequired,
 
-    onAction: React.PropTypes.func,
+    onAction: PropTypes.func,
 
-    onRenderTab: React.PropTypes.func,
-    onRenderTabSet: React.PropTypes.func
+    onRenderTab: PropTypes.func,
+    onRenderTabSet: PropTypes.func
 };
 
 export default Layout;
