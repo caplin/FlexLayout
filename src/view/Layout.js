@@ -31,6 +31,9 @@ class Layout extends React.Component {
     onModelChange() {
         this.modelChanged = true;
         this.layout(this.state.model);
+        if (this.props.onModelChange) {
+            this.props.onModelChange(this.state.model)
+        }
     }
 
     doAction(action) {
@@ -411,7 +414,9 @@ Layout.propTypes = {
     onAction: PropTypes.func,
 
     onRenderTab: PropTypes.func,
-    onRenderTabSet: PropTypes.func
+    onRenderTabSet: PropTypes.func,
+
+    onModelChange: PropTypes.func
 };
 
 export default Layout;
