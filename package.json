@@ -1,6 +1,6 @@
 {
   "name": "flexlayout-react",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "A multi-tab layout manager",
   "main": "lib/index.js",
   "scripts": {
