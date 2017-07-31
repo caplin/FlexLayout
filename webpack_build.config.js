@@ -1,5 +1,5 @@
 
-var JsDocPlugin = require('jsdoc-webpack-plugin');
+// var JsDocPlugin = require('jsdoc-webpack-plugin');
 
 module.exports = {
 	entry: {
@@ -33,10 +33,11 @@ module.exports = {
 				loader: "babel-loader"
 			}
 		]
-	},
-	plugins: [
-		new JsDocPlugin({
-			conf: './jsdoc.conf'
-		})
-	]
+	}
+	//,
+	// plugins: [
+	// 	new JsDocPlugin({
+	// 		conf: './jsdoc.conf'
+	// 	})
+	// ]
 };
