@@ -199,7 +199,8 @@ class Layout extends React.Component {
 
         let r = new Rect(10, 10, 150, 50);
         r.centerInRect(this.state.rect);
-        r.positionElement(this.dragDiv);
+        this.dragDiv.style.left = r.x + "px";
+        this.dragDiv.style.top = r.y + "px";
 
         let rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.appendChild(this.dragDiv);
