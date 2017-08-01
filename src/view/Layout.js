@@ -29,8 +29,8 @@ class Layout extends React.Component {
     }
 
     onModelChange() {
-        this.modelChanged = true;
-        this.layout(this.state.model);
+        this.state.model._layout(this.state.rect);
+        this.forceUpdate();
         if (this.props.onModelChange) {
             this.props.onModelChange(this.state.model)
         }
@@ -46,17 +46,30 @@ class Layout extends React.Component {
     }
 
     componentDidMount() {
-        this.layout(this.state.model);
+        this.resize();
 
         // need to re-render if size changed
-        window.addEventListener("resize", function (event) {
-            this.layout(this.state.model);
-        }.bind(this));
+        this.resize = this.resize.bind(this);
+        window.addEventListener("resize", this.resize);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.resize);
+    }
+
+    resize(event) {
+        if (this.refs.self != null) {
+            let domRect = this.refs.self.getBoundingClientRect();
+            let rect = new Rect(0, 0, domRect.width, domRect.height);
+            this.state.model._layout(rect);
+            this.setState({rect: rect});
+        }
     }
 
     componentWillReceiveProps(newProps) {
-        //this.log("componentWillReceiveProps");
-        this.layout(newProps.model);
+        newProps.model._layout(this.state.rect);
+        this.setState({model:newProps.model});
+
         if (this.props.model !== newProps.model) {
             if (this.props.model != null) {
                 this.props.model.setListener(null); // stop listening to old model
@@ -66,23 +79,12 @@ class Layout extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        //this.log("shouldComponentUpdate ");
-        let update = this.state.model !== nextState.model
-            || !this.state.rect.equals(nextState.rect)
-            || this.modelChanged;
-
-        //console.log("shouldComponentUpdate " + update);
-        return update;
-    }
-
-    layout(model) {
-        if (this.refs.self != undefined) {
-            let domRect = this.refs.self.getBoundingClientRect();
-            let rect = new Rect(0, 0, domRect.width, domRect.height);
-            //this.log("layout " + rect);
-            model._layout(rect);
-            this.setState({model: model, rect: rect});
+    componentDidUpdate() {
+        let domRect = this.refs.self.getBoundingClientRect();
+        let rect = new Rect(0, 0, domRect.width, domRect.height);
+        if (!rect.equals(this.state.rect)) {
+            this.state.model._layout(rect);
+            this.setState({rect: rect});
         }
     }
 
@@ -135,8 +137,6 @@ class Layout extends React.Component {
         else {
             childComponents.push(<span key="loading">loading...</span>);
         }
-
-        this.modelChanged = false;
 
         return <div ref="self" className="flexlayout__layout">{childComponents}</div>;
     }
