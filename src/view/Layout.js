@@ -26,6 +26,7 @@ class Layout extends React.Component {
         this.model = this.props.model;
         this.rect = new Rect(0, 0, 0, 0);
         this.model.setListener(this.onModelChange.bind(this));
+        this.updateRect = this.updateRect.bind(this);
     }
 
     onModelChange() {
@@ -57,6 +58,9 @@ class Layout extends React.Component {
 
     componentDidMount() {
         this.updateRect();
+
+        // need to re-render if size changes
+        window.addEventListener("resize", this.updateRect);
     }
 
     componentDidUpdate() {
