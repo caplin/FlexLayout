@@ -23,16 +23,15 @@ class Layout extends React.Component {
      */
     constructor(props) {
         super(props);
-        this.modelChanged = false;
-        this.props.model.setListener(this.onModelChange.bind(this));
-        this.state = {model: this.props.model, rect: new Rect(0, 0, 0, 0)};
+        this.model = this.props.model;
+        this.rect = new Rect(0, 0, 0, 0);
+        this.model.setListener(this.onModelChange.bind(this));
     }
 
     onModelChange() {
-        this.state.model._layout(this.state.rect);
         this.forceUpdate();
         if (this.props.onModelChange) {
-            this.props.onModelChange(this.state.model)
+            this.props.onModelChange(this.model)
         }
     }
 
@@ -41,55 +40,52 @@ class Layout extends React.Component {
             this.props.onAction(action);
         }
         else {
-            this.state.model.doAction(action);
-        }
-    }
-
-    componentDidMount() {
-        this.resize();
-
-        // need to re-render if size changed
-        this.resize = this.resize.bind(this);
-        window.addEventListener("resize", this.resize);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener("resize", this.resize);
-    }
-
-    resize(event) {
-        if (this.refs.self != null) {
-            let domRect = this.refs.self.getBoundingClientRect();
-            let rect = new Rect(0, 0, domRect.width, domRect.height);
-            this.state.model._layout(rect);
-            this.setState({rect: rect});
+            this.model.doAction(action);
         }
     }
 
     componentWillReceiveProps(newProps) {
-        newProps.model._layout(this.state.rect);
-        this.setState({model:newProps.model});
-
-        if (this.props.model !== newProps.model) {
-            if (this.props.model != null) {
-                this.props.model.setListener(null); // stop listening to old model
+        if (this.model !== newProps.model) {
+            if (this.model != null) {
+                this.model.setListener(null); // stop listening to old model
             }
-
-            newProps.model.setListener(this.onModelChange.bind(this));
+            this.model = newProps.model;
+            this.model.setListener(this.onModelChange.bind(this));
+            this.forceUpdate();
         }
+    }
+
+    componentDidMount() {
+        this.updateRect();
     }
 
     componentDidUpdate() {
+        this.updateRect();
+    }
+
+    updateRect() {
         let domRect = this.refs.self.getBoundingClientRect();
         let rect = new Rect(0, 0, domRect.width, domRect.height);
-        if (!rect.equals(this.state.rect)) {
-            this.state.model._layout(rect);
-            this.setState({rect: rect});
+        if (!rect.equals(this.rect)) {
+            this.rect = rect;
+            this.forceUpdate();
         }
     }
 
-    renderChild(node, childComponents) {
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateRect);
+    }
+
+    render() {
+        let childComponents = [];
+        this.model._layout(this.rect);
+        this.renderChildren(this.model.getRoot(), childComponents);
+        return <div ref="self" className="flexlayout__layout">{childComponents}</div>;
+    }
+
+    renderChildren(node, childComponents) {
         let drawChildren = node._getDrawChildren();
+        this.maximized = false;
         for (let i = 0; i < drawChildren.length; i++) {
             let child = drawChildren[i];
 
@@ -98,7 +94,7 @@ class Layout extends React.Component {
             }
             else if (child.getType() === TabSetNode.TYPE) {
                 childComponents.push(<TabSet key={child.getId()} layout={this} node={child}></TabSet>);
-                this.renderChild(child, childComponents);
+                this.renderChildren(child, childComponents);
                 if (child.isMaximized()) {
                     this.maximized = true;
                 }
@@ -117,7 +113,7 @@ class Layout extends React.Component {
                 </Tab>);
             }
             else {// is row
-                this.renderChild(child, childComponents);
+                this.renderChildren(child, childComponents);
             }
         }
     }
@@ -126,20 +122,6 @@ class Layout extends React.Component {
         console.log(message);
     }
 
-    render() {
-        //this.log("render " + this.state.rect.toString());
-        let childComponents = [];
-
-        if (this.state.rect != null) {
-            this.maximized = false;
-            this.renderChild(this.state.model.getRoot(), childComponents);
-        }
-        else {
-            childComponents.push(<span key="loading">loading...</span>);
-        }
-
-        return <div ref="self" className="flexlayout__layout">{childComponents}</div>;
-    }
 
     /**
      * Adds a new tab to the given tabset
@@ -147,7 +129,7 @@ class Layout extends React.Component {
      * @param json the json for the new tab node
      */
     addTabToTabSet(tabsetId, json) {
-        let tabsetNode = this.state.model.getNodeById(tabsetId);
+        let tabsetNode = this.model.getNodeById(tabsetId);
         if (tabsetNode != null) {
             this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
         }
@@ -158,7 +140,7 @@ class Layout extends React.Component {
      * @param json the json for the new tab node
      */
     addTabToActiveTabSet(json) {
-        let tabsetNode = this.state.model.getActiveTabset();
+        let tabsetNode = this.model.getActiveTabset();
         if (tabsetNode != null) {
             this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
         }
@@ -173,7 +155,7 @@ class Layout extends React.Component {
     addTabWithDragAndDrop(dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
-        this.dragStart(null, dragText, new TabNode(this.state.model, json), null, null);
+        this.dragStart(null, dragText, new TabNode(this.model, json), null, null);
     }
 
     /**
@@ -198,7 +180,7 @@ class Layout extends React.Component {
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown.bind(this));
 
         let r = new Rect(10, 10, 150, 50);
-        r.centerInRect(this.state.rect);
+        r.centerInRect(this.rect);
         this.dragDiv.style.left = r.x + "px";
         this.dragDiv.style.top = r.y + "px";
 
@@ -241,7 +223,7 @@ class Layout extends React.Component {
 
     onDragDivMouseDown(event) {
         event.preventDefault();
-        this.dragStart(event, this.dragDivText, new TabNode(this.state.model, this.newTabJson), true, null, null);
+        this.dragStart(event, this.dragDivText, new TabNode(this.model, this.newTabJson), true, null, null);
     }
 
     dragStart(event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
@@ -292,7 +274,7 @@ class Layout extends React.Component {
         this.dragDiv.style.left = (pos.x - 75) + "px";
         this.dragDiv.style.top = pos.y + "px";
 
-        let root = this.state.model.getRoot();
+        let root = this.model.getRoot();
         let dropInfo = root._findDropTargetNode(this.dragNode, pos.x, pos.y);
         if (dropInfo) {
             this.dropInfo = dropInfo;
@@ -328,7 +310,7 @@ class Layout extends React.Component {
     }
 
     showEdges(rootdiv) {
-        if (this.state.model.isEnableEdgeDock()) {
+        if (this.model.isEnableEdgeDock()) {
             let domRect = rootdiv.getBoundingClientRect();
             let size = 100;
             let length = size + "px";
@@ -379,7 +361,7 @@ class Layout extends React.Component {
     }
 
     hideEdges(rootdiv) {
-        if (this.state.model.isEnableEdgeDock()) {
+        if (this.model.isEnableEdgeDock()) {
             try {
                 rootdiv.removeChild(this.edgeTopDiv);
                 rootdiv.removeChild(this.edgeLeftDiv);
