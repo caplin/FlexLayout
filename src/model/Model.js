@@ -86,6 +86,11 @@ class Model {
     //    return model.toJson();
     //}
 
+    /**
+     * Update the node tree by performing the given action,
+     * Actions should be generated via static methods on the Actions class
+     * @param action the action to perform
+     */
     doAction(action) {
         //console.log(action);
         switch (action.type) {
