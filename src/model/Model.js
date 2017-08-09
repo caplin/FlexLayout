@@ -106,6 +106,7 @@ class Model {
             case Actions.DELETE_TAB:
             {
                 let node = this._idMap[action.node];
+                delete this._idMap[action.node];
                 node._delete();
                 break;
             }
