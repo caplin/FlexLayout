@@ -6,6 +6,8 @@ import DropInfo from "./../DropInfo.js";
 import Node from "./Node.js";
 import TabNode from "./TabNode.js";
 import RowNode from "./RowNode.js";
+import BorderNode from "./BorderNode.js";
+
 
 class TabSetNode extends Node {
 
@@ -98,18 +100,19 @@ class TabSetNode extends Node {
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
         else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
+            let child = this._children[0];
+            let r = child._tabRect;
+            let yy = r.y;
+            let h = r.height;
             let p = this._tabHeaderRect.x;
-            let y = this._children[0]._tabRect.y;
-            let h = this._children[0]._tabRect.height;
-            let w = this._children[0]._tabRect.width;
             let childCenter = 0;
             for (let i = 0; i < this._children.length; i++) {
-                let child = this._children[i];
-                w = this._children[0]._tabRect.width;
-                childCenter = child._tabRect.x + child._tabRect.width / 2;
+                child = this._children[i];
+                r = child._tabRect;
+                childCenter = r.x + r.width / 2;
                 if (x >= p && x < childCenter) {
                     let dockLocation = DockLocation.CENTER;
-                    let outlineRect = new Rect(p, y, childCenter - p, h);
+                    let outlineRect = new Rect(r.x - 2, yy, 3, h);
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
                     break;
                 }
@@ -117,7 +120,7 @@ class TabSetNode extends Node {
             }
             if (dropInfo == null) {
                 let dockLocation = DockLocation.CENTER;
-                let outlineRect = new Rect(p, y, w, h);
+                let outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
             }
         }
@@ -180,9 +183,14 @@ class TabSetNode extends Node {
             index--;
         }
 
-        // for the tabset being removed from set the selected index to 0
-        if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE) {
-            dragNode._parent._selected = 0;
+        // for the tabset/border being removed from set the selected index
+        if (dragNode._parent !== null) {
+            if (dragNode._parent._type === TabSetNode.TYPE) {
+                dragNode._parent._selected = 0;
+            }
+            else if (dragNode._parent._type === BorderNode.TYPE) {
+                dragNode._parent._selected = -1;
+            }
         }
 
         // simple_bundled dock to existing tabset

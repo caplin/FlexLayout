@@ -9,7 +9,7 @@ class JsonConverter {
             name: name,
             jsonName: jsonName,
             defaultValue: defaultValue,
-            alwaysWriteJson: (alwayWriteJson === undefined) ? false : true
+            alwaysWriteJson: alwayWriteJson
         });
     }
 
@@ -75,7 +75,7 @@ class JsonConverter {
         for (let i = 0; i < this.conversions.length; i++) {
             let c = this.conversions[i];
             //if (obj[c.name] !== c.defaultValue) {
-                lines.push("<tr><td>" + c.jsonName + "</td><td>" + c.defaultValue + "</td><td>" + JSON.stringify(obj[c.name]) + "</td></tr>");
+            lines.push("<tr><td>" + c.jsonName + "</td><td>" + c.defaultValue + "</td><td>" + JSON.stringify(obj[c.name]) + "</td></tr>");
             //}
         }
         lines.push("</table>");

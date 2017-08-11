@@ -1,5 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import TabSetNode from "../model/TabSetNode.js"
+import Actions from "../model/Actions.js";
 
 class Tab extends React.Component {
 
@@ -24,6 +26,15 @@ class Tab extends React.Component {
         }
     }
 
+    onMouseDown(event) {
+        let parent = this.props.node.getParent();
+        if (parent.getType() == TabSetNode.TYPE) {
+            if (!parent.isActive()) {
+                this.props.layout.doAction(Actions.setActiveTabset(parent.getId()));
+            }
+        }
+    }
+
     render() {
         let node = this.props.node;
         let style = node._styleWithPosition({
@@ -39,7 +50,11 @@ class Tab extends React.Component {
             child = this.props.factory(node);
         }
 
-        return <div className="flexlayout__tab" style={style}>{child}</div>;
+        return <div className="flexlayout__tab"
+                    onMouseDown={this.onMouseDown.bind(this)}
+                    onTouchStart={this.onMouseDown.bind(this)}
+                    style={style}>{child}
+        </div>;
     }
 }
 

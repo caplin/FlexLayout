@@ -228,32 +228,34 @@ class RowNode extends Node {
     }
 
     _canDrop(dragNode, x, y) {
+        let yy = y - this._rect.y;
+        let xx = x - this._rect.x;
         let w = this._rect.width;
         let h = this._rect.height;
         let margin = 10; // height of edge rect
         let half = 50; // half width of edge rect
 
         if (this._model.isEnableEdgeDock() && this._parent == null) { // _root row
-            if (x < this._rect.x + margin && (y > h / 2 - half && y < h / 2 + half)) {
+            if (x < this._rect.x + margin && (yy > h / 2 - half && yy < h / 2 + half)) {
                 let dockLocation = DockLocation.LEFT;
                 let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (x > this._rect.getRight() - margin && (y > h / 2 - half && y < h / 2 + half)) {
+            else if (x > this._rect.getRight() - margin && (yy > h / 2 - half && yy < h / 2 + half)) {
                 let dockLocation = DockLocation.RIGHT;
                 let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (y < this._rect.y + margin && (x > w / 2 - half && x < w / 2 + half)) {
+            else if (y < this._rect.y + margin && (xx > w / 2 - half && xx < w / 2 + half)) {
                 let dockLocation = DockLocation.TOP;
                 let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 return new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            else if (y > this._rect.getBottom() - margin && (x > w / 2 - half && x < w / 2 + half)) {
+            else if (y > this._rect.getBottom() - margin && (xx > w / 2 - half && xx < w / 2 + half)) {
                 let dockLocation = DockLocation.BOTTOM;
                 let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;

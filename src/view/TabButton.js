@@ -29,6 +29,12 @@ class TabButton extends React.Component {
             document.body.addEventListener("mousedown", this.onEndEdit);
             document.body.addEventListener("touchstart", this.onEndEdit);
         }
+        else {
+            if (this.props.node._parent.isEnableMaximize()) {
+                this.props.layout.maximize(this.props.node.getParent());
+            }
+
+        }
     }
 
     onEndEdit(event) {

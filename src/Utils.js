@@ -1,4 +1,3 @@
-
 class Utils {
 
     static getGetters(thisObj, obj, valueMap) {

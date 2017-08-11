@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import DragDrop from "../DragDrop.js";
 import Orientation from "../Orientation.js";
+import BorderNode from "../model/BorderNode.js";
 import Actions from "../model/Actions.js";
 
 class Splitter extends React.Component {
@@ -52,10 +53,14 @@ class Splitter extends React.Component {
             value = this.outlineDiv.offsetLeft;
         }
 
-        let splitSpec = node.getParent()._calculateSplit(this.props.node, value);
-
-        this.props.layout.doAction(Actions.adjustSplit(splitSpec));
-        //{name:"adjustSplit", nodeKey:node.getId(), value:value});
+        if (node.getParent().getType() == BorderNode.TYPE) {
+            let pos = node.getParent()._calculateSplit(node, value);
+            this.props.layout.doAction(Actions.adjustBorderSplit(node.getParent().getId(), pos));
+        }
+        else {
+            let splitSpec = node.getParent()._calculateSplit(this.props.node, value);
+            this.props.layout.doAction(Actions.adjustSplit(splitSpec));
+        }
 
         let rootdiv = ReactDOM.findDOMNode(this.props.layout);
         rootdiv.removeChild(this.outlineDiv);

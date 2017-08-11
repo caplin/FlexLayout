@@ -2,9 +2,11 @@ import RowNode from "./RowNode.js";
 import Actions from "./Actions.js";
 import TabNode from "./TabNode.js";
 import TabSetNode from "./TabSetNode.js";
+import BorderSet from "./BorderSet.js";
+import BorderNode from "./BorderNode.js";
+import DockLocation from "../DockLocation.js";
 import JsonConverter from "../JsonConverter.js";
 import Rect from "../Rect.js";
-import DockLocation from "../DockLocation.js";
 import Orientation from "../Orientation.js";
 
 /**
@@ -18,6 +20,8 @@ class Model {
         this._idMap = {};
         this._nextId = 0;
         this._listener = null;
+        this._root = null;
+        this._border = new BorderSet(this);
     }
 
     setListener(listener) {
@@ -52,6 +56,14 @@ class Model {
      */
     getRoot() {
         return this._root;
+    }
+
+    getBorder() {
+        return this._border;
+    }
+
+    getOuterInnerRects() {
+        return this._borderRects;
     }
 
     /**
@@ -127,11 +139,22 @@ class Model {
                 let parent = tabNode.getParent();
                 let pos = parent.getChildren().indexOf(tabNode);
 
-                if (parent.getSelected() !== pos) {
-                    parent._setSelected(pos);
+                if (parent._type === BorderNode.TYPE) {
+                    if (parent.getSelected() == pos) {
+                        parent._setSelected(-1);
+                    }
+                    else {
+                        parent._setSelected(pos);
+                    }
+
                 }
-                this._clearActiveTabset();
-                parent._active = true;
+                else {
+                    if (parent.getSelected() !== pos) {
+                        parent._setSelected(pos);
+                    }
+                    this._clearActiveTabset();
+                    parent._active = true;
+                }
 
                 break;
             }
@@ -149,6 +172,12 @@ class Model {
 
                 this._adjustSplitSide(node1, action.weight1, action.pixelWidth1);
                 this._adjustSplitSide(node2, action.weight2, action.pixelWidth2);
+                break;
+            }
+            case Actions.ADJUST_BORDER_SPLIT:
+            {
+                let node = this._idMap[action.node];
+                node._setSize(action.pos);
                 break;
             }
             case Actions.MAXIMIZE_TOGGLE:
@@ -195,7 +224,14 @@ class Model {
     toJson() {
         let json = {global: {}, layout: {}};
         jsonConverter.toJson(json.global, this);
-        this._root._forEachNode((node)=>{node._fireEvent("save", null);});
+
+        if (this._border) {
+            json.border = this._border.toJson();
+        }
+
+        this._root._forEachNode((node)=> {
+            node._fireEvent("save", null);
+        });
         json.layout = this._root._toJson();
         return json;
     }
@@ -209,6 +245,9 @@ class Model {
         let model = new Model();
         jsonConverter.fromJson(json.global, model);
 
+        if (json.border) {
+            model._border = BorderSet.fromJson(json.border, model);
+        }
         model._root = RowNode._fromJson(json.layout, model);
         return model;
     }
@@ -236,8 +275,18 @@ class Model {
 
     _layout(rect) {
         //let start = Date.now();
-        this._root._layout(rect);
+        this._borderRects = this._border._layout({outer: rect, inner: rect});
+        this._root._layout(this._borderRects.inner);
+        return this._borderRects.inner;
         //console.log("layout time: " + (Date.now() - start));
+    }
+
+    _findDropTargetNode(dragNode, x, y) {
+        let node = this._root._findDropTargetNode(dragNode, x, y);
+        if (node == null) {
+            node = this._border._findDropTargetNode(dragNode, x, y);
+        }
+        return node;
     }
 
     _tidy() {
@@ -273,7 +322,7 @@ class Model {
 
     toString() {
         let lines = [];
-        this._root.toString(lines, "");
+        this._root.toStringIndented(lines, "");
         return lines.join("\n");
     }
 }

@@ -18,7 +18,7 @@ class Actions {
     }
 
     /**
-     * Moves a noded (tab or tabset) from one location to another
+     * Moves a node (tab or tabset) from one location to another
      * @param fromNodeId the id of the node to move
      * @param toNodeId the id of the node to receive the moved node
      * @param location the location where the moved node will be added, one of the DockLocation enum values.
@@ -91,6 +91,10 @@ class Actions {
         };
     }
 
+    static adjustBorderSplit(nodeId, pos) {
+        return {type: Actions.ADJUST_BORDER_SPLIT, node: nodeId, pos: pos};
+    }
+
     /**
      * Maximizes the given tabset
      * @param tabsetNodeId the id of the tabset to maximize
@@ -127,6 +131,7 @@ Actions.RENAME_TAB = "FlexLayout_RenameTab";
 Actions.SELECT_TAB = "FlexLayout_SelectTab";
 Actions.SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
 Actions.ADJUST_SPLIT = "FlexLayout_AdjustSplit";
+Actions.ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
 Actions.MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
 Actions.UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
 Actions.UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";

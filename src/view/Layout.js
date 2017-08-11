@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import Splitter from "./Splitter.js";
 import Tab from "./Tab.js";
 import TabSet from "./TabSet.js";
+import BorderTabSet from "./BorderTabSet.js";
 import DragDrop from "../DragDrop.js";
 import Rect from "../Rect.js";
 import DockLocation from "../DockLocation.js";
@@ -82,15 +83,20 @@ class Layout extends React.Component {
     }
 
     render() {
+        let start = Date.now();
+        let borderComponents = [];
         let tabSetComponents = [];
         let tabComponents = {};
         let splitterComponents = [];
 
-        this.model._layout(this.rect);
+        this.centerRect = this.model._layout(this.rect);
+
+        this.renderBorder(this.model.getBorder(), borderComponents, tabComponents, splitterComponents);
         this.renderChildren(this.model.getRoot(), tabSetComponents, tabComponents, splitterComponents);
 
         const nextTopIds = [];
         const nextTopIdsMap = {};
+
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
         this.tabIds.forEach(t => {
             if (tabComponents[t]) {
@@ -106,6 +112,7 @@ class Layout extends React.Component {
                 this.tabIds.push(t);
             }
         });
+        console.log("layout time: " + (Date.now() - start) + "ms");
 
         return (
             <div ref="self" className="flexlayout__layout">
@@ -113,9 +120,35 @@ class Layout extends React.Component {
                 {this.tabIds.map(t => {
                     return tabComponents[t];
                 })}
+                {borderComponents}
                 {splitterComponents}
             </div>
         );
+    }
+
+    renderBorder(borderSet, borderComponents, tabComponents, splitterComponents) {
+        for (let i = 0; i < borderSet.getBorders().length; i++) {
+            let b = borderSet.getBorders()[i];
+            borderComponents.push(<BorderTabSet key={"border_" + b.getLocation().getName()} border={b}
+                                                layout={this}/>);
+            let drawChildren = b._getDrawChildren();
+            for (let i = 0; i < drawChildren.length; i++) {
+                let child = drawChildren[i];
+
+                if (child.getType() === SplitterNode.TYPE) {
+                    splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
+                }
+                else if (child.getType() === TabNode.TYPE) {
+                    tabComponents[child.getId()] = <Tab
+                        key={child.getId()}
+                        layout={this}
+                        node={child}
+                        selected={i == b.getSelected()}
+                        factory={this.props.factory}>
+                    </Tab>;
+                }
+            }
+        }
     }
 
     renderChildren(node, tabSetComponents, tabComponents, splitterComponents) {
@@ -308,8 +341,7 @@ class Layout extends React.Component {
         this.dragDiv.style.left = (pos.x - 75) + "px";
         this.dragDiv.style.top = pos.y + "px";
 
-        let root = this.model.getRoot();
-        let dropInfo = root._findDropTargetNode(this.dragNode, pos.x, pos.y);
+        let dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
         if (dropInfo) {
             this.dropInfo = dropInfo;
             this.outlineDiv.className = dropInfo.className;
@@ -345,6 +377,7 @@ class Layout extends React.Component {
     showEdges(rootdiv) {
         if (this.model.isEnableEdgeDock()) {
             let domRect = rootdiv.getBoundingClientRect();
+            let r = this.centerRect;
             let size = 100;
             let length = size + "px";
             let radius = "50px";
@@ -352,8 +385,8 @@ class Layout extends React.Component {
 
             this.edgeTopDiv = document.createElement("div");
             this.edgeTopDiv.className = "flexlayout__edge_rect";
-            this.edgeTopDiv.style.top = "0px";
-            this.edgeTopDiv.style.left = (domRect.width - size) / 2 + "px";
+            this.edgeTopDiv.style.top = r.y + "px";
+            this.edgeTopDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeTopDiv.style.width = length;
             this.edgeTopDiv.style.height = width;
             this.edgeTopDiv.style.borderBottomLeftRadius = radius;
@@ -361,8 +394,8 @@ class Layout extends React.Component {
 
             this.edgeLeftDiv = document.createElement("div");
             this.edgeLeftDiv.className = "flexlayout__edge_rect";
-            this.edgeLeftDiv.style.top = (domRect.height - size) / 2 + "px";
-            this.edgeLeftDiv.style.left = "0px";
+            this.edgeLeftDiv.style.top = r.y + (r.height - size) / 2 + "px";
+            this.edgeLeftDiv.style.left = r.x + "px";
             this.edgeLeftDiv.style.width = width;
             this.edgeLeftDiv.style.height = length;
             this.edgeLeftDiv.style.borderTopRightRadius = radius;
@@ -370,8 +403,8 @@ class Layout extends React.Component {
 
             this.edgeBottomDiv = document.createElement("div");
             this.edgeBottomDiv.className = "flexlayout__edge_rect";
-            this.edgeBottomDiv.style.bottom = "0px";
-            this.edgeBottomDiv.style.left = (domRect.width - size) / 2 + "px";
+            this.edgeBottomDiv.style.bottom = (domRect.height - r.getBottom()) + "px";
+            this.edgeBottomDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeBottomDiv.style.width = length;
             this.edgeBottomDiv.style.height = width;
             this.edgeBottomDiv.style.borderTopLeftRadius = radius;
@@ -379,8 +412,8 @@ class Layout extends React.Component {
 
             this.edgeRightDiv = document.createElement("div");
             this.edgeRightDiv.className = "flexlayout__edge_rect";
-            this.edgeRightDiv.style.top = (domRect.height - size) / 2 + "px";
-            this.edgeRightDiv.style.right = "0px";
+            this.edgeRightDiv.style.top = r.y + (r.height - size) / 2 + "px";
+            this.edgeRightDiv.style.right = (domRect.width - r.getRight()) + "px";
             this.edgeRightDiv.style.width = width;
             this.edgeRightDiv.style.height = length;
             this.edgeRightDiv.style.borderTopLeftRadius = radius;

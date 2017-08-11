@@ -178,7 +178,7 @@
 
 .flexlayout__tabset-selected
 {
-    background-image: linear-gradient(#fff, #aaa);
+    background-image: linear-gradient(#fff, #ccc);
 }
 
 .flexlayout__tab_toolbar {
@@ -223,5 +223,109 @@
     position:absolute;
     z-index:1000;
 }
+
+.flexlayout__border_top {
+    background-color:#eeeeee;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_bottom {
+    background-color:#eeeeee;
+    border-top: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+.flexlayout__border_left {
+    background-color:#eeeeee;
+    border-right: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_right {
+    background-color:#eeeeee;
+    border-left: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_inner_bottom{
+    display: flex;
+}
+
+.flexlayout__border_inner_left {
+    position: absolute;
+    right: 0px;
+    display: flex;
+    transform-origin: right;
+    transform: translate(-12px, -50%) rotate(-90deg);
+}
+
+.flexlayout__border_inner_right {
+    display:flex;
+    transform-origin: left;
+    transform: translate(12px, -50%) rotate(90deg);
+}
+
+.flexlayout__border_button {
+    display:flex;
+    cursor: pointer;
+    padding: 2px 8px 3px 8px;
+    margin: 2px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    float: left;
+    vertical-align: top;
+    box-sizing: border-box;
+    white-space:nowrap;
+}
+
+.flexlayout__border_button--selected {
+    color: black;
+    background-color: #ddd;
+}
+
+.flexlayout__border_button--unselected {
+    color: gray;
+}
+
+.flexlayout__border_button_leading {
+    float: left;
+    display:inline-block;
+}
+
+.flexlayout__border_button_content {
+    float: left;
+    display:inline-block;
+}
+
+.flexlayout__border_button_textbox {
+    float: left;
+    border: none;
+    color:green;
+    background-color:#ddd;
+}
+.flexlayout__border_button_textbox:focus {
+    outline: none;
+}
+
+.flexlayout__border_button_trailing {
+    float: left;
+    display:inline-block;
+    margin-left:5px;
+    margin-top:3px;
+    width:8px;
+    height:8px;
+
+}
+
+.flexlayout__border_button:hover .flexlayout__border_button_trailing,
+.flexlayout__border_button--selected .flexlayout__border_button_trailing{
+    background: transparent url("../images/close.png") no-repeat center;
+}
+
 
 

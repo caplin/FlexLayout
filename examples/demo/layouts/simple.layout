@@ -1,5 +1,7 @@
 {
-"global": {},
+"global": {
+"tabEnableRename":false
+},
 "layout":
 	{
 		"type": "row",

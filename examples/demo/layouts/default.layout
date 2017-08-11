@@ -1,41 +1,96 @@
 {
-"global": {},
-"layout":
-	{
+	"global": {},
+	"layout": {
 		"type": "row",
-		"weight": 100,
+		"id": "#4",
 		"children": [
 			{
 				"type": "tabset",
-				"weight": 50,
-				"selected": 0,
+				"weight": 12.5,
+				"active": true,
+				"id": "#5",
 				"children": [
 					{
 						"type": "tab",
 						"name": "FX",
-						"component":"grid",
+						"component": "grid",
 						"config": {
 							"id": "1"
-						}
+						},
+						"id": "#6"
 					}
 				]
 			},
 			{
 				"type": "tabset",
-				"weight": 50,
-				"color": "#ffcccc",
-				"selected": 0,
+				"weight": 25,
+				"id": "#7",
 				"children": [
 					{
 						"type": "tab",
 						"name": "FI",
-						"component":"grid",
+						"component": "grid",
 						"config": {
 							"id": "2"
-						}
+						},
+						"id": "#8"
 					}
 				]
 			}
 		]
-	}
+	},
+	"border": [
+		 {
+		 	"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Navigation",
+					"component": "grid",
+					"id": "#24"
+				}
+			]
+		},
+		{
+		 	"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Options",
+					"component": "grid",
+					"config": {
+						"id": "1"
+					},
+					"id": "#3"
+				}
+			]
+		},
+		{
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Activity Blotter",
+					"component": "grid",
+					"config": {
+						"id": "1"
+					},
+					"id": "#2"
+				},
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Execution Blotter",
+					"component": "grid",
+					"config": {
+						"id": "1"
+					},
+					"id": "#1"
+				}
+			]
+		}
+	]
 }

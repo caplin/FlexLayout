@@ -64,11 +64,9 @@ class TabNode extends Node {
         this._name = name;
     }
 
-    _layout(rect)
-    {
-        if ( !rect.equals(this._rect))
-        {
-            this._fireEvent("resize", {rect:rect});
+    _layout(rect) {
+        if (!rect.equals(this._rect)) {
+            this._fireEvent("resize", {rect: rect});
         }
         this._rect = rect;
     }
@@ -94,7 +92,7 @@ class TabNode extends Node {
         jsonConverter.updateAttrs(json, this);
     }
 
-    toString(lines, indent) {
+    toStringIndented(lines, indent) {
         lines.push(indent + this._type + " " + this._name + " " + this._id);
     }
 
