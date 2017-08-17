@@ -27,6 +27,7 @@ class Layout extends React.Component {
         this.rect = new Rect(0, 0, 0, 0);
         this.model.setListener(this.onModelChange.bind(this));
         this.updateRect = this.updateRect.bind(this);
+        this.tabIds = [];
     }
 
     onModelChange() {
@@ -81,24 +82,54 @@ class Layout extends React.Component {
     }
 
     render() {
-        let childComponents = [];
+        let tabSetComponents = [];
+        let tabComponents = {};
+        let splitterComponents = [];
+
         this.model._layout(this.rect);
-        this.renderChildren(this.model.getRoot(), childComponents);
-        return <div ref="self" className="flexlayout__layout">{childComponents}</div>;
+        this.renderChildren(this.model.getRoot(), tabSetComponents, tabComponents, splitterComponents);
+
+        const nextTopIds = [];
+        const nextTopIdsMap = {};
+        // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
+        this.tabIds.forEach(t => {
+            if (tabComponents[t]) {
+                nextTopIds.push(t);
+                nextTopIdsMap[t] = t;
+            }
+        });
+        this.tabIds = nextTopIds;
+
+        // Add tabs that have been added to the DOM
+        Object.keys(tabComponents).forEach(t => {
+            if (!nextTopIdsMap[t]) {
+                this.tabIds.push(t);
+            }
+        });
+
+        return (
+            <div ref="self" className="flexlayout__layout">
+                {tabSetComponents}
+                {this.tabIds.map(t => {
+                    return tabComponents[t];
+                })}
+                {splitterComponents}
+            </div>
+        );
     }
 
-    renderChildren(node, childComponents) {
+    renderChildren(node, tabSetComponents, tabComponents, splitterComponents) {
         let drawChildren = node._getDrawChildren();
         this.maximized = false;
         for (let i = 0; i < drawChildren.length; i++) {
             let child = drawChildren[i];
 
             if (child.getType() === SplitterNode.TYPE) {
-                childComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
+                splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
             }
             else if (child.getType() === TabSetNode.TYPE) {
-                childComponents.push(<TabSet key={child.getId()} layout={this} node={child}></TabSet>);
-                this.renderChildren(child, childComponents);
+                tabSetComponents.push(<TabSet key={child.getId()} layout={this} node={child}></TabSet>);
+                this.renderChildren(child, tabSetComponents, tabComponents, splitterComponents);
                 if (child.isMaximized()) {
                     this.maximized = true;
                 }
@@ -108,16 +139,16 @@ class Layout extends React.Component {
                 if (selectedTab == null) {
                     debugger; // this should not happen!
                 }
-                childComponents.push(<Tab
+                tabComponents[child.getId()] = <Tab
                     key={child.getId()}
                     layout={this}
                     node={child}
                     selected={child === selectedTab}
                     factory={this.props.factory}>
-                </Tab>);
+                </Tab>;
             }
             else {// is row
-                this.renderChildren(child, childComponents);
+                this.renderChildren(child, tabSetComponents, tabComponents, splitterComponents);
             }
         }
     }
@@ -125,7 +156,6 @@ class Layout extends React.Component {
     log(message) {
         console.log(message);
     }
-
 
     /**
      * Adds a new tab to the given tabset
@@ -294,7 +324,6 @@ class Layout extends React.Component {
         this.dragDiv = null;
         this.hideEdges(rootdiv);
         DragDrop.instance.hideGlass();
-
 
         if (this.dropInfo) {
             if (this.newTabJson != null) {

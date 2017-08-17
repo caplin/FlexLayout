@@ -367,3 +367,11 @@ Example:
 | close |      |  called when a tab is closed |
 | visibility |      | called when the visibility of a tab changes |
 | save |      | called before a tabnode is serialized to json, use to save node config by adding data to the object returned by node.getConfig()|
+
+
+## Building the Project
+
+To compile the project just run webpack in the top level directory, this will compile and bundle flexlayout and the examples into
+the bundles dir. Once compiled the examples can be run by opening their index.html files.
+
+To build the npm distribution run 'npm run build', this will create the artifacts in the dist dir.
