@@ -89,19 +89,21 @@ class Layout extends React.Component {
         this.model._layout(this.rect);
         this.renderChildren(this.model.getRoot(), tabSetComponents, tabComponents, splitterComponents);
 
-        const nextToIds = [];
+        const nextTopIds = [];
+        const nextTopIdsMap = {};
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
         this.tabIds.forEach(t => {
-            if (Object.keys(tabComponents).find(tt => t === tt)) {
+            if (tabComponents[t]) {
                 nextTopIds.push(t);
+                nextTopIdsMap[t] = t;
             }
         });
         this.tabIds = nextTopIds;
 
         // Add tabs that have been added to the DOM
         Object.keys(tabComponents).forEach(t => {
-            if (!this.tabIds.find(tt => t === tt)) {
-              this.tabIds.push(t);
+            if (!nextTopIdsMap[t]) {
+                this.tabIds.push(t);
             }
         });
 
