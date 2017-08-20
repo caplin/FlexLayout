@@ -59,7 +59,9 @@ class Splitter extends React.Component {
         }
         else {
             let splitSpec = node.getParent()._calculateSplit(this.props.node, value);
-            this.props.layout.doAction(Actions.adjustSplit(splitSpec));
+            if (splitSpec != null) {
+                this.props.layout.doAction(Actions.adjustSplit(splitSpec));
+            }
         }
 
         let rootdiv = ReactDOM.findDOMNode(this.props.layout);
