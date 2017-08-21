@@ -21,6 +21,7 @@ Features:
 *	dock to tabset or edge of frame
 *	maximize tabset (double click tabset header or use icon)
 *	tab overflow (show menu when tabs overflow)
+*   border tabsets
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
 *	themeing - light and dark
@@ -34,7 +35,6 @@ Features:
 
 
 todo:
-*	minimize to edge
 *	layout designer gui, drag and drop + set properties to design initial layout
 
 ## Installation
@@ -93,6 +93,7 @@ render() {
 ```javascript
 var json = {
 	global: {},
+	border: [],
 	layout:{
 		"type": "row",
 		"weight": 100,
@@ -171,9 +172,61 @@ The model is built up using 3 types of 'node':
 
 * tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
 
+The main layout is defined with rows within rows that contain tabsets that themselves contain tabs.
+The model json contains 3 top level elements:
+
+* global - where global options are defined
+* layout - where the main row/tabset/tabs hierarchy is defined
+* border - where upto 4 borders are defined 
+
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
 
-By changing global or node attributes you can change the layout appearance and functionallity, for example:
+example border section:
+```
+	"border": [
+		 {
+		 	"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Navigation",
+					"component": "grid",
+				}
+			]
+		},
+		{
+		 	"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Options",
+					"component": "grid",
+				}
+			]
+		},
+		{
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Activity Blotter",
+					"component": "grid",
+				},
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Execution Blotter",
+					"component": "grid",
+				}
+			]
+		}
+	]
+```
+
+By changing global or node attributes you can change the layout appearance and functionality, for example:
 
 Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without
 tabs or drag and drop).
