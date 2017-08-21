@@ -41,40 +41,55 @@ class BorderSet {
         let sumWidth = 0;
         let countHeight = 0;
         let countWidth = 0;
+        let adjustableHeight = 0;
+        let adjustableWidth = 0;
 
+        // sum size of borders to see they will fit
         for (let i = 0; i < this._borders.length; i++) {
             let border = this._borders[i];
             border._setAdjustedSize(border._size);
+            let visible = border.getSelected() != -1;
             if (border.getLocation().getOrientation() == Orientation.HORZ) {
-                sumWidth += border._size + border._tabBarSize + this._model.getSplitterSize();
+                sumWidth += border._tabBarSize + this._model.getSplitterSize();
+                if (visible) {
+                    sumWidth += border._size;
+                    adjustableWidth += border._size;
+                }
                 countWidth++;
             }
             else {
-                sumHeight += border._size + border._tabBarSize + this._model.getSplitterSize();
+                sumHeight += border._tabBarSize + this._model.getSplitterSize();
+                if (visible) {
+                    sumHeight += border._size;
+                    adjustableHeight += border._size;
+                }
                 countHeight++;
             }
         }
 
-        if (sumWidth > width) {
-            let overflow = sumWidth - width;
-            let adjust = Math.floor(overflow / countHeight) + 1;
-            for (let i = 0; i < this._borders.length; i++) {
-                let border = this._borders[i];
-                if (border.getLocation().getOrientation() == Orientation.HORZ) {
-                    border._setAdjustedSize(border._size - adjust);
+        // adjust border sizes if too large
+        let i = 0;
+        while ((sumWidth > width && adjustableWidth > 0)
+        || (sumHeight > height && adjustableHeight > 0)) {
+            let border = this._borders[i];
+            if (border.getSelected() != -1) { //visible
+                let size = border._getAdjustedSize();
+                if (sumWidth > width && adjustableWidth > 0
+                    && border.getLocation().getOrientation() == Orientation.HORZ
+                    && size > 0) {
+                    border._setAdjustedSize(size - 1);
+                    sumWidth--;
+                    adjustableWidth--;
+                }
+                else if (sumHeight > height && adjustableHeight > 0
+                    && border.getLocation().getOrientation() == Orientation.VERT
+                    && size > 0) {
+                    border._setAdjustedSize(size - 1);
+                    sumHeight--;
+                    adjustableHeight--;
                 }
             }
-        }
-
-        if (sumHeight > height) {
-            let overflow = sumHeight - height;
-            let adjust = Math.floor(overflow / countHeight) + 1;
-            for (let i = 0; i < this._borders.length; i++) {
-                let border = this._borders[i];
-                if (border.getLocation().getOrientation() == Orientation.VERT) {
-                    border._setAdjustedSize(border._size - adjust);
-                }
-            }
+            i = (i + 1) % this._borders.length;
         }
 
         for (let i = 0; i < this._borders.length; i++) {

@@ -270,7 +270,7 @@
 }
 
 .flexlayout__border_button {
-    display:flex;
+    display:inline-block;
     cursor: pointer;
     padding: 2px 8px 3px 8px;
     margin: 2px;
@@ -294,11 +294,10 @@
 
 .flexlayout__border_button_leading {
     float: left;
-    display:inline-block;
+    display:inline;
 }
 
 .flexlayout__border_button_content {
-    float: left;
     display:inline-block;
 }
 
@@ -313,13 +312,11 @@
 }
 
 .flexlayout__border_button_trailing {
-    float: left;
     display:inline-block;
     margin-left:5px;
     margin-top:3px;
     width:8px;
     height:8px;
-
 }
 
 .flexlayout__border_button:hover .flexlayout__border_button_trailing,

@@ -43,6 +43,10 @@ class BorderNode extends Node {
         this._adjustedSize = size;
     }
 
+    _getAdjustedSize() {
+        return this._adjustedSize;
+    }
+
     _layout(borderRects) {
         this._drawChildren = [];
         let location = this._location;
