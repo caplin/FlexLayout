@@ -260,7 +260,7 @@
     white-space: nowrap;
     right: 23px;
     transform-origin:  top right;
-    transform: translate(0%, 0%) rotate(-90deg);
+    transform: rotate(-90deg);
 }
 
 .flexlayout__border_inner_right {
@@ -268,7 +268,7 @@
     white-space: nowrap;
     left: 23px;
     transform-origin:  top left;
-    transform: translate(0%, 0%) rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .flexlayout__border_button {
@@ -279,7 +279,6 @@
     box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    /*float: left;*/
     vertical-align: top;
     box-sizing: border-box;
     white-space:nowrap;
