@@ -5,6 +5,7 @@ import DockLocation from "../DockLocation.js";
 import SplitterNode from "./SplitterNode.js";
 import Node from "./Node.js";
 import TabSetNode from "./TabSetNode.js";
+import BorderNode from "./BorderNode.js";
 import DropInfo from "./../DropInfo.js";
 
 class RowNode extends Node {
@@ -276,6 +277,10 @@ class RowNode extends Node {
 
         if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE) {
             dragNode._parent._selected = 0;
+        }
+
+        if (dragNode._parent !== null && dragNode._parent._type === BorderNode.TYPE) {
+            dragNode._parent._selected = -1;
         }
 
         let tabSet = null;
