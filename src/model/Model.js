@@ -354,6 +354,6 @@ jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20)
 
 jsonConverter.addConversion("_borderBarSize", "borderBarSize", 25);
 jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", true);
-jsonConverter.addConversion("_borderClassName", "borderClassName", "");
+jsonConverter.addConversion("_borderClassName", "borderClassName", null);
 
 export default Model;

@@ -227,3 +227,103 @@
 }
 
 
+.flexlayout__border_top {
+    background-color:black;
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_bottom {
+    background-color:black;
+    border-top: 1px solid #333;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+.flexlayout__border_left {
+    background-color:black;
+    border-right: 1px solid #333;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_right {
+    background-color:black;
+    border-left: 1px solid #333;
+    box-sizing: border-box;
+    overflow:hidden;
+}
+
+.flexlayout__border_inner_bottom{
+    display: flex;
+}
+
+.flexlayout__border_inner_left {
+    position:absolute;
+    white-space: nowrap;
+    right: 23px;
+    transform-origin:  top right;
+    transform: rotate(-90deg);
+}
+
+.flexlayout__border_inner_right {
+    position:absolute;
+    white-space: nowrap;
+    left: 23px;
+    transform-origin:  top left;
+    transform: rotate(90deg);
+}
+
+.flexlayout__border_button {
+    background-color: #222;
+    color:white;
+    display:inline-block;
+    white-space:nowrap;
+
+    cursor: pointer;
+    padding: 2px 8px 3px 8px;
+    margin: 2px;
+    vertical-align: top;
+    box-sizing: border-box;
+}
+
+.flexlayout__border_button--selected {
+    color: #ddd;
+    background-color: #222;
+}
+
+.flexlayout__border_button--unselected {
+    color: gray;
+}
+
+.flexlayout__border_button_leading {
+    float: left;
+    display:inline;
+}
+
+.flexlayout__border_button_content {
+    display:inline-block;
+}
+
+.flexlayout__border_button_textbox {
+    float: left;
+    border: none;
+    color:green;
+    background-color:#ddd;
+}
+.flexlayout__border_button_textbox:focus {
+    outline: none;
+}
+
+.flexlayout__border_button_trailing {
+    display:inline-block;
+    margin-left:5px;
+    margin-top:3px;
+    width:8px;
+    height:8px;
+}
+
+.flexlayout__border_button:hover .flexlayout__border_button_trailing,
+.flexlayout__border_button--selected .flexlayout__border_button_trailing{
+    background: transparent url("../images/close_white.png") no-repeat center;
+}

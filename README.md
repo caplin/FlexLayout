@@ -93,7 +93,7 @@ render() {
 ```javascript
 var json = {
 	global: {},
-	border: [],
+	borders: [],
 	layout:{
 		"type": "row",
 		"weight": 100,
@@ -164,7 +164,7 @@ The above code would render two tabsets horizontally each containing a single ta
 Try it now using [JSFiddle](https://jsfiddle.net/ndanger61/rmf3hzmf/6/) 
 
 
-The model is built up using 3 types of 'node':
+The model is built up using 4 types of 'node':
 
 * row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child 'rows' will render in the opposite orientation to their parent.
 
@@ -172,19 +172,24 @@ The model is built up using 3 types of 'node':
 
 * tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
 
+* border - borders contain a list of tabs and the index of the selected tab, they can only be used in the borders
+top level element.
+
 The main layout is defined with rows within rows that contain tabsets that themselves contain tabs.
+
 The model json contains 3 top level elements:
 
 * global - where global options are defined
-* layout - where the main row/tabset/tabs hierarchy is defined
-* border - where upto 4 borders are defined 
+* layout - where the main row/tabset/tabs layout hierarchy is defined
+* borders - (optional) where up to 4 borders are defined ("top", "bottom", "left", "right"). 
 
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
 
-example border section:
+example borders section:
 ```
-	"border": [
+	"borders": [
 		 {
+		    "type":"border",
 		 	"location": "left",
 			"children": [
 				{
@@ -196,6 +201,7 @@ example border section:
 			]
 		},
 		{
+		    "type":"border",
 		 	"location": "right",
 			"children": [
 				{
@@ -207,6 +213,7 @@ example border section:
 			]
 		},
 		{
+		    "type":"border",
 			"location": "bottom",
 			"children": [
 				{
@@ -259,6 +266,9 @@ Attributes allowed in the 'global' element
 | tabSetEnableTabStrip | true | |
 | tabSetHeaderHeight | 20 | |
 | tabSetTabStripHeight | 20 | |
+| borderBarSize | 25 | |
+| borderEnableDrop | true | |
+| borderClassName | null | |
 
 ## Row Attributes
 
@@ -326,10 +336,30 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | |
 
+## Border Attributes
+
+Attributes allowed in nodes of type 'border'.
+
+Inherited defaults will take their value from the associated global attributes (see above).
+
+
+| Attribute | Default | Description  |
+| ------------- |:-------------:| -----|
+| type | border | |
+| size | 200 | size of the tab body when selected |
+| selected | -1 | -1 is the unselected value|
+| id | auto generated | |
+| children | *required* | a list of tab nodes |
+| borderBarSize | *inherited* | |
+| borderEnableDrop | *inherited* | |
+| borderClassName | *inherited* | |
+
 
 ## Model Actions
 
-The Model accepts a set of actions via its doAction() method.
+All changes to the model are applied through actions, you can intercept actions resulting from GUI changes before they are applied by
+implementing the onAction callback property of the Layout. You can also apply actions directly using the Model.doAction()
+method.
 
 #Example
 
@@ -356,6 +386,7 @@ adjusting the layout easier on a small device.
 |	Actions.maximizeToggle(tabsetNodeId) | toggles whether the given tabset node is maximized |
 |	Actions.updateModelAttributes(attributes) | updates the global attributes |
 |	Actions.updateNodeAttributes(nodeId, attributes) | updates the attributes of the given node |
+|	Actions.adjustBorderSplit(borderNodeId, pos) | updates the size of the given border node |
 
 for example:
 
