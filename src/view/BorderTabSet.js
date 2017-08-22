@@ -25,7 +25,7 @@ class BorderTabSet extends React.Component {
                                         node={child}
                                         key={child.getId()}
                                         selected={isSelected}
-                                        height={border.getTabBarSize()}
+                                        height={border.getBorderBarSize()}
                                         pos={i}/>);
             }
         }
@@ -38,7 +38,7 @@ class BorderTabSet extends React.Component {
                                         node={child}
                                         key={child.getId()}
                                         selected={isSelected}
-                                        height={border.getTabBarSize()}
+                                        height={border.getBorderBarSize()}
                                         pos={i}/>);
             }
         }
