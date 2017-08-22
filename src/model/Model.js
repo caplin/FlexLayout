@@ -21,7 +21,7 @@ class Model {
         this._nextId = 0;
         this._listener = null;
         this._root = null;
-        this._border = new BorderSet(this);
+        this._borders = new BorderSet(this);
     }
 
     setListener(listener) {
@@ -59,7 +59,7 @@ class Model {
     }
 
     getBorder() {
-        return this._border;
+        return this._borders;
     }
 
     getOuterInnerRects() {
@@ -225,8 +225,8 @@ class Model {
         let json = {global: {}, layout: {}};
         jsonConverter.toJson(json.global, this);
 
-        if (this._border) {
-            json.border = this._border.toJson();
+        if (this._borders) {
+            json.borders = this._borders.toJson();
         }
 
         this._root._forEachNode((node)=> {
@@ -245,8 +245,8 @@ class Model {
         let model = new Model();
         jsonConverter.fromJson(json.global, model);
 
-        if (json.border) {
-            model._border = BorderSet.fromJson(json.border, model);
+        if (json.borders) {
+            model._borders = BorderSet.fromJson(json.borders, model);
         }
         model._root = RowNode._fromJson(json.layout, model);
         return model;
@@ -275,7 +275,7 @@ class Model {
 
     _layout(rect) {
         //let start = Date.now();
-        this._borderRects = this._border._layout({outer: rect, inner: rect});
+        this._borderRects = this._borders._layout({outer: rect, inner: rect});
         this._root._layout(this._borderRects.inner);
         return this._borderRects.inner;
         //console.log("layout time: " + (Date.now() - start));
@@ -284,7 +284,7 @@ class Model {
     _findDropTargetNode(dragNode, x, y) {
         let node = this._root._findDropTargetNode(dragNode, x, y);
         if (node == null) {
-            node = this._border._findDropTargetNode(dragNode, x, y);
+            node = this._borders._findDropTargetNode(dragNode, x, y);
         }
         return node;
     }
@@ -351,5 +351,9 @@ jsonConverter.addConversion("_tabSetClassNameHeader", "tabSetClassNameHeader", n
 jsonConverter.addConversion("_tabSetEnableTabStrip", "tabSetEnableTabStrip", true);
 jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
 jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
+
+jsonConverter.addConversion("_borderBarSize", "borderBarSize", 25);
+jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", true);
+jsonConverter.addConversion("_borderClassName", "borderClassName", "");
 
 export default Model;

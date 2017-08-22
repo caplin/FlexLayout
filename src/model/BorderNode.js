@@ -34,9 +34,48 @@ class BorderNode extends Node {
     getContentRect() {
         return this._contentRect;
     }
+    isEnableDrop() {
+        return this._getAttr("_borderEnableDrop");
+    }
 
-    getTabBarSize() {
-        return this._tabBarSize;
+    getClassNameBorder() {
+        return this._getAttr("_borderClassName");
+    }
+
+    getBorderBarSize() {
+        return this._getAttr("_borderBarSize");
+    }
+
+    getSize() {
+        return this._size;
+    }
+
+    getSelected() {
+        return this._selected;
+    }
+
+    _setSelected(index) {
+        this._selected = index;
+    }
+
+    getOrientation() {
+        return this._location.getOrientation();
+    }
+
+    _setSize(pos) {
+        this._size = pos;
+    }
+
+    _updateAttrs(json) {
+        jsonConverter.updateAttrs(json, this);
+    }
+
+    _getDrawChildren() {
+        return this._drawChildren;
+    }
+
+    isMaximized() {
+        return false;
     }
 
     _setAdjustedSize(size) {
@@ -51,8 +90,8 @@ class BorderNode extends Node {
         this._drawChildren = [];
         let location = this._location;
 
-        let split1 = location.split(borderRects.outer, this._tabBarSize); // split border outer
-        let split2 = location.split(borderRects.inner, this._tabBarSize); // split border inner
+        let split1 = location.split(borderRects.outer, this.getBorderBarSize()); // split border outer
+        let split2 = location.split(borderRects.inner, this.getBorderBarSize()); // split border inner
         let split3 = location.split(split2.end, this._adjustedSize + this._model.getSplitterSize()); // split off tab contents
         let split4 = location.reflect().split(split3.start, this._model.getSplitterSize()); // split contents into content and splitter
 
@@ -97,47 +136,6 @@ class BorderNode extends Node {
         else {
             this._removeChild(node);
         }
-    }
-
-
-    isEnableDrop() {
-        return this._getAttr("_borderEnableDrop");
-    }
-
-    getClassNameTabStrip() {
-        return this._getAttr("_borderClassName");
-    }
-
-    getSize() {
-        return this._size;
-    }
-
-    getSelected() {
-        return this._selected;
-    }
-
-    _setSelected(index) {
-        this._selected = index;
-    }
-
-    getOrientation() {
-        return this._location.getOrientation();
-    }
-
-    _setSize(pos) {
-        this._size = pos;
-    }
-
-    _updateAttrs(json) {
-        jsonConverter.updateAttrs(json, this);
-    }
-
-    _getDrawChildren() {
-        return this._drawChildren;
-    }
-
-    isMaximized() {
-        return false;
     }
 
     _canDrop(dragNode, x, y) {
@@ -319,11 +317,11 @@ class BorderNode extends Node {
 BorderNode.TYPE = "border";
 
 let jsonConverter = new JsonConverter();
-jsonConverter.addConversion("_type", "type", BorderNode.TYPE, false);
-jsonConverter.addConversion("_tabBarSize", "tabBarSize", 25);
+jsonConverter.addConversion("_type", "type", BorderNode.TYPE, true);
 jsonConverter.addConversion("_size", "size", 200);
 jsonConverter.addConversion("_selected", "selected", -1);
 
+jsonConverter.addConversion("_borderBarSize", "borderBarSize", 25);
 jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", true);
 jsonConverter.addConversion("_borderClassName", "borderClassName", "");
 

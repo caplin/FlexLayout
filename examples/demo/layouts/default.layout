@@ -39,8 +39,9 @@
 			}
 		]
 	},
-	"border": [
+	"borders": [
 		 {
+		    "type": "border",
 		 	"location": "left",
 			"children": [
 				{
@@ -53,6 +54,7 @@
 			]
 		},
 		{
+		    "type": "border",
 		 	"location": "right",
 			"children": [
 				{
@@ -68,6 +70,7 @@
 			]
 		},
 		{
+		    "type": "border",
 			"location": "bottom",
 			"children": [
 				{
