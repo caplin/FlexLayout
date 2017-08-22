@@ -50,7 +50,7 @@ class BorderSet {
             border._setAdjustedSize(border._size);
             let visible = border.getSelected() != -1;
             if (border.getLocation().getOrientation() == Orientation.HORZ) {
-                sumWidth += border._tabBarSize + this._model.getSplitterSize();
+                sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
                 if (visible) {
                     sumWidth += border._size;
                     adjustableWidth += border._size;
@@ -58,7 +58,7 @@ class BorderSet {
                 countWidth++;
             }
             else {
-                sumHeight += border._tabBarSize + this._model.getSplitterSize();
+                sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
                 if (visible) {
                     sumHeight += border._size;
                     adjustableHeight += border._size;
