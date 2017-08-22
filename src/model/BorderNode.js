@@ -321,9 +321,9 @@ jsonConverter.addConversion("_type", "type", BorderNode.TYPE, true);
 jsonConverter.addConversion("_size", "size", 200);
 jsonConverter.addConversion("_selected", "selected", -1);
 
-jsonConverter.addConversion("_borderBarSize", "borderBarSize", 25);
-jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", true);
-jsonConverter.addConversion("_borderClassName", "borderClassName", "");
+jsonConverter.addConversion("_borderBarSize", "borderBarSize", undefined);
+jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", undefined);
+jsonConverter.addConversion("_borderClassName", "borderClassName",undefined);
 
 
 export default BorderNode;
