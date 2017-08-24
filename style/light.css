@@ -277,8 +277,7 @@
     padding: 2px 8px 3px 8px;
     margin: 2px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-radius: 3px;
     vertical-align: top;
     box-sizing: border-box;
     white-space:nowrap;
