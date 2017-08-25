@@ -5,7 +5,7 @@ resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.20/demo1.png?raw=true "FlexLayout Demo Screenshot")
 
-[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.07/images/LiberatorExplorerV3.PNG)
+[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_1.PNG)
 
 [Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/demo/index.html)
 
