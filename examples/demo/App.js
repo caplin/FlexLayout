@@ -50,13 +50,15 @@ class App extends React.Component {
     load(jsonText) {
         let json = JSON.parse(jsonText);
         let model = FlexLayout.Model.fromJson(json);
-        model.setOnAllowDrop(this.allowDrop.bind(this));
+
+        // you can control where nodes can be dropped
+        //model.setOnAllowDrop(this.allowDrop.bind(this));
+
         this.setState({layoutFile: this.loadingLayoutName, model: model});
     }
 
-    // you can control where nodes can be dropped
     allowDrop(dragNode, dropInfo) {
-/*        let dropNode = dropInfo.node;
+        let dropNode = dropInfo.node;
 
         // prevent non-border tabs dropping into borders
         if (dropNode.getType() == "border" && dragNode.getParent().getType() != "border")
@@ -65,7 +67,7 @@ class App extends React.Component {
         // prevent border tabs dropping into main layout
         if (dropNode.getType() != "border" && dragNode.getParent().getType() == "border")
             return false;
-*/
+
         return true;
     }
 
