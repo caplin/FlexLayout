@@ -164,6 +164,11 @@ class Node {
             if (dropInfo.location !== DockLocation.CENTER && dropInfo.node.isEnableDivide() === false) {
                 return false;
             }
+
+            // finally check model callback to check if drop allowed
+            if (this._model._onAllowDrop) {
+                return this._model._onAllowDrop(dragNode, dropInfo);
+            }
         }
         return true;
     }
@@ -200,6 +205,10 @@ class Node {
             style = {};
         }
         return this._rect.styleWithPosition(style);
+    }
+
+    isEnableDivide() {
+        false;
     }
 
     // implemented by subclasses

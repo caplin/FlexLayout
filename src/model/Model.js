@@ -22,10 +22,35 @@ class Model {
         this._listener = null;
         this._root = null;
         this._borders = new BorderSet(this);
+        this._onAllowDrop = null;
     }
 
     setListener(listener) {
         this._listener = listener;
+    }
+
+    /**
+     * Sets a function to allow/deny dropping a node
+     * @param onAllowDrop function that takes the drag node and DropInfo and returns true if the drop is allowed
+     *
+     * example function:
+     *
+     * allowDrop(dragNode, dropInfo) {
+     *   let dropNode = dropInfo.node;
+     *
+     *   // prevent non-border tabs dropping into borders
+     *   if (dropNode.getType() == "border" && dragNode.getParent().getType() != "border")
+     *     return false;
+     *
+     *   // prevent border tabs dropping into main layout
+     *   if (dropNode.getType() != "border" && dragNode.getParent().getType() == "border")
+     *     return false;
+     *
+     *   return true;
+     * }
+     */
+    setOnAllowDrop(onAllowDrop) {
+        this._onAllowDrop = onAllowDrop;
     }
 
     /**

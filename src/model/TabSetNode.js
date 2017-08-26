@@ -129,7 +129,6 @@ class TabSetNode extends Node {
             return null;
         }
 
-
         return dropInfo;
     }
 

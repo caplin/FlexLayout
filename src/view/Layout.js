@@ -67,6 +67,8 @@ class Layout extends React.Component {
 
     componentDidUpdate() {
         this.updateRect();
+        console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
+
     }
 
     updateRect() {
@@ -83,7 +85,7 @@ class Layout extends React.Component {
     }
 
     render() {
-        let start = Date.now();
+        this.start = Date.now();
         let borderComponents = [];
         let tabSetComponents = [];
         let tabComponents = {};
@@ -112,7 +114,8 @@ class Layout extends React.Component {
                 this.tabIds.push(t);
             }
         });
-        console.log("layout time: " + (Date.now() - start) + "ms");
+
+        this.layoutTime = (Date.now() - this.start)
 
         return (
             <div ref="self" className="flexlayout__layout">
