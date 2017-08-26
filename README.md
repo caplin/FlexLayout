@@ -233,6 +233,29 @@ example borders section:
 	]
 ```
 
+To control where nodes can be dropped you can add a callback function to the model:
+
+```
+model.setOnAllowDrop(this.allowDrop);
+```
+
+example:
+```
+    allowDrop(dragNode, dropInfo) {
+        let dropNode = dropInfo.node;
+
+        // prevent non-border tabs dropping into borders
+        if (dropNode.getType() == "border" && dragNode.getParent().getType() != "border")
+            return false;
+
+        // prevent border tabs dropping into main layout
+        if (dropNode.getType() != "border" && dragNode.getParent().getType() == "border")
+            return false;
+
+        return true;
+    }
+```
+
 By changing global or node attributes you can change the layout appearance and functionality, for example:
 
 Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without
