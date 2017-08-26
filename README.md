@@ -245,11 +245,11 @@ example:
         let dropNode = dropInfo.node;
 
         // prevent non-border tabs dropping into borders
-        if (dropNode.getType() == "border" && dragNode.getParent().getType() != "border")
+        if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
             return false;
 
         // prevent border tabs dropping into main layout
-        if (dropNode.getType() != "border" && dragNode.getParent().getType() == "border")
+        if (dropNode.getType() != "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
             return false;
 
         return true;
