@@ -144,7 +144,7 @@ class BorderNode extends Node {
         }
 
         let dropInfo = null;
-        let dockLocation = DockLocation.CENTER;
+        let dockLocation = DockLocation.LEFT;
 
         if (this._tabHeaderRect.contains(x, y)) {
             if (this._location._orientation == Orientation.VERT) {
@@ -215,6 +215,14 @@ class BorderNode extends Node {
                 return null;
             }
         }
+        else if (this._contentRect.contains(x, y)) {
+            dockLocation = DockLocation.CENTER;
+            let outlineRect = this._contentRect;
+            dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
+            if (!dragNode._canDockInto(dragNode, dropInfo)) {
+                return null;
+            }
+        }
 
         return dropInfo;
     }
@@ -248,6 +256,10 @@ class BorderNode extends Node {
 
         if (dragNode._type === TabNode.TYPE) {
             this._addChild(dragNode, insertPos);
+        }
+
+        if (location == DockLocation.CENTER) {
+            this._selected = insertPos;
         }
 
         this._model._tidy();
