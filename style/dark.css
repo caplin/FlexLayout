@@ -327,3 +327,28 @@
 .flexlayout__border_button--selected .flexlayout__border_button_trailing{
     background: transparent url("../images/close_white.png") no-repeat center;
 }
+
+
+.flexlayout__border_toolbar_left {
+    position:absolute;
+    bottom:0;
+    right:0;
+}
+
+.flexlayout__border_toolbar_right {
+    position:absolute;
+    bottom:0;
+    right:0;
+}
+
+.flexlayout__border_toolbar_top {
+    position:absolute;
+    top:0;
+    right:0;
+}
+
+.flexlayout__border_toolbar_bottom {
+    position:absolute;
+    top:0;
+    right:0;
+}

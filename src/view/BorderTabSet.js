@@ -43,12 +43,30 @@ class BorderTabSet extends React.Component {
             }
         }
 
+        // allow customization of tabset right/bottom buttons
+        let buttons = [];
+        let renderState = {buttons: buttons};
+        this.props.layout.customizeTabSet(this.props.node, renderState);
+        buttons = renderState.buttons;
+
+        //buttons.push(<button
+        //    key="max"
+        //    className={"flexlayout__tab_toolbar_button-min"}></button>);
+
+        toolbar = <div
+            key="toolbar"
+            ref="toolbar"
+            className={"flexlayout__border_toolbar_" + border.getLocation().getName()}>
+            {buttons}
+        </div>;
+
         return <div
             style={style}
             className={"flexlayout__border_" + border.getLocation().getName()}>
             <div className={"flexlayout__border_inner_" + border.getLocation().getName()}>
                 {tabs}
             </div>
+            {toolbar}
         </div>;
     }
 }
