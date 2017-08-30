@@ -46,7 +46,7 @@ class BorderTabSet extends React.Component {
         // allow customization of tabset right/bottom buttons
         let buttons = [];
         let renderState = {buttons: buttons};
-        this.props.layout.customizeTabSet(this.props.node, renderState);
+        this.props.layout.customizeTabSet(border, renderState);
         buttons = renderState.buttons;
 
         //buttons.push(<button
