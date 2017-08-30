@@ -54,6 +54,13 @@ class BorderNode extends Node {
         return this._selected;
     }
 
+    getSelectedNode() {
+        if (this._selected != -1) {
+            return this._children[this._selected];
+        }
+        return null;
+    }
+
     _setSelected(index) {
         this._selected = index;
     }
@@ -243,7 +250,20 @@ class BorderNode extends Node {
                 dragNode._parent._selected = 0;
             }
             else if (dragNode._parent._type === BorderNode.TYPE) {
-                dragNode._parent._selected = -1;
+                if (dragNode._parent._selected != -1) {
+                    if (fromIndex === dragNode._parent._selected && dragNode._parent._children.length > 0) {
+                        dragNode._parent._selected = 0;
+                    }
+                    else if (fromIndex < dragNode._parent._selected) {
+                        dragNode._parent._selected--;
+                    }
+                    else if (fromIndex > dragNode._parent._selected) {
+                        // leave selected index as is
+                    }
+                    else {
+                        dragNode._parent._selected = -1;
+                    }
+                }
             }
         }
 
@@ -257,7 +277,7 @@ class BorderNode extends Node {
             this._addChild(dragNode, insertPos);
         }
 
-        if (index == -1) {
+        if (this._selected !== -1) { // already open
             this._selected = insertPos;
         }
 

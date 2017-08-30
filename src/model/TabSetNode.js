@@ -30,6 +30,13 @@ class TabSetNode extends Node {
         return this._selected;
     }
 
+    getSelectedNode() {
+        if (this._selected != -1) {
+            return this._children[this._selected];
+        }
+        return null;
+    }
+
     isMaximized() {
         return this._maximized;
     }
@@ -171,8 +178,10 @@ class TabSetNode extends Node {
             return; // dock back to itself
         }
 
+        let selectedNode = null;
         let fromIndex = 0;
         if (dragNode._parent != null) {
+            selectedNode = dragNode._parent.getSelectedNode;
             fromIndex = dragNode._parent._removeChild(dragNode);
         }
         //console.log("removed child: " + fromIndex);
@@ -188,7 +197,20 @@ class TabSetNode extends Node {
                 dragNode._parent._selected = 0;
             }
             else if (dragNode._parent._type === BorderNode.TYPE) {
-                dragNode._parent._selected = -1;
+                if (dragNode._parent._selected != -1) {
+                    if (fromIndex === dragNode._parent._selected && dragNode._parent._children.length > 0) {
+                        dragNode._parent._selected = 0;
+                    }
+                    else if (fromIndex < dragNode._parent._selected) {
+                        dragNode._parent._selected--;
+                    }
+                    else if (fromIndex > dragNode._parent._selected) {
+                        // leave selected index as is
+                    }
+                    else {
+                        dragNode._parent._selected = -1;
+                    }
+                }
             }
         }
 
