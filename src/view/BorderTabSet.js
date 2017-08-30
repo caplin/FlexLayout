@@ -50,7 +50,7 @@ class BorderTabSet extends React.Component {
         buttons = renderState.buttons;
 
         //buttons.push(<button
-        //    key="max"
+        //    key="1"
         //    className={"flexlayout__tab_toolbar_button-min"}></button>);
 
         toolbar = <div

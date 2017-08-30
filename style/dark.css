@@ -183,12 +183,16 @@
     background-image: linear-gradient(#111, #444);
 }
 
-
 .flexlayout__tab_toolbar {
     position:absolute;
+    display:flex;
+    flex-direction: row-reverse;
+    align-items: center;
     top:0;
+    bottom:0;
     right:0;
 }
+
 .flexlayout__tab_toolbar_button-min {
     width:20px;
     height:20px;
@@ -331,24 +335,40 @@
 
 .flexlayout__border_toolbar_left {
     position:absolute;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
     bottom:0;
+    left:0;
     right:0;
 }
 
 .flexlayout__border_toolbar_right {
     position:absolute;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
     bottom:0;
+    left:0;
     right:0;
 }
 
 .flexlayout__border_toolbar_top {
     position:absolute;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
     top:0;
+    bottom:0;
     right:0;
 }
 
 .flexlayout__border_toolbar_bottom {
     position:absolute;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
     top:0;
+    bottom:0;
     right:0;
 }

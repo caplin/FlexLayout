@@ -138,7 +138,6 @@ class TabSet extends React.Component {
             tabStripClasses += " flexlayout__tabset-selected"
         }
 
-
         if (showHeader) {
             let tabHeaderClasses = "flexlayout__tabset_header";
             if (node.isActive()) {
@@ -153,6 +152,7 @@ class TabSet extends React.Component {
                           onMouseDown={this.onMouseDown.bind(this)}
                           onTouchStart={this.onMouseDown.bind(this)}>
                 {headerContent}
+                {toolbar}
             </div>;
             tabStrip = <div className={tabStripClasses}
                             style={{height:node.getTabStripHeight()+ "px", top:node.getHeaderHeight()+ "px"}}>
@@ -168,13 +168,13 @@ class TabSet extends React.Component {
                 <div ref="header" className="flexlayout__tab_header_inner">
                     {tabs}
                 </div>
+                {toolbar}
             </div>;
         }
 
         return <div style={style} className="flexlayout__tabset">
             {header}
             {tabStrip}
-            {toolbar}
         </div>;
     }
 

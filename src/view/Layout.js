@@ -341,8 +341,8 @@ class Layout extends React.Component {
             y: event.clientY - clientRect.top
         };
 
-        this.dragDiv.style.left = (pos.x - 75) + "px";
-        this.dragDiv.style.top = pos.y + "px";
+        this.dragDiv.style.left = (pos.x - this.dragDiv.getBoundingClientRect().width/2) + "px";
+        this.dragDiv.style.top = pos.y +5  + "px";
 
         let dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
         if (dropInfo) {
