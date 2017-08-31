@@ -132,6 +132,7 @@ class BorderNode extends Node {
             let selectedNode = this._children[this._selected];
             if (node === selectedNode) {
                 this._selected = -1;
+                this._removeChild(node);
             }
             else {
                 this._removeChild(node);
