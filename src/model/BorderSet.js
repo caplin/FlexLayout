@@ -14,6 +14,17 @@ class BorderSet {
         return this._borders;
     }
 
+    _forEachNode(fn) {
+
+        for (let i=0; i<this._borders.length;i++) {
+            let borderNode = this._borders[i];
+            fn(borderNode);
+            borderNode._children.forEach((node) => {
+                node._forEachNode(fn);
+            })
+        }
+    }
+
     _toJson() {
         let json = [];
         for (let i = 0; i < this._borders.length; i++) {

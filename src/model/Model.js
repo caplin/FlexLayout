@@ -104,6 +104,7 @@ class Model {
      * @param fn a function that takes visited node and a integer level as parameters
      */
     visitNodes(fn) {
+        this._borders._forEachNode(fn);
         this._root._forEachNode(fn, 0);
     }
 
@@ -261,13 +262,12 @@ class Model {
         let json = {global: {}, layout: {}};
         jsonConverter.toJson(json.global, this);
 
-        if (this._borders) {
-            json.borders = this._borders._toJson();
-        }
-
-        this._root._forEachNode((node)=> {
+        // save state of nodes
+        this.visitNodes((node)=> {
             node._fireEvent("save", null);
         });
+
+        json.borders = this._borders._toJson();
         json.layout = this._root._toJson();
         return json;
     }
