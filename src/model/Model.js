@@ -285,6 +285,7 @@ class Model {
             model._borders = BorderSet._fromJson(json.borders, model);
         }
         model._root = RowNode._fromJson(json.layout, model);
+        model._tidy(); // initial tidy of node tree
         return model;
     }
 
