@@ -313,8 +313,8 @@ class BorderNode extends Node {
 
     _getSplitterBounds(splitter) {
         let pBounds = [0, 0];
-        let outerRect = this._model.getOuterInnerRects().outer;
-        let innerRect = this._model.getOuterInnerRects().inner;
+        let outerRect = this._model._getOuterInnerRects().outer;
+        let innerRect = this._model._getOuterInnerRects().inner;
         if (this._location === DockLocation.TOP) {
             pBounds[0] = outerRect.y;
             pBounds[1] = innerRect.getBottom() - splitter.getHeight();

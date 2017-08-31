@@ -38,11 +38,11 @@ class TabSetNode extends Node {
     }
 
     isMaximized() {
-        return this._maximized;
+        return this._model.getMaximizedTabset() === this;
     }
 
     isActive() {
-        return this._active;
+        return this._model.getActiveTabset() === this;
     }
 
     isEnableClose() {
@@ -141,7 +141,7 @@ class TabSetNode extends Node {
 
     _layout(rect) {
 
-        if (this._maximized) {
+        if (this.isMaximized()) {
             rect = this._model._root._rect;
         }
         this._rect = rect;
@@ -288,6 +288,15 @@ class TabSetNode extends Node {
             let jsonChild = this._children[i]._toJson();
             json.children.push(jsonChild);
         }
+
+        if (this.isActive()) {
+            json.active = true;
+        }
+
+        if (this.isMaximized()) {
+            json.maximized = true;
+        }
+
         return json;
     }
 
@@ -304,6 +313,14 @@ class TabSetNode extends Node {
                 let child = TabNode._fromJson(json.children[i], model);
                 newLayoutNode._addChild(child);
             }
+        }
+
+        if (json.maximized && json.maximized == true) {
+            model._setMaximizedTabset(newLayoutNode);
+        }
+
+        if (json.active && json.active == true) {
+            model._setActiveTabset(newLayoutNode);
         }
 
         return newLayoutNode;
@@ -323,8 +340,6 @@ jsonConverter.addConversion("_width", "width", null);
 jsonConverter.addConversion("_height", "height", null);
 jsonConverter.addConversion("_name", "name", null);
 jsonConverter.addConversion("_selected", "selected", 0);
-jsonConverter.addConversion("_maximized", "maximized", false);
-jsonConverter.addConversion("_active", "active", false);
 jsonConverter.addConversion("_id", "id", null);
 
 jsonConverter.addConversion("_tabSetEnableClose", "enableClose", undefined);

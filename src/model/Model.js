@@ -23,6 +23,8 @@ class Model {
         this._root = null;
         this._borders = new BorderSet(this);
         this._onAllowDrop = null;
+        this._maximizedTabSet = null;
+        this._activeTabSet = null;
     }
 
     setListener(listener) {
@@ -58,21 +60,23 @@ class Model {
      * @returns {null|TabSetNode}
      */
     getActiveTabset() {
-        let activeTabset = null;
-        this.visitNodes((node) => {
-            if (node.getType() === "tabset" && node.isActive()) {
-                activeTabset = node;
-            }
-        });
-        return activeTabset;
+        return this._activeTabSet;
     }
 
-    _clearActiveTabset() {
-        this.visitNodes((node) => {
-            if (node.getType() === "tabset") {
-                node._active = false;
-            }
-        });
+    _setActiveTabset(tabsetNode) {
+        this._activeTabSet = tabsetNode;
+    }
+
+    /**
+     * Get the currently maximized tabset node
+     * @returns {null|TabSetNode}
+     */
+    getMaximizedTabset() {
+        return this._maximizedTabSet;
+    }
+
+    _setMaximizedTabset(tabsetNode) {
+        this._maximizedTabSet = tabsetNode;
     }
 
     /**
@@ -83,11 +87,15 @@ class Model {
         return this._root;
     }
 
-    getBorder() {
+    /**
+     * Gets the
+     * @returns {BorderSet|*}
+     */
+    getBorderSet() {
         return this._borders;
     }
 
-    getOuterInnerRects() {
+    _getOuterInnerRects() {
         return this._borderRects;
     }
 
@@ -107,6 +115,7 @@ class Model {
     getNodeById(id) {
         return this._idMap[id];
     }
+
 
     ///**
     // * Update the json by performing the given action,
@@ -186,8 +195,7 @@ class Model {
             case Actions.SET_ACTIVE_TABSET:
             {
                 let tabsetNode = this._idMap[action.tabsetNode];
-                this._clearActiveTabset();
-                tabsetNode._active = true;
+                this._activeTabSet = tabsetNode;
                 break;
             }
             case Actions.ADJUST_SPLIT:
@@ -208,9 +216,12 @@ class Model {
             case Actions.MAXIMIZE_TOGGLE:
             {
                 let node = this._idMap[action.node];
-                node._setMaximized(!node.isMaximized());
-                this._clearActiveTabset();
-                node._active = true;
+                if (node === this._maximizedTabSet) {
+                    this._maximizedTabSet = null;
+                } else {
+                    this._maximizedTabSet = node;
+                    this._activeTabSet = node;
+                }
 
                 break;
             }
@@ -251,7 +262,7 @@ class Model {
         jsonConverter.toJson(json.global, this);
 
         if (this._borders) {
-            json.borders = this._borders.toJson();
+            json.borders = this._borders._toJson();
         }
 
         this._root._forEachNode((node)=> {
@@ -271,7 +282,7 @@ class Model {
         jsonConverter.fromJson(json.global, model);
 
         if (json.borders) {
-            model._borders = BorderSet.fromJson(json.borders, model);
+            model._borders = BorderSet._fromJson(json.borders, model);
         }
         model._root = RowNode._fromJson(json.layout, model);
         return model;

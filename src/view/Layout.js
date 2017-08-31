@@ -93,7 +93,7 @@ class Layout extends React.Component {
 
         this.centerRect = this.model._layout(this.rect);
 
-        this.renderBorder(this.model.getBorder(), borderComponents, tabComponents, splitterComponents);
+        this.renderBorder(this.model.getBorderSet(), borderComponents, tabComponents, splitterComponents);
         this.renderChildren(this.model.getRoot(), tabSetComponents, tabComponents, splitterComponents);
 
         const nextTopIds = [];

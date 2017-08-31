@@ -14,7 +14,7 @@ class BorderSet {
         return this._borders;
     }
 
-    toJson() {
+    _toJson() {
         let json = [];
         for (let i = 0; i < this._borders.length; i++) {
             json.push(this._borders[i]._toJson());
@@ -22,7 +22,7 @@ class BorderSet {
         return json;
     }
 
-    static fromJson(json, model) {
+    static _fromJson(json, model) {
         let borderSet = new BorderSet(model);
         for (let i = 0; i < json.length; i++) {
             let borderJson = json[i];
