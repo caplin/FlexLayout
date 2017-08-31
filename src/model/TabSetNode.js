@@ -89,10 +89,6 @@ class TabSetNode extends Node {
         this._selected = index;
     }
 
-    _setMaximized(maximized) {
-        this._maximized = maximized;
-    }
-
     _canDrop(dragNode, x, y) {
         let dropInfo = null;
 

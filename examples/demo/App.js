@@ -76,11 +76,13 @@ class App extends React.Component {
     }
 
     onAddClick(event) {
-        this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
-            component: "grid",
-            name: "a new grid"
-        }, this.onAdded.bind(this));
-        this.setState({adding: true});
+        if (this.state.model.getMaximizedTabset() == null) {
+            this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
+                component: "grid",
+                name: "a new grid"
+            }, this.onAdded.bind(this));
+            this.setState({adding: true});
+        }
     }
 
     onShowLayoutClick(event) {

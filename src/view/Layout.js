@@ -156,7 +156,7 @@ class Layout extends React.Component {
 
     renderChildren(node, tabSetComponents, tabComponents, splitterComponents) {
         let drawChildren = node._getDrawChildren();
-        this.maximized = false;
+
         for (let i = 0; i < drawChildren.length; i++) {
             let child = drawChildren[i];
 
@@ -166,9 +166,6 @@ class Layout extends React.Component {
             else if (child.getType() === TabSetNode.TYPE) {
                 tabSetComponents.push(<TabSet key={child.getId()} layout={this} node={child}></TabSet>);
                 this.renderChildren(child, tabSetComponents, tabComponents, splitterComponents);
-                if (child.isMaximized()) {
-                    this.maximized = true;
-                }
             }
             else if (child.getType() === TabNode.TYPE) {
                 let selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
@@ -297,7 +294,7 @@ class Layout extends React.Component {
     }
 
     dragStart(event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
-        if (this.maximized || !allowDrag) {
+        if (this.model.getMaximizedTabset() != null || !allowDrag) {
             DragDrop.instance.startDrag(event, null, null, null, null, onClick, onDoubleClick);
         }
         else {
