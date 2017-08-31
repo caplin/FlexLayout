@@ -98,7 +98,6 @@ class Node {
         fn(this, level);
         level++;
         this._children.forEach((node) => {
-            fn(node, level);
             node._forEachNode(fn, level);
         })
     }
