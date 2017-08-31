@@ -106,8 +106,11 @@ class BorderNode extends Node {
         this._contentRect = split4.end;
 
         for (let i = 0; i < this._children.length; i++) {
-            this._children[i]._layout(this._contentRect);
-            this._drawChildren.push(this._children[i]);
+            let child = this._children[i];
+
+            child._layout(this._contentRect);
+            child._setVisible(i === this._selected);
+            this._drawChildren.push(child);
         }
 
         if (this._selected == -1) {

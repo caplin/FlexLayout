@@ -187,8 +187,7 @@ class Model {
                     if (parent.getSelected() !== pos) {
                         parent._setSelected(pos);
                     }
-                    this._clearActiveTabset();
-                    parent._active = true;
+                    this._activeTabSet = parent;
                 }
 
                 break;
