@@ -58,8 +58,8 @@ class BorderSet {
         const showingBorders = this._borders.filter((border) => border.isShowing());
 
         // sum size of borders to see they will fit
-        for (var i = 0; i < showingBorders.length; i++) {
-            var border = showingBorders[i];
+        for (let i = 0; i < showingBorders.length; i++) {
+            let border = showingBorders[i];
             if (border.isShowing()) {
                 border._setAdjustedSize(border._size);
                 const visible = border.getSelected() != -1;
@@ -83,10 +83,10 @@ class BorderSet {
         }
 
         // adjust border sizes if too large
-        var i = 0;
+        let i = 0;
         while ((sumWidth > width && adjustableWidth > 0)
         || (sumHeight > height && adjustableHeight > 0)) {
-            var border = showingBorders[i];
+            let border = showingBorders[i];
             if (border.getSelected() != -1) { //visible
                 const size = border._getAdjustedSize();
                 if (sumWidth > width && adjustableWidth > 0
@@ -107,8 +107,8 @@ class BorderSet {
             i = (i + 1) % showingBorders.length;
         }
 
-        for (var i = 0; i < showingBorders.length; i++) {
-            var border = showingBorders[i];
+        for (let i = 0; i < showingBorders.length; i++) {
+            let border = showingBorders[i];
             outerInnerRects = border._layout(outerInnerRects);
         }
         return outerInnerRects;

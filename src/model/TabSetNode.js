@@ -93,13 +93,13 @@ class TabSetNode extends Node {
         let dropInfo = null;
 
         if (dragNode === this) {
-            var dockLocation = DockLocation.CENTER;
-            var outlineRect = this._tabHeaderRect;
+            let dockLocation = DockLocation.CENTER;
+            let outlineRect = this._tabHeaderRect;
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
         else if (this._contentRect.contains(x, y)) {
-            var dockLocation = DockLocation.getLocation(this._contentRect, x, y);
-            var outlineRect = dockLocation.getDockRect(this._rect);
+            let dockLocation = DockLocation.getLocation(this._contentRect, x, y);
+            let outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
         else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
@@ -114,16 +114,16 @@ class TabSetNode extends Node {
                 r = child._tabRect;
                 childCenter = r.x + r.width / 2;
                 if (x >= p && x < childCenter) {
-                    var dockLocation = DockLocation.CENTER;
-                    var outlineRect = new Rect(r.x - 2, yy, 3, h);
+                    let dockLocation = DockLocation.CENTER;
+                    let outlineRect = new Rect(r.x - 2, yy, 3, h);
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
                     break;
                 }
                 p = childCenter;
             }
             if (dropInfo == null) {
-                var dockLocation = DockLocation.CENTER;
-                var outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
+                let dockLocation = DockLocation.CENTER;
+                let outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
             }
         }
@@ -329,7 +329,7 @@ class TabSetNode extends Node {
 
 TabSetNode.TYPE = "tabset";
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", TabSetNode.TYPE, true);
 jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);

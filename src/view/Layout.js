@@ -130,13 +130,13 @@ class Layout extends React.Component {
     }
 
     renderBorder(borderSet, borderComponents, tabComponents, splitterComponents) {
-        for (var i = 0; i < borderSet.getBorders().length; i++) {
+        for (let i = 0; i < borderSet.getBorders().length; i++) {
             const border = borderSet.getBorders()[i];
             if (border.isShowing()) {
                 borderComponents.push(<BorderTabSet key={"border_" + border.getLocation().getName()} border={border}
                                                     layout={this}/>);
                 const drawChildren = border._getDrawChildren();
-                for (var i = 0; i < drawChildren.length; i++) {
+                for (let i = 0; i < drawChildren.length; i++) {
                     const child = drawChildren[i];
 
                     if (child.getType() === SplitterNode.TYPE) {

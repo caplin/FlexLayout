@@ -31,9 +31,9 @@ class RowNode extends Node {
         let totalPrefWeight = 0;
         const drawChildren = this._getDrawChildren();
 
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
-            var prefSize = child._getPrefSize(this.getOrientation());
+        for (let i = 0; i < drawChildren.length; i++) {
+            let child = drawChildren[i];
+            let prefSize = child._getPrefSize(this.getOrientation());
             if (child._fixed) {
                 fixedPixels += prefSize;
             }
@@ -60,9 +60,9 @@ class RowNode extends Node {
         // assign actual pixel sizes
         let totalSizeGiven = 0;
         let variableSize = 0;
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
-            var prefSize = child._getPrefSize(this.getOrientation());
+        for (let i = 0; i < drawChildren.length; i++) {
+            let child = drawChildren[i];
+            let prefSize = child._getPrefSize(this.getOrientation());
             if (child._fixed) {
                 child.tempsize = prefSize;
             }
@@ -87,9 +87,9 @@ class RowNode extends Node {
         // adjust sizes to exactly fit
         if (variableSize > 0) {
             while (totalSizeGiven < pixelSize) {
-                for (var i = 0; i < drawChildren.length; i++) {
-                    var child = drawChildren[i];
-                    var prefSize = child._getPrefSize(this.getOrientation());
+                for (let i = 0; i < drawChildren.length; i++) {
+                    let child = drawChildren[i];
+                    let prefSize = child._getPrefSize(this.getOrientation());
                     if (!child._fixed && (prefSize == null || resizePreferred) && totalSizeGiven < pixelSize) {
                         child.tempsize++;
                         totalSizeGiven++;
@@ -102,8 +102,8 @@ class RowNode extends Node {
 
         // layout children
         let p = 0;
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
+        for (let i = 0; i < drawChildren.length; i++) {
+            let child = drawChildren[i];
 
             if (this.getOrientation() === Orientation.HORZ) {
                 child._layout(new Rect(this._rect.x + p, this._rect.y, child.tempsize, this._rect.height));
@@ -192,12 +192,12 @@ class RowNode extends Node {
                     this._removeChild(child);
                     if (subchild._type === RowNode.TYPE) {
                         let subChildrenTotal = 0;
-                        for (var j = 0; j < subchild._children.length; j++) {
-                            var subsubChild = subchild._children[j];
+                        for (let j = 0; j < subchild._children.length; j++) {
+                            let subsubChild = subchild._children[j];
                             subChildrenTotal += subsubChild._weight;
                         }
-                        for (var j = 0; j < subchild._children.length; j++) {
-                            var subsubChild = subchild._children[j];
+                        for (let j = 0; j < subchild._children.length; j++) {
+                            let subsubChild = subchild._children[j];
                             subsubChild._weight = child._weight * subsubChild._weight / subChildrenTotal;
                             this._addChild(subsubChild, i + j);
                         }
@@ -239,27 +239,27 @@ class RowNode extends Node {
 
         if (this._model.isEnableEdgeDock() && this._parent == null) { // _root row
             if (x < this._rect.x + margin && (yy > h / 2 - half && yy < h / 2 + half)) {
-                var dockLocation = DockLocation.LEFT;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                let dockLocation = DockLocation.LEFT;
+                let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (x > this._rect.getRight() - margin && (yy > h / 2 - half && yy < h / 2 + half)) {
-                var dockLocation = DockLocation.RIGHT;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                let dockLocation = DockLocation.RIGHT;
+                let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (y < this._rect.y + margin && (xx > w / 2 - half && xx < w / 2 + half)) {
-                var dockLocation = DockLocation.TOP;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                let dockLocation = DockLocation.TOP;
+                let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (y > this._rect.getBottom() - margin && (xx > w / 2 - half && xx < w / 2 + half)) {
-                var dockLocation = DockLocation.BOTTOM;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                let dockLocation = DockLocation.BOTTOM;
+                let outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 outlineRect.y += outlineRect.height;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
@@ -300,7 +300,7 @@ class RowNode extends Node {
         }
 
         let size = 0;
-        for (var i = 0; i < this._children.length; i++) {
+        for (let i = 0; i < this._children.length; i++) {
             size += this._children[i]._weight;
         }
 
@@ -317,11 +317,11 @@ class RowNode extends Node {
             this._addChild(tabSet);
         }
         else if (dockLocation === DockLocation.TOP) {
-            var vrow = new RowNode(this._model, {});
-            var hrow = new RowNode(this._model, {});
+            let vrow = new RowNode(this._model, {});
+            let hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (var i = 0; i < this._children.length; i++) {
+            for (let i = 0; i < this._children.length; i++) {
                 hrow._addChild(this._children[i]);
             }
             this._removeAll();
@@ -330,11 +330,11 @@ class RowNode extends Node {
             this._addChild(vrow);
         }
         else if (dockLocation === DockLocation.BOTTOM) {
-            var vrow = new RowNode(this._model, {});
-            var hrow = new RowNode(this._model, {});
+            let vrow = new RowNode(this._model, {});
+            let hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (var i = 0; i < this._children.length; i++) {
+            for (let i = 0; i < this._children.length; i++) {
                 hrow._addChild(this._children[i]);
             }
             this._removeAll();
@@ -368,11 +368,11 @@ class RowNode extends Node {
             for (let i = 0; i < json.children.length; i++) {
                 const jsonChild = json.children[i];
                 if (jsonChild.type === TabSetNode.TYPE) {
-                    var child = TabSetNode._fromJson(jsonChild, model);
+                    let child = TabSetNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
                 else {
-                    var child = RowNode._fromJson(jsonChild, model);
+                    let child = RowNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
             }
@@ -384,7 +384,7 @@ class RowNode extends Node {
 
 RowNode.TYPE = "row";
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", RowNode.TYPE, true);
 jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);

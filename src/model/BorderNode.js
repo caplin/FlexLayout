@@ -163,63 +163,63 @@ class BorderNode extends Node {
         if (this._tabHeaderRect.contains(x, y)) {
             if (this._location._orientation == Orientation.VERT) {
                 if (this._children.length > 0) {
-                    var child = this._children[0];
-                    var childRect = child._tabRect;
+                    let child = this._children[0];
+                    let childRect = child._tabRect;
                     const childY = childRect.y;
 
                     const childHeight = childRect.height;
 
-                    var pos = this._tabHeaderRect.x;
-                    var childCenter = 0;
-                    for (var i = 0; i < this._children.length; i++) {
+                    let pos = this._tabHeaderRect.x;
+                    let childCenter = 0;
+                    for (let i = 0; i < this._children.length; i++) {
                         child = this._children[i];
                         childRect = child._tabRect;
                         childCenter = childRect.x + childRect.width / 2;
                         if (x >= pos && x < childCenter) {
-                            var outlineRect = new Rect(childRect.x - 2, childY, 3, childHeight);
+                            let outlineRect = new Rect(childRect.x - 2, childY, 3, childHeight);
                             dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
-                        var outlineRect = new Rect(childRect.getRight() - 2, childY, 3, childHeight);
+                        let outlineRect = new Rect(childRect.getRight() - 2, childY, 3, childHeight);
                         dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
                     }
                 }
                 else {
-                    var outlineRect = new Rect(this._tabHeaderRect.x + 1, this._tabHeaderRect.y + 2, 3, 18);
+                    let outlineRect = new Rect(this._tabHeaderRect.x + 1, this._tabHeaderRect.y + 2, 3, 18);
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
 
                 }
             }
             else {
                 if (this._children.length > 0) {
-                    var child = this._children[0];
-                    var childRect = child._tabRect;
+                    let child = this._children[0];
+                    let childRect = child._tabRect;
                     const childX = childRect.x;
                     const childWidth = childRect.width;
 
-                    var pos = this._tabHeaderRect.y;
-                    var childCenter = 0;
-                    for (var i = 0; i < this._children.length; i++) {
+                    let pos = this._tabHeaderRect.y;
+                    let childCenter = 0;
+                    for (let i = 0; i < this._children.length; i++) {
                         child = this._children[i];
                         childRect = child._tabRect;
                         childCenter = childRect.y + childRect.height / 2;
                         if (y >= pos && y < childCenter) {
-                            var outlineRect = new Rect(childX, childRect.y - 2, childWidth, 3);
+                            let outlineRect = new Rect(childX, childRect.y - 2, childWidth, 3);
                             dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
-                        var outlineRect = new Rect(childX, childRect.getBottom() - 2, childWidth, 3);
+                        let outlineRect = new Rect(childX, childRect.getBottom() - 2, childWidth, 3);
                         dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
                     }
                 }
                 else {
-                    var outlineRect = new Rect(this._tabHeaderRect.x + 2, this._tabHeaderRect.y + 1, 18, 3);
+                    let outlineRect = new Rect(this._tabHeaderRect.x + 2, this._tabHeaderRect.y + 1, 18, 3);
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
 
                 }
@@ -230,7 +230,7 @@ class BorderNode extends Node {
             }
         }
         else if (this._selected != -1 && this._contentRect.contains(x, y)) {
-            var outlineRect = this._contentRect;
+            let outlineRect = this._contentRect;
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
                 return null;
@@ -354,7 +354,7 @@ class BorderNode extends Node {
 
 BorderNode.TYPE = "border";
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", BorderNode.TYPE, true);
 jsonConverter.addConversion("_size", "size", 200);
 jsonConverter.addConversion("_selected", "selected", -1);

@@ -38,7 +38,7 @@ class Model {
      * example function:
      *
      * allowDrop(dragNode, dropInfo) {
-     *   var dropNode = dropInfo.node;
+     *   let dropNode = dropInfo.node;
      *
      *   // prevent non-border tabs dropping into borders
      *   if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
@@ -128,7 +128,7 @@ class Model {
     //static apply(action, json) {
     //    console.log(json, action);
     //
-    //    var model = Model.fromJson(json);
+    //    let model = Model.fromJson(json);
     //    model.doAction(action);
     //    return model.toJson();
     //}
@@ -144,27 +144,27 @@ class Model {
             case Actions.ADD_NODE:
             {
                 const newNode = new TabNode(this, action.json);
-                var toNode = this._idMap[action.toNode];
+                let toNode = this._idMap[action.toNode];
                 toNode._drop(newNode, DockLocation.getByName(action.location), action.index);
                 break;
             }
             case Actions.MOVE_NODE:
             {
                 const fromNode = this._idMap[action.fromNode];
-                var toNode = this._idMap[action.toNode];
+                let toNode = this._idMap[action.toNode];
                 toNode._drop(fromNode, DockLocation.getByName(action.location), action.index);
                 break;
             }
             case Actions.DELETE_TAB:
             {
-                var node = this._idMap[action.node];
+                let node = this._idMap[action.node];
                 delete this._idMap[action.node];
                 node._delete();
                 break;
             }
             case Actions.RENAME_TAB:
             {
-                var node = this._idMap[action.node];
+                let node = this._idMap[action.node];
                 node._setName(action.text);
                 break;
             }
@@ -209,13 +209,13 @@ class Model {
             }
             case Actions.ADJUST_BORDER_SPLIT:
             {
-                var node = this._idMap[action.node];
+                let node = this._idMap[action.node];
                 node._setSize(action.pos);
                 break;
             }
             case Actions.MAXIMIZE_TOGGLE:
             {
-                var node = this._idMap[action.node];
+                let node = this._idMap[action.node];
                 if (node === this._maximizedTabSet) {
                     this._maximizedTabSet = null;
                 } else {
@@ -232,7 +232,7 @@ class Model {
             }
             case Actions.UPDATE_NODE_ATTRIBUTES:
             {
-                var node = this._idMap[action.node];
+                let node = this._idMap[action.node];
                 node._updateAttrs(action.json);
                 break;
             }
@@ -310,7 +310,7 @@ class Model {
     }
 
     _layout(rect) {
-        //var start = Date.now();
+        //let start = Date.now();
         this._borderRects = this._borders._layout({outer: rect, inner: rect});
         this._root._layout(this._borderRects.inner);
         return this._borderRects.inner;
@@ -363,7 +363,7 @@ class Model {
     }
 }
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 
 // splitter
 jsonConverter.addConversion("_splitterSize", "splitterSize", 8);

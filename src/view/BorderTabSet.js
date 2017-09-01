@@ -17,9 +17,9 @@ class BorderTabSet extends React.Component {
         const style = border.getTabHeaderRect().styleWithPosition({});
         const tabs = [];
         if (border.getLocation() != DockLocation.LEFT) {
-            for (var i = 0; i < border.getChildren().length; i++) {
-                var isSelected = border.getSelected() === i;
-                var child = border.getChildren()[i];
+            for (let i = 0; i < border.getChildren().length; i++) {
+                let isSelected = border.getSelected() === i;
+                let child = border.getChildren()[i];
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border}
                                         node={child}
@@ -30,9 +30,9 @@ class BorderTabSet extends React.Component {
             }
         }
         else {
-            for (var i = border.getChildren().length - 1; i >= 0; i--) {
-                var isSelected = border.getSelected() === i;
-                var child = border.getChildren()[i];
+            for (let i = border.getChildren().length - 1; i >= 0; i--) {
+                let isSelected = border.getSelected() === i;
+                let child = border.getChildren()[i];
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border}
                                         node={child}

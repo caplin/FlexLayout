@@ -104,7 +104,7 @@ class TabNode extends Node {
 
 TabNode.TYPE = "tab";
 
-var jsonConverter = new JsonConverter();
+let jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", TabNode.TYPE, true);
 jsonConverter.addConversion("_name", "name", null);
 jsonConverter.addConversion("_component", "component", null);
