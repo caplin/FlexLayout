@@ -16,12 +16,12 @@ class BorderButton extends React.Component {
     }
 
     onClick(event) {
-        let node = this.props.node;
+        const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
     onClose(event) {
-        let node = this.props.node;
+        const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
@@ -39,15 +39,15 @@ class BorderButton extends React.Component {
 
     updateRect() {
         // record position of tab in border
-        let clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
-        let r = this.refs.self.getBoundingClientRect();
+        const clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
+        const r = this.refs.self.getBoundingClientRect();
         this.props.node.setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
         this.contentWidth = this.refs.contents.getBoundingClientRect().width;
     }
 
     render() {
         let classNames = "flexlayout__border_button flexlayout__border_button_" + this.props.border.getLocation().getName();
-        let node = this.props.node;
+        const node = this.props.node;
 
         if (this.props.selected) {
             classNames += " flexlayout__border_button--selected";
@@ -66,7 +66,7 @@ class BorderButton extends React.Component {
             leadingContent = <img src={node.getIcon()}/>;
         }
 
-        let content = <div ref="contents" className="flexlayout__border_button_content">{node.getName()}</div>;
+        const content = <div ref="contents" className="flexlayout__border_button_content">{node.getName()}</div>;
 
         let closeButton = null;
         if (this.props.node.isEnableClose()) {

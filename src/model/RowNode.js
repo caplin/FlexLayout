@@ -22,18 +22,18 @@ class RowNode extends Node {
     _layout(rect) {
         super._layout(rect);
 
-        let pixelSize = this._rect._getSize(this.getOrientation());
+        const pixelSize = this._rect._getSize(this.getOrientation());
 
         let totalWeight = 0;
         let fixedPixels = 0;
         let prefPixels = 0;
         let numVariable = 0;
         let totalPrefWeight = 0;
-        let drawChildren = this._getDrawChildren();
+        const drawChildren = this._getDrawChildren();
 
-        for (let i = 0; i < drawChildren.length; i++) {
-            let child = drawChildren[i];
-            let prefSize = child._getPrefSize(this.getOrientation());
+        for (var i = 0; i < drawChildren.length; i++) {
+            var child = drawChildren[i];
+            var prefSize = child._getPrefSize(this.getOrientation());
             if (child._fixed) {
                 fixedPixels += prefSize;
             }
@@ -60,9 +60,9 @@ class RowNode extends Node {
         // assign actual pixel sizes
         let totalSizeGiven = 0;
         let variableSize = 0;
-        for (let i = 0; i < drawChildren.length; i++) {
-            let child = drawChildren[i];
-            let prefSize = child._getPrefSize(this.getOrientation());
+        for (var i = 0; i < drawChildren.length; i++) {
+            var child = drawChildren[i];
+            var prefSize = child._getPrefSize(this.getOrientation());
             if (child._fixed) {
                 child.tempsize = prefSize;
             }
@@ -87,9 +87,9 @@ class RowNode extends Node {
         // adjust sizes to exactly fit
         if (variableSize > 0) {
             while (totalSizeGiven < pixelSize) {
-                for (let i = 0; i < drawChildren.length; i++) {
-                    let child = drawChildren[i];
-                    let prefSize = child._getPrefSize(this.getOrientation());
+                for (var i = 0; i < drawChildren.length; i++) {
+                    var child = drawChildren[i];
+                    var prefSize = child._getPrefSize(this.getOrientation());
                     if (!child._fixed && (prefSize == null || resizePreferred) && totalSizeGiven < pixelSize) {
                         child.tempsize++;
                         totalSizeGiven++;
@@ -98,12 +98,12 @@ class RowNode extends Node {
             }
         }
 
-        let childOrientation = Orientation.flip(this.getOrientation());
+        const childOrientation = Orientation.flip(this.getOrientation());
 
         // layout children
         let p = 0;
-        for (let i = 0; i < drawChildren.length; i++) {
-            let child = drawChildren[i];
+        for (var i = 0; i < drawChildren.length; i++) {
+            var child = drawChildren[i];
 
             if (this.getOrientation() === Orientation.HORZ) {
                 child._layout(new Rect(this._rect.x + p, this._rect.y, child.tempsize, this._rect.height));
@@ -118,9 +118,9 @@ class RowNode extends Node {
     }
 
     _getSplitterBounds(splitterNode) {
-        let pBounds = [0, 0];
-        let drawChildren = this._getDrawChildren();
-        let p = drawChildren.indexOf(splitterNode);
+        const pBounds = [0, 0];
+        const drawChildren = this._getDrawChildren();
+        const p = drawChildren.indexOf(splitterNode);
         if (this.getOrientation() === Orientation.HORZ) {
             pBounds[0] = drawChildren[p - 1]._rect.x;
             pBounds[1] = drawChildren[p + 1]._rect.getRight() - splitterNode.getWidth();
@@ -134,18 +134,18 @@ class RowNode extends Node {
 
     _calculateSplit(splitter, splitterPos) {
         let rtn = null;
-        let drawChildren = this._getDrawChildren();
-        let p = drawChildren.indexOf(splitter);
-        let pBounds = this._getSplitterBounds(splitter);
+        const drawChildren = this._getDrawChildren();
+        const p = drawChildren.indexOf(splitter);
+        const pBounds = this._getSplitterBounds(splitter);
 
-        let weightedLength = drawChildren[p - 1]._weight + drawChildren[p + 1]._weight;
+        const weightedLength = drawChildren[p - 1]._weight + drawChildren[p + 1]._weight;
 
-        let pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
-        let pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
+        const pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
+        const pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
 
         if (pixelWidth1 + pixelWidth2 > 0) {
-            let weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
-            let weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
+            const weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
+            const weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
 
             rtn = {
                 node1: drawChildren[p - 1].getId(), weight1: weight1, pixelWidth1: pixelWidth1,
@@ -161,9 +161,9 @@ class RowNode extends Node {
             this._drawChildren = [];
 
             for (let i = 0; i < this._children.length; i++) {
-                let child = this._children[i];
+                const child = this._children[i];
                 if (i !== 0) {
-                    let newSplitter = new SplitterNode(this._model);
+                    const newSplitter = new SplitterNode(this._model);
                     newSplitter._parent = this;
                     this._drawChildren.push(newSplitter);
                 }
@@ -179,7 +179,7 @@ class RowNode extends Node {
         //console.log("a", this._model.toString());
         let i = 0;
         while (i < this._children.length) {
-            let child = this._children[i];
+            const child = this._children[i];
             if (child._type === RowNode.TYPE) {
                 child._tidy();
 
@@ -188,16 +188,16 @@ class RowNode extends Node {
                 }
                 else if (child._children.length === 1) {
                     // hoist child/children up to this level
-                    let subchild = child._children[0];
+                    const subchild = child._children[0];
                     this._removeChild(child);
                     if (subchild._type === RowNode.TYPE) {
                         let subChildrenTotal = 0;
-                        for (let j = 0; j < subchild._children.length; j++) {
-                            let subsubChild = subchild._children[j];
+                        for (var j = 0; j < subchild._children.length; j++) {
+                            var subsubChild = subchild._children[j];
                             subChildrenTotal += subsubChild._weight;
                         }
-                        for (let j = 0; j < subchild._children.length; j++) {
-                            let subsubChild = subchild._children[j];
+                        for (var j = 0; j < subchild._children.length; j++) {
+                            var subsubChild = subchild._children[j];
                             subsubChild._weight = child._weight * subsubChild._weight / subChildrenTotal;
                             this._addChild(subsubChild, i + j);
                         }
@@ -229,37 +229,37 @@ class RowNode extends Node {
     }
 
     _canDrop(dragNode, x, y) {
-        let yy = y - this._rect.y;
-        let xx = x - this._rect.x;
-        let w = this._rect.width;
-        let h = this._rect.height;
-        let margin = 10; // height of edge rect
-        let half = 50; // half width of edge rect
+        const yy = y - this._rect.y;
+        const xx = x - this._rect.x;
+        const w = this._rect.width;
+        const h = this._rect.height;
+        const margin = 10; // height of edge rect
+        const half = 50; // half width of edge rect
         let dropInfo = null;
 
         if (this._model.isEnableEdgeDock() && this._parent == null) { // _root row
             if (x < this._rect.x + margin && (yy > h / 2 - half && yy < h / 2 + half)) {
-                let dockLocation = DockLocation.LEFT;
-                let outlineRect = dockLocation.getDockRect(this._rect);
+                var dockLocation = DockLocation.LEFT;
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (x > this._rect.getRight() - margin && (yy > h / 2 - half && yy < h / 2 + half)) {
-                let dockLocation = DockLocation.RIGHT;
-                let outlineRect = dockLocation.getDockRect(this._rect);
+                var dockLocation = DockLocation.RIGHT;
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (y < this._rect.y + margin && (xx > w / 2 - half && xx < w / 2 + half)) {
-                let dockLocation = DockLocation.TOP;
-                let outlineRect = dockLocation.getDockRect(this._rect);
+                var dockLocation = DockLocation.TOP;
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
             else if (y > this._rect.getBottom() - margin && (xx > w / 2 - half && xx < w / 2 + half)) {
-                let dockLocation = DockLocation.BOTTOM;
-                let outlineRect = dockLocation.getDockRect(this._rect);
+                var dockLocation = DockLocation.BOTTOM;
+                var outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 outlineRect.y += outlineRect.height;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
@@ -276,7 +276,7 @@ class RowNode extends Node {
     }
 
     _drop(dragNode, location, index) {
-        let dockLocation = location;
+        const dockLocation = location;
 
         if (dragNode._parent) {
             dragNode._parent._removeChild(dragNode);
@@ -300,7 +300,7 @@ class RowNode extends Node {
         }
 
         let size = 0;
-        for (let i = 0; i < this._children.length; i++) {
+        for (var i = 0; i < this._children.length; i++) {
             size += this._children[i]._weight;
         }
 
@@ -317,11 +317,11 @@ class RowNode extends Node {
             this._addChild(tabSet);
         }
         else if (dockLocation === DockLocation.TOP) {
-            let vrow = new RowNode(this._model, {});
-            let hrow = new RowNode(this._model, {});
+            var vrow = new RowNode(this._model, {});
+            var hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (let i = 0; i < this._children.length; i++) {
+            for (var i = 0; i < this._children.length; i++) {
                 hrow._addChild(this._children[i]);
             }
             this._removeAll();
@@ -330,11 +330,11 @@ class RowNode extends Node {
             this._addChild(vrow);
         }
         else if (dockLocation === DockLocation.BOTTOM) {
-            let vrow = new RowNode(this._model, {});
-            let hrow = new RowNode(this._model, {});
+            var vrow = new RowNode(this._model, {});
+            var hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (let i = 0; i < this._children.length; i++) {
+            for (var i = 0; i < this._children.length; i++) {
                 hrow._addChild(this._children[i]);
             }
             this._removeAll();
@@ -349,7 +349,7 @@ class RowNode extends Node {
     }
 
     _toJson() {
-        let json = {};
+        const json = {};
         jsonConverter.toJson(json, this);
 
         json.children = [];
@@ -362,17 +362,17 @@ class RowNode extends Node {
 
     static _fromJson(json, model) {
         model._checkUniqueId(json);
-        let newLayoutNode = new RowNode(model, json);
+        const newLayoutNode = new RowNode(model, json);
 
         if (json.children != undefined) {
             for (let i = 0; i < json.children.length; i++) {
-                let jsonChild = json.children[i];
+                const jsonChild = json.children[i];
                 if (jsonChild.type === TabSetNode.TYPE) {
-                    let child = TabSetNode._fromJson(jsonChild, model);
+                    var child = TabSetNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
                 else {
-                    let child = RowNode._fromJson(jsonChild, model);
+                    var child = RowNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
             }
@@ -384,7 +384,7 @@ class RowNode extends Node {
 
 RowNode.TYPE = "row";
 
-let jsonConverter = new JsonConverter();
+var jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", RowNode.TYPE, true);
 jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);

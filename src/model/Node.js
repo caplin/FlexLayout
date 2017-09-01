@@ -132,7 +132,7 @@ class Node {
             if (rtn == null) {
                 if (this._children.length !== 0) {
                     for (let i = 0; i < this._children.length; i++) {
-                        let child = this._children[i];
+                        const child = this._children[i];
                         rtn = child._findDropTargetNode(dragNode, x, y);
                         if (rtn != null) {
                             break;
@@ -173,7 +173,7 @@ class Node {
     }
 
     _removeChild(childNode) {
-        let pos = this._children.indexOf(childNode);
+        const pos = this._children.indexOf(childNode);
         if (pos !== -1) {
             this._children.splice(pos, 1);
         }
@@ -218,7 +218,7 @@ class Node {
         lines.push(indent + this._type + " " + this._weight.toFixed(2) + " " + this._id);
         indent = indent + "\t";
         for (let i = 0; i < this._children.length; i++) {
-            let child = this._children[i];
+            const child = this._children[i];
             child.toStringIndented(lines, indent);
         }
     }

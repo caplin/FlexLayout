@@ -38,7 +38,7 @@ class Model {
      * example function:
      *
      * allowDrop(dragNode, dropInfo) {
-     *   let dropNode = dropInfo.node;
+     *   var dropNode = dropInfo.node;
      *
      *   // prevent non-border tabs dropping into borders
      *   if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
@@ -128,7 +128,7 @@ class Model {
     //static apply(action, json) {
     //    console.log(json, action);
     //
-    //    let model = Model.fromJson(json);
+    //    var model = Model.fromJson(json);
     //    model.doAction(action);
     //    return model.toJson();
     //}
@@ -143,36 +143,36 @@ class Model {
         switch (action.type) {
             case Actions.ADD_NODE:
             {
-                let newNode = new TabNode(this, action.json);
-                let toNode = this._idMap[action.toNode];
+                const newNode = new TabNode(this, action.json);
+                var toNode = this._idMap[action.toNode];
                 toNode._drop(newNode, DockLocation.getByName(action.location), action.index);
                 break;
             }
             case Actions.MOVE_NODE:
             {
-                let fromNode = this._idMap[action.fromNode];
-                let toNode = this._idMap[action.toNode];
+                const fromNode = this._idMap[action.fromNode];
+                var toNode = this._idMap[action.toNode];
                 toNode._drop(fromNode, DockLocation.getByName(action.location), action.index);
                 break;
             }
             case Actions.DELETE_TAB:
             {
-                let node = this._idMap[action.node];
+                var node = this._idMap[action.node];
                 delete this._idMap[action.node];
                 node._delete();
                 break;
             }
             case Actions.RENAME_TAB:
             {
-                let node = this._idMap[action.node];
+                var node = this._idMap[action.node];
                 node._setName(action.text);
                 break;
             }
             case Actions.SELECT_TAB:
             {
-                let tabNode = this._idMap[action.tabNode];
-                let parent = tabNode.getParent();
-                let pos = parent.getChildren().indexOf(tabNode);
+                const tabNode = this._idMap[action.tabNode];
+                const parent = tabNode.getParent();
+                const pos = parent.getChildren().indexOf(tabNode);
 
                 if (parent._type === BorderNode.TYPE) {
                     if (parent.getSelected() == pos) {
@@ -194,14 +194,14 @@ class Model {
             }
             case Actions.SET_ACTIVE_TABSET:
             {
-                let tabsetNode = this._idMap[action.tabsetNode];
+                const tabsetNode = this._idMap[action.tabsetNode];
                 this._activeTabSet = tabsetNode;
                 break;
             }
             case Actions.ADJUST_SPLIT:
             {
-                let node1 = this._idMap[action.node1];
-                let node2 = this._idMap[action.node2];
+                const node1 = this._idMap[action.node1];
+                const node2 = this._idMap[action.node2];
 
                 this._adjustSplitSide(node1, action.weight1, action.pixelWidth1);
                 this._adjustSplitSide(node2, action.weight2, action.pixelWidth2);
@@ -209,13 +209,13 @@ class Model {
             }
             case Actions.ADJUST_BORDER_SPLIT:
             {
-                let node = this._idMap[action.node];
+                var node = this._idMap[action.node];
                 node._setSize(action.pos);
                 break;
             }
             case Actions.MAXIMIZE_TOGGLE:
             {
-                let node = this._idMap[action.node];
+                var node = this._idMap[action.node];
                 if (node === this._maximizedTabSet) {
                     this._maximizedTabSet = null;
                 } else {
@@ -232,7 +232,7 @@ class Model {
             }
             case Actions.UPDATE_NODE_ATTRIBUTES:
             {
-                let node = this._idMap[action.node];
+                var node = this._idMap[action.node];
                 node._updateAttrs(action.json);
                 break;
             }
@@ -258,7 +258,7 @@ class Model {
      * @returns {*} json object that represents this model
      */
     toJson() {
-        let json = {global: {}, layout: {}};
+        const json = {global: {}, layout: {}};
         jsonConverter.toJson(json.global, this);
 
         // save state of nodes
@@ -277,7 +277,7 @@ class Model {
      * @returns {Model} a new Model object
      */
     static fromJson(json) {
-        let model = new Model();
+        const model = new Model();
         jsonConverter.fromJson(json.global, model);
 
         if (json.borders) {
@@ -310,7 +310,7 @@ class Model {
     }
 
     _layout(rect) {
-        //let start = Date.now();
+        //var start = Date.now();
         this._borderRects = this._borders._layout({outer: rect, inner: rect});
         this._root._layout(this._borderRects.inner);
         return this._borderRects.inner;
@@ -357,13 +357,13 @@ class Model {
     }
 
     toString() {
-        let lines = [];
+        const lines = [];
         this._root.toStringIndented(lines, "");
         return lines.join("\n");
     }
 }
 
-let jsonConverter = new JsonConverter();
+var jsonConverter = new JsonConverter();
 
 // splitter
 jsonConverter.addConversion("_splitterSize", "splitterSize", 8);

@@ -81,8 +81,8 @@ class Actions {
      * @returns {{type: (string|string), node1: *, weight1: *, pixelWidth1: *, node2: *, weight2: *, pixelWidth2: *}}
      */
     static adjustSplit(splitSpec) {
-        let node1 = splitSpec.node1;
-        let node2 = splitSpec.node2;
+        const node1 = splitSpec.node1;
+        const node2 = splitSpec.node2;
 
         return {
             type: Actions.ADJUST_SPLIT,

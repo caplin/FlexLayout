@@ -27,7 +27,7 @@ class Tab extends React.Component {
     }
 
     onMouseDown(event) {
-        let parent = this.props.node.getParent();
+        const parent = this.props.node.getParent();
         if (parent.getType() == TabSetNode.TYPE) {
             if (!parent.isActive()) {
                 this.props.layout.doAction(Actions.setActiveTabset(parent.getId()));
@@ -36,8 +36,8 @@ class Tab extends React.Component {
     }
 
     render() {
-        let node = this.props.node;
-        let style = node._styleWithPosition({
+        const node = this.props.node;
+        const style = node._styleWithPosition({
             display: this.props.selected ? "block" : "none"
         });
 

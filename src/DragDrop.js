@@ -23,7 +23,7 @@ class DragDrop {
     // if you add the glass pane then you should remove it
     addGlass(fCancel) {
         if (!this.glassShowing) {
-            let glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
+            const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
             glassRect.positionElement(this.glass);
             document.body.appendChild(this.glass);
             this.glass.tabIndex = -1;
@@ -85,7 +85,7 @@ class DragDrop {
     }
 
     startDrag(event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick) {
-        let posEvent = this.getLocationEvent(event);
+        const posEvent = this.getLocationEvent(event);
         this.addGlass(fDragCancel);
 
         if (this.dragging) debugger; // should never happen
@@ -118,7 +118,7 @@ class DragDrop {
     }
 
     onMouseMove(event) {
-        let posEvent = this.getLocationEvent(event);
+        const posEvent = this.getLocationEvent(event);
         this.stopPropagation(event);
         this.preventDefault(event);
 
@@ -139,7 +139,7 @@ class DragDrop {
     }
 
     onMouseUp(event) {
-        let posEvent = this.getLocationEventEnd(event);
+        const posEvent = this.getLocationEventEnd(event);
 
         this.stopPropagation(event);
         this.preventDefault(event);
@@ -162,7 +162,7 @@ class DragDrop {
         }
         else {
             if (Math.abs(this.startX - posEvent.clientX) <= 5 && Math.abs(this.startY - posEvent.clientY) <= 5) {
-                let clickTime = new Date().getTime();
+                const clickTime = new Date().getTime();
                 // check for double click
                 if (Math.abs(this.clickX - posEvent.clientX) <= 5 && Math.abs(this.clickY - posEvent.clientY) <= 5) {
                     if (clickTime - this.lastClick < 500) {
@@ -188,7 +188,7 @@ class DragDrop {
     }
 
     toString() {
-        let rtn = "(DragDrop: " +
+        const rtn = "(DragDrop: " +
             "startX=" + this.startX +
             ", startY=" + this.startY +
             ", dragging=" + this.dragging +

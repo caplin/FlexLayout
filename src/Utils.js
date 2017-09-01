@@ -1,9 +1,9 @@
 class Utils {
 
     static getGetters(thisObj, obj, valueMap) {
-        let propertyNames = Object.getOwnPropertyNames(obj);
+        const propertyNames = Object.getOwnPropertyNames(obj);
         for (let i = 0; i < propertyNames.length; i++) {
-            let name = propertyNames[i];
+            const name = propertyNames[i];
             if (typeof obj[name] === 'function' && name.startsWith("get")) {
                 let value = null;
                 try {

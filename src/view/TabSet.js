@@ -31,13 +31,13 @@ class TabSet extends React.Component {
     }
 
     updateVisibleTabs() {
-        let node = this.props.node;
+        const node = this.props.node;
 
         if (node.isEnableTabStrip() && this.recalcVisibleTabs) {
-            let toolbarWidth = this.refs.toolbar.getBoundingClientRect().width;
+            const toolbarWidth = this.refs.toolbar.getBoundingClientRect().width;
             let hideTabsAfter = 999;
             for (let i = 0; i < node.getChildren().length; i++) {
-                let child = node.getChildren()[i];
+                const child = node.getChildren()[i];
                 if (child.getTabRect().getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
                     hideTabsAfter = Math.max(0, i - 1);
                     //console.log("tabs truncated to:" + hideTabsAfter);
@@ -61,15 +61,15 @@ class TabSet extends React.Component {
     }
 
     render() {
-        let node = this.props.node;
-        let style = node._styleWithPosition();
+        const node = this.props.node;
+        const style = node._styleWithPosition();
 
         if (this.props.node.isMaximized()) {
             style.zIndex = 100;
         }
 
-        let tabs = [];
-        let hiddenTabs = [];
+        const tabs = [];
+        const hiddenTabs = [];
         if (node.isEnableTabStrip()) {
             for (let i = 0; i < node.getChildren().length; i++) {
                 let isSelected = this.props.node.getSelected() === i;
@@ -101,9 +101,9 @@ class TabSet extends React.Component {
         let buttons = [];
 
         // allow customization of header contents and buttons
-        let renderState = {headerContent: node.getName(), buttons: buttons};
+        const renderState = {headerContent: node.getName(), buttons: buttons};
         this.props.layout.customizeTabSet(this.props.node, renderState);
-        let headerContent = renderState.headerContent;
+        const headerContent = renderState.headerContent;
         buttons = renderState.buttons;
 
         let toolbar = null;
@@ -187,12 +187,12 @@ class TabSet extends React.Component {
 
     onOverflowClick(hiddenTabs, event) {
         //console.log("hidden tabs: " + hiddenTabs);
-        let element = this.refs.overflowbutton;
+        const element = this.refs.overflowbutton;
         PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this));
     }
 
     onOverflowItemSelect(item) {
-        let node = this.props.node;
+        const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(item.node.getId()));
     }
 

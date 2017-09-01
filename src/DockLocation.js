@@ -1,7 +1,7 @@
 import Rect from "./Rect.js";
 import Orientation from "./Orientation.js";
 
-let values = {};
+const values = {};
 
 class DockLocation {
 
@@ -65,23 +65,23 @@ class DockLocation {
 
     split(rect, size) {
         if (this === DockLocation.TOP) {
-            let r1 = new Rect(rect.x, rect.y, rect.width, size);
-            let r2 = new Rect(rect.x, rect.y + size, rect.width, rect.height - size);
+            var r1 = new Rect(rect.x, rect.y, rect.width, size);
+            var r2 = new Rect(rect.x, rect.y + size, rect.width, rect.height - size);
             return {start: r1, end: r2};
         }
         else if (this === DockLocation.LEFT) {
-            let r1 = new Rect(rect.x, rect.y, size, rect.height);
-            let r2 = new Rect(rect.x + size, rect.y, rect.width - size, rect.height);
+            var r1 = new Rect(rect.x, rect.y, size, rect.height);
+            var r2 = new Rect(rect.x + size, rect.y, rect.width - size, rect.height);
             return {start: r1, end: r2};
         }
         if (this === DockLocation.RIGHT) {
-            let r1 = new Rect(rect.getRight() - size, rect.y, size, rect.height);
-            let r2 = new Rect(rect.x, rect.y, rect.width - size, rect.height);
+            var r1 = new Rect(rect.getRight() - size, rect.y, size, rect.height);
+            var r2 = new Rect(rect.x, rect.y, rect.width - size, rect.height);
             return {start: r1, end: r2};
         }
         else if (this === DockLocation.BOTTOM) {
-            let r1 = new Rect(rect.x, rect.getBottom() - size, rect.width, size);
-            let r2 = new Rect(rect.x, rect.y, rect.width, rect.height - size);
+            var r1 = new Rect(rect.x, rect.getBottom() - size, rect.width, size);
+            var r2 = new Rect(rect.x, rect.y, rect.width, rect.height - size);
             return {start: r1, end: r2};
         }
     }

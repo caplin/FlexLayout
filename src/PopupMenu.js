@@ -10,16 +10,16 @@ class PopupMenu extends React.Component {
     }
 
     static show(triggerElement, items, onSelect) {
-        let triggerRect = triggerElement.getBoundingClientRect();
-        let docRect = document.body.getBoundingClientRect();
+        const triggerRect = triggerElement.getBoundingClientRect();
+        const docRect = document.body.getBoundingClientRect();
 
-        let elm = document.createElement("div");
+        const elm = document.createElement("div");
         elm.className = "flexlayout__popup_menu_container";
         elm.style.right = (docRect.right - triggerRect.right) + "px";
         elm.style.top = triggerRect.bottom + "px";
         document.body.appendChild(elm);
 
-        let onHide = function () {
+        const onHide = function () {
             ReactDOM.unmountComponentAtNode(elm);
             document.body.removeChild(elm);
         };
@@ -56,8 +56,8 @@ class PopupMenu extends React.Component {
     }
 
     render() {
-        let items = this.props.items.map(item =>  <div key={item.index} className="flexlayout__popup_menu_item"
-                                                       onClick={this.onItemClick.bind(this, item)}>{item.name}</div>);
+        const items = this.props.items.map(item => <div key={item.index} className="flexlayout__popup_menu_item"
+                                                        onClick={this.onItemClick.bind(this, item)}>{item.name}</div>);
 
         return <div className="popup_menu">
             {items}

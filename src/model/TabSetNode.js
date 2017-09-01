@@ -93,20 +93,20 @@ class TabSetNode extends Node {
         let dropInfo = null;
 
         if (dragNode === this) {
-            let dockLocation = DockLocation.CENTER;
-            let outlineRect = this._tabHeaderRect;
+            var dockLocation = DockLocation.CENTER;
+            var outlineRect = this._tabHeaderRect;
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
         else if (this._contentRect.contains(x, y)) {
-            let dockLocation = DockLocation.getLocation(this._contentRect, x, y);
-            let outlineRect = dockLocation.getDockRect(this._rect);
+            var dockLocation = DockLocation.getLocation(this._contentRect, x, y);
+            var outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
         else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
             let child = this._children[0];
             let r = child._tabRect;
-            let yy = r.y;
-            let h = r.height;
+            const yy = r.y;
+            const h = r.height;
             let p = this._tabHeaderRect.x;
             let childCenter = 0;
             for (let i = 0; i < this._children.length; i++) {
@@ -114,16 +114,16 @@ class TabSetNode extends Node {
                 r = child._tabRect;
                 childCenter = r.x + r.width / 2;
                 if (x >= p && x < childCenter) {
-                    let dockLocation = DockLocation.CENTER;
-                    let outlineRect = new Rect(r.x - 2, yy, 3, h);
+                    var dockLocation = DockLocation.CENTER;
+                    var outlineRect = new Rect(r.x - 2, yy, 3, h);
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
                     break;
                 }
                 p = childCenter;
             }
             if (dropInfo == null) {
-                let dockLocation = DockLocation.CENTER;
-                let outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
+                var dockLocation = DockLocation.CENTER;
+                var outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
             }
         }
@@ -142,7 +142,7 @@ class TabSetNode extends Node {
         }
         this._rect = rect;
 
-        let showHeader = (this._name != null);
+        const showHeader = (this._name != null);
         let y = 0;
         if (showHeader) {
             this._headerRect = new Rect(rect.x, rect.y, rect.width, this.getHeaderHeight());
@@ -155,7 +155,7 @@ class TabSetNode extends Node {
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
 
         for (let i = 0; i < this._children.length; i++) {
-            let child = this._children[i];
+            const child = this._children[i];
             child._layout(this._contentRect);
             child._setVisible(i === this._selected);
         }
@@ -168,7 +168,7 @@ class TabSetNode extends Node {
     }
 
     _drop(dragNode, location, index) {
-        let dockLocation = location;
+        const dockLocation = location;
 
         if (this === dragNode) { // tabset drop into itself
             return; // dock back to itself
@@ -246,8 +246,8 @@ class TabSetNode extends Node {
                 tabSet = dragNode;
             }
 
-            let parentRow = this._parent;
-            let pos = parentRow._children.indexOf(this);
+            const parentRow = this._parent;
+            const pos = parentRow._children.indexOf(this);
 
             if (parentRow.getOrientation() === dockLocation._orientation) {
                 tabSet._weight = this._weight / 2;
@@ -258,7 +258,7 @@ class TabSetNode extends Node {
             else {
                 // create a new row to host the new tabset (it will go in the opposite direction)
                 //console.log("create a new row");
-                let newRow = new RowNode(this._model, {});
+                const newRow = new RowNode(this._model, {});
                 newRow._weight = this._weight;
                 newRow._addChild(this);
                 this._weight = 50;
@@ -277,11 +277,11 @@ class TabSetNode extends Node {
     }
 
     _toJson() {
-        let json = {};
+        const json = {};
         jsonConverter.toJson(json, this);
         json.children = [];
         for (let i = 0; i < this._children.length; i++) {
-            let jsonChild = this._children[i]._toJson();
+            const jsonChild = this._children[i]._toJson();
             json.children.push(jsonChild);
         }
 
@@ -302,11 +302,11 @@ class TabSetNode extends Node {
 
     static _fromJson(json, model) {
         model._checkUniqueId(json);
-        let newLayoutNode = new TabSetNode(model, json);
+        const newLayoutNode = new TabSetNode(model, json);
 
         if (json.children != undefined) {
             for (let i = 0; i < json.children.length; i++) {
-                let child = TabNode._fromJson(json.children[i], model);
+                const child = TabNode._fromJson(json.children[i], model);
                 newLayoutNode._addChild(child);
             }
         }
@@ -329,7 +329,7 @@ class TabSetNode extends Node {
 
 TabSetNode.TYPE = "tabset";
 
-let jsonConverter = new JsonConverter();
+var jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", TabSetNode.TYPE, true);
 jsonConverter.addConversion("_weight", "weight", 100);
 jsonConverter.addConversion("_width", "width", null);

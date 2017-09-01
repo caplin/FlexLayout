@@ -78,12 +78,12 @@ class TabNode extends Node {
 
     static _fromJson(json, model) {
         model._checkUniqueId(json);
-        let newLayoutNode = new TabNode(model, json);
+        const newLayoutNode = new TabNode(model, json);
         return newLayoutNode;
     }
 
     _toJson() {
-        let json = {};
+        const json = {};
         jsonConverter.toJson(json, this);
         return json;
     }
@@ -104,7 +104,7 @@ class TabNode extends Node {
 
 TabNode.TYPE = "tab";
 
-let jsonConverter = new JsonConverter();
+var jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", TabNode.TYPE, true);
 jsonConverter.addConversion("_name", "name", null);
 jsonConverter.addConversion("_component", "component", null);

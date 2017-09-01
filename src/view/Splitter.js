@@ -12,13 +12,13 @@ class Splitter extends React.Component {
     }
 
     onDragCancel() {
-        let rootdiv = ReactDOM.findDOMNode(this.props.layout);
+        const rootdiv = ReactDOM.findDOMNode(this.props.layout);
         rootdiv.removeChild(this.outlineDiv);
     }
 
     onDragStart(event) {
         this.pBounds = this.props.node.getParent()._getSplitterBounds(this.props.node);
-        let rootdiv = ReactDOM.findDOMNode(this.props.layout);
+        const rootdiv = ReactDOM.findDOMNode(this.props.layout);
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.style.position = "absolute";
         this.outlineDiv.className = "flexlayout__splitter_drag";
@@ -29,8 +29,8 @@ class Splitter extends React.Component {
     }
 
     onDragMove(event) {
-        let clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
-        let pos = {
+        const clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
+        const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
         };
@@ -44,7 +44,7 @@ class Splitter extends React.Component {
     }
 
     onDragEnd(event) {
-        let node = this.props.node;
+        const node = this.props.node;
         let value = 0;
         if (node.getOrientation() === Orientation.HORZ) {
             value = this.outlineDiv.offsetTop;
@@ -54,17 +54,17 @@ class Splitter extends React.Component {
         }
 
         if (node.getParent().getType() == BorderNode.TYPE) {
-            let pos = node.getParent()._calculateSplit(node, value);
+            const pos = node.getParent()._calculateSplit(node, value);
             this.props.layout.doAction(Actions.adjustBorderSplit(node.getParent().getId(), pos));
         }
         else {
-            let splitSpec = node.getParent()._calculateSplit(this.props.node, value);
+            const splitSpec = node.getParent()._calculateSplit(this.props.node, value);
             if (splitSpec != null) {
                 this.props.layout.doAction(Actions.adjustSplit(splitSpec));
             }
         }
 
-        let rootdiv = ReactDOM.findDOMNode(this.props.layout);
+        const rootdiv = ReactDOM.findDOMNode(this.props.layout);
         rootdiv.removeChild(this.outlineDiv);
     }
 
@@ -81,8 +81,8 @@ class Splitter extends React.Component {
     }
 
     render() {
-        let node = this.props.node;
-        let style = node._styleWithPosition(
+        const node = this.props.node;
+        const style = node._styleWithPosition(
             {
                 cursor: this.props.node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
             }

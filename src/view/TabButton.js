@@ -19,7 +19,7 @@ class TabButton extends React.Component {
     }
 
     onClick(event) {
-        let node = this.props.node;
+        const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
@@ -46,7 +46,7 @@ class TabButton extends React.Component {
     }
 
     onClose(event) {
-        let node = this.props.node;
+        const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
@@ -67,8 +67,8 @@ class TabButton extends React.Component {
 
     updateRect() {
         // record position of tab in node
-        let clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
-        let r = this.refs.self.getBoundingClientRect();
+        const clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
+        const r = this.refs.self.getBoundingClientRect();
         this.props.node.setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
         this.contentWidth = this.refs.contents.getBoundingClientRect().width;
     }
@@ -85,7 +85,7 @@ class TabButton extends React.Component {
         }
         else if (event.keyCode === 13) { // enter
             this.setState({editing: false});
-            let node = this.props.node;
+            const node = this.props.node;
 
             this.props.layout.doAction(Actions.renameTab(node.getId(), event.target.value));
         }
@@ -97,7 +97,7 @@ class TabButton extends React.Component {
 
     render() {
         let classNames = "flexlayout__tab_button";
-        let node = this.props.node;
+        const node = this.props.node;
 
         if (this.props.selected) {
             classNames += " flexlayout__tab_button--selected";
@@ -117,14 +117,14 @@ class TabButton extends React.Component {
         }
 
         // allow customization of leading contents (icon) and contents
-        let renderState = {leading: leadingContent, content: node.getName()};
+        const renderState = {leading: leadingContent, content: node.getName()};
         this.props.layout.customizeTab(node, renderState);
 
         let content = <div ref="contents" className="flexlayout__tab_button_content">{renderState.content}</div>;
-        let leading = <div className={"flexlayout__tab_button_leading"}>{renderState.leading}</div>;
+        const leading = <div className={"flexlayout__tab_button_leading"}>{renderState.leading}</div>;
 
         if (this.state.editing) {
-            let contentStyle = {width: this.contentWidth + "px"};
+            const contentStyle = {width: this.contentWidth + "px"};
             content = <input style={contentStyle}
                              ref="contents"
                              className="flexlayout__tab_button_textbox"

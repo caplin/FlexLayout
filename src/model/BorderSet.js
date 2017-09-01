@@ -16,8 +16,8 @@ class BorderSet {
 
     _forEachNode(fn) {
 
-        for (let i=0; i<this._borders.length;i++) {
-            let borderNode = this._borders[i];
+        for (let i=0; i<this._borders.length; i++) {
+            const borderNode = this._borders[i];
             fn(borderNode);
             borderNode._children.forEach((node) => {
                 node._forEachNode(fn);
@@ -26,7 +26,7 @@ class BorderSet {
     }
 
     _toJson() {
-        let json = [];
+        const json = [];
         for (let i = 0; i < this._borders.length; i++) {
             json.push(this._borders[i]._toJson());
         }
@@ -34,9 +34,9 @@ class BorderSet {
     }
 
     static _fromJson(json, model) {
-        let borderSet = new BorderSet(model);
+        const borderSet = new BorderSet(model);
         for (let i = 0; i < json.length; i++) {
-            let borderJson = json[i];
+            const borderJson = json[i];
             borderSet._borders.push(Border._fromJson(borderJson, model));
         }
 
@@ -45,9 +45,9 @@ class BorderSet {
 
     _layout(outerInnerRects) {
 
-        let rect = outerInnerRects.outer;
-        let height = rect.height;
-        let width = rect.width;
+        const rect = outerInnerRects.outer;
+        const height = rect.height;
+        const width = rect.width;
         let sumHeight = 0;
         let sumWidth = 0;
         let countHeight = 0;
@@ -55,14 +55,14 @@ class BorderSet {
         let adjustableHeight = 0;
         let adjustableWidth = 0;
 
-        let showingBorders = this._borders.filter((border)=>border.isShowing());
+        const showingBorders = this._borders.filter((border) => border.isShowing());
 
         // sum size of borders to see they will fit
-        for (let i = 0; i < showingBorders.length; i++) {
-            let border = showingBorders[i];
+        for (var i = 0; i < showingBorders.length; i++) {
+            var border = showingBorders[i];
             if (border.isShowing()) {
                 border._setAdjustedSize(border._size);
-                let visible = border.getSelected() != -1;
+                const visible = border.getSelected() != -1;
                 if (border.getLocation().getOrientation() == Orientation.HORZ) {
                     sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
                     if (visible) {
@@ -83,12 +83,12 @@ class BorderSet {
         }
 
         // adjust border sizes if too large
-        let i = 0;
+        var i = 0;
         while ((sumWidth > width && adjustableWidth > 0)
         || (sumHeight > height && adjustableHeight > 0)) {
-            let border = showingBorders[i];
+            var border = showingBorders[i];
             if (border.getSelected() != -1) { //visible
-                let size = border._getAdjustedSize();
+                const size = border._getAdjustedSize();
                 if (sumWidth > width && adjustableWidth > 0
                     && border.getLocation().getOrientation() == Orientation.HORZ
                     && size > 0) {
@@ -107,8 +107,8 @@ class BorderSet {
             i = (i + 1) % showingBorders.length;
         }
 
-        for (let i = 0; i < showingBorders.length; i++) {
-            let border = showingBorders[i];
+        for (var i = 0; i < showingBorders.length; i++) {
+            var border = showingBorders[i];
             outerInnerRects = border._layout(outerInnerRects);
         }
         return outerInnerRects;
@@ -116,9 +116,9 @@ class BorderSet {
 
     _findDropTargetNode(dragNode, x, y) {
         for (let i = 0; i < this._borders.length; i++) {
-            let border = this._borders[i];
+            const border = this._borders[i];
             if (border.isShowing()) {
-                let dropInfo = border._canDrop(dragNode, x, y);
+                const dropInfo = border._canDrop(dragNode, x, y);
                 if (dropInfo != null) {
                     return dropInfo;
                 }

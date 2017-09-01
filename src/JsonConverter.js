@@ -15,8 +15,8 @@ class JsonConverter {
 
     toJson(jsonObj, obj) {
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
-            let fromValue = obj[c.name];
+            const c = this.conversions[i];
+            const fromValue = obj[c.name];
             if (c.alwaysWriteJson || fromValue !== c.defaultValue) {
                 jsonObj[c.jsonName] = fromValue;
             }
@@ -28,8 +28,8 @@ class JsonConverter {
             debugger;
         }
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
-            let fromValue = jsonObj[c.jsonName];
+            const c = this.conversions[i];
+            const fromValue = jsonObj[c.jsonName];
             if (fromValue === undefined) {
                 obj[c.name] = c.defaultValue;
             }
@@ -41,8 +41,8 @@ class JsonConverter {
 
     updateAttrs(jsonObj, obj) {
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
-            let fromValue = jsonObj[c.jsonName];
+            const c = this.conversions[i];
+            const fromValue = jsonObj[c.jsonName];
             if (fromValue !== undefined) {
                 obj[c.name] = fromValue;
             }
@@ -51,17 +51,17 @@ class JsonConverter {
 
     setDefaults(obj) {
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
+            const c = this.conversions[i];
             obj[c.name] = c.defaultValue;
         }
     }
 
     toTable() {
-        let lines = [];
+        const lines = [];
         lines.push("| Attribute | Default | Description  |");
         lines.push("| ------------- |:-------------:| -----|");
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
+            const c = this.conversions[i];
             lines.push("| " + c.jsonName + " | " + c.defaultValue + " | |");
         }
 
@@ -69,11 +69,11 @@ class JsonConverter {
     }
 
     toTableValues(obj, model) {
-        let lines = [];
+        const lines = [];
         lines.push("<table border='1'>");
         lines.push("<tr><th>Attribute</th><th>Default</th><th>Value</th></tr>");
         for (let i = 0; i < this.conversions.length; i++) {
-            let c = this.conversions[i];
+            const c = this.conversions[i];
             //if (obj[c.name] !== c.defaultValue) {
             lines.push("<tr><td>" + c.jsonName + "</td><td>" + c.defaultValue + "</td><td>" + JSON.stringify(obj[c.name]) + "</td></tr>");
             //}

@@ -13,13 +13,13 @@ class BorderTabSet extends React.Component {
     }
 
     render() {
-        let border = this.props.border;
-        let style = border.getTabHeaderRect().styleWithPosition({});
-        let tabs = [];
+        const border = this.props.border;
+        const style = border.getTabHeaderRect().styleWithPosition({});
+        const tabs = [];
         if (border.getLocation() != DockLocation.LEFT) {
-            for (let i = 0; i < border.getChildren().length; i++) {
-                let isSelected = border.getSelected() === i;
-                let child = border.getChildren()[i];
+            for (var i = 0; i < border.getChildren().length; i++) {
+                var isSelected = border.getSelected() === i;
+                var child = border.getChildren()[i];
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border}
                                         node={child}
@@ -30,9 +30,9 @@ class BorderTabSet extends React.Component {
             }
         }
         else {
-            for (let i = border.getChildren().length - 1; i >= 0; i--) {
-                let isSelected = border.getSelected() === i;
-                let child = border.getChildren()[i];
+            for (var i = border.getChildren().length - 1; i >= 0; i--) {
+                var isSelected = border.getSelected() === i;
+                var child = border.getChildren()[i];
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border}
                                         node={child}
@@ -45,7 +45,7 @@ class BorderTabSet extends React.Component {
 
         // allow customization of tabset right/bottom buttons
         let buttons = [];
-        let renderState = {buttons: buttons};
+        const renderState = {buttons: buttons};
         this.props.layout.customizeTabSet(border, renderState);
         buttons = renderState.buttons;
 
@@ -53,7 +53,7 @@ class BorderTabSet extends React.Component {
         //    key="1"
         //    className={"flexlayout__tab_toolbar_button-min"}></button>);
 
-        let toolbar = <div
+        const toolbar = <div
             key="toolbar"
             ref="toolbar"
             className={"flexlayout__border_toolbar_" + border.getLocation().getName()}>

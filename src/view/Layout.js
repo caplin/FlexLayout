@@ -72,8 +72,8 @@ class Layout extends React.Component {
     }
 
     updateRect() {
-        let domRect = this.refs.self.getBoundingClientRect();
-        let rect = new Rect(0, 0, domRect.width, domRect.height);
+        const domRect = this.refs.self.getBoundingClientRect();
+        const rect = new Rect(0, 0, domRect.width, domRect.height);
         if (!rect.equals(this.rect)) {
             this.rect = rect;
             this.forceUpdate();
@@ -86,10 +86,10 @@ class Layout extends React.Component {
 
     render() {
         this.start = Date.now();
-        let borderComponents = [];
-        let tabSetComponents = [];
-        let tabComponents = {};
-        let splitterComponents = [];
+        const borderComponents = [];
+        const tabSetComponents = [];
+        const tabComponents = {};
+        const splitterComponents = [];
 
         this.centerRect = this.model._layout(this.rect);
 
@@ -130,14 +130,14 @@ class Layout extends React.Component {
     }
 
     renderBorder(borderSet, borderComponents, tabComponents, splitterComponents) {
-        for (let i = 0; i < borderSet.getBorders().length; i++) {
-            let border = borderSet.getBorders()[i];
+        for (var i = 0; i < borderSet.getBorders().length; i++) {
+            const border = borderSet.getBorders()[i];
             if (border.isShowing()) {
                 borderComponents.push(<BorderTabSet key={"border_" + border.getLocation().getName()} border={border}
                                                     layout={this}/>);
-                let drawChildren = border._getDrawChildren();
-                for (let i = 0; i < drawChildren.length; i++) {
-                    let child = drawChildren[i];
+                const drawChildren = border._getDrawChildren();
+                for (var i = 0; i < drawChildren.length; i++) {
+                    const child = drawChildren[i];
 
                     if (child.getType() === SplitterNode.TYPE) {
                         splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
@@ -157,10 +157,10 @@ class Layout extends React.Component {
     }
 
     renderChildren(node, tabSetComponents, tabComponents, splitterComponents) {
-        let drawChildren = node._getDrawChildren();
+        const drawChildren = node._getDrawChildren();
 
         for (let i = 0; i < drawChildren.length; i++) {
-            let child = drawChildren[i];
+            const child = drawChildren[i];
 
             if (child.getType() === SplitterNode.TYPE) {
                 splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
@@ -170,7 +170,7 @@ class Layout extends React.Component {
                 this.renderChildren(child, tabSetComponents, tabComponents, splitterComponents);
             }
             else if (child.getType() === TabNode.TYPE) {
-                let selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
+                const selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
                 if (selectedTab == null) {
                     debugger; // this should not happen!
                 }
@@ -198,7 +198,7 @@ class Layout extends React.Component {
      * @param json the json for the new tab node
      */
     addTabToTabSet(tabsetId, json) {
-        let tabsetNode = this.model.getNodeById(tabsetId);
+        const tabsetNode = this.model.getNodeById(tabsetId);
         if (tabsetNode != null) {
             this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
         }
@@ -209,7 +209,7 @@ class Layout extends React.Component {
      * @param json the json for the new tab node
      */
     addTabToActiveTabSet(json) {
-        let tabsetNode = this.model.getActiveTabset();
+        const tabsetNode = this.model.getActiveTabset();
         if (tabsetNode != null) {
             this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
         }
@@ -248,17 +248,17 @@ class Layout extends React.Component {
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown.bind(this));
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown.bind(this));
 
-        let r = new Rect(10, 10, 150, 50);
+        const r = new Rect(10, 10, 150, 50);
         r.centerInRect(this.rect);
         this.dragDiv.style.left = r.x + "px";
         this.dragDiv.style.top = r.y + "px";
 
-        let rootdiv = ReactDOM.findDOMNode(this);
+        const rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.appendChild(this.dragDiv);
     }
 
     onCancelAdd() {
-        let rootdiv = ReactDOM.findDOMNode(this);
+        const rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.removeChild(this.dragDiv);
         this.dragDiv = null;
         if (this.fnNewNodeDropped != null) {
@@ -269,7 +269,7 @@ class Layout extends React.Component {
     }
 
     onCancelDrag() {
-        let rootdiv = ReactDOM.findDOMNode(this);
+        const rootdiv = ReactDOM.findDOMNode(this);
 
         try {
             rootdiv.removeChild(this.outlineDiv);
@@ -307,7 +307,7 @@ class Layout extends React.Component {
     }
 
     onDragStart(event) {
-        let rootdiv = ReactDOM.findDOMNode(this);
+        const rootdiv = ReactDOM.findDOMNode(this);
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.className = "flexlayout__outline_rect";
         rootdiv.appendChild(this.outlineDiv);
@@ -334,8 +334,8 @@ class Layout extends React.Component {
             this.outlineDiv.style.transition = "top .3s, left .3s, width .3s, height .3s";
         }
         this.firstMove = false;
-        let clientRect = this.refs.self.getBoundingClientRect();
-        let pos = {
+        const clientRect = this.refs.self.getBoundingClientRect();
+        const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
         };
@@ -343,7 +343,7 @@ class Layout extends React.Component {
         this.dragDiv.style.left = (pos.x - this.dragDiv.getBoundingClientRect().width/2) + "px";
         this.dragDiv.style.top = pos.y +5  + "px";
 
-        let dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
+        const dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
         if (dropInfo) {
             this.dropInfo = dropInfo;
             this.outlineDiv.className = dropInfo.className;
@@ -352,7 +352,7 @@ class Layout extends React.Component {
     }
 
     onDragEnd(event) {
-        let rootdiv = ReactDOM.findDOMNode(this);
+        const rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.removeChild(this.outlineDiv);
         rootdiv.removeChild(this.dragDiv);
         this.dragDiv = null;
@@ -378,12 +378,12 @@ class Layout extends React.Component {
 
     showEdges(rootdiv) {
         if (this.model.isEnableEdgeDock()) {
-            let domRect = rootdiv.getBoundingClientRect();
-            let r = this.centerRect;
-            let size = 100;
-            let length = size + "px";
-            let radius = "50px";
-            let width = "10px";
+            const domRect = rootdiv.getBoundingClientRect();
+            const r = this.centerRect;
+            const size = 100;
+            const length = size + "px";
+            const radius = "50px";
+            const width = "10px";
 
             this.edgeTopDiv = document.createElement("div");
             this.edgeTopDiv.className = "flexlayout__edge_rect";
