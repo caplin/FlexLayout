@@ -138,10 +138,17 @@ class TabSet extends React.Component {
             tabStripClasses += " flexlayout__tabset-selected"
         }
 
+        if (node.isMaximized() && !showHeader) {
+            tabStripClasses += " flexlayout__tabset-maximized"
+        }
+
         if (showHeader) {
             let tabHeaderClasses = "flexlayout__tabset_header";
             if (node.isActive()) {
                 tabHeaderClasses += " flexlayout__tabset-selected"
+            }
+            if (node.isMaximized()) {
+                tabHeaderClasses += " flexlayout__tabset-maximized"
             }
             if (this.props.node.getClassNameHeader() != null) {
                 tabHeaderClasses += " " + this.props.node.getClassNameHeader();

@@ -183,6 +183,11 @@
     background-image: linear-gradient(#111, #444);
 }
 
+.flexlayout__tabset-maximized
+{
+    background-image: linear-gradient(#666, #333);
+}
+
 .flexlayout__tab_toolbar {
     position:absolute;
     display:flex;
