@@ -131,24 +131,26 @@ class Layout extends React.Component {
 
     renderBorder(borderSet, borderComponents, tabComponents, splitterComponents) {
         for (let i = 0; i < borderSet.getBorders().length; i++) {
-            let b = borderSet.getBorders()[i];
-            borderComponents.push(<BorderTabSet key={"border_" + b.getLocation().getName()} border={b}
-                                                layout={this}/>);
-            let drawChildren = b._getDrawChildren();
-            for (let i = 0; i < drawChildren.length; i++) {
-                let child = drawChildren[i];
+            let border = borderSet.getBorders()[i];
+            if (border.isShowing()) {
+                borderComponents.push(<BorderTabSet key={"border_" + border.getLocation().getName()} border={border}
+                                                    layout={this}/>);
+                let drawChildren = border._getDrawChildren();
+                for (let i = 0; i < drawChildren.length; i++) {
+                    let child = drawChildren[i];
 
-                if (child.getType() === SplitterNode.TYPE) {
-                    splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
-                }
-                else if (child.getType() === TabNode.TYPE) {
-                    tabComponents[child.getId()] = <Tab
-                        key={child.getId()}
-                        layout={this}
-                        node={child}
-                        selected={i == b.getSelected()}
-                        factory={this.props.factory}>
-                    </Tab>;
+                    if (child.getType() === SplitterNode.TYPE) {
+                        splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child}></Splitter>);
+                    }
+                    else if (child.getType() === TabNode.TYPE) {
+                        tabComponents[child.getId()] = <Tab
+                            key={child.getId()}
+                            layout={this}
+                            node={child}
+                            selected={i == border.getSelected()}
+                            factory={this.props.factory}>
+                        </Tab>;
+                    }
                 }
             }
         }

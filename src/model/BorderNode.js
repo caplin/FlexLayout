@@ -85,6 +85,10 @@ class BorderNode extends Node {
         return false;
     }
 
+    isShowing() {
+        return this._show;
+    }
+
     _setAdjustedSize(size) {
         this._adjustedSize = size;
     }
@@ -355,6 +359,7 @@ let jsonConverter = new JsonConverter();
 jsonConverter.addConversion("_type", "type", BorderNode.TYPE, true);
 jsonConverter.addConversion("_size", "size", 200);
 jsonConverter.addConversion("_selected", "selected", -1);
+jsonConverter.addConversion("_show", "show", true);
 
 jsonConverter.addConversion("_borderBarSize", "borderBarSize", undefined);
 jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", undefined);

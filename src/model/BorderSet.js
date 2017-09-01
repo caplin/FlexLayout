@@ -55,26 +55,30 @@ class BorderSet {
         let adjustableHeight = 0;
         let adjustableWidth = 0;
 
+        let showingBorders = this._borders.filter((border)=>border.isShowing());
+
         // sum size of borders to see they will fit
-        for (let i = 0; i < this._borders.length; i++) {
-            let border = this._borders[i];
-            border._setAdjustedSize(border._size);
-            let visible = border.getSelected() != -1;
-            if (border.getLocation().getOrientation() == Orientation.HORZ) {
-                sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
-                if (visible) {
-                    sumWidth += border._size;
-                    adjustableWidth += border._size;
+        for (let i = 0; i < showingBorders.length; i++) {
+            let border = showingBorders[i];
+            if (border.isShowing()) {
+                border._setAdjustedSize(border._size);
+                let visible = border.getSelected() != -1;
+                if (border.getLocation().getOrientation() == Orientation.HORZ) {
+                    sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
+                    if (visible) {
+                        sumWidth += border._size;
+                        adjustableWidth += border._size;
+                    }
+                    countWidth++;
                 }
-                countWidth++;
-            }
-            else {
-                sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
-                if (visible) {
-                    sumHeight += border._size;
-                    adjustableHeight += border._size;
+                else {
+                    sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
+                    if (visible) {
+                        sumHeight += border._size;
+                        adjustableHeight += border._size;
+                    }
+                    countHeight++;
                 }
-                countHeight++;
             }
         }
 
@@ -82,7 +86,7 @@ class BorderSet {
         let i = 0;
         while ((sumWidth > width && adjustableWidth > 0)
         || (sumHeight > height && adjustableHeight > 0)) {
-            let border = this._borders[i];
+            let border = showingBorders[i];
             if (border.getSelected() != -1) { //visible
                 let size = border._getAdjustedSize();
                 if (sumWidth > width && adjustableWidth > 0
@@ -100,11 +104,11 @@ class BorderSet {
                     adjustableHeight--;
                 }
             }
-            i = (i + 1) % this._borders.length;
+            i = (i + 1) % showingBorders.length;
         }
 
-        for (let i = 0; i < this._borders.length; i++) {
-            let border = this._borders[i];
+        for (let i = 0; i < showingBorders.length; i++) {
+            let border = showingBorders[i];
             outerInnerRects = border._layout(outerInnerRects);
         }
         return outerInnerRects;
@@ -113,10 +117,11 @@ class BorderSet {
     _findDropTargetNode(dragNode, x, y) {
         for (let i = 0; i < this._borders.length; i++) {
             let border = this._borders[i];
-
-            let dropInfo = border._canDrop(dragNode, x, y);
-            if (dropInfo != null) {
-                return dropInfo;
+            if (border.isShowing()) {
+                let dropInfo = border._canDrop(dragNode, x, y);
+                if (dropInfo != null) {
+                    return dropInfo;
+                }
             }
         }
         return null;
