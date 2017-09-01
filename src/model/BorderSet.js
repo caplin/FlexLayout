@@ -15,31 +15,21 @@ class BorderSet {
     }
 
     _forEachNode(fn) {
-
-        for (let i=0; i<this._borders.length; i++) {
-            const borderNode = this._borders[i];
+        this._borders.forEach((borderNode) => {
             fn(borderNode);
             borderNode._children.forEach((node) => {
                 node._forEachNode(fn);
             })
-        }
+        });
     }
 
     _toJson() {
-        const json = [];
-        for (let i = 0; i < this._borders.length; i++) {
-            json.push(this._borders[i]._toJson());
-        }
-        return json;
+        return this._borders.map((borderNode) => borderNode._toJson());
     }
 
     static _fromJson(json, model) {
         const borderSet = new BorderSet(model);
-        for (let i = 0; i < json.length; i++) {
-            const borderJson = json[i];
-            borderSet._borders.push(Border._fromJson(borderJson, model));
-        }
-
+        borderSet._borders = json.map((borderJson) => Border._fromJson(borderJson, model));
         return borderSet;
     }
 
@@ -107,10 +97,9 @@ class BorderSet {
             i = (i + 1) % showingBorders.length;
         }
 
-        for (let i = 0; i < showingBorders.length; i++) {
-            let border = showingBorders[i];
+        showingBorders.forEach((border) => {
             outerInnerRects = border._layout(outerInnerRects);
-        }
+        });
         return outerInnerRects;
     }
 

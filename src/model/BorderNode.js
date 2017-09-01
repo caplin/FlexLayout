@@ -109,13 +109,11 @@ class BorderNode extends Node {
         this._tabHeaderRect = split2.start;
         this._contentRect = split4.end;
 
-        for (let i = 0; i < this._children.length; i++) {
-            const child = this._children[i];
-
+        this._children.forEach((child, i)=>{
             child._layout(this._contentRect);
             child._setVisible(i === this._selected);
             this._drawChildren.push(child);
-        }
+        });
 
         if (this._selected == -1) {
             return {outer: split1.end, inner: split2.end};
@@ -295,11 +293,7 @@ class BorderNode extends Node {
         const json = {};
         jsonConverter.toJson(json, this);
         json.location = this._location.getName();
-        json.children = [];
-        for (let i = 0; i < this._children.length; i++) {
-            const jsonChild = this._children[i]._toJson();
-            json.children.push(jsonChild);
-        }
+        json.children = this._children.map((child) => child._toJson());
         return json;
     }
 
@@ -308,11 +302,11 @@ class BorderNode extends Node {
         const location = DockLocation.getByName(json.location);
         const border = new BorderNode(location, json, model);
         if (json.children) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = TabNode._fromJson(json.children[i], model);
+            border._children = json.children.map((jsonChild) =>{
+                const child = TabNode._fromJson(jsonChild, model);
                 child._parent = border;
-                border._children.push(child);
-            }
+                return child;
+            });
         }
 
         return border;

@@ -154,11 +154,10 @@ class TabSetNode extends Node {
         }
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
 
-        for (let i = 0; i < this._children.length; i++) {
-            const child = this._children[i];
+        this._children.forEach((child, i) => {
             child._layout(this._contentRect);
             child._setVisible(i === this._selected);
-        }
+        });
     }
 
     _remove(node) {
@@ -223,11 +222,11 @@ class TabSetNode extends Node {
                 //console.log("added child at : " + insertPos);
             }
             else {
-                for (let i = 0; i < dragNode._children.length; i++) {
-                    this._addChild(dragNode._children[i], insertPos);
+                dragNode._children.forEach((child, i) => {
+                    this._addChild(child, insertPos);
                     //console.log("added child at : " + insertPos);
                     insertPos++;
-                }
+                });
             }
             this._model._activeTabSet = this;
 
@@ -279,11 +278,7 @@ class TabSetNode extends Node {
     _toJson() {
         const json = {};
         jsonConverter.toJson(json, this);
-        json.children = [];
-        for (let i = 0; i < this._children.length; i++) {
-            const jsonChild = this._children[i]._toJson();
-            json.children.push(jsonChild);
-        }
+        json.children = this._children.map((child) => child._toJson());
 
         if (this.isActive()) {
             json.active = true;
@@ -305,10 +300,10 @@ class TabSetNode extends Node {
         const newLayoutNode = new TabSetNode(model, json);
 
         if (json.children != undefined) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = TabNode._fromJson(json.children[i], model);
+            json.children.forEach((jsonChild) => {
+                const child = TabNode._fromJson(jsonChild, model);
                 newLayoutNode._addChild(child);
-            }
+            });
         }
 
         if (json.maximized && json.maximized == true) {

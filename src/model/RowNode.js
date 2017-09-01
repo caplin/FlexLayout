@@ -299,10 +299,7 @@ class RowNode extends Node {
             tabSet._addChild(dragNode);
         }
 
-        let size = 0;
-        for (let i = 0; i < this._children.length; i++) {
-            size += this._children[i]._weight;
-        }
+        let size = this._children.reduce((sum, child) => sum + child.weight);
 
         if (size === 0) {
             size = 100;
@@ -321,9 +318,9 @@ class RowNode extends Node {
             let hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (let i = 0; i < this._children.length; i++) {
-                hrow._addChild(this._children[i]);
-            }
+            this._children.forEach((child) => {
+                hrow._addChild(child);
+            });
             this._removeAll();
             vrow._addChild(tabSet);
             vrow._addChild(hrow);
@@ -334,9 +331,9 @@ class RowNode extends Node {
             let hrow = new RowNode(this._model, {});
             hrow._weight = 75;
             tabSet._weight = 25;
-            for (let i = 0; i < this._children.length; i++) {
-                hrow._addChild(this._children[i]);
-            }
+            this._children.forEach((child) => {
+                hrow._addChild(child);
+            });
             this._removeAll();
             vrow._addChild(hrow);
             vrow._addChild(tabSet);
