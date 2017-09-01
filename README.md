@@ -371,7 +371,8 @@ Inherited defaults will take their value from the associated global attributes (
 | type | border | |
 | size | 200 | size of the tab body when selected |
 | selected | -1 | -1 is the unselected value|
-| id | auto generated | |
+| id | auto generated | border_ + border name e.g. border_left |
+| show | true | show/hide this border |
 | children | *required* | a list of tab nodes |
 | borderBarSize | *inherited* | |
 | borderEnableDrop | *inherited* | |
