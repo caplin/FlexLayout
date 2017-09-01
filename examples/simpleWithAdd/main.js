@@ -73,12 +73,6 @@ class Main extends React.Component {
         }, null);
     }
 
-    onTabClose(node, fnContinue) {
-        if ( window.confirm("Close tab, are you sure?")) {
-            fnContinue();
-        }
-    }
-
     render() {
         return (
             <div className="outer">
@@ -86,8 +80,7 @@ class Main extends React.Component {
                 <div className="inner">
                     <FlexLayout.Layout ref="layout"
                                        model={this.state.model}
-                                       factory={this.factory.bind(this)}
-                                       onTabClose={this.onTabClose.bind(this)}/>
+                                       factory={this.factory.bind(this)}/>
                 </div>
             </div>
         );
