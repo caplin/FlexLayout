@@ -298,8 +298,9 @@ class RowNode extends Node {
             tabSet = new TabSetNode(this._model, {});
             tabSet._addChild(dragNode);
         }
-
-        let size = this._children.reduce((sum, child) => sum + child.weight);
+        let size = this._children.reduce((sum, child) => {
+            return sum + child._weight;
+            }, 0);
 
         if (size === 0) {
             size = 100;
