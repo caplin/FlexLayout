@@ -34,6 +34,7 @@ class BorderNode extends Node {
     getContentRect() {
         return this._contentRect;
     }
+
     isEnableDrop() {
         return this._getAttr("_borderEnableDrop");
     }
@@ -109,7 +110,7 @@ class BorderNode extends Node {
         this._tabHeaderRect = split2.start;
         this._contentRect = split4.end;
 
-        this._children.forEach((child, i)=>{
+        this._children.forEach((child, i)=> {
             child._layout(this._contentRect);
             child._setVisible(i === this._selected);
             this._drawChildren.push(child);
@@ -302,7 +303,7 @@ class BorderNode extends Node {
         const location = DockLocation.getByName(json.location);
         const border = new BorderNode(location, json, model);
         if (json.children) {
-            border._children = json.children.map((jsonChild) =>{
+            border._children = json.children.map((jsonChild) => {
                 const child = TabNode._fromJson(jsonChild, model);
                 child._parent = border;
                 return child;
@@ -356,7 +357,7 @@ jsonConverter.addConversion("_show", "show", true);
 
 jsonConverter.addConversion("_borderBarSize", "borderBarSize", undefined);
 jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", undefined);
-jsonConverter.addConversion("_borderClassName", "borderClassName",undefined);
+jsonConverter.addConversion("_borderClassName", "borderClassName", undefined);
 
 
 export default BorderNode;

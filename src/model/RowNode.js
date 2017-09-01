@@ -300,7 +300,7 @@ class RowNode extends Node {
         }
         let size = this._children.reduce((sum, child) => {
             return sum + child._weight;
-            }, 0);
+        }, 0);
 
         if (size === 0) {
             size = 100;
