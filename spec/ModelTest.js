@@ -6,24 +6,24 @@ describe("Tree", function()
 {
 	it("adds a tab to center of empty tabset using add action", function()
 	{
-		var model = Model.fromJson(
-			{
-				global: {},
-				layout: {
-					type: "row",
-					id: 0,
-					children: [
-						{
-							type: "tabset",
-							name: "one",
-							id: 1,
-							children: []
-						}
-					]
-				}
-			}
-		);
-		model.doAction(Actions.addNode({id:2, name: "newtab1", component: "grid"}, 1, DockLocation.CENTER, -1));
+        const model = Model.fromJson(
+            {
+                global: {},
+                layout: {
+                    type: "row",
+                    id: 0,
+                    children: [
+                        {
+                            type: "tabset",
+                            name: "one",
+                            id: 1,
+                            children: []
+                        }
+                    ]
+                }
+            }
+        );
+        model.doAction(Actions.addNode({id:2, name: "newtab1", component: "grid"}, 1, DockLocation.CENTER, -1));
 
 		let expected = {
 			"global": {},
@@ -48,9 +48,9 @@ describe("Tree", function()
 			}
 		};
 
-		var json = model.toJson();
+        const json = model.toJson();
 
-		expect(json).toEqual(expected);
+        expect(json).toEqual(expected);
 
 		//console.log(JSON.stringify(json, null, "\t"));
 	})

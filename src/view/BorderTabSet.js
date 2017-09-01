@@ -53,7 +53,7 @@ class BorderTabSet extends React.Component {
         //    key="1"
         //    className={"flexlayout__tab_toolbar_button-min"}></button>);
 
-        toolbar = <div
+        let toolbar = <div
             key="toolbar"
             ref="toolbar"
             className={"flexlayout__border_toolbar_" + border.getLocation().getName()}>

@@ -115,7 +115,7 @@ class Layout extends React.Component {
             }
         });
 
-        this.layoutTime = (Date.now() - this.start)
+        this.layoutTime = (Date.now() - this.start);
 
         return (
             <div ref="self" className="flexlayout__layout">

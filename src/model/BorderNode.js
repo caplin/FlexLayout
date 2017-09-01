@@ -128,7 +128,6 @@ class BorderNode extends Node {
 
             return {outer: split1.end, inner: split3.end};
         }
-        return borderRects;
     }
 
     _remove(node) {

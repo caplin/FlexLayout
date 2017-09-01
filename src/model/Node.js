@@ -207,7 +207,7 @@ class Node {
     }
 
     isEnableDivide() {
-        false;
+        return false;
     }
 
     // implemented by subclasses
