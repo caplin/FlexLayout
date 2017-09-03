@@ -303,6 +303,7 @@ class Layout extends React.Component {
     }
 
     onDragStart(event) {
+        this.dropInfo = null;
         const rootdiv = ReactDOM.findDOMNode(this);
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.className = "flexlayout__outline_rect";
@@ -339,10 +340,11 @@ class Layout extends React.Component {
         this.dragDiv.style.left = (pos.x - this.dragDiv.getBoundingClientRect().width / 2) + "px";
         this.dragDiv.style.top = pos.y + 5 + "px";
 
-        this.dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
-        if (this.dropInfo) {
-            this.outlineDiv.className = this.dropInfo.className;
-            this.dropInfo.rect.positionElement(this.outlineDiv);
+        const dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
+        if (dropInfo) {
+            this.dropInfo = dropInfo;
+            this.outlineDiv.className = dropInfo.className;
+            dropInfo.rect.positionElement(this.outlineDiv);
         }
     }
 
