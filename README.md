@@ -374,9 +374,9 @@ Inherited defaults will take their value from the associated global attributes (
 | id | auto generated | border_ + border name e.g. border_left |
 | show | true | show/hide this border |
 | children | *required* | a list of tab nodes |
-| borderBarSize | *inherited* | |
-| borderEnableDrop | *inherited* | |
-| borderClassName | *inherited* | |
+| barSize | *inherited* | |
+| enableDrop | *inherited* | |
+| className | *inherited* | |
 
 
 ## Model Actions

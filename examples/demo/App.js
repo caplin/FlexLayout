@@ -93,6 +93,11 @@ class App extends React.Component {
         this.setState({adding: false});
     }
 
+    onTableClick(node, event) {
+        console.log("tab: \n" + node._toAttributeString());
+        console.log("tabset: \n" + node.getParent()._toAttributeString());
+    }
+
     factory(node) {
         // log lifecycle events
         //node.setEventListener("resize", function(p){console.log("resize");});
@@ -107,7 +112,7 @@ class App extends React.Component {
                 node.getExtraData().data = this.makeFakeData();
             }
 
-            return <SimpleTable fields={fields} data={node.getExtraData().data}/>;
+            return <SimpleTable fields={fields} onClick={this.onTableClick.bind(this, node)} data={node.getExtraData().data}/>;
         }
         else if (component === "sub") {
             var model = node.getExtraData().model;
@@ -205,7 +210,7 @@ class App extends React.Component {
 
 class SimpleTable extends React.Component {
     shouldComponentUpdate() {
-        return false;
+        return true;
     }
 
     render() {
@@ -219,7 +224,7 @@ class SimpleTable extends React.Component {
             rows.push(<tr key={i}>{row}</tr>);
         }
 
-        return <table className="simple_table">
+        return <table className="simple_table" onClick={this.props.onClick}>
             <tbody>
             <tr>{headercells}</tr>
             {rows}

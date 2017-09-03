@@ -1,5 +1,5 @@
 import Rect from "../Rect.js";
-import JsonConverter from "../JsonConverter.js";
+import AttributeDefinitions from "../AttributeDefinitions.js";
 import DockLocation from "../DockLocation.js";
 import Orientation from "../Orientation.js";
 import DropInfo from "./../DropInfo.js";
@@ -18,23 +18,36 @@ class TabSetNode extends Node {
         this._headerRect = null;
         this._tabHeaderRect = null;
 
-        jsonConverter.fromJson(json, this);
+        attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
     }
 
     getName() {
-        return this._name;
+        return this._attributes["name"];
     }
 
     getSelected() {
-        return this._selected;
+        return this._attributes["selected"];
     }
 
     getSelectedNode() {
-        if (this._selected != -1) {
-            return this._children[this._selected];
+        let selected = this.getSelected();
+        if (selected != -1) {
+            return this._children[selected];
         }
         return null;
+    }
+
+    getWeight() {
+        return this._attributes["weight"];
+    }
+
+    getWidth() {
+        return this._attributes["width"];
+    }
+
+    getHeight() {
+        return this._attributes["height"];
     }
 
     isMaximized() {
@@ -46,47 +59,51 @@ class TabSetNode extends Node {
     }
 
     isEnableClose() {
-        return this._getAttr("_tabSetEnableClose");
+        return this._getAttr("enableClose");
     }
 
     isEnableDrop() {
-        return this._getAttr("_tabSetEnableDrop");
+        return this._getAttr("enableDrop");
     }
 
     isEnableDrag() {
-        return this._getAttr("_tabSetEnableDrag");
+        return this._getAttr("enableDrag");
     }
 
     isEnableDivide() {
-        return this._getAttr("_tabSetEnableDivide");
+        return this._getAttr("enableDivide");
     }
 
     isEnableMaximize() {
-        return this._getAttr("_tabSetEnableMaximize");
+        return this._getAttr("enableMaximize");
     }
 
     isEnableTabStrip() {
-        return this._getAttr("_tabSetEnableTabStrip");
+        return this._getAttr("enableTabStrip");
     }
 
     getClassNameTabStrip() {
-        return this._getAttr("_tabSetClassNameTabStrip");
+        return this._getAttr("classNameTabStrip");
     }
 
     getClassNameHeader() {
-        return this._getAttr("_tabSetClassNameHeader");
+        return this._getAttr("classNameHeader");
     }
 
     getHeaderHeight() {
-        return this._getAttr("_tabSetHeaderHeight");
+        return this._getAttr("headerHeight");
     }
 
     getTabStripHeight() {
-        return this._getAttr("_tabSetTabStripHeight");
+        return this._getAttr("tabStripHeight");
+    }
+
+    _setWeight(weight) {
+        this._attributes["weight"] = weight;
     }
 
     _setSelected(index) {
-        this._selected = index;
+        this._attributes["selected"] = index;
     }
 
     _canDrop(dragNode, x, y) {
@@ -142,7 +159,7 @@ class TabSetNode extends Node {
         }
         this._rect = rect;
 
-        const showHeader = (this._name != null);
+        const showHeader = (this.getName() != null);
         let y = 0;
         if (showHeader) {
             this._headerRect = new Rect(rect.x, rect.y, rect.width, this.getHeaderHeight());
@@ -156,14 +173,14 @@ class TabSetNode extends Node {
 
         this._children.forEach((child, i) => {
             child._layout(this._contentRect);
-            child._setVisible(i === this._selected);
+            child._setVisible(i === this.getSelected());
         });
     }
 
     _remove(node) {
         this._removeChild(node);
         this._model._tidy();
-        this._selected = Math.max(0, this._selected - 1);
+        this._setSelected(Math.max(0, this.getSelected() - 1));
     }
 
     _drop(dragNode, location, index) {
@@ -182,28 +199,28 @@ class TabSetNode extends Node {
         //console.log("removed child: " + fromIndex);
 
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode._type === TabNode.TYPE && dragNode._parent === this && fromIndex < index && index > 0) {
+        if (dragNode.getType() === TabNode.TYPE && dragNode._parent === this && fromIndex < index && index > 0) {
             index--;
         }
 
         // for the tabset/border being removed from set the selected index
         if (dragNode._parent !== null) {
-            if (dragNode._parent._type === TabSetNode.TYPE) {
-                dragNode._parent._selected = 0;
+            if (dragNode._parent.getType() === TabSetNode.TYPE) {
+                dragNode._parent._setSelected(0);
             }
-            else if (dragNode._parent._type === BorderNode.TYPE) {
-                if (dragNode._parent._selected != -1) {
-                    if (fromIndex === dragNode._parent._selected && dragNode._parent._children.length > 0) {
-                        dragNode._parent._selected = 0;
+            else if (dragNode._parent.getType() === BorderNode.TYPE) {
+                if (dragNode._parent.getSelected() != -1) {
+                    if (fromIndex === dragNode._parent.getSelected() && dragNode._parent._children.length > 0) {
+                        dragNode._parent._setSelected(0);
                     }
-                    else if (fromIndex < dragNode._parent._selected) {
-                        dragNode._parent._selected--;
+                    else if (fromIndex < dragNode._parent.getSelected()) {
+                        dragNode._parent._setSelected(dragNode._parent.getSelected()-1);
                     }
-                    else if (fromIndex > dragNode._parent._selected) {
+                    else if (fromIndex > dragNode._parent.getSelected()) {
                         // leave selected index as is
                     }
                     else {
-                        dragNode._parent._selected = -1;
+                        dragNode._parent._setSelected(-1);
                     }
                 }
             }
@@ -216,9 +233,9 @@ class TabSetNode extends Node {
                 insertPos = this._children.length;
             }
 
-            if (dragNode._type === TabNode.TYPE) {
+            if (dragNode.getType() === TabNode.TYPE) {
                 this._addChild(dragNode, insertPos);
-                this._selected = insertPos;
+                this._setSelected(insertPos);
                 //console.log("added child at : " + insertPos);
             }
             else {
@@ -233,7 +250,7 @@ class TabSetNode extends Node {
         }
         else {
             let tabSet = null;
-            if (dragNode._type === TabNode.TYPE) {
+            if (dragNode.getType() === TabNode.TYPE) {
                 // create new tabset parent
                 //console.log("create a new tabset");
                 tabSet = new TabSetNode(this._model, {});
@@ -249,8 +266,8 @@ class TabSetNode extends Node {
             const pos = parentRow._children.indexOf(this);
 
             if (parentRow.getOrientation() === dockLocation._orientation) {
-                tabSet._weight = this._weight / 2;
-                this._weight = this._weight / 2;
+                tabSet._setWeight(this.getWeight() / 2);
+                this._setWeight(this.getWeight() / 2);
                 //console.log("added child 50% size at: " +  pos + dockLocation.indexPlus);
                 parentRow._addChild(tabSet, pos + dockLocation._indexPlus);
             }
@@ -258,10 +275,10 @@ class TabSetNode extends Node {
                 // create a new row to host the new tabset (it will go in the opposite direction)
                 //console.log("create a new row");
                 const newRow = new RowNode(this._model, {});
-                newRow._weight = this._weight;
+                newRow._setWeight(this.getWeight());
                 newRow._addChild(this);
-                this._weight = 50;
-                tabSet._weight = 50;
+                this._setWeight(50);
+                tabSet._setWeight(50);
                 //console.log("added child 50% size at: " +  dockLocation.indexPlus);
                 newRow._addChild(tabSet, dockLocation._indexPlus);
 
@@ -277,7 +294,7 @@ class TabSetNode extends Node {
 
     _toJson() {
         const json = {};
-        jsonConverter.toJson(json, this);
+        attributeDefinitions.toJson(json, this._attributes);
         json.children = this._children.map((child) => child._toJson());
 
         if (this.isActive()) {
@@ -292,11 +309,10 @@ class TabSetNode extends Node {
     }
 
     _updateAttrs(json) {
-        jsonConverter.updateAttrs(json, this);
+        attributeDefinitions.update(json, this._attributes);
     }
 
     static _fromJson(json, model) {
-        model._checkUniqueId(json);
         const newLayoutNode = new TabSetNode(model, json);
 
         if (json.children != undefined) {
@@ -317,32 +333,33 @@ class TabSetNode extends Node {
         return newLayoutNode;
     }
 
-    //toAttributeString() {
-    //    return jsonConverter.toTableValues(this);
-    //}
+    _getAttributeDefinitions() {
+        return attributeDefinitions;
+    }
 }
 
 TabSetNode.TYPE = "tabset";
 
-let jsonConverter = new JsonConverter();
-jsonConverter.addConversion("_type", "type", TabSetNode.TYPE, true);
-jsonConverter.addConversion("_weight", "weight", 100);
-jsonConverter.addConversion("_width", "width", null);
-jsonConverter.addConversion("_height", "height", null);
-jsonConverter.addConversion("_name", "name", null);
-jsonConverter.addConversion("_selected", "selected", 0);
-jsonConverter.addConversion("_id", "id", null);
+let attributeDefinitions = new AttributeDefinitions();
+attributeDefinitions.add("type", TabSetNode.TYPE, true);
+attributeDefinitions.add("id", null);
 
-jsonConverter.addConversion("_tabSetEnableClose", "enableClose", undefined);
-jsonConverter.addConversion("_tabSetEnableDrop", "enableDrop", undefined);
-jsonConverter.addConversion("_tabSetEnableDrag", "enableDrag", undefined);
-jsonConverter.addConversion("_tabSetEnableDivide", "enableDivide", undefined);
-jsonConverter.addConversion("_tabSetEnableMaximize", "enableMaximize", undefined);
-jsonConverter.addConversion("_tabSetClassNameTabStrip", "classNameTabStrip", undefined);
-jsonConverter.addConversion("_tabSetClassNameHeader", "classNameHeader", undefined);
-jsonConverter.addConversion("_tabSetEnableTabStrip", "enableTabStrip", undefined);
+attributeDefinitions.add("weight", 100);
+attributeDefinitions.add("width", null);
+attributeDefinitions.add("height", null);
+attributeDefinitions.add("name", null);
+attributeDefinitions.add("selected", 0);
 
-jsonConverter.addConversion("_tabSetHeaderHeight", "headerHeight", undefined);
-jsonConverter.addConversion("_tabSetTabStripHeight", "tabStripHeight", undefined);
+attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
+attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
+attributeDefinitions.addInherited("enableDrag", "tabSetEnableDrag");
+attributeDefinitions.addInherited("enableDivide", "tabSetEnableDivide");
+attributeDefinitions.addInherited("enableMaximize", "tabSetEnableMaximize");
+attributeDefinitions.addInherited("classNameTabStrip", "tabSetClassNameTabStrip");
+attributeDefinitions.addInherited("classNameHeader", "tabSetClassNameHeader");
+attributeDefinitions.addInherited("enableTabStrip", "tabSetEnableTabStrip");
+
+attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
+attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
 
 export default TabSetNode;

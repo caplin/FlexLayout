@@ -1,5 +1,5 @@
 import Rect from "../Rect.js";
-import JsonConverter from "../JsonConverter.js";
+import AttributeDefinitions from "../AttributeDefinitions.js";
 import Orientation from "../Orientation.js";
 import DockLocation from "../DockLocation.js";
 import SplitterNode from "./SplitterNode.js";
@@ -15,8 +15,24 @@ class RowNode extends Node {
 
         this._dirty = true;
         this._drawChildren = [];
-        jsonConverter.fromJson(json, this);
+        attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
+    }
+
+    getWeight() {
+        return this._attributes["weight"];
+    }
+
+    getWidth() {
+        return this._attributes["width"];
+    }
+
+    getHeight() {
+        return this._attributes["height"];
+    }
+
+    _setWeight(weight) {
+        this._attributes["weight"] = weight;
     }
 
     _layout(rect) {
@@ -39,11 +55,11 @@ class RowNode extends Node {
             }
             else {
                 if (prefSize == null) {
-                    totalWeight += child._weight;
+                    totalWeight += child.getWeight();
                 }
                 else {
                     prefPixels += prefSize;
-                    totalPrefWeight += child._weight;
+                    totalPrefWeight += child.getWeight();
                 }
                 numVariable++;
             }
@@ -72,7 +88,7 @@ class RowNode extends Node {
                         child.tempsize = 0;
                     }
                     else {
-                        child.tempsize = Math.floor(availablePixels * (child._weight / totalWeight));
+                        child.tempsize = Math.floor(availablePixels * (child.getWeight() / totalWeight));
                     }
                     variableSize += child.tempsize;
                 }
@@ -138,7 +154,7 @@ class RowNode extends Node {
         const p = drawChildren.indexOf(splitter);
         const pBounds = this._getSplitterBounds(splitter);
 
-        const weightedLength = drawChildren[p - 1]._weight + drawChildren[p + 1]._weight;
+        const weightedLength = drawChildren[p - 1].getWeight() + drawChildren[p + 1].getWeight();
 
         const pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
         const pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
@@ -180,7 +196,7 @@ class RowNode extends Node {
         let i = 0;
         while (i < this._children.length) {
             const child = this._children[i];
-            if (child._type === RowNode.TYPE) {
+            if (child.getType() === RowNode.TYPE) {
                 child._tidy();
 
                 if (child._children.length === 0) {
@@ -190,20 +206,20 @@ class RowNode extends Node {
                     // hoist child/children up to this level
                     const subchild = child._children[0];
                     this._removeChild(child);
-                    if (subchild._type === RowNode.TYPE) {
+                    if (subchild.getType() === RowNode.TYPE) {
                         let subChildrenTotal = 0;
                         for (let j = 0; j < subchild._children.length; j++) {
                             let subsubChild = subchild._children[j];
-                            subChildrenTotal += subsubChild._weight;
+                            subChildrenTotal += subsubChild.getWeight();
                         }
                         for (let j = 0; j < subchild._children.length; j++) {
                             let subsubChild = subchild._children[j];
-                            subsubChild._weight = child._weight * subsubChild._weight / subChildrenTotal;
+                            subsubChild._setWeight(child.getWeight() * subsubChild.getWeight() / subChildrenTotal);
                             this._addChild(subsubChild, i + j);
                         }
                     }
                     else {
-                        subchild._weight = child._weight;
+                        subchild._setWeight(child.getWeight());
                         this._addChild(subchild, i);
                     }
                 }
@@ -211,7 +227,7 @@ class RowNode extends Node {
                     i++;
                 }
             }
-            else if (child._type === TabSetNode.TYPE && child._children.length === 0) {
+            else if (child.getType() === TabSetNode.TYPE && child._children.length === 0) {
                 // prevent removal of last tabset
                 if (!(this === this._model._root && this._children.length === 1)
                     && child.isEnableClose()) {
@@ -282,16 +298,16 @@ class RowNode extends Node {
             dragNode._parent._removeChild(dragNode);
         }
 
-        if (dragNode._parent !== null && dragNode._parent._type === TabSetNode.TYPE) {
-            dragNode._parent._selected = 0;
+        if (dragNode._parent !== null && dragNode._parent.getType() === TabSetNode.TYPE) {
+            dragNode._parent._setSelected(0);
         }
 
-        if (dragNode._parent !== null && dragNode._parent._type === BorderNode.TYPE) {
-            dragNode._parent._selected = -1;
+        if (dragNode._parent !== null && dragNode._parent.getType() === BorderNode.TYPE) {
+            dragNode._parent._setSelected(-1);
         }
 
         let tabSet = null;
-        if (dragNode._type === TabSetNode.TYPE) {
+        if (dragNode.getType() === TabSetNode.TYPE) {
             tabSet = dragNode;
         }
         else {
@@ -299,14 +315,14 @@ class RowNode extends Node {
             tabSet._addChild(dragNode);
         }
         let size = this._children.reduce((sum, child) => {
-            return sum + child._weight;
+            return sum + child.getWeight();
         }, 0);
 
         if (size === 0) {
             size = 100;
         }
 
-        tabSet._weight = size / 3;
+        tabSet._setWeight(size / 3);
 
         if (dockLocation === DockLocation.LEFT) {
             this._addChild(tabSet, 0);
@@ -317,8 +333,8 @@ class RowNode extends Node {
         else if (dockLocation === DockLocation.TOP) {
             let vrow = new RowNode(this._model, {});
             let hrow = new RowNode(this._model, {});
-            hrow._weight = 75;
-            tabSet._weight = 25;
+            hrow._setWeight(75);
+            tabSet._setWeight(25);
             this._children.forEach((child) => {
                 hrow._addChild(child);
             });
@@ -330,8 +346,8 @@ class RowNode extends Node {
         else if (dockLocation === DockLocation.BOTTOM) {
             let vrow = new RowNode(this._model, {});
             let hrow = new RowNode(this._model, {});
-            hrow._weight = 75;
-            tabSet._weight = 25;
+            hrow._setWeight(75);
+            tabSet._setWeight(25);
             this._children.forEach((child) => {
                 hrow._addChild(child);
             });
@@ -348,7 +364,7 @@ class RowNode extends Node {
 
     _toJson() {
         const json = {};
-        jsonConverter.toJson(json, this);
+        attributeDefinitions.toJson(json, this._attributes);
 
         json.children = [];
         this._children.forEach((child) => {
@@ -359,7 +375,6 @@ class RowNode extends Node {
     }
 
     static _fromJson(json, model) {
-        model._checkUniqueId(json);
         const newLayoutNode = new RowNode(model, json);
 
         if (json.children != undefined) {
@@ -378,19 +393,21 @@ class RowNode extends Node {
 
         return newLayoutNode;
     }
+
+    _getAttributeDefinitions() {
+        return attributeDefinitions;
+    }
 }
 
 RowNode.TYPE = "row";
 
-let jsonConverter = new JsonConverter();
-jsonConverter.addConversion("_type", "type", RowNode.TYPE, true);
-jsonConverter.addConversion("_weight", "weight", 100);
-jsonConverter.addConversion("_width", "width", null);
-jsonConverter.addConversion("_height", "height", null);
-jsonConverter.addConversion("_id", "id", null);
+let attributeDefinitions = new AttributeDefinitions();
+attributeDefinitions.add("type", RowNode.TYPE, true);
+attributeDefinitions.add("id", null);
 
-//console.log(jsonConverter.toTable());
-
+attributeDefinitions.add("weight", 100);
+attributeDefinitions.add("width", null);
+attributeDefinitions.add("height", null);
 
 export default RowNode;
 

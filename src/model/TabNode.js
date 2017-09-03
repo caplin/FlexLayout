@@ -1,5 +1,5 @@
 import Node from "./Node.js";
-import JsonConverter from "../JsonConverter.js";
+import AttributeDefinitions from "../AttributeDefinitions.js";
 import DockLocation from "../DockLocation.js";
 import TabSetNode from "./TabSetNode.js";
 import RowNode from "./RowNode.js";
@@ -12,7 +12,7 @@ class TabNode extends Node {
         this._tabRect = null; // rect of the tab rather than the tab contents=
         this._extra = {};  // extra data added to node not saved in json
 
-        jsonConverter.fromJson(json, this);
+        attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
     }
 
@@ -25,15 +25,15 @@ class TabNode extends Node {
     }
 
     getName() {
-        return this._name;
+        return this._attributes["name"];
     }
 
     getComponent() {
-        return this._component;
+        return this._attributes["component"];
     }
 
     getConfig() {
-        return this._config;
+        return this._attributes["config"];
     }
 
     getExtraData() {
@@ -41,27 +41,27 @@ class TabNode extends Node {
     }
 
     getIcon() {
-        return this._getAttr("_tabIcon");
+        return this._attributes["icon"];
     }
 
     isEnableClose() {
-        return this._getAttr("_tabEnableClose");
+        return this._getAttr("enableClose");
     }
 
     isEnableDrag() {
-        return this._getAttr("_tabEnableDrag");
+        return this._getAttr("enableDrag");
     }
 
     isEnableRename() {
-        return this._getAttr("_tabEnableRename");
+        return this._getAttr("enableRename");
     }
 
     getClassName() {
-        return this._getAttr("_tabClassName");
+        return this._getAttr("className");
     }
 
     _setName(name) {
-        this._name = name;
+        this._attributes["name"] = name;
     }
 
     _layout(rect) {
@@ -77,45 +77,39 @@ class TabNode extends Node {
     }
 
     static _fromJson(json, model) {
-        model._checkUniqueId(json);
         const newLayoutNode = new TabNode(model, json);
         return newLayoutNode;
     }
 
     _toJson() {
         const json = {};
-        jsonConverter.toJson(json, this);
+        attributeDefinitions.toJson(json, this._attributes);
         return json;
     }
 
     _updateAttrs(json) {
-        jsonConverter.updateAttrs(json, this);
+        attributeDefinitions.update(json, this._attributes);
     }
 
-    toStringIndented(lines, indent) {
-        lines.push(indent + this._type + " " + this._name + " " + this._id);
+    _getAttributeDefinitions() {
+        return attributeDefinitions;
     }
-
-    //toAttributeString() {
-    //    return jsonConverter.toTableValues(this, this._model);
-    //}
-
 }
 
 TabNode.TYPE = "tab";
 
-let jsonConverter = new JsonConverter();
-jsonConverter.addConversion("_type", "type", TabNode.TYPE, true);
-jsonConverter.addConversion("_name", "name", null);
-jsonConverter.addConversion("_component", "component", null);
-jsonConverter.addConversion("_config", "config", null);
-jsonConverter.addConversion("_id", "id", null);
+let attributeDefinitions = new AttributeDefinitions();
+attributeDefinitions.add("type", TabNode.TYPE, true);
+attributeDefinitions.add("id", null);
 
-jsonConverter.addConversion("_tabEnableClose", "enableClose", undefined);
-jsonConverter.addConversion("_tabEnableDrag", "enableDrag", undefined);
-jsonConverter.addConversion("_tabEnableRename", "enableRename", undefined);
-jsonConverter.addConversion("_tabClassName", "className", undefined);
-jsonConverter.addConversion("_tabIcon", "icon", undefined);
-//console.log(jsonConverter.toTable());
+attributeDefinitions.add("name", null);
+attributeDefinitions.add("component", null);
+attributeDefinitions.add("config", null);
+
+attributeDefinitions.addInherited("enableClose", "tabEnableClose");
+attributeDefinitions.addInherited("enableDrag", "tabEnableDrag");
+attributeDefinitions.addInherited("enableRename", "tabEnableRename");
+attributeDefinitions.addInherited("className", "tabClassName");
+attributeDefinitions.addInherited("icon", "tabIcon");
 
 export default TabNode;

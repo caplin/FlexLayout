@@ -1,5 +1,5 @@
 import Rect from "../Rect.js";
-import JsonConverter from "../JsonConverter.js";
+import AttributeDefinitions from "../AttributeDefinitions.js";
 import DockLocation from "../DockLocation.js";
 import Orientation from "../Orientation.js";
 import DropInfo from "./../DropInfo.js";
@@ -18,8 +18,8 @@ class BorderNode extends Node {
         this._tabHeaderRect = null;
         this._location = location;
         this._drawChildren = [];
-        this._id = "border_" + location.getName();
-        jsonConverter.fromJson(json, this);
+        this._attributes["id"] = "border_" + location.getName();
+        attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
     }
 
@@ -36,50 +36,34 @@ class BorderNode extends Node {
     }
 
     isEnableDrop() {
-        return this._getAttr("_borderEnableDrop");
+        return this._getAttr("enableDrop");
     }
 
     getClassNameBorder() {
-        return this._getAttr("_borderClassName");
+        return this._getAttr("className");
     }
 
     getBorderBarSize() {
-        return this._getAttr("_borderBarSize");
+        return this._getAttr("barSize");
     }
 
     getSize() {
-        return this._size;
+        return this._attributes["size"];
     }
 
     getSelected() {
-        return this._selected;
+        return this._attributes["selected"];
     }
 
     getSelectedNode() {
-        if (this._selected != -1) {
-            return this._children[this._selected];
+        if (this.getSelected() != -1) {
+            return this._children[this.getSelected()];
         }
         return null;
     }
 
-    _setSelected(index) {
-        this._selected = index;
-    }
-
     getOrientation() {
         return this._location.getOrientation();
-    }
-
-    _setSize(pos) {
-        this._size = pos;
-    }
-
-    _updateAttrs(json) {
-        jsonConverter.updateAttrs(json, this);
-    }
-
-    _getDrawChildren() {
-        return this._drawChildren;
     }
 
     isMaximized() {
@@ -87,7 +71,23 @@ class BorderNode extends Node {
     }
 
     isShowing() {
-        return this._show;
+        return this._attributes["show"];
+    }
+
+    _setSelected(index) {
+        this._attributes["selected"] = index;
+    }
+
+    _setSize(pos) {
+        this._attributes["size"] = pos;
+    }
+
+    _updateAttrs(json) {
+        attributeDefinitions.update(json, this._attributes);
+    }
+
+    _getDrawChildren() {
+        return this._drawChildren;
     }
 
     _setAdjustedSize(size) {
@@ -112,11 +112,11 @@ class BorderNode extends Node {
 
         this._children.forEach((child, i)=> {
             child._layout(this._contentRect);
-            child._setVisible(i === this._selected);
+            child._setVisible(i === this.getSelected());
             this._drawChildren.push(child);
         });
 
-        if (this._selected == -1) {
+        if (this.getSelected() == -1) {
             return {outer: split1.end, inner: split2.end};
         }
         else {
@@ -130,17 +130,17 @@ class BorderNode extends Node {
     }
 
     _remove(node) {
-        if (this._selected != -1) {
-            const selectedNode = this._children[this._selected];
+        if (this.getSelected() != -1) {
+            const selectedNode = this._children[this.getSelected()];
             if (node === selectedNode) {
-                this._selected = -1;
+                this._setSelected(-1);
                 this._removeChild(node);
             }
             else {
                 this._removeChild(node);
                 for (let i = 0; i < this._children.length; i++) {
                     if (this._children[i] === selectedNode) {
-                        this._selected = i;
+                        this._setSelected(i);
                         break;
                     }
                 }
@@ -228,7 +228,7 @@ class BorderNode extends Node {
                 return null;
             }
         }
-        else if (this._selected != -1 && this._contentRect.contains(x, y)) {
+        else if (this.getSelected() != -1 && this._contentRect.contains(x, y)) {
             let outlineRect = this._contentRect;
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
@@ -246,28 +246,28 @@ class BorderNode extends Node {
         }
 
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode._type === TabNode.TYPE && dragNode._parent === this && fromIndex < index && index > 0) {
+        if (dragNode.getType() === TabNode.TYPE && dragNode._parent === this && fromIndex < index && index > 0) {
             index--;
         }
 
         // for the tabset/border being removed from set the selected index
         if (dragNode._parent !== null) {
-            if (dragNode._parent._type === TabSetNode.TYPE) {
-                dragNode._parent._selected = 0;
+            if (dragNode._parent.getType() === TabSetNode.TYPE) {
+                dragNode._parent._setSelected(0);
             }
-            else if (dragNode._parent._type === BorderNode.TYPE) {
-                if (dragNode._parent._selected != -1) {
-                    if (fromIndex === dragNode._parent._selected && dragNode._parent._children.length > 0) {
-                        dragNode._parent._selected = 0;
+            else if (dragNode._parent.getType() === BorderNode.TYPE) {
+                if (dragNode._parent.getSelected() != -1) {
+                    if (fromIndex === dragNode._parent.getSelected() && dragNode._parent._children.length > 0) {
+                        dragNode._parent._setSelected(0);
                     }
-                    else if (fromIndex < dragNode._parent._selected) {
-                        dragNode._parent._selected--;
+                    else if (fromIndex < dragNode._parent.getSelected()) {
+                        dragNode._parent._setSelected(dragNode._parent.getSelected()-1);
                     }
-                    else if (fromIndex > dragNode._parent._selected) {
+                    else if (fromIndex > dragNode._parent.getSelected()) {
                         // leave selected index as is
                     }
                     else {
-                        dragNode._parent._selected = -1;
+                        dragNode._parent._setSelected(-1);
                     }
                 }
             }
@@ -279,12 +279,12 @@ class BorderNode extends Node {
             insertPos = this._children.length;
         }
 
-        if (dragNode._type === TabNode.TYPE) {
+        if (dragNode.getType() === TabNode.TYPE) {
             this._addChild(dragNode, insertPos);
         }
 
-        if (this._selected !== -1) { // already open
-            this._selected = insertPos;
+        if (this.getSelected() !== -1) { // already open
+            this._setSelected(insertPos);
         }
 
         this._model._tidy();
@@ -292,7 +292,7 @@ class BorderNode extends Node {
 
     _toJson() {
         const json = {};
-        jsonConverter.toJson(json, this);
+        attributeDefinitions.toJson(json, this._attributes);
         json.location = this._location.getName();
         json.children = this._children.map((child) => child._toJson());
         return json;
@@ -345,19 +345,23 @@ class BorderNode extends Node {
             return Math.max(0, splitterPos - pBounds[0]);
         }
     }
+
+    _getAttributeDefinitions() {
+        return attributeDefinitions;
+    }
 }
 
 BorderNode.TYPE = "border";
 
-let jsonConverter = new JsonConverter();
-jsonConverter.addConversion("_type", "type", BorderNode.TYPE, true);
-jsonConverter.addConversion("_size", "size", 200);
-jsonConverter.addConversion("_selected", "selected", -1);
-jsonConverter.addConversion("_show", "show", true);
+let attributeDefinitions = new AttributeDefinitions();
+attributeDefinitions.add("type", BorderNode.TYPE, true);
 
-jsonConverter.addConversion("_borderBarSize", "borderBarSize", undefined);
-jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", undefined);
-jsonConverter.addConversion("_borderClassName", "borderClassName", undefined);
+attributeDefinitions.add("size", 200);
+attributeDefinitions.add("selected", -1);
+attributeDefinitions.add("show", true);
 
+attributeDefinitions.addInherited("barSize", "borderBarSize");
+attributeDefinitions.addInherited("enableDrop", "borderEnableDrop");
+attributeDefinitions.addInherited("className", "borderClassName");
 
 export default BorderNode;

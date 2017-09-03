@@ -5,7 +5,7 @@ import TabSetNode from "./TabSetNode.js";
 import BorderSet from "./BorderSet.js";
 import BorderNode from "./BorderNode.js";
 import DockLocation from "../DockLocation.js";
-import JsonConverter from "../JsonConverter.js";
+import AttributeDefinitions from "../AttributeDefinitions.js";
 import Rect from "../Rect.js";
 import Orientation from "../Orientation.js";
 
@@ -17,6 +17,7 @@ class Model {
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
      */
     constructor() {
+        this._attributes = {};
         this._idMap = {};
         this._nextId = 0;
         this._listener = null;
@@ -174,7 +175,7 @@ class Model {
                 const parent = tabNode.getParent();
                 const pos = parent.getChildren().indexOf(tabNode);
 
-                if (parent._type === BorderNode.TYPE) {
+                if (parent.getType() === BorderNode.TYPE) {
                     if (parent.getSelected() == pos) {
                         parent._setSelected(-1);
                     }
@@ -238,18 +239,27 @@ class Model {
             }
         }
 
+        this._updateIdMap();
+
         if (this._listener !== null) {
             this._listener();
         }
     }
 
+    _updateIdMap() {
+        // regenerate idMap to stop it building up
+        this._idMap = {};
+        this.visitNodes((node) => this._idMap[node.getId()] = node);
+        //console.log(JSON.stringify(Object.keys(this._idMap)));
+    }
+
     _adjustSplitSide(node, weight, pixels) {
-        node._weight = weight;
-        if (node._width != null && node.getOrientation() === Orientation.VERT) {
-            node._width = pixels;
+        node._setWeight(weight);
+        if (node.getWidth() != null && node.getOrientation() === Orientation.VERT) {
+            node._updateAttrs({width:pixels});
         }
-        else if (node._height != null && node.getOrientation() === Orientation.HORZ) {
-            node._height = pixels;
+        else if (node.getHeight() != null && node.getOrientation() === Orientation.HORZ) {
+            node._updateAttrs({height:pixels});
         }
     }
 
@@ -259,7 +269,7 @@ class Model {
      */
     toJson() {
         const json = {global: {}, layout: {}};
-        jsonConverter.toJson(json.global, this);
+        attributeDefinitions.toJson(json.global, this._attributes);
 
         // save state of nodes
         this.visitNodes((node)=> {
@@ -278,7 +288,7 @@ class Model {
      */
     static fromJson(json) {
         const model = new Model();
-        jsonConverter.fromJson(json.global, model);
+        attributeDefinitions.fromJson(json.global, model._attributes);
 
         if (json.borders) {
             model._borders = BorderSet._fromJson(json.borders, model);
@@ -289,24 +299,27 @@ class Model {
     }
 
     getSplitterSize() {
-        return this._splitterSize;
+        return this._attributes["splitterSize"];
     }
 
     isEnableEdgeDock() {
-        return this._enableEdgeDock;
+        return this._attributes["enableEdgeDock"];
     }
 
     _addNode(node) {
-        if (node._id == null) {
-            node._id = this._nextUniqueId();
+        if (node.getId() == null) {
+            node._setId(this._nextUniqueId());
         }
         else {
-            if (this._idMap[node._id] !== undefined) {
-                throw "Error: each node must have a unique id, duplicate id: " + node._id;
+            if (this._idMap[node.getId()] !== undefined) {
+                throw "Error: each node must have a unique id, duplicate id: " + node.getId();
             }
 
         }
-        this._idMap[node._id] = node;
+
+        if (node.getType() !== "splitter") {
+            this._idMap[node.getId()] = node;
+        }
     }
 
     _layout(rect) {
@@ -332,7 +345,7 @@ class Model {
     }
 
     _updateAttrs(json) {
-        jsonConverter.updateAttrs(json, this);
+        attributeDefinitions.update(json, this._attributes);
     }
 
     _nextUniqueId() {
@@ -344,52 +357,38 @@ class Model {
         return "#" + this._nextId;
     }
 
-    _checkUniqueId(json) {
-        //if (json.id == undefined)
-        //{
-        //	throw "Error: each node must have an id: " + JSON.stringify(json, null, "\t");
-        //}
-        //
-        //if (this._idMap[json.id] !== undefined)
-        //{
-        //	throw "Error: each node must have a unique id, duplicate id: " + JSON.stringify(json, null, "\t");
-        //}
-    }
-
     toString() {
-        const lines = [];
-        this._root.toStringIndented(lines, "");
-        return lines.join("\n");
+        return JSON.stringify(this.toJson());
     }
 }
 
-let jsonConverter = new JsonConverter();
+let attributeDefinitions = new AttributeDefinitions();
 
 // splitter
-jsonConverter.addConversion("_splitterSize", "splitterSize", 8);
-jsonConverter.addConversion("_enableEdgeDock", "enableEdgeDock", true);
+attributeDefinitions.add("splitterSize", 8);
+attributeDefinitions.add("enableEdgeDock", true);
 
 // tab
-jsonConverter.addConversion("_tabEnableClose", "tabEnableClose", true);
-jsonConverter.addConversion("_tabEnableDrag", "tabEnableDrag", true);
-jsonConverter.addConversion("_tabEnableRename", "tabEnableRename", true);
-jsonConverter.addConversion("_tabClassName", "tabClassName", null);
-jsonConverter.addConversion("_tabIcon", "tabIcon", null);
+attributeDefinitions.add("tabEnableClose", true);
+attributeDefinitions.add("tabEnableDrag", true);
+attributeDefinitions.add("tabEnableRename", true);
+attributeDefinitions.add("tabClassName", null);
+attributeDefinitions.add("tabIcon", null);
 
 // tabset
-jsonConverter.addConversion("_tabSetEnableClose", "tabSetEnableClose", true);
-jsonConverter.addConversion("_tabSetEnableDrop", "tabSetEnableDrop", true);
-jsonConverter.addConversion("_tabSetEnableDrag", "tabSetEnableDrag", true);
-jsonConverter.addConversion("_tabSetEnableDivide", "tabSetEnableDivide", true);
-jsonConverter.addConversion("_tabSetEnableMaximize", "tabSetEnableMaximize", true);
-jsonConverter.addConversion("_tabSetClassNameTabStrip", "tabSetClassNameTabStrip", null);
-jsonConverter.addConversion("_tabSetClassNameHeader", "tabSetClassNameHeader", null);
-jsonConverter.addConversion("_tabSetEnableTabStrip", "tabSetEnableTabStrip", true);
-jsonConverter.addConversion("_tabSetHeaderHeight", "tabSetHeaderHeight", 20);
-jsonConverter.addConversion("_tabSetTabStripHeight", "tabSetTabStripHeight", 20);
+attributeDefinitions.add("tabSetEnableClose", true);
+attributeDefinitions.add("tabSetEnableDrop", true);
+attributeDefinitions.add("tabSetEnableDrag", true);
+attributeDefinitions.add("tabSetEnableDivide", true);
+attributeDefinitions.add("tabSetEnableMaximize", true);
+attributeDefinitions.add("tabSetClassNameTabStrip", null);
+attributeDefinitions.add("tabSetClassNameHeader", null);
+attributeDefinitions.add("tabSetEnableTabStrip", true);
+attributeDefinitions.add("tabSetHeaderHeight", 20);
+attributeDefinitions.add("tabSetTabStripHeight", 20);
 
-jsonConverter.addConversion("_borderBarSize", "borderBarSize", 25);
-jsonConverter.addConversion("_borderEnableDrop", "borderEnableDrop", true);
-jsonConverter.addConversion("_borderClassName", "borderClassName", null);
+attributeDefinitions.add("borderBarSize", 25);
+attributeDefinitions.add("borderEnableDrop", true);
+attributeDefinitions.add("borderClassName", null);
 
 export default Model;

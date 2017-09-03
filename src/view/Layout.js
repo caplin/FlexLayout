@@ -67,7 +67,7 @@ class Layout extends React.Component {
 
     componentDidUpdate() {
         this.updateRect();
-        console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
+        //console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
 
     }
 
@@ -186,10 +186,6 @@ class Layout extends React.Component {
                 this.renderChildren(child, tabSetComponents, tabComponents, splitterComponents);
             }
         }
-    }
-
-    log(message) {
-        console.log(message);
     }
 
     /**
@@ -343,11 +339,10 @@ class Layout extends React.Component {
         this.dragDiv.style.left = (pos.x - this.dragDiv.getBoundingClientRect().width / 2) + "px";
         this.dragDiv.style.top = pos.y + 5 + "px";
 
-        const dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
-        if (dropInfo) {
-            this.dropInfo = dropInfo;
-            this.outlineDiv.className = dropInfo.className;
-            dropInfo.rect.positionElement(this.outlineDiv);
+        this.dropInfo = this.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
+        if (this.dropInfo) {
+            this.outlineDiv.className = this.dropInfo.className;
+            this.dropInfo.rect.positionElement(this.outlineDiv);
         }
     }
 

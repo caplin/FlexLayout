@@ -5,14 +5,10 @@ import DockLocation from "../DockLocation.js";
 class Node {
 
     constructor(model) {
-        this._type = null;
-        this._id = null;
         this._model = model;
+        this._attributes = {};
         this._parent = null;
         this._children = [];
-        this._weight = 100;
-        this._height = null;
-        this._width = null;
         this._fixed = false;
         this._rect = new Rect();
         this._visible = false;
@@ -20,7 +16,7 @@ class Node {
     }
 
     getId() {
-        return this._id;
+        return this._attributes["id"];
     }
 
     getModel() {
@@ -28,7 +24,7 @@ class Node {
     }
 
     getType() {
-        return this._type;
+        return this._attributes["type"];
     }
 
     getParent() {
@@ -56,14 +52,6 @@ class Node {
         }
     }
 
-    getWidth() {
-        return this._width;
-    }
-
-    getHeight() {
-        return this._height;
-    }
-
     // event can be: resize, visibility, maximize (on tabset), close
     setEventListener(event, callback) {
         this._listeners[event] = callback;
@@ -71,6 +59,10 @@ class Node {
 
     removeEventListener(event) {
         delete this._listeners[event];
+    }
+
+    _setId(id) {
+        this._attributes["id"] = id;
     }
 
     _fireEvent(event, params) {
@@ -81,12 +73,13 @@ class Node {
     }
 
     _getAttr(name) {
-        let val = undefined;
-        if (this[name] === undefined) {
-            val = this._model[name];
-        }
-        else {
-            val = this[name];
+        let val = this._attributes[name];
+
+        if ( val === undefined) {
+            let modelName = this._getAttributeDefinitions().getModelName(name);
+            if (modelName != null) {
+                val = this._model._attributes[modelName];
+            }
         }
 
         //console.log(name + "=" + val);
@@ -155,7 +148,7 @@ class Node {
             }
 
             // prevent named tabset docking into another tabset, since this would loose the header
-            if (dropInfo.location === DockLocation.CENTER && dragNode._type === "tabset" && dragNode.getName() !== null) {
+            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== null) {
                 return false;
             }
 
@@ -213,16 +206,21 @@ class Node {
     _updateAttrs(json) {
     }
 
-    toStringIndented(lines, indent) {
-        lines.push(indent + this._type + " " + this._weight.toFixed(2) + " " + this._id);
+    // implemented by subclasses
+    _getAttributeDefinitions() {
+        return null;
+    }
+
+    _toStringIndented(lines, indent) {
+        lines.push(indent + this.getType() + " " + this.getWeight().toFixed(2) + " " + this.getId());
         indent = indent + "\t";
         this._children.forEach((child) => {
-            child.toStringIndented(lines, indent);
+            child._toStringIndented(lines, indent);
         });
     }
 
-    toAttributeString() {
-        return "";
+    _toAttributeString() {
+        return JSON.stringify(this._attributes, null, "\t");
     }
 
 }

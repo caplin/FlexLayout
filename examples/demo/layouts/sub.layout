@@ -13,7 +13,7 @@
 				"component": "sub",
 				"config": {
 					"model": {
-						"global": {},
+						"global": {"tabSetEnableTabStrip":false},
 						"layout": {
 							"type": "row",
 							"weight": 100,
@@ -51,7 +51,7 @@
 				"component": "sub",
 				"config": {
 					"model": {
-						"global": {},
+						"global": {"tabSetEnableTabStrip":false},
 						"layout": {
 							"type": "row",
 							"weight": 100,

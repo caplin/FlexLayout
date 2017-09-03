@@ -14,9 +14,6 @@
 						"type": "tab",
 						"name": "FX",
 						"component": "grid",
-						"config": {
-							"id": "1"
-						},
 						"id": "#6"
 					}
 				]
@@ -30,9 +27,6 @@
 						"type": "tab",
 						"name": "FI",
 						"component": "grid",
-						"config": {
-							"id": "2"
-						},
 						"id": "#8"
 					}
 				]
@@ -62,9 +56,6 @@
 					"enableClose":false,
 					"name": "Options",
 					"component": "grid",
-					"config": {
-						"id": "1"
-					},
 					"id": "#3"
 				}
 			]
@@ -78,9 +69,6 @@
 					"enableClose":false,
 					"name": "Activity Blotter",
 					"component": "grid",
-					"config": {
-						"id": "1"
-					},
 					"id": "#2"
 				},
 				{
@@ -88,9 +76,6 @@
 					"enableClose":false,
 					"name": "Execution Blotter",
 					"component": "grid",
-					"config": {
-						"id": "1"
-					},
 					"id": "#1"
 				}
 			]

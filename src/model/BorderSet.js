@@ -1,4 +1,3 @@
-import JsonConverter from "../JsonConverter.js";
 import Rect from "../Rect.js";
 import DockLocation from "../DockLocation.js";
 import Border from "./BorderNode.js";
@@ -51,21 +50,21 @@ class BorderSet {
         for (let i = 0; i < showingBorders.length; i++) {
             let border = showingBorders[i];
             if (border.isShowing()) {
-                border._setAdjustedSize(border._size);
+                border._setAdjustedSize(border.getSize());
                 const visible = border.getSelected() != -1;
                 if (border.getLocation().getOrientation() == Orientation.HORZ) {
                     sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
                     if (visible) {
-                        sumWidth += border._size;
-                        adjustableWidth += border._size;
+                        sumWidth += border.getSize();
+                        adjustableWidth += border.getSize();
                     }
                     countWidth++;
                 }
                 else {
                     sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
                     if (visible) {
-                        sumHeight += border._size;
-                        adjustableHeight += border._size;
+                        sumHeight += border.getSize();
+                        adjustableHeight += border.getSize();
                     }
                     countHeight++;
                 }

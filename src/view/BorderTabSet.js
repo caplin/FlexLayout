@@ -43,6 +43,11 @@ class BorderTabSet extends React.Component {
             }
         }
 
+        let borderClasses = "flexlayout__border_" + border.getLocation().getName();
+        if (this.props.border.getClassNameBorder() != null) {
+            borderClasses += " " + this.props.border.getClassNameBorder();
+        }
+
         // allow customization of tabset right/bottom buttons
         let buttons = [];
         const renderState = {buttons: buttons};
@@ -62,7 +67,7 @@ class BorderTabSet extends React.Component {
 
         return <div
             style={style}
-            className={"flexlayout__border_" + border.getLocation().getName()}>
+            className={borderClasses}>
             <div className={"flexlayout__border_inner_" + border.getLocation().getName()}>
                 {tabs}
             </div>
