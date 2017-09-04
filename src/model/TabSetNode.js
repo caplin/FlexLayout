@@ -58,6 +58,10 @@ class TabSetNode extends Node {
         return this._model.getActiveTabset() === this;
     }
 
+    isEnableDeleteWhenEmpty() {
+        return this._getAttr("enableDeleteWhenEmpty");
+    }
+
     isEnableClose() {
         return this._getAttr("enableClose");
     }
@@ -350,6 +354,7 @@ attributeDefinitions.add("height", null);
 attributeDefinitions.add("name", null);
 attributeDefinitions.add("selected", 0);
 
+attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
 attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
 attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
 attributeDefinitions.addInherited("enableDrag", "tabSetEnableDrag");

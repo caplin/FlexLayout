@@ -376,6 +376,7 @@ attributeDefinitions.add("tabClassName", null);
 attributeDefinitions.add("tabIcon", null);
 
 // tabset
+attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true);
 attributeDefinitions.add("tabSetEnableClose", true);
 attributeDefinitions.add("tabSetEnableDrop", true);
 attributeDefinitions.add("tabSetEnableDrag", true);

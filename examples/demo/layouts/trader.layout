@@ -61,6 +61,7 @@
 				"enableDrag": false,
 				"enableClose": false,
 				"enableDivide": false,
+				"enableDeleteWhenEmpty":false,
 				"weight": 25.637393767705383,
 				"selected": 0,
 				"children": [{

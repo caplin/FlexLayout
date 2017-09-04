@@ -228,9 +228,7 @@ class RowNode extends Node {
                 }
             }
             else if (child.getType() === TabSetNode.TYPE && child._children.length === 0) {
-                // prevent removal of last tabset
-                if (!(this === this._model._root && this._children.length === 1)
-                    && child.isEnableClose()) {
+                if (child.isEnableDeleteWhenEmpty()) {
                     this._removeChild(child);
                 }
                 else {
@@ -241,6 +239,13 @@ class RowNode extends Node {
                 i++;
             }
         }
+
+        // add tabset into empty root
+        if (this == this._model.getRoot() && this._children.length == 0) {
+            let child = new TabSetNode(this._model, {type:"tabset"});
+            this._addChild(child);
+        }
+
         //console.log("b", this._model.toString());
     }
 

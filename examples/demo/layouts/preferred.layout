@@ -8,6 +8,7 @@
       "type": "tabset",
       "name": "Navigation",
       "id": "NAVIGATION",
+      "enableDeleteWhenEmpty":false,
       "width": 250,
       "selected": 0,
       "children": [
@@ -45,6 +46,7 @@
           "name": "Blotters",
           "height": 250,
           "selected": 0,
+          "enableDeleteWhenEmpty":false,
           "children": [
             {
               "type": "tab",
