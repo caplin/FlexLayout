@@ -62,7 +62,7 @@ Include the light or dark style in your html:
 <link rel="stylesheet" href="node_modules/flexLayout-react/style/dark.css" />
 ```
 
-##Usage
+## Usage
 
 The `<Layout>` component renders the tabsets and splitters, it takes the following props:
 
@@ -445,31 +445,21 @@ This would add a new grid component to the tabset with id "NAVIGATION".
 
 ## Tab Node Events
 
-You can handle events on nodes by adding a listener, this would typically be done lazily in the 
-factory method when the node is first used.
+You can handle events on nodes by adding a listener, this would typically be done 
+in the components constructor() method.
 
 Example:
 ```
-    factory(node) {
-        var component = node.getComponent();
-        ...
-        else if (component === "sub") {
-            var model = node.getExtraData().model;
-            if (model == null) { // lazy loading of sub layout and attachment of save listener
-            
-                // convert JSON layout stored in config to a layout model and save it in the extra data
-                node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
-                model = node.getExtraData().model;
-                
-                // save submodel back to JSON on save event
-                node.setEventListener("save", function(p) {
-                        node.getConfig().model = node.getExtraData().model.toJson();
-                    }
-                );
-            }
-        ...    
-         }
-});
+    constructor(props) {
+        super(props);
+        let config = this.props.node.getConfig();
+
+        // save state in flexlayout node tree
+        this.props.node.setEventListener("save", function (p) {
+             config.subject = this.subject;
+        }.bind(this));
+    }
+
 ```
 
 | Event        | parameters          | Description  |
