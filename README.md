@@ -35,6 +35,7 @@ Features:
 
 
 todo:
+*   Convert code to Typescript
 *	layout designer gui, drag and drop + set properties to design initial layout
 
 ## Installation
@@ -423,7 +424,7 @@ This would add a new grid component to the center of tabset with id "1" and at t
 Note: you can get the id of a node using the method node.getId(), if an id wasn't assigned when the node was created then one will be created for you of the form #<next available id> (e.g. #1, #2 ...).
 
 
-##Layout Component Methods to Create New Tabs
+## Layout Component Methods to Create New Tabs
 
 Methods on the Layout Component for adding tabs, the tabs are specified by their layout json.
 
