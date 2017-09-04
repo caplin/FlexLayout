@@ -280,6 +280,7 @@ Attributes allowed in the 'global' element
 | tabClassName | null | |
 | tabIcon | null | |
 | tabSetEnableClose | true | |
+| tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | |
 | tabSetEnableDrag | true | |
 | tabSetEnableDivide | true | |
@@ -349,6 +350,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | id | auto generated | |
 | children | *required* | a list of tab nodes |
 | enableClose | *inherited* | |
+| enableDeleteWhenEmpty | *inherited* | |
 | enableDrop | *inherited* | |
 | enableDrag | *inherited* | |
 | enableDivide | *inherited* | |
