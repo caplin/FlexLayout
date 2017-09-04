@@ -1,3 +1,5 @@
+import Attribute from "./Attribute";
+
 class AttributeDefinitions {
 
     constructor() {
@@ -6,22 +8,22 @@ class AttributeDefinitions {
     }
 
     addWithAll(name, modelName, defaultValue, alwaysWriteJson) {
-        let conversion = {
-            name: name,
-            modelName: modelName,
-            defaultValue: defaultValue,
-            alwaysWriteJson: alwaysWriteJson
-        };
-        this.attributes.push(conversion);
-        this.nameToAttribute[name] = conversion;
+        let attr = new Attribute(name, modelName, defaultValue, alwaysWriteJson);
+        this.attributes.push(attr);
+        this.nameToAttribute[name] = attr;
+        return attr;
     }
 
     addInherited(name, modelName) {
-        this.addWithAll(name, modelName, undefined, false);
+        return this.addWithAll(name, modelName, undefined, false);
     }
 
     add(name, defaultValue, alwaysWriteJson) {
-        this.addWithAll(name, null, defaultValue, alwaysWriteJson);
+        return this.addWithAll(name, null, defaultValue, alwaysWriteJson);
+    }
+
+    getAttributes() {
+        return this.attributes;
     }
 
     getModelName(name){
@@ -34,39 +36,39 @@ class AttributeDefinitions {
     }
 
     toJson(jsonObj, obj) {
-        this.attributes.forEach((c) => {
-            const fromValue = obj[c.name];
-            if (c.alwaysWriteJson || fromValue !== c.defaultValue) {
-                jsonObj[c.name] = fromValue;
+        this.attributes.forEach((attr) => {
+            const fromValue = obj[attr.name];
+            if (attr.alwaysWriteJson || fromValue !== attr.defaultValue) {
+                jsonObj[attr.name] = fromValue;
             }
         });
     }
 
     fromJson(jsonObj, obj) {
-        this.attributes.forEach((c) => {
-            const fromValue = jsonObj[c.name];
+        this.attributes.forEach((attr) => {
+            const fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
-                obj[c.name] = c.defaultValue;
+                obj[attr.name] = attr.defaultValue;
             }
             else {
-                obj[c.name] = fromValue;
+                obj[attr.name] = fromValue;
             }
         });
     }
 
     update(jsonObj, obj) {
-        this.attributes.forEach((c) => {
+        this.attributes.forEach((attr) => {
 
-            const fromValue = jsonObj[c.name];
+            const fromValue = jsonObj[attr.name];
             if (fromValue !== undefined) {
-                obj[c.name] = fromValue;
+                obj[attr.name] = fromValue;
             }
         });
     }
 
     setDefaults(obj) {
-        this.attributes.forEach((c) => {
-            obj[c.name] = c.defaultValue;
+        this.attributes.forEach((attr) => {
+            obj[attr.name] = attr.defaultValue;
         });
     }
 

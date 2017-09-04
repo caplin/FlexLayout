@@ -1,7 +1,7 @@
 import Rect from "../Rect.js";
 import AttributeDefinitions from "../AttributeDefinitions.js";
+import Attribute from "../Attribute";
 import DockLocation from "../DockLocation.js";
-import Orientation from "../Orientation.js";
 import DropInfo from "./../DropInfo.js";
 import Node from "./Node.js";
 import TabNode from "./TabNode.js";
@@ -346,13 +346,13 @@ TabSetNode.TYPE = "tabset";
 
 let attributeDefinitions = new AttributeDefinitions();
 attributeDefinitions.add("type", TabSetNode.TYPE, true);
-attributeDefinitions.add("id", null);
+attributeDefinitions.add("id", null).setType(Attribute.ID);
 
 attributeDefinitions.add("weight", 100);
 attributeDefinitions.add("width", null);
 attributeDefinitions.add("height", null);
-attributeDefinitions.add("name", null);
 attributeDefinitions.add("selected", 0);
+attributeDefinitions.add("name", null).setType(Attribute.STRING);
 
 attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
 attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");

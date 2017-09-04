@@ -1,8 +1,6 @@
 import Node from "./Node.js";
 import AttributeDefinitions from "../AttributeDefinitions.js";
-import DockLocation from "../DockLocation.js";
-import TabSetNode from "./TabSetNode.js";
-import RowNode from "./RowNode.js";
+import Attribute from "../Attribute";
 
 class TabNode extends Node {
 
@@ -100,16 +98,16 @@ TabNode.TYPE = "tab";
 
 let attributeDefinitions = new AttributeDefinitions();
 attributeDefinitions.add("type", TabNode.TYPE, true);
-attributeDefinitions.add("id", null);
+attributeDefinitions.add("id", null).setType(Attribute.ID);
 
-attributeDefinitions.add("name", null);
-attributeDefinitions.add("component", null);
-attributeDefinitions.add("config", null);
+attributeDefinitions.add("name", null).setType(Attribute.STRING);
+attributeDefinitions.add("component", null).setType(Attribute.STRING);
+attributeDefinitions.add("config", null).setType(Attribute.JSON);
 
-attributeDefinitions.addInherited("enableClose", "tabEnableClose");
-attributeDefinitions.addInherited("enableDrag", "tabEnableDrag");
-attributeDefinitions.addInherited("enableRename", "tabEnableRename");
-attributeDefinitions.addInherited("className", "tabClassName");
-attributeDefinitions.addInherited("icon", "tabIcon");
+attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
+attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
+attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
+attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
+attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
 
 export default TabNode;

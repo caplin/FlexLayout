@@ -6,7 +6,7 @@ import BorderSet from "./BorderSet.js";
 import BorderNode from "./BorderNode.js";
 import DockLocation from "../DockLocation.js";
 import AttributeDefinitions from "../AttributeDefinitions.js";
-import Rect from "../Rect.js";
+import Attribute from "../Attribute";
 import Orientation from "../Orientation.js";
 
 /**
@@ -365,31 +365,31 @@ class Model {
 let attributeDefinitions = new AttributeDefinitions();
 
 // splitter
-attributeDefinitions.add("splitterSize", 8);
-attributeDefinitions.add("enableEdgeDock", true);
+attributeDefinitions.add("splitterSize", 8).setType(Attribute.INT).setFrom(1);
+attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
 
 // tab
-attributeDefinitions.add("tabEnableClose", true);
-attributeDefinitions.add("tabEnableDrag", true);
-attributeDefinitions.add("tabEnableRename", true);
-attributeDefinitions.add("tabClassName", null);
-attributeDefinitions.add("tabIcon", null);
+attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabClassName", null).setType(Attribute.STRING);
+attributeDefinitions.add("tabIcon", null).setType(Attribute.STRING);
 
 // tabset
-attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true);
-attributeDefinitions.add("tabSetEnableClose", true);
-attributeDefinitions.add("tabSetEnableDrop", true);
-attributeDefinitions.add("tabSetEnableDrag", true);
-attributeDefinitions.add("tabSetEnableDivide", true);
-attributeDefinitions.add("tabSetEnableMaximize", true);
-attributeDefinitions.add("tabSetClassNameTabStrip", null);
-attributeDefinitions.add("tabSetClassNameHeader", null);
-attributeDefinitions.add("tabSetEnableTabStrip", true);
-attributeDefinitions.add("tabSetHeaderHeight", 20);
-attributeDefinitions.add("tabSetTabStripHeight", 20);
+attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetEnableClose", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetClassNameTabStrip", null).setType(Attribute.STRING);
+attributeDefinitions.add("tabSetClassNameHeader", null).setType(Attribute.STRING);
+attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("tabSetHeaderHeight", 20).setType(Attribute.INT).setFrom(0);
+attributeDefinitions.add("tabSetTabStripHeight", 20).setType(Attribute.INT).setFrom(0);
 
 attributeDefinitions.add("borderBarSize", 25);
-attributeDefinitions.add("borderEnableDrop", true);
-attributeDefinitions.add("borderClassName", null);
+attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
+attributeDefinitions.add("borderClassName", null).setType(Attribute.STRING);
 
 export default Model;

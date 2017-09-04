@@ -1,5 +1,6 @@
 import Rect from "../Rect.js";
 import AttributeDefinitions from "../AttributeDefinitions.js";
+import Attribute from "../Attribute";
 import DockLocation from "../DockLocation.js";
 import Orientation from "../Orientation.js";
 import DropInfo from "./../DropInfo.js";
@@ -7,7 +8,6 @@ import Node from "./Node.js";
 import TabNode from "./TabNode.js";
 import TabSetNode from "./TabSetNode.js";
 import SplitterNode from "./SplitterNode.js";
-import BorderSet from "./BorderSet.js";
 
 class BorderNode extends Node {
 
@@ -358,10 +358,10 @@ attributeDefinitions.add("type", BorderNode.TYPE, true);
 
 attributeDefinitions.add("size", 200);
 attributeDefinitions.add("selected", -1);
-attributeDefinitions.add("show", true);
+attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);
 
-attributeDefinitions.addInherited("barSize", "borderBarSize");
-attributeDefinitions.addInherited("enableDrop", "borderEnableDrop");
-attributeDefinitions.addInherited("className", "borderClassName");
+attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.INT).setFrom(0);
+attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN);
+attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING);
 
 export default BorderNode;
