@@ -1,15 +1,16 @@
 # FlexLayout
 
-FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be
-resized and moved.
+FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.20/demo1.png?raw=true "FlexLayout Demo Screenshot")
 
-[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
-
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.25/demo/index.html)
+[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.30/demo/index.html)
 
 Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/14/)
+
+[API Doc](./typedoc/index.html)
+
+[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
 FlexLayout's only dependency is React.
 
@@ -32,11 +33,7 @@ Features:
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
 *   esc cancels drag
-
-
-todo:
-*   Convert code to Typescript
-*	layout designer gui, drag and drop + set properties to design initial layout
+*	typescript type declarations included
 
 ## Installation
 
@@ -280,7 +277,6 @@ Attributes allowed in the 'global' element
 | tabEnableRename | true | |
 | tabClassName | null | |
 | tabIcon | null | |
-| tabSetEnableClose | true | |
 | tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | |
 | tabSetEnableDrag | true | |
@@ -337,7 +333,7 @@ Attributes allowed in nodes of type 'tabset'.
 
 Inherited defaults will take their value from the associated global attributes (see above).
 
-Note: tabsets can be dynamically created as tabs are moved and deleted when all their tabs are removed (unless enableClose is false).
+Note: tabsets can be dynamically created as tabs are moved and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
 
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
@@ -350,7 +346,6 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | maximized | false | |
 | id | auto generated | |
 | children | *required* | a list of tab nodes |
-| enableClose | *inherited* | |
 | enableDeleteWhenEmpty | *inherited* | |
 | enableDrop | *inherited* | |
 | enableDrag | *inherited* | |

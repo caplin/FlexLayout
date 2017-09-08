@@ -1,34 +1,38 @@
 {
   "name": "flexlayout-react",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "A multi-tab layout manager",
   "main": "lib/index.js",
+  "types": "./declarations/index.d.ts",
   "scripts": {
     "test": "jasmine",
     "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
-    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack --config webpack_build.config.js",
-    "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack -p --config webpack_build_min.config.js"
+    "build:commonjs": "tsc -p tsconfig2.json",
+    "build:umd": "webpack --config webpack_build.config.js",
+    "build:umd:min": "webpack -p --config webpack_build_min.config.js",
+    "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none "
   },
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
   "peerDependencies": {
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1"
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^6.2.3",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-preset-react": "^6.5.0",
-    "cross-env": "^1.0.7",
-    "jasmine": "^2.4.1",
-    "jsdoc-webpack-plugin": "0.0.1",
-    "webpack": "^1.12.14"
+    "@types/jasmine": "^2.8.8",
+    "@types/react": "^16.4.9",
+    "@types/react-dom": "^16.0.7",
+    "awesome-typescript-loader": "^5.2.0",
+    "jasmine": "^3.2.0",
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "source-map-loader": "^0.2.3",
+    "typedoc": "^0.11.1",
+    "typescript": "^3.0.0",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
   },
-  "dependencies": {
-    "prop-types": "^15.5.10"
-  }
+  "dependencies": {}
 }
