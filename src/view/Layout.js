@@ -262,6 +262,7 @@ class Layout extends React.Component {
             this.fnNewNodeDropped = null;
         }
         DragDrop.instance.hideGlass();
+        this.newTabJson = null;
     }
 
     onCancelDrag() {
@@ -284,6 +285,7 @@ class Layout extends React.Component {
             this.fnNewNodeDropped = null;
         }
         DragDrop.instance.hideGlass();
+        this.newTabJson = null;
     }
 
     onDragDivMouseDown(event) {

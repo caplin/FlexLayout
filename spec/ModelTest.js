@@ -9,12 +9,14 @@ describe("Tree", function()
         const model = Model.fromJson(
             {
                 global: {},
+                borders: [],
                 layout: {
                     type: "row",
                     id: 0,
                     children: [
                         {
                             type: "tabset",
+                            enableDeleteWhenEmpty:false,
                             name: "one",
                             id: 1,
                             children: []
@@ -23,18 +25,22 @@ describe("Tree", function()
                 }
             }
         );
+        console.log(JSON.stringify(model.toJson(), null, "\t"));
         model.doAction(Actions.addNode({id:2, name: "newtab1", component: "grid"}, 1, DockLocation.CENTER, -1));
 
 		let expected = {
 			"global": {},
+            "borders": [ ],
 			"layout": {
 				"type": "row",
 				"id": 0,
 				"children": [
 					{
 						"type": "tabset",
+                        "enableDeleteWhenEmpty":false,
 						"name": "one",
 						"id": 1,
+                        "active":true,
 						"children": [
 							{
 								"type": "tab",
@@ -52,7 +58,7 @@ describe("Tree", function()
 
         expect(json).toEqual(expected);
 
-		//console.log(JSON.stringify(json, null, "\t"));
+		console.log(JSON.stringify(json, null, "\t"));
 	})
 
 	// todo:
