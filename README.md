@@ -7,9 +7,9 @@ resized and moved.
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/demo/index.html)
+[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.25/demo/index.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/13/)
+Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/14/)
 
 FlexLayout's only dependency is React.
 
@@ -162,7 +162,7 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/13/) 
+Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/14/) 
 
 
 The model is built up using 4 types of 'node':
