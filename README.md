@@ -72,8 +72,8 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | model    | required | the layout model  |
 | factory      | required | a factory function for creating React components |
 | onAction | optional     |  function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close) |
-| onTabRender | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
-| onTabSetRender | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
+| onRenderTab | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
+| onRenderTabSet | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
 
 The model is tree of Node objects that define the structure of the layout.
 
