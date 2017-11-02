@@ -376,6 +376,7 @@ Inherited defaults will take their value from the associated global attributes (
 | selected | -1 | -1 is the unselected value|
 | id | auto generated | border_ + border name e.g. border_left |
 | show | true | show/hide this border |
+| splitterSize | *inherited* | allows independent splitter sizes |
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | |
 | enableDrop | *inherited* | |

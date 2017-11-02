@@ -19,6 +19,7 @@ class BorderNode extends Node {
         this._location = location;
         this._drawChildren = [];
         this._attributes["id"] = "border_" + location.getName();
+        this._attributes["splitterSize"] = typeof json.splitterSize !== "undefined" ? json.splitterSize : this._model.getSplitterSize();
         attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
     }
@@ -66,6 +67,10 @@ class BorderNode extends Node {
         return this._location.getOrientation();
     }
 
+    getSplitterSize() {
+      return this._attributes['splitterSize'];
+    }
+
     isMaximized() {
         return false;
     }
@@ -104,8 +109,8 @@ class BorderNode extends Node {
 
         const split1 = location.split(borderRects.outer, this.getBorderBarSize()); // split border outer
         const split2 = location.split(borderRects.inner, this.getBorderBarSize()); // split border inner
-        const split3 = location.split(split2.end, this._adjustedSize + this._model.getSplitterSize()); // split off tab contents
-        const split4 = location.reflect().split(split3.start, this._model.getSplitterSize()); // split contents into content and splitter
+        const split3 = location.split(split2.end, this._adjustedSize + this.getSplitterSize()); // split off tab contents
+        const split4 = location.reflect().split(split3.start, this.getSplitterSize()); // split contents into content and splitter
 
         this._tabHeaderRect = split2.start;
         this._contentRect = split4.end;
