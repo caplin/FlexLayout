@@ -5,6 +5,7 @@ class SplitterNode extends Node {
     constructor(model) {
         super(model);
         this._fixed = true;
+        this._visible = true;
         this._attributes["type"] = SplitterNode.TYPE;
         model._addNode(this);
     }
@@ -15,6 +16,11 @@ class SplitterNode extends Node {
 
     getHeight() {
         return this._model.getSplitterSize();
+    }
+
+    _layout(rect) {
+        super._layout(rect);
+        this._setVisible(this._model.getMaximizedTabset() === null);
     }
 }
 

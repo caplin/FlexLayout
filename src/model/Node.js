@@ -195,6 +195,10 @@ class Node {
         if (style == undefined) {
             style = {};
         }
+
+        if (!this._visible) {
+            style.display = "none";
+        }
         return this._rect.styleWithPosition(style);
     }
 
