@@ -379,6 +379,10 @@ class RowNode extends Node {
         return json;
     }
 
+    _updateAttrs(json) {
+        attributeDefinitions.update(json, this._attributes);
+    }
+
     static _fromJson(json, model) {
         const newLayoutNode = new RowNode(model, json);
 
