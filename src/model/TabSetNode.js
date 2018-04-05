@@ -352,7 +352,8 @@ attributeDefinitions.add("weight", 100);
 attributeDefinitions.add("width", null);
 attributeDefinitions.add("height", null);
 attributeDefinitions.add("selected", 0);
-attributeDefinitions.add("name", null).setType(Attribute.STRING);
+attributeDefinitions.add("name", null);
+attributeDefinitions.add("enableTabTruncate", true, true).setType(Attribute.BOOLEAN);
 
 attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
 attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
