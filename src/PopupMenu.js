@@ -37,7 +37,7 @@ class PopupMenu extends React.Component {
     }
 
     onDocMouseUp(event) {
-        setInterval(function () {
+        setTimeout(function () {
             this.hide();
         }.bind(this), 0);
     }
