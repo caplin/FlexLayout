@@ -280,6 +280,7 @@ Attributes allowed in the 'global' element
 | tabEnableRename | true | |
 | tabClassName | null | |
 | tabIcon | null | |
+| tabRenderOnDemand | true | |
 | tabSetEnableClose | true | |
 | tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | |
@@ -326,6 +327,7 @@ Inherited defaults will take their value from the associated global attributes (
 | enableRename | *inherited* | |
 | className | *inherited* | |
 | icon | *inherited* | |
+| renderOnDemand | *inherited* | |
 
 Tab nodes have a getExtraData() method that initially returns an empty object, this is the place to 
 add extra data to a tab node that will not be saved.
