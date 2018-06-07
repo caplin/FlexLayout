@@ -58,6 +58,10 @@ class TabNode extends Node {
         return this._getAttr("className");
     }
 
+    isRenderOnDemand(){
+        return this._getAttr("renderOnDemand");
+    }
+
     _setName(name) {
         this._attributes["name"] = name;
     }
@@ -109,5 +113,6 @@ attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribu
 attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
 attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
 attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
+attributeDefinitions.addInherited("renderOnDemand", "tabRenderOnDemand").setType(Attribute.BOOLEAN);
 
 export default TabNode;
