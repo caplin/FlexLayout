@@ -374,6 +374,7 @@ attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
 attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
 attributeDefinitions.add("tabClassName", null).setType(Attribute.STRING);
 attributeDefinitions.add("tabIcon", null).setType(Attribute.STRING);
+attributeDefinitions.add("tabRenderOnDemand", true).setType(Attribute.BOOLEAN);
 
 // tabset
 attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);

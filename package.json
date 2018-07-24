@@ -1,6 +1,6 @@
 {
   "name": "flexlayout-react",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "A multi-tab layout manager",
   "main": "lib/index.js",
   "scripts": {
@@ -9,13 +9,14 @@
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack --config webpack_build.config.js",
     "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack -p --config webpack_build_min.config.js"
+    "prepublish": "npm run build"
   },
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
   "peerDependencies": {
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1"
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

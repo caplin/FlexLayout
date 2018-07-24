@@ -7,7 +7,7 @@ class Tab extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {renderComponent: props.selected};
+        this.state = {renderComponent: !props.node.isRenderOnDemand() || props.selected};
     }
 
     componentDidMount() {
