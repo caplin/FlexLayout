@@ -33,7 +33,7 @@ class TabSet extends React.Component {
     updateVisibleTabs() {
         const node = this.props.node;
 
-        if (node.isEnableTabStrip() && this.recalcVisibleTabs) {
+        if (node.isEnableTabStrip() && this.recalcVisibleTabs && node._attributes.enableTabTruncate) {
             const toolbarWidth = this.refs.toolbar.getBoundingClientRect().width;
             let hideTabsAfter = 999;
             for (let i = 0; i < node.getChildren().length; i++) {
@@ -56,8 +56,8 @@ class TabSet extends React.Component {
             if (this.state.hideTabsAfter !== hideTabsAfter) {
                 this.setState({hideTabsAfter: hideTabsAfter});
             }
-            this.recalcVisibleTabs = false;
         }
+        this.recalcVisibleTabs = false;
     }
 
     render() {
