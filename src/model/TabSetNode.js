@@ -54,6 +54,11 @@ class TabSetNode extends Node {
         return this._model.getMaximizedTabset() === this;
     }
 
+    isMaximizeHidden() {
+        let maximizedTabset = this._model.getMaximizedTabset();
+        return maximizedTabset !== null && maximizedTabset !== this;
+    }
+
     isActive() {
         return this._model.getActiveTabset() === this;
     }
@@ -161,6 +166,8 @@ class TabSetNode extends Node {
         if (this.isMaximized()) {
             rect = this._model._root._rect;
         }
+        const visible = !this.isMaximizeHidden();
+        this._setVisible(visible);
         this._rect = rect;
 
         const showHeader = (this.getName() != null);
@@ -177,7 +184,7 @@ class TabSetNode extends Node {
 
         this._children.forEach((child, i) => {
             child._layout(this._contentRect);
-            child._setVisible(i === this.getSelected());
+            child._setVisible(visible && i === this.getSelected());
         });
     }
 
