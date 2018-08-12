@@ -228,7 +228,9 @@ var App = /** @class */ (function (_super) {
     App.prototype.onThemeChange = function (event) {
         var target = event.target;
         var flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
-        flexlayout_stylesheet.setAttribute("href", "../../style/" + target.value + ".css");
+        var index = flexlayout_stylesheet.href.lastIndexOf("/");
+        var newAddress = flexlayout_stylesheet.href.substr(0, index);
+        flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
         var page_stylesheet = window.document.getElementById("page-stylesheet");
         page_stylesheet.setAttribute("href", target.value + ".css");
         this.forceUpdate();
