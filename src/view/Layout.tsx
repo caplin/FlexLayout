@@ -22,7 +22,7 @@ import IDraggable from "../model/IDraggable";
 
 export interface ILayoutProps {
     model: Model,
-    factory: (node: Node) => React.ReactNode,
+    factory: (node: TabNode) => React.ReactNode,
     onAction?: (action: Action) => void,
     onRenderTab?: (node: TabNode, renderValues: { leading: React.ReactNode, content: React.ReactNode }) => void,
     onRenderTabSet?: (tabSetNode: (TabSetNode | BorderNode), renderValues: { headerContent?: React.ReactNode, buttons: Array<React.ReactNode> }) => void,

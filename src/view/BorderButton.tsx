@@ -57,7 +57,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         // record position of tab in border
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const r = (this.selfRef as Element).getBoundingClientRect();
-        this.props.node.setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
         this.contentWidth = (this.contentsRef as Element).getBoundingClientRect().width;
     }
 

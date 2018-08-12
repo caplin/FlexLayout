@@ -8,7 +8,7 @@ FlexLayout is a layout manager that arranges React components in multiple tab se
 
 Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/57/)
 
-[API Doc](./typedoc/index.html)
+<!-- [API Doc](./typedoc/index.html) -->
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 

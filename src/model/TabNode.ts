@@ -35,7 +35,7 @@ class TabNode extends Node implements IDraggable{
     }
 
     /** @hidden @internal */
-    setTabRect(rect: Rect) {
+    _setTabRect(rect: Rect) {
         this._tabRect = rect;
     }
 
