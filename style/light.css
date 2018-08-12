@@ -5,6 +5,7 @@
     bottom: 0;
     position: absolute;
     overflow:hidden;
+    /* --flexlayout_test: {top:12}; */
 }
 
 .flexlayout__splitter {
@@ -72,12 +73,16 @@
 .flexlayout__tabset {
     overflow: hidden;
     background-color: white;
+    box-sizing: border-box;
+    /* border-radius: 5px; */
+    /* box-shadow: 2px 2px 4px #aaa; */
 }
 
 
 .flexlayout__tab {
     overflow: auto;
     position:absolute;
+    box-sizing: border-box;
     background-color: white;
 }
 

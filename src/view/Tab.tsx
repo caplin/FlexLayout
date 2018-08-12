@@ -1,0 +1,75 @@
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import Node from "../model/Node"
+import TabSetNode from "../model/TabSetNode";
+import TabNode from "../model/TabNode";
+import Actions from "../model/Actions";
+import Layout from "./Layout";
+import { JSMap } from "../Types";
+
+/** @hidden @internal */
+export interface ITabProps {
+    layout: Layout,
+    selected: boolean,
+    node: TabNode,
+    factory: (node:Node) => any;
+}
+
+/** @hidden @internal */
+export class Tab extends React.Component<ITabProps, any> {
+
+    constructor(props:ITabProps) {
+        super(props);
+        this.state = {renderComponent: props.selected};
+    }
+
+    componentDidMount() {
+        //console.log("mount " + this.props.node.getName());
+    }
+
+    componentWillUnmount() {
+        //console.log("unmount " + this.props.node.getName());
+    }
+
+    componentWillReceiveProps(newProps: ITabProps) {
+        if (!this.state.renderComponent && newProps.selected) {
+            // load on demand
+            //console.log("load on demand: " + this.props.node.getName());
+            this.setState({renderComponent: true});
+        }
+    }
+
+    onMouseDown(event:React.MouseEvent<HTMLDivElement>) {
+        const parent = this.props.node.getParent() as TabSetNode;
+        if (parent.getType() === TabSetNode.TYPE) {
+            if (!parent.isActive()) {
+                this.props.layout.doAction(Actions.setActiveTabset(parent.getId()));
+            }
+        }
+    }
+
+    render() {
+        const node = this.props.node;
+        const parentNode = node.getParent() as TabSetNode;
+        const style:JSMap<any> = node._styleWithPosition({
+            display: this.props.selected ? "block" : "none"
+        });
+
+        if (parentNode.isMaximized()) {
+            style.zIndex = 100;
+        }
+
+        let child = null;
+        if (this.state.renderComponent) {
+            child = this.props.factory(node);
+        }
+
+        return <div className="flexlayout__tab"
+                    onMouseDown={this.onMouseDown.bind(this)}
+                    onTouchStart={this.onMouseDown.bind(this)}
+                    style={style}>{child}
+        </div>;
+    }
+}
+
+// export default Tab;

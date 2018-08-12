@@ -1,7 +1,3 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import FlexLayout from "../../src/index.js";
-
 var json = {
     global: {}, // {tabSetEnableTabStrip:false}, // to have just splitters
     layout: {

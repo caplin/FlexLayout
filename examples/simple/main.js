@@ -32,26 +32,27 @@ var json = {
     }
 };
 
-var Main = React.createClass({
+class Main extends React.Component {
 
-    getInitialState: function() {
-        return {model: FlexLayout.Model.fromJson(json)};
-    },
+    constructor(props) {
+        super(props);
+        this.state = {model: FlexLayout.Model.fromJson(json)};
+    }
 
-    factory: function (node) {
+    factory(node) {
         var component = node.getComponent();
         if (component === "button") {
             return <button>{node.getName()}</button>;
         }
-    },
+    }
 
-    render: function () {
+    render() {
         return (
             <FlexLayout.Layout
                 model={this.state.model}
                 factory={this.factory.bind(this)}/>
         );
     }
-});
+}
 
 ReactDOM.render(<Main/>, document.getElementById("container"));

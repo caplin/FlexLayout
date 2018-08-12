@@ -70,11 +70,13 @@
 .flexlayout__tabset {
     overflow: hidden;
     background-color: #222;
+    box-sizing: border-box;
 }
 
 .flexlayout__tab {
     overflow: auto;
     position:absolute;
+    box-sizing: border-box;
     background-color: #222;
     color:white;
 }
