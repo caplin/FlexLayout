@@ -208,8 +208,9 @@ var App = /** @class */ (function (_super) {
                 model = node.getExtraData().model;
                 // save submodel on save event
                 node.setEventListener("save", function (p) {
-                    node.getConfig().model = node.getExtraData().model.toJson();
-                });
+                    this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                    //  node.getConfig().model = node.getExtraData().model.toJson();
+                }.bind(this));
             }
             return React.createElement(FlexLayout.Layout, { model: model, factory: this.factory.bind(this) });
         }
@@ -218,17 +219,18 @@ var App = /** @class */ (function (_super) {
         }
     };
     App.prototype.onSelectLayout = function (event) {
-        debugger;
-        //  this.loadLayout(event.currentTarget.value);
+        var target = event.target;
+        this.loadLayout(target.value);
     };
     App.prototype.onReloadFromFile = function (event) {
         this.loadLayout(this.state.layoutFile, true);
     };
     App.prototype.onThemeChange = function (event) {
+        var target = event.target;
         var flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
-        //flexlayout_stylesheet.setAttribute("href", "../../style/" + event.currentTarget.value + ".css");
+        flexlayout_stylesheet.setAttribute("href", "../../style/" + target.value + ".css");
         var page_stylesheet = window.document.getElementById("page-stylesheet");
-        page_stylesheet.setAttribute("href", event.value + ".css");
+        page_stylesheet.setAttribute("href", target.value + ".css");
         this.forceUpdate();
     };
     App.prototype.render = function () {
@@ -20539,183 +20541,189 @@ exports.default = DockLocation;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
-/** @hidden @internal */
 var DragDrop = /** @class */ (function () {
+    /** @hidden @internal */
     function DragDrop() {
-        this.glass = document.createElement("div");
-        this.glass.style.zIndex = "998";
-        this.glass.style.position = "absolute";
-        this.glass.style.backgroundColor = "white";
-        this.glass.style.opacity = ".00"; // may need to be .01 for IE???
-        this.glass.style.filter = "alpha(opacity=01)";
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
-        this.onKeyPress = this.onKeyPress.bind(this);
-        this.lastClick = 0;
-        this.clickX = 0;
-        this.clickY = 0;
+        this._glass = document.createElement("div");
+        this._glass.style.zIndex = "998";
+        this._glass.style.position = "absolute";
+        this._glass.style.backgroundColor = "white";
+        this._glass.style.opacity = ".00"; // may need to be .01 for IE???
+        this._glass.style.filter = "alpha(opacity=01)";
+        this._onMouseMove = this._onMouseMove.bind(this);
+        this._onMouseUp = this._onMouseUp.bind(this);
+        this._onKeyPress = this._onKeyPress.bind(this);
+        this._lastClick = 0;
+        this._clickX = 0;
+        this._clickY = 0;
     }
     // if you add the glass pane then you should remove it
     DragDrop.prototype.addGlass = function (fCancel) {
-        if (!this.glassShowing) {
+        if (!this._glassShowing) {
             var glassRect = new Rect_1.default(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
-            glassRect.positionElement(this.glass);
-            document.body.appendChild(this.glass);
-            this.glass.tabIndex = -1;
-            this.glass.focus();
-            this.glass.addEventListener("keydown", this.onKeyPress);
-            this.glassShowing = true;
-            this.fDragCancel = fCancel;
-            this.manualGlassManagement = false;
+            glassRect.positionElement(this._glass);
+            document.body.appendChild(this._glass);
+            this._glass.tabIndex = -1;
+            this._glass.focus();
+            this._glass.addEventListener("keydown", this._onKeyPress);
+            this._glassShowing = true;
+            this._fDragCancel = fCancel;
+            this._manualGlassManagement = false;
         }
         else { // second call to addGlass (via dragstart)
-            this.manualGlassManagement = true;
+            this._manualGlassManagement = true;
         }
     };
     DragDrop.prototype.hideGlass = function () {
-        if (this.glassShowing) {
-            document.body.removeChild(this.glass);
-            this.glassShowing = false;
+        if (this._glassShowing) {
+            document.body.removeChild(this._glass);
+            this._glassShowing = false;
         }
     };
-    DragDrop.prototype.onKeyPress = function (event) {
-        if (this.fDragCancel != null && event.keyCode === 27) { // esc
+    /** @hidden @internal */
+    DragDrop.prototype._onKeyPress = function (event) {
+        if (this._fDragCancel != null && event.keyCode === 27) { // esc
             this.hideGlass();
-            document.removeEventListener("mousemove", this.onMouseMove);
-            document.removeEventListener("mouseup", this.onMouseUp);
-            this.fDragCancel(this.dragging);
-            this.dragging = false;
+            document.removeEventListener("mousemove", this._onMouseMove);
+            document.removeEventListener("mouseup", this._onMouseUp);
+            this._fDragCancel(this._dragging);
+            this._dragging = false;
         }
     };
-    DragDrop.prototype.getLocationEvent = function (event) {
+    /** @hidden @internal */
+    DragDrop.prototype._getLocationEvent = function (event) {
         var posEvent = event;
         if (event.touches) {
             posEvent = event.touches[0];
         }
         return posEvent;
     };
-    DragDrop.prototype.getLocationEventEnd = function (event) {
+    /** @hidden @internal */
+    DragDrop.prototype._getLocationEventEnd = function (event) {
         var posEvent = event;
         if (event.changedTouches) {
             posEvent = event.changedTouches[0];
         }
         return posEvent;
     };
-    DragDrop.prototype.stopPropagation = function (event) {
+    /** @hidden @internal */
+    DragDrop.prototype._stopPropagation = function (event) {
         if (event.stopPropagation) {
             event.stopPropagation();
         }
     };
-    DragDrop.prototype.preventDefault = function (event) {
+    /** @hidden @internal */
+    DragDrop.prototype._preventDefault = function (event) {
         if (event.preventDefault) {
             event.preventDefault();
         }
         return event;
     };
     DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick) {
-        var posEvent = this.getLocationEvent(event);
+        var posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
-        if (this.dragging)
+        if (this._dragging)
             debugger; // should never happen
         if (event != null) {
-            this.startX = posEvent.clientX;
-            this.startY = posEvent.clientY;
-            this.glass.style.cursor = getComputedStyle(event.target).cursor;
-            this.stopPropagation(event);
-            this.preventDefault(event);
+            this._startX = posEvent.clientX;
+            this._startY = posEvent.clientY;
+            this._glass.style.cursor = getComputedStyle(event.target).cursor;
+            this._stopPropagation(event);
+            this._preventDefault(event);
         }
         else {
-            this.startX = 0;
-            this.startY = 0;
-            this.glass.style.cursor = "default";
+            this._startX = 0;
+            this._startY = 0;
+            this._glass.style.cursor = "default";
         }
-        this.dragging = false;
-        this.fDragStart = fDragStart;
-        this.fDragMove = fDragMove;
-        this.fDragEnd = fDragEnd;
-        this.fDragCancel = fDragCancel;
-        this.fClick = fClick;
-        this.fDblClick = fDblClick;
-        document.addEventListener("mouseup", this.onMouseUp);
-        document.addEventListener("mousemove", this.onMouseMove);
-        document.addEventListener("touchend", this.onMouseUp);
-        document.addEventListener("touchmove", this.onMouseMove);
+        this._dragging = false;
+        this._fDragStart = fDragStart;
+        this._fDragMove = fDragMove;
+        this._fDragEnd = fDragEnd;
+        this._fDragCancel = fDragCancel;
+        this._fClick = fClick;
+        this._fDblClick = fDblClick;
+        document.addEventListener("mouseup", this._onMouseUp);
+        document.addEventListener("mousemove", this._onMouseMove);
+        document.addEventListener("touchend", this._onMouseUp);
+        document.addEventListener("touchmove", this._onMouseMove);
     };
-    DragDrop.prototype.onMouseMove = function (event) {
-        var posEvent = this.getLocationEvent(event);
-        this.stopPropagation(event);
-        this.preventDefault(event);
-        if (!this.dragging && (Math.abs(this.startX - posEvent.clientX) > 5 || Math.abs(this.startY - posEvent.clientY) > 5)) {
-            this.dragging = true;
-            if (this.fDragStart) {
-                this.glass.style.cursor = "move";
-                this.dragging = this.fDragStart({ "clientX": this.startX, "clientY": this.startY });
+    /** @hidden @internal */
+    DragDrop.prototype._onMouseMove = function (event) {
+        var posEvent = this._getLocationEvent(event);
+        this._stopPropagation(event);
+        this._preventDefault(event);
+        if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
+            this._dragging = true;
+            if (this._fDragStart) {
+                this._glass.style.cursor = "move";
+                this._dragging = this._fDragStart({ "clientX": this._startX, "clientY": this._startY });
             }
         }
-        if (this.dragging) {
-            if (this.fDragMove) {
-                this.fDragMove(posEvent);
+        if (this._dragging) {
+            if (this._fDragMove) {
+                this._fDragMove(posEvent);
             }
         }
         return false;
     };
-    DragDrop.prototype.onMouseUp = function (event) {
-        var posEvent = this.getLocationEventEnd(event);
-        this.stopPropagation(event);
-        this.preventDefault(event);
-        if (!this.manualGlassManagement) {
+    /** @hidden @internal */
+    DragDrop.prototype._onMouseUp = function (event) {
+        var posEvent = this._getLocationEventEnd(event);
+        this._stopPropagation(event);
+        this._preventDefault(event);
+        if (!this._manualGlassManagement) {
             this.hideGlass();
         }
-        document.removeEventListener("mousemove", this.onMouseMove);
-        document.removeEventListener("mouseup", this.onMouseUp);
-        document.removeEventListener("touchend", this.onMouseUp);
-        document.removeEventListener("touchmove", this.onMouseMove);
-        if (this.dragging) {
-            this.dragging = false;
-            if (this.fDragEnd) {
-                this.fDragEnd(event);
+        document.removeEventListener("mousemove", this._onMouseMove);
+        document.removeEventListener("mouseup", this._onMouseUp);
+        document.removeEventListener("touchend", this._onMouseUp);
+        document.removeEventListener("touchmove", this._onMouseMove);
+        if (this._dragging) {
+            this._dragging = false;
+            if (this._fDragEnd) {
+                this._fDragEnd(event);
             }
             //dump("set dragging = false\n");
         }
         else {
-            if (this.fDragCancel) {
-                this.fDragCancel(this.dragging);
+            if (this._fDragCancel) {
+                this._fDragCancel(this._dragging);
             }
-            if (Math.abs(this.startX - posEvent.clientX) <= 5 && Math.abs(this.startY - posEvent.clientY) <= 5) {
+            if (Math.abs(this._startX - posEvent.clientX) <= 5 && Math.abs(this._startY - posEvent.clientY) <= 5) {
                 var clickTime = new Date().getTime();
                 // check for double click
-                if (Math.abs(this.clickX - posEvent.clientX) <= 5 && Math.abs(this.clickY - posEvent.clientY) <= 5) {
-                    if (clickTime - this.lastClick < 500) {
-                        if (this.fDblClick) {
-                            this.fDblClick(event);
+                if (Math.abs(this._clickX - posEvent.clientX) <= 5 && Math.abs(this._clickY - posEvent.clientY) <= 5) {
+                    if (clickTime - this._lastClick < 500) {
+                        if (this._fDblClick) {
+                            this._fDblClick(event);
                         }
                     }
                 }
-                if (this.fClick) {
-                    this.fClick(event);
+                if (this._fClick) {
+                    this._fClick(event);
                 }
-                this.lastClick = clickTime;
-                this.clickX = posEvent.clientX;
-                this.clickY = posEvent.clientY;
+                this._lastClick = clickTime;
+                this._clickX = posEvent.clientX;
+                this._clickY = posEvent.clientY;
             }
         }
         return false;
     };
     DragDrop.prototype.isDragging = function () {
-        return this.dragging;
+        return this._dragging;
     };
     DragDrop.prototype.toString = function () {
         var rtn = "(DragDrop: " +
-            "startX=" + this.startX +
-            ", startY=" + this.startY +
-            ", dragging=" + this.dragging +
+            "startX=" + this._startX +
+            ", startY=" + this._startY +
+            ", dragging=" + this._dragging +
             ")";
         return rtn;
     };
     DragDrop.instance = new DragDrop();
     return DragDrop;
 }());
-/** @hidden @internal */
 exports.default = DragDrop;
 
 
@@ -21336,7 +21344,7 @@ var BorderNode = /** @class */ (function (_super) {
         }
     };
     /** @hidden @internal */
-    BorderNode.prototype._canDrop = function (dragNode, x, y) {
+    BorderNode.prototype.canDrop = function (dragNode, x, y) {
         if (dragNode.getType() !== TabNode_1.default.TYPE) {
             return null;
         }
@@ -21415,7 +21423,7 @@ var BorderNode = /** @class */ (function (_super) {
         return dropInfo;
     };
     /** @hidden @internal */
-    BorderNode.prototype._drop = function (dragNode, location, index) {
+    BorderNode.prototype.drop = function (dragNode, location, index) {
         var fromIndex = 0;
         var parent = dragNode.getParent();
         if (parent != null) {
@@ -21564,7 +21572,7 @@ var BorderSet = /** @class */ (function () {
     /** @hidden @internal */
     BorderSet.prototype._forEachNode = function (fn) {
         this._borders.forEach(function (borderNode) {
-            fn(borderNode);
+            fn(borderNode, 0);
             borderNode.getChildren().forEach(function (node) {
                 node._forEachNode(fn, 1);
             });
@@ -21654,7 +21662,7 @@ var BorderSet = /** @class */ (function () {
         for (var i = 0; i < this._borders.length; i++) {
             var border = this._borders[i];
             if (border.isShowing()) {
-                var dropInfo = border._canDrop(dragNode, x, y);
+                var dropInfo = border.canDrop(dragNode, x, y);
                 if (dropInfo != null) {
                     return dropInfo;
                 }
@@ -21695,7 +21703,7 @@ var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation
 var Model = /** @class */ (function () {
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
-     *  @hidden @hidden @internal
+     *  @hidden @internal
      */
     function Model() {
         this._attributes = {};
@@ -21703,7 +21711,7 @@ var Model = /** @class */ (function () {
         this._nextId = 0;
         this._borders = new BorderSet_1.default(this);
     }
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._setChangeListener = function (listener) {
         this._changeListener = listener;
     };
@@ -21714,7 +21722,7 @@ var Model = /** @class */ (function () {
     Model.prototype.getActiveTabset = function () {
         return this._activeTabSet;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._setActiveTabset = function (tabsetNode) {
         this._activeTabSet = tabsetNode;
     };
@@ -21725,7 +21733,7 @@ var Model = /** @class */ (function () {
     Model.prototype.getMaximizedTabset = function () {
         return this._maximizedTabSet;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._setMaximizedTabset = function (tabsetNode) {
         this._maximizedTabSet = tabsetNode;
     };
@@ -21743,7 +21751,7 @@ var Model = /** @class */ (function () {
     Model.prototype.getBorderSet = function () {
         return this._borders;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._getOuterInnerRects = function () {
         return this._borderRects;
     };
@@ -21776,7 +21784,7 @@ var Model = /** @class */ (function () {
                     var newNode = new TabNode_1.default(this, action.data["json"]);
                     var toNode = this._idMap[action.data["toNode"]];
                     if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default) {
-                        toNode._drop(newNode, DockLocation_1.default.getByName(action.data["location"]), action.data["index"]);
+                        toNode.drop(newNode, DockLocation_1.default.getByName(action.data["location"]), action.data["index"]);
                     }
                     break;
                 }
@@ -21786,7 +21794,7 @@ var Model = /** @class */ (function () {
                     if (fromNode instanceof TabNode_1.default || fromNode instanceof TabSetNode_1.default) {
                         var toNode = this._idMap[action.data["toNode"]];
                         if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default || toNode instanceof RowNode_1.default) {
-                            toNode._drop(fromNode, DockLocation_1.default.getByName(action.data["location"]), action.data["index"]);
+                            toNode.drop(fromNode, DockLocation_1.default.getByName(action.data["location"]), action.data["index"]);
                         }
                     }
                     break;
@@ -21889,7 +21897,7 @@ var Model = /** @class */ (function () {
             this._changeListener();
         }
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._updateIdMap = function () {
         var _this = this;
         // regenerate idMap to stop it building up
@@ -21897,7 +21905,7 @@ var Model = /** @class */ (function () {
         this.visitNodes(function (node) { return _this._idMap[node.getId()] = node; });
         //console.log(JSON.stringify(Object.keys(this._idMap)));
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._adjustSplitSide = function (node, weight, pixels) {
         node._setWeight(weight);
         if (node.getWidth() != null && node.getOrientation() === Orientation_1.default.VERT) {
@@ -21943,7 +21951,7 @@ var Model = /** @class */ (function () {
     Model.prototype.isEnableEdgeDock = function () {
         return this._attributes["enableEdgeDock"];
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._addNode = function (node) {
         if (node.getId() == null) {
             node._setId(this._nextUniqueId());
@@ -21957,7 +21965,7 @@ var Model = /** @class */ (function () {
             this._idMap[node.getId()] = node;
         }
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._layout = function (rect) {
         //let start = Date.now();
         this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect });
@@ -21966,7 +21974,7 @@ var Model = /** @class */ (function () {
         return rect;
         //console.log("layout time: " + (Date.now() - start));
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._findDropTargetNode = function (dragNode, x, y) {
         var node = this._root._findDropTargetNode(dragNode, x, y);
         if (node == null) {
@@ -21974,17 +21982,17 @@ var Model = /** @class */ (function () {
         }
         return node;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._tidy = function () {
         //console.log("before _tidy", this.toString());
         this._root._tidy();
         //console.log("after _tidy", this.toString());
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._updateAttrs = function (json) {
         Model._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._nextUniqueId = function () {
         this._nextId++;
         while (this._idMap["#" + this._nextId] !== undefined) {
@@ -21992,7 +22000,7 @@ var Model = /** @class */ (function () {
         }
         return "#" + this._nextId;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._getAttribute = function (name) {
         return this._attributes[name];
     };
@@ -22003,14 +22011,14 @@ var Model = /** @class */ (function () {
     Model.prototype.setOnAllowDrop = function (onAllowDrop) {
         this._onAllowDrop = onAllowDrop;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model.prototype._getOnAllowDrop = function () {
         return this._onAllowDrop;
     };
     Model.prototype.toString = function () {
         return JSON.stringify(this.toJson());
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         // splitter
@@ -22042,7 +22050,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("borderClassName", null).setType(Attribute_1.default.STRING);
         return attributeDefinitions;
     };
-    /** @hidden @hidden @internal */
+    /** @hidden @internal */
     Model._attributeDefinitions = Model._createAttributeDefinitions();
     return Model;
 }());
@@ -22182,7 +22190,7 @@ var Node = /** @class */ (function () {
     Node.prototype._findDropTargetNode = function (dragNode, x, y) {
         var rtn = null;
         if (this._rect.contains(x, y)) {
-            rtn = this._canDrop(dragNode, x, y);
+            rtn = this.canDrop(dragNode, x, y);
             if (rtn == null) {
                 if (this._children.length !== 0) {
                     for (var i = 0; i < this._children.length; i++) {
@@ -22198,7 +22206,7 @@ var Node = /** @class */ (function () {
         return rtn;
     };
     /** @hidden @internal */
-    Node.prototype._canDrop = function (dragNode, x, y) {
+    Node.prototype.canDrop = function (dragNode, x, y) {
         return null;
     };
     /** @hidden @internal */
@@ -22207,7 +22215,7 @@ var Node = /** @class */ (function () {
             if (dropInfo.location === DockLocation_1.default.CENTER && dropInfo.node.isEnableDrop() === false) {
                 return false;
             }
-            // prevent named tabset docking into another tabset, since this would loose the header
+            // prevent named tabset docking into another tabset, since this would lose the header
             if (dropInfo.location === DockLocation_1.default.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== null) {
                 return false;
             }
@@ -22263,6 +22271,7 @@ var Node = /** @class */ (function () {
     Node.prototype._setTempSize = function (value) {
         this._tempSize = value;
     };
+    /** @hidden @internal */
     Node.prototype.isEnableDivide = function () {
         return true;
     };
@@ -22529,7 +22538,7 @@ var RowNode = /** @class */ (function (_super) {
         //console.log("b", this._model.toString());
     };
     /** @hidden @internal */
-    RowNode.prototype._canDrop = function (dragNode, x, y) {
+    RowNode.prototype.canDrop = function (dragNode, x, y) {
         var yy = y - this._rect.y;
         var xx = x - this._rect.x;
         var w = this._rect.width;
@@ -22573,7 +22582,7 @@ var RowNode = /** @class */ (function (_super) {
         return dropInfo;
     };
     /** @hidden @internal */
-    RowNode.prototype._drop = function (dragNode, location, index) {
+    RowNode.prototype.drop = function (dragNode, location, index) {
         var dockLocation = location;
         var parent = dragNode.getParent();
         if (parent) {
@@ -22736,12 +22745,15 @@ var SplitterNode = /** @class */ (function (_super) {
         model._addNode(_this);
         return _this;
     }
+    /** @hidden @internal */
     SplitterNode.prototype.getWidth = function () {
         return this._model.getSplitterSize();
     };
+    /** @hidden @internal */
     SplitterNode.prototype.getHeight = function () {
         return this._model.getSplitterSize();
     };
+    /** @hidden @internal */
     SplitterNode.prototype.getWeight = function () {
         return 0;
     };
@@ -22811,6 +22823,7 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype.getTabRect = function () {
         return this._tabRect;
     };
+    /** @hidden @internal */
     TabNode.prototype.setTabRect = function (rect) {
         this._tabRect = rect;
     };
@@ -22820,9 +22833,20 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype.getComponent = function () {
         return this._attributes["component"];
     };
+    /**
+     * Returns the config attribute that can be used to store node specific data that
+     * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
+     * than directly, for example:
+     * this.state.model.doAction(
+     *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
+     */
     TabNode.prototype.getConfig = function () {
         return this._attributes["config"];
     };
+    /**
+     * Returns an object that can be used to store transient node specific data that will
+     * NOT be saved in the json.
+     */
     TabNode.prototype.getExtraData = function () {
         return this._extra;
     };
@@ -23013,7 +23037,7 @@ var TabSetNode = /** @class */ (function (_super) {
         this._attributes["selected"] = index;
     };
     /** @hidden @internal */
-    TabSetNode.prototype._canDrop = function (dragNode, x, y) {
+    TabSetNode.prototype.canDrop = function (dragNode, x, y) {
         var dropInfo = null;
         if (dragNode === this) {
             var dockLocation = DockLocation_1.default.CENTER;
@@ -23087,7 +23111,7 @@ var TabSetNode = /** @class */ (function (_super) {
         this._setSelected(Math.max(0, this.getSelected() - 1));
     };
     /** @hidden @internal */
-    TabSetNode.prototype._drop = function (dragNode, location, index) {
+    TabSetNode.prototype.drop = function (dragNode, location, index) {
         var _this = this;
         var dockLocation = location;
         if (this === dragNode) { // tabset drop into itself
