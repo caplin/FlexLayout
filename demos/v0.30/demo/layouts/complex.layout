@@ -1,0 +1,125 @@
+{
+	"global": {},
+	"layout": {
+		"type": "row",
+		"weight": 100,
+		"children": [{
+			"type": "tabset",
+			"weight": 50,
+			"selected": 0,
+			"children": [{
+				"type": "tab",
+				"name": "grid0",
+				"component": "grid",
+				"config": {
+					"id": "1"
+				}
+			}]
+		}, {
+			"type": "row",
+			"weight": 150,
+			"children": [{
+				"type": "row",
+				"weight": 30,
+				"children": [{
+					"type": "tabset",
+					"weight": 50,
+					"color": "#ffcccc",
+					"selected": 0,
+					"children": [{
+						"type": "tab",
+						"name": "grid1",
+						"component": "grid",
+						"config": {}
+					}]
+				}]
+			}, {
+				"type": "row",
+				"weight": 30,
+				"children": [{
+					"type": "tabset",
+					"weight": 50,
+					"selected": 0,
+					"children": [{
+						"type": "tab",
+						"name": "simple1",
+						"component": "simple1",
+						"config": {
+							"name": "a simple button"
+						}
+					}, {
+						"type": "tab",
+						"name": "simple2",
+						"component": "simple2"
+					}]
+				}]
+			}, {
+				"type": "row",
+				"weight": 50,
+				"children": [{
+					"type": "row",
+					"weight": 30,
+					"children": [{
+						"type": "tabset",
+						"weight": 50,
+						"color": "#fccccf",
+						"selected": 0,
+						"children": [{
+							"type": "tab",
+							"name": "grid2",
+							"component": "grid",
+							"config": {}
+						}]
+					}]
+				}, {
+					"type": "row",
+					"weight": 30,
+					"children": [{
+						"type": "tabset",
+						"weight": 50,
+						"selected": 0,
+						"children": [{
+							"type": "tab",
+							"name": "grid3",
+							"component": "grid",
+							"config": {}
+						}]
+					}, {
+						"type": "row",
+						"weight": 50,
+						"children": [{
+							"type": "row",
+							"weight": 30,
+							"children": [{
+								"type": "tabset",
+								"weight": 50,
+								"color": "#ffffcc",
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "grid4",
+									"component": "grid",
+									"config": {}
+								}]
+							}]
+						}, {
+							"type": "row",
+							"weight": 30,
+							"children": [{
+								"type": "tabset",
+								"weight": 50,
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "grid5",
+									"component": "grid",
+									"config": {}
+								}]
+							}]
+						}]
+					}]
+				}]
+			}]
+		}]
+	}
+}
