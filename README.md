@@ -6,7 +6,7 @@ FlexLayout is a layout manager that arranges React components in multiple tab se
 
 [Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.30/demo/index.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/57/)
+Try it now using [JSFiddle](https://jsfiddle.net/9x6hecdw/1)
 
 <!-- [API Doc](./typedoc/index.html) -->
 
@@ -159,7 +159,7 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try it now using [JSFiddle](https://jsfiddle.net/rmf3hzmf/57/) 
+Try it now using [JSFiddle](https://jsfiddle.net/9x6hecdw/1) 
 
 
 The model is built up using 4 types of 'node':
