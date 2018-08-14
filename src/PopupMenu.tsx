@@ -12,9 +12,9 @@ export interface IPopupMenuProps {
 /** @hidden @internal */
 class PopupMenu extends React.Component<IPopupMenuProps, any> {
 
-    items:Array<{index:number, name:string}>;
-    hidden: boolean;
-    elm : Element;
+    items:Array<{index:number, name:string}> = [];
+    hidden: boolean = true;
+    elm? : Element;
 
 
     constructor(props:IPopupMenuProps) {
@@ -23,8 +23,8 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
         this.hidden = false;
     }
 
-    static show(triggerElement: Element, 
-        items: Array<{index:number, name:string}>, 
+    static show(triggerElement: Element,
+        items: Array<{index:number, name:string}>,
         onSelect: (item:{index:number, name:string})=>void) {
 
         const triggerRect = triggerElement.getBoundingClientRect();
@@ -53,9 +53,9 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     }
 
     onDocMouseUp(event:Event) {
-        setTimeout(function () {
+        setTimeout(() =>{
             this.hide();
-        }.bind(this), 0);
+        }, 0);
     }
 
     hide() {

@@ -97,7 +97,7 @@ class DockLocation {
             let r2 = new Rect(rect.x, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
         }
-        else if (this === DockLocation.BOTTOM) {
+        else {//if (this === DockLocation.BOTTOM) {
             let r1 = new Rect(rect.x, rect.getBottom() - size, rect.width, size);
             let r2 = new Rect(rect.x, rect.y, rect.width, rect.height - size);
             return { start: r1, end: r2 };
@@ -115,7 +115,7 @@ class DockLocation {
         if (this === DockLocation.RIGHT) {
             return DockLocation.LEFT
         }
-        else if (this === DockLocation.BOTTOM) {
+        else { //if (this === DockLocation.BOTTOM) {
             return DockLocation.TOP
         }
     }

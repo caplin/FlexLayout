@@ -1,9 +1,6 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import Rect from "../Rect";
-import Actions from "../model/Actions";
 import Border from "../model/BorderNode";
-import {BorderButton, IBorderButtonProps} from "./BorderButton";
+import {BorderButton} from "./BorderButton";
 import DockLocation from "../DockLocation";
 import Layout from "./Layout";
 import TabNode from "../model/TabNode";
@@ -16,7 +13,7 @@ export interface IBorderTabSetProps {
 
 /** @hidden @internal */
 export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
-    toolbarRef: HTMLDivElement;
+    toolbarRef?: HTMLDivElement;
 
     constructor(props:IBorderTabSetProps) {
         super(props);
@@ -24,7 +21,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
 
     render() {
         const border = this.props.border;
-        const style = border.getTabHeaderRect().styleWithPosition({});
+        const style = border.getTabHeaderRect()!.styleWithPosition({});
         const tabs = [];
         if (border.getLocation() !== DockLocation.LEFT) {
             for (let i = 0; i < border.getChildren().length; i++) {
@@ -50,8 +47,8 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         }
 
         let borderClasses = "flexlayout__border_" + border.getLocation().getName();
-        if (this.props.border.getClassNameBorder() != null) {
-            borderClasses += " " + this.props.border.getClassNameBorder();
+        if (this.props.border.getClassName() !== undefined) {
+            borderClasses += " " + this.props.border.getClassName();
         }
 
         // allow customization of tabset right/bottom buttons
@@ -66,7 +63,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
 
         const toolbar = <div
             key="toolbar"
-            ref={toolbar=>this.toolbarRef = toolbar}
+            ref={toolbar=>this.toolbarRef = (toolbar===null)?undefined:toolbar}
             className={"flexlayout__border_toolbar_" + border.getLocation().getName()}>
             {buttons}
         </div>;

@@ -9,6 +9,10 @@
     "declarationDir":"./declarations",
     "stripInternal":true,
     "alwaysStrict":true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "noUnusedLocals": true,
     "jsx": "react"
   },
   "include": [

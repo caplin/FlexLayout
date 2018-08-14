@@ -1,6 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import Node from "../model/Node"
 import TabSetNode from "../model/TabSetNode";
 import TabNode from "../model/TabNode";
 import Actions from "../model/Actions";
@@ -12,7 +10,7 @@ export interface ITabProps {
     layout: Layout,
     selected: boolean,
     node: TabNode,
-    factory: (node:Node) => any;
+    factory: (node:TabNode) => React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -59,7 +57,7 @@ export class Tab extends React.Component<ITabProps, any> {
             style.zIndex = 100;
         }
 
-        let child = null;
+        let child = undefined;
         if (this.state.renderComponent) {
             child = this.props.factory(node);
         }

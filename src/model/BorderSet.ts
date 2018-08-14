@@ -1,9 +1,6 @@
 import Rect from "../Rect";
 import Model from "./Model";
-import DockLocation from "../DockLocation";
 import BorderNode from "./BorderNode";
-import TabNode from "./TabNode";
-import TabSetNode from "./TabSetNode";
 import Node from "./Node";
 import Orientation from "../Orientation";
 import DropInfo from "../DropInfo";
@@ -55,8 +52,6 @@ class BorderSet {
         const width = rect.width;
         let sumHeight = 0;
         let sumWidth = 0;
-        let countHeight = 0;
-        let countWidth = 0;
         let adjustableHeight = 0;
         let adjustableWidth = 0;
 
@@ -74,7 +69,6 @@ class BorderSet {
                         sumWidth += border.getSize();
                         adjustableWidth += border.getSize();
                     }
-                    countWidth++;
                 }
                 else {
                     sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
@@ -82,7 +76,6 @@ class BorderSet {
                         sumHeight += border.getSize();
                         adjustableHeight += border.getSize();
                     }
-                    countHeight++;
                 }
             }
         }
@@ -125,17 +118,17 @@ class BorderSet {
     }
 
     /** @hidden @internal */
-    _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo{
+    _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined{
         for (let i = 0; i < this._borders.length; i++) {
             const border = this._borders[i];
             if (border.isShowing()) {
                 const dropInfo = border.canDrop(dragNode, x, y);
-                if (dropInfo != null) {
+                if (dropInfo !== undefined) {
                     return dropInfo;
                 }
             }
         }
-        return null;
+        return undefined;
     }
 }
 

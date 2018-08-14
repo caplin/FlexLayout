@@ -16,17 +16,17 @@ class BorderNode extends Node implements IDropTarget{
 	public static readonly TYPE = "border";
     /** @hidden @internal */
     private static _attributeDefinitions: AttributeDefinitions = BorderNode._createAttributeDefinitions();
-	
+
     /** @hidden @internal */
-	private _contentRect: Rect;
+	private _contentRect?: Rect;
     /** @hidden @internal */
-	private _tabHeaderRect: Rect;
+	private _tabHeaderRect?: Rect;
     /** @hidden @internal */
 	private _location: DockLocation;
     /** @hidden @internal */
 	private _drawChildren: Array<Node>;
     /** @hidden @internal */
-	private _adjustedSize: number;
+	private _adjustedSize: number = 0;
 
 	/** @hidden @internal */
 	constructor(location: DockLocation, json: any, model: Model) {
@@ -55,8 +55,8 @@ class BorderNode extends Node implements IDropTarget{
 		return this._getAttr("enableDrop") as boolean;
 	}
 
-	getClassNameBorder() {
-		return this._getAttr("className") as string;
+	getClassName() {
+        return this._getAttributeAsStringOrUndefined("className");
 	}
 
 	getBorderBarSize() {
@@ -71,11 +71,11 @@ class BorderNode extends Node implements IDropTarget{
 		return this._attributes["selected"] as number;
 	}
 
-	getSelectedNode(): Node {
+	getSelectedNode(): Node | undefined {
 		if (this.getSelected() !== -1) {
 			return this._children[this.getSelected()];
 		}
-		return null;
+		return undefined;
 	}
 
 	getOrientation() {
@@ -140,7 +140,7 @@ class BorderNode extends Node implements IDropTarget{
 		this._contentRect = split2.end;
 
 		this._children.forEach((child, i) => {
-			child._layout(this._contentRect);
+			child._layout(this._contentRect!);
 			child._setVisible(i === this.getSelected());
 			this._drawChildren.push(child);
 		});
@@ -179,28 +179,28 @@ class BorderNode extends Node implements IDropTarget{
 	}
 
 	/** @hidden @internal */
-	canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo {
+	canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
 		if (dragNode.getType() !== TabNode.TYPE) {
-			return null;
+			return undefined;
 		}
 
-		let dropInfo = null;
+		let dropInfo = undefined;
 		const dockLocation = DockLocation.CENTER;
 
-		if (this._tabHeaderRect.contains(x, y)) {
+		if (this._tabHeaderRect!.contains(x, y)) {
 			if (this._location._orientation === Orientation.VERT) {
 				if (this._children.length > 0) {
 					let child = this._children[0];
-					let childRect = (child as TabNode).getTabRect();
+					let childRect = (child as TabNode).getTabRect()!;
 					const childY = childRect.y;
 
 					const childHeight = childRect.height;
 
-					let pos = this._tabHeaderRect.x;
+					let pos = this._tabHeaderRect!.x;
 					let childCenter = 0;
 					for (let i = 0; i < this._children.length; i++) {
 						child = this._children[i];
-						childRect = (child as TabNode).getTabRect();
+						childRect = (child as TabNode).getTabRect()!;
 						childCenter = childRect.x + childRect.width / 2;
 						if (x >= pos && x < childCenter) {
 							let outlineRect = new Rect(childRect.x - 2, childY, 3, childHeight);
@@ -209,27 +209,27 @@ class BorderNode extends Node implements IDropTarget{
 						}
 						pos = childCenter;
 					}
-					if (dropInfo == null) {
+					if (dropInfo == undefined) {
 						let outlineRect = new Rect(childRect.getRight() - 2, childY, 3, childHeight);
 						dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
 					}
 				} else {
-					let outlineRect = new Rect(this._tabHeaderRect.x + 1, this._tabHeaderRect.y + 2, 3, 18);
+					let outlineRect = new Rect(this._tabHeaderRect!.x + 1, this._tabHeaderRect!.y + 2, 3, 18);
 					dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
 
 				}
 			} else {
 				if (this._children.length > 0) {
 					let child = this._children[0];
-					let childRect = (child as TabNode).getTabRect();
+					let childRect = (child as TabNode).getTabRect()!;
 					const childX = childRect.x;
 					const childWidth = childRect.width;
 
-					let pos = this._tabHeaderRect.y;
+					let pos = this._tabHeaderRect!.y;
 					let childCenter = 0;
 					for (let i = 0; i < this._children.length; i++) {
 						child = this._children[i];
-						childRect = (child as TabNode).getTabRect();
+						childRect = (child as TabNode).getTabRect()!;
 						childCenter = childRect.y + childRect.height / 2;
 						if (y >= pos && y < childCenter) {
 							let outlineRect = new Rect(childX, childRect.y - 2, childWidth, 3);
@@ -238,24 +238,24 @@ class BorderNode extends Node implements IDropTarget{
 						}
 						pos = childCenter;
 					}
-					if (dropInfo == null) {
+					if (dropInfo == undefined) {
 						let outlineRect = new Rect(childX, childRect.getBottom() - 2, childWidth, 3);
 						dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
 					}
 				} else {
-					let outlineRect = new Rect(this._tabHeaderRect.x + 2, this._tabHeaderRect.y + 1, 18, 3);
+					let outlineRect = new Rect(this._tabHeaderRect!.x + 2, this._tabHeaderRect!.y + 1, 18, 3);
 					dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
 				}
 
 			}
 			if (!dragNode._canDockInto(dragNode, dropInfo)) {
-				return null;
+				return undefined;
 			}
-		} else if (this.getSelected() !== -1 && this._contentRect.contains(x, y)) {
+		} else if (this.getSelected() !== -1 && this._contentRect!.contains(x, y)) {
 			let outlineRect = this._contentRect;
-			dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
+			dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, "flexlayout__outline_rect");
 			if (!dragNode._canDockInto(dragNode, dropInfo)) {
-				return null;
+				return undefined;
 			}
 		}
 
@@ -265,8 +265,8 @@ class BorderNode extends Node implements IDropTarget{
 	/** @hidden @internal */
 	drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
 		let fromIndex = 0;
-		let parent: Node = dragNode.getParent();
-		if (parent != null) {
+		let parent: Node | undefined = dragNode.getParent();
+		if (parent !== undefined) {
 			fromIndex = parent._removeChild(dragNode);
 		}
 
@@ -276,7 +276,7 @@ class BorderNode extends Node implements IDropTarget{
 		}
 
 		// for the tabset/border being removed from set the selected index
-		if (parent !== null) {
+		if (parent !== undefined) {
 			if (parent instanceof TabSetNode) {
 				parent._setSelected(0);
 			} else if (parent instanceof BorderNode) {
@@ -374,7 +374,7 @@ class BorderNode extends Node implements IDropTarget{
 
 	/** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
-		
+
 		let attributeDefinitions = new AttributeDefinitions();
 		attributeDefinitions.add("type", BorderNode.TYPE, true);
 

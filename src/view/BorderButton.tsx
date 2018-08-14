@@ -1,11 +1,8 @@
-'use strict';
-
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import Rect from "../Rect";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
-import Model from "../model/Model";
 import Layout from "./Layout";
 
 /** @hidden @internal */
@@ -18,17 +15,15 @@ export interface IBorderButtonProps {
 
 /** @hidden @internal */
 export class BorderButton extends React.Component<IBorderButtonProps, any> {
-    selfRef: HTMLDivElement;
-    contentsRef: HTMLDivElement;
-
-    private contentWidth: number;
+    selfRef?: HTMLDivElement;
+    contentsRef?: HTMLDivElement;
 
     constructor(props:IBorderButtonProps) {
         super(props);
     }
 
     onMouseDown(event:Event) {
-        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), null);
+        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), (event: Event) => undefined);
     }
 
     onClick(event:React.MouseEvent<HTMLDivElement>) {
@@ -58,7 +53,6 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const r = (this.selfRef as Element).getBoundingClientRect();
         this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
-        this.contentWidth = (this.contentsRef as Element).getBoundingClientRect().width;
     }
 
     render() {
@@ -72,19 +66,19 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
             classNames += " flexlayout__border_button--unselected";
         }
 
-        if (this.props.node.getClassName() != null) {
+        if (this.props.node.getClassName() !== undefined) {
             classNames += " " + this.props.node.getClassName();
         }
 
-        let leadingContent = null;
+        let leadingContent = undefined;
 
-        if (node.getIcon() != null) {
+        if (node.getIcon() !== undefined) {
             leadingContent = <img src={node.getIcon()}/>;
         }
 
-        const content = <div ref={ref => this.contentsRef = ref} className="flexlayout__border_button_content">{node.getName()}</div>;
+        const content = <div ref={ref => this.contentsRef = (ref===null)?undefined:ref} className="flexlayout__border_button_content">{node.getName()}</div>;
 
-        let closeButton = null;
+        let closeButton = undefined;
         if (this.props.node.isEnableClose()) {
             closeButton = <div className={"flexlayout__border_button_trailing"}
                                onMouseDown={this.onCloseMouseDown.bind(this)}
@@ -93,7 +87,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
                 />;
         }
 
-        return <div ref={ref => this.selfRef = ref}
+        return <div ref={ref => this.selfRef = (ref===null)?undefined:ref}
                     style={{}}
                     className={classNames}
                     onMouseDown={this.onMouseDown.bind(this)}
