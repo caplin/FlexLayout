@@ -121,8 +121,8 @@ var App = /** @class */ (function (_super) {
         _this.state = { layoutFile: null, model: null, adding: false };
         // save layout when unloading page
         window.onbeforeunload = function (event) {
-            this.save();
-        }.bind(_this);
+            _this.save();
+        };
         return _this;
     }
     App.prototype.componentDidMount = function () {
@@ -193,6 +193,7 @@ var App = /** @class */ (function (_super) {
         //node.setEventListener("resize", function(p){console.log("resize");});
         //node.setEventListener("visibility", function(p){console.log("visibility");});
         //node.setEventListener("close", function(p){console.log("close");});
+        var _this = this;
         var component = node.getComponent();
         if (component === "grid") {
             if (node.getExtraData().data == null) {
@@ -208,15 +209,16 @@ var App = /** @class */ (function (_super) {
                 model = node.getExtraData().model;
                 // save submodel on save event
                 node.setEventListener("save", function (p) {
-                    this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                    _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
-                }.bind(this));
+                });
             }
             return React.createElement(FlexLayout.Layout, { model: model, factory: this.factory.bind(this) });
         }
         else if (component === "text") {
             return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
         }
+        return null;
     };
     App.prototype.onSelectLayout = function (event) {
         var target = event.target;
@@ -20291,7 +20293,7 @@ var Attribute = /** @class */ (function () {
         this.modelName = modelName;
         this.defaultValue = defaultValue;
         this.alwaysWriteJson = alwaysWriteJson;
-        this.type = null;
+        this.type = undefined;
         this.values = [];
         this.from = -99999999;
         this.to = 99999999;
@@ -20358,19 +20360,17 @@ var AttributeDefinitions = /** @class */ (function () {
         return this.addWithAll(name, modelName, undefined, false);
     };
     AttributeDefinitions.prototype.add = function (name, defaultValue, alwaysWriteJson) {
-        return this.addWithAll(name, null, defaultValue, alwaysWriteJson);
+        return this.addWithAll(name, undefined, defaultValue, alwaysWriteJson);
     };
     AttributeDefinitions.prototype.getAttributes = function () {
         return this.attributes;
     };
     AttributeDefinitions.prototype.getModelName = function (name) {
         var conversion = this.nameToAttribute[name];
-        if (conversion != null) {
+        if (conversion !== undefined) {
             return conversion.modelName;
         }
-        else {
-            return null;
-        }
+        return undefined;
     };
     AttributeDefinitions.prototype.toJson = function (jsonObj, obj) {
         this.attributes.forEach(function (attr) {
@@ -20495,7 +20495,7 @@ var DockLocation = /** @class */ (function () {
             var r2 = new Rect_1.default(rect.x, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
         }
-        else if (this === DockLocation.BOTTOM) {
+        else { //if (this === DockLocation.BOTTOM) {
             var r1 = new Rect_1.default(rect.x, rect.getBottom() - size, rect.width, size);
             var r2 = new Rect_1.default(rect.x, rect.y, rect.width, rect.height - size);
             return { start: r1, end: r2 };
@@ -20512,7 +20512,7 @@ var DockLocation = /** @class */ (function () {
         if (this === DockLocation.RIGHT) {
             return DockLocation.LEFT;
         }
-        else if (this === DockLocation.BOTTOM) {
+        else { //if (this === DockLocation.BOTTOM) {
             return DockLocation.TOP;
         }
     };
@@ -20546,6 +20546,16 @@ var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
 var DragDrop = /** @class */ (function () {
     /** @hidden @internal */
     function DragDrop() {
+        /** @hidden @internal */
+        this._manualGlassManagement = false;
+        /** @hidden @internal */
+        this._startX = 0;
+        /** @hidden @internal */
+        this._startY = 0;
+        /** @hidden @internal */
+        this._glassShowing = false;
+        /** @hidden @internal */
+        this._dragging = false;
         this._glass = document.createElement("div");
         this._glass.style.zIndex = "998";
         this._glass.style.position = "absolute";
@@ -20584,7 +20594,7 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._onKeyPress = function (event) {
-        if (this._fDragCancel != null && event.keyCode === 27) { // esc
+        if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
             this.hideGlass();
             document.removeEventListener("mousemove", this._onMouseMove);
             document.removeEventListener("mouseup", this._onMouseUp);
@@ -20626,7 +20636,7 @@ var DragDrop = /** @class */ (function () {
         this.addGlass(fDragCancel);
         if (this._dragging)
             debugger; // should never happen
-        if (event != null) {
+        if (event) {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
             this._glass.style.cursor = getComputedStyle(event.target).cursor;
@@ -20821,6 +20831,8 @@ var PopupMenu = /** @class */ (function (_super) {
     __extends(PopupMenu, _super);
     function PopupMenu(props) {
         var _this = _super.call(this, props) || this;
+        _this.items = [];
+        _this.hidden = true;
         _this.onDocMouseUp = _this.onDocMouseUp.bind(_this);
         _this.hidden = false;
         return _this;
@@ -20846,9 +20858,10 @@ var PopupMenu = /** @class */ (function (_super) {
         document.removeEventListener("mouseup", this.onDocMouseUp);
     };
     PopupMenu.prototype.onDocMouseUp = function (event) {
+        var _this = this;
         setTimeout(function () {
-            this.hide();
-        }.bind(this), 0);
+            _this.hide();
+        }, 0);
     };
     PopupMenu.prototype.hide = function () {
         if (!this.hidden) {
@@ -21223,6 +21236,8 @@ var BorderNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     function BorderNode(location, json, model) {
         var _this = _super.call(this, model) || this;
+        /** @hidden @internal */
+        _this._adjustedSize = 0;
         _this._location = location;
         _this._drawChildren = [];
         _this._attributes["id"] = "border_" + location.getName();
@@ -21242,8 +21257,8 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype.isEnableDrop = function () {
         return this._getAttr("enableDrop");
     };
-    BorderNode.prototype.getClassNameBorder = function () {
-        return this._getAttr("className");
+    BorderNode.prototype.getClassName = function () {
+        return this._getAttributeAsStringOrUndefined("className");
     };
     BorderNode.prototype.getBorderBarSize = function () {
         return this._getAttr("barSize");
@@ -21258,7 +21273,7 @@ var BorderNode = /** @class */ (function (_super) {
         if (this.getSelected() !== -1) {
             return this._children[this.getSelected()];
         }
-        return null;
+        return undefined;
     };
     BorderNode.prototype.getOrientation = function () {
         return this._location.getOrientation();
@@ -21348,9 +21363,9 @@ var BorderNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     BorderNode.prototype.canDrop = function (dragNode, x, y) {
         if (dragNode.getType() !== TabNode_1.default.TYPE) {
-            return null;
+            return undefined;
         }
-        var dropInfo = null;
+        var dropInfo = undefined;
         var dockLocation = DockLocation_1.default.CENTER;
         if (this._tabHeaderRect.contains(x, y)) {
             if (this._location._orientation === Orientation_1.default.VERT) {
@@ -21372,7 +21387,7 @@ var BorderNode = /** @class */ (function (_super) {
                         }
                         pos = childCenter;
                     }
-                    if (dropInfo == null) {
+                    if (dropInfo == undefined) {
                         var outlineRect = new Rect_1.default(childRect.getRight() - 2, childY, 3, childHeight);
                         dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
                     }
@@ -21401,7 +21416,7 @@ var BorderNode = /** @class */ (function (_super) {
                         }
                         pos = childCenter;
                     }
-                    if (dropInfo == null) {
+                    if (dropInfo == undefined) {
                         var outlineRect = new Rect_1.default(childX, childRect.getBottom() - 2, childWidth, 3);
                         dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
                     }
@@ -21412,14 +21427,14 @@ var BorderNode = /** @class */ (function (_super) {
                 }
             }
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
-                return null;
+                return undefined;
             }
         }
         else if (this.getSelected() !== -1 && this._contentRect.contains(x, y)) {
             var outlineRect = this._contentRect;
             dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
-                return null;
+                return undefined;
             }
         }
         return dropInfo;
@@ -21428,7 +21443,7 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype.drop = function (dragNode, location, index) {
         var fromIndex = 0;
         var parent = dragNode.getParent();
-        if (parent != null) {
+        if (parent !== undefined) {
             fromIndex = parent._removeChild(dragNode);
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
@@ -21436,7 +21451,7 @@ var BorderNode = /** @class */ (function (_super) {
             index--;
         }
         // for the tabset/border being removed from set the selected index
-        if (parent !== null) {
+        if (parent !== undefined) {
             if (parent instanceof TabSetNode_1.default) {
                 parent._setSelected(0);
             }
@@ -21597,8 +21612,6 @@ var BorderSet = /** @class */ (function () {
         var width = rect.width;
         var sumHeight = 0;
         var sumWidth = 0;
-        var countHeight = 0;
-        var countWidth = 0;
         var adjustableHeight = 0;
         var adjustableWidth = 0;
         var showingBorders = this._borders.filter(function (border) { return border.isShowing(); });
@@ -21614,7 +21627,6 @@ var BorderSet = /** @class */ (function () {
                         sumWidth += border.getSize();
                         adjustableWidth += border.getSize();
                     }
-                    countWidth++;
                 }
                 else {
                     sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
@@ -21622,7 +21634,6 @@ var BorderSet = /** @class */ (function () {
                         sumHeight += border.getSize();
                         adjustableHeight += border.getSize();
                     }
-                    countHeight++;
                 }
             }
         }
@@ -21665,12 +21676,12 @@ var BorderSet = /** @class */ (function () {
             var border = this._borders[i];
             if (border.isShowing()) {
                 var dropInfo = border.canDrop(dragNode, x, y);
-                if (dropInfo != null) {
+                if (dropInfo !== undefined) {
                     return dropInfo;
                 }
             }
         }
-        return null;
+        return undefined;
     };
     return BorderSet;
 }());
@@ -21699,6 +21710,7 @@ var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocat
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -21708,6 +21720,8 @@ var Model = /** @class */ (function () {
      *  @hidden @internal
      */
     function Model() {
+        /** @hidden @internal */
+        this._borderRects = { inner: Rect_1.default.empty(), outer: Rect_1.default.empty() };
         this._attributes = {};
         this._idMap = {};
         this._nextId = 0;
@@ -21719,7 +21733,6 @@ var Model = /** @class */ (function () {
     };
     /**
      * Get the currently active tabset node
-     * @returns {null|TabSetNode}
      */
     Model.prototype.getActiveTabset = function () {
         return this._activeTabSet;
@@ -21730,7 +21743,6 @@ var Model = /** @class */ (function () {
     };
     /**
      * Get the currently maximized tabset node
-     * @returns {null|TabSetNode}
      */
     Model.prototype.getMaximizedTabset = function () {
         return this._maximizedTabSet;
@@ -21768,7 +21780,6 @@ var Model = /** @class */ (function () {
     /**
      * Gets a node by its id
      * @param id the id to find
-     * @returns {null|Node}
      */
     Model.prototype.getNodeById = function (id) {
         return this._idMap[id];
@@ -21785,7 +21796,7 @@ var Model = /** @class */ (function () {
                 {
                     var newNode = new TabNode_1.default(this, action.data["json"]);
                     var toNode = this._idMap[action.data["toNode"]];
-                    if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default) {
+                    if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default || toNode instanceof RowNode_1.default) {
                         toNode.drop(newNode, DockLocation_1.default.getByName(action.data["location"]), action.data["index"]);
                     }
                     break;
@@ -21873,7 +21884,7 @@ var Model = /** @class */ (function () {
                     var node = this._idMap[action.data["node"]];
                     if (node instanceof TabSetNode_1.default) {
                         if (node === this._maximizedTabSet) {
-                            this._maximizedTabSet = null;
+                            this._maximizedTabSet = undefined;
                         }
                         else {
                             this._maximizedTabSet = node;
@@ -21895,7 +21906,7 @@ var Model = /** @class */ (function () {
                 }
         }
         this._updateIdMap();
-        if (this._changeListener != null) {
+        if (this._changeListener !== undefined) {
             this._changeListener();
         }
     };
@@ -21910,10 +21921,10 @@ var Model = /** @class */ (function () {
     /** @hidden @internal */
     Model.prototype._adjustSplitSide = function (node, weight, pixels) {
         node._setWeight(weight);
-        if (node.getWidth() != null && node.getOrientation() === Orientation_1.default.VERT) {
+        if (node.getWidth() != undefined && node.getOrientation() === Orientation_1.default.VERT) {
             node._updateAttrs({ width: pixels });
         }
-        else if (node.getHeight() != null && node.getOrientation() === Orientation_1.default.HORZ) {
+        else if (node.getHeight() != undefined && node.getOrientation() === Orientation_1.default.HORZ) {
             node._updateAttrs({ height: pixels });
         }
     };
@@ -21926,7 +21937,7 @@ var Model = /** @class */ (function () {
         Model._attributeDefinitions.toJson(json.global, this._attributes);
         // save state of nodes
         this.visitNodes(function (node) {
-            node._fireEvent("save", null);
+            node._fireEvent("save", undefined);
         });
         json.borders = this._borders._toJson();
         json.layout = this._root._toJson();
@@ -21955,16 +21966,12 @@ var Model = /** @class */ (function () {
     };
     /** @hidden @internal */
     Model.prototype._addNode = function (node) {
-        if (node.getId() == null) {
-            node._setId(this._nextUniqueId());
-        }
-        else {
-            if (this._idMap[node.getId()] !== undefined) {
-                throw "Error: each node must have a unique id, duplicate id: " + node.getId();
-            }
+        var id = node.getId();
+        if (this._idMap[id] !== undefined) {
+            throw "Error: each node must have a unique id, duplicate id: " + node.getId();
         }
         if (node.getType() !== "splitter") {
-            this._idMap[node.getId()] = node;
+            this._idMap[id] = node;
         }
     };
     /** @hidden @internal */
@@ -21979,7 +21986,7 @@ var Model = /** @class */ (function () {
     /** @hidden @internal */
     Model.prototype._findDropTargetNode = function (dragNode, x, y) {
         var node = this._root._findDropTargetNode(dragNode, x, y);
-        if (node == null) {
+        if (node === undefined) {
             node = this._borders._findDropTargetNode(dragNode, x, y);
         }
         return node;
@@ -22031,17 +22038,16 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabClassName", null).setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("tabIcon", null).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("tabClassName", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("tabIcon", undefined).setType(Attribute_1.default.STRING);
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableClose", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabSetClassNameTabStrip", null).setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("tabSetClassNameHeader", null).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetHeaderHeight", 20).setType(Attribute_1.default.INT).setFrom(0);
         attributeDefinitions.add("tabSetTabStripHeight", 20).setType(Attribute_1.default.INT).setFrom(0);
@@ -22049,7 +22055,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
         attributeDefinitions.add("borderBarSize", 25);
         attributeDefinitions.add("borderEnableDrop", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("borderClassName", null).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("borderClassName", undefined).setType(Attribute_1.default.STRING);
         return attributeDefinitions;
     };
     /** @hidden @internal */
@@ -22077,17 +22083,42 @@ var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocat
 var Node = /** @class */ (function () {
     /** @hidden @internal */
     function Node(model) {
+        /** @hidden @internal */
+        this._dirty = false;
+        /** @hidden @internal */
+        this._tempSize = 0;
         this._model = model;
         this._attributes = {};
-        this._parent = null;
         this._children = [];
         this._fixed = false;
         this._rect = Rect_1.default.empty();
         this._visible = false;
         this._listeners = {};
     }
+    /** @hidden @internal */
+    Node.prototype._getAttributeAsStringOrUndefined = function (attr) {
+        var value = this._attributes[attr];
+        if (value !== undefined) {
+            return value;
+        }
+        return undefined;
+    };
+    /** @hidden @internal */
+    Node.prototype._getAttributeAsNumberOrUndefined = function (attr) {
+        var value = this._attributes[attr];
+        if (value !== undefined) {
+            return value;
+        }
+        return undefined;
+    };
     Node.prototype.getId = function () {
-        return this._attributes["id"];
+        var id = this._attributes["id"];
+        if (id !== undefined) {
+            return id;
+        }
+        id = this._model._nextUniqueId();
+        this._setId(id);
+        return id;
     };
     Node.prototype.getModel = function () {
         return this._model;
@@ -22108,7 +22139,7 @@ var Node = /** @class */ (function () {
         return this._visible;
     };
     Node.prototype.getOrientation = function () {
-        if (this._parent == null) {
+        if (this._parent === undefined) {
             return Orientation_1.default.HORZ;
         }
         else {
@@ -22129,7 +22160,7 @@ var Node = /** @class */ (function () {
     /** @hidden @internal */
     Node.prototype._fireEvent = function (event, params) {
         //console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
-        if (this._listeners[event] != null) {
+        if (this._listeners[event] !== undefined) {
             this._listeners[event](params);
         }
     };
@@ -22138,7 +22169,7 @@ var Node = /** @class */ (function () {
         var val = this._attributes[name];
         if (val === undefined) {
             var modelName = this._getAttributeDefinitions().getModelName(name);
-            if (modelName != null) {
+            if (modelName !== undefined) {
                 val = this._model._getAttribute(modelName);
             }
         }
@@ -22190,15 +22221,15 @@ var Node = /** @class */ (function () {
     };
     /** @hidden @internal */
     Node.prototype._findDropTargetNode = function (dragNode, x, y) {
-        var rtn = null;
+        var rtn = undefined;
         if (this._rect.contains(x, y)) {
             rtn = this.canDrop(dragNode, x, y);
-            if (rtn == null) {
+            if (rtn === undefined) {
                 if (this._children.length !== 0) {
                     for (var i = 0; i < this._children.length; i++) {
                         var child = this._children[i];
                         rtn = child._findDropTargetNode(dragNode, x, y);
-                        if (rtn != null) {
+                        if (rtn !== undefined) {
                             break;
                         }
                     }
@@ -22209,16 +22240,16 @@ var Node = /** @class */ (function () {
     };
     /** @hidden @internal */
     Node.prototype.canDrop = function (dragNode, x, y) {
-        return null;
+        return undefined;
     };
     /** @hidden @internal */
     Node.prototype._canDockInto = function (dragNode, dropInfo) {
-        if (dropInfo != null) {
+        if (dropInfo != undefined) {
             if (dropInfo.location === DockLocation_1.default.CENTER && dropInfo.node.isEnableDrop() === false) {
                 return false;
             }
             // prevent named tabset docking into another tabset, since this would lose the header
-            if (dropInfo.location === DockLocation_1.default.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== null) {
+            if (dropInfo.location === DockLocation_1.default.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== undefined) {
                 return false;
             }
             if (dropInfo.location !== DockLocation_1.default.CENTER && dropInfo.node.isEnableDivide() === false) {
@@ -22279,7 +22310,7 @@ var Node = /** @class */ (function () {
     };
     /** @hidden @internal */
     Node.prototype._toAttributeString = function () {
-        return JSON.stringify(this._attributes, null, "\t");
+        return JSON.stringify(this._attributes, undefined, "\t");
     };
     return Node;
 }());
@@ -22335,10 +22366,10 @@ var RowNode = /** @class */ (function (_super) {
         return this._attributes["weight"];
     };
     RowNode.prototype.getWidth = function () {
-        return this._attributes["width"];
+        return this._getAttributeAsNumberOrUndefined("width");
     };
     RowNode.prototype.getHeight = function () {
-        return this._attributes["height"];
+        return this._getAttributeAsNumberOrUndefined("height");
     };
     /** @hidden @internal */
     RowNode.prototype._setWeight = function (weight) {
@@ -22351,24 +22382,24 @@ var RowNode = /** @class */ (function (_super) {
         var totalWeight = 0;
         var fixedPixels = 0;
         var prefPixels = 0;
-        var numVariable = 0;
         var totalPrefWeight = 0;
         var drawChildren = this._getDrawChildren();
         for (var i = 0; i < drawChildren.length; i++) {
             var child = drawChildren[i];
             var prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
-                fixedPixels += prefSize;
+                if (prefSize !== undefined) {
+                    fixedPixels += prefSize;
+                }
             }
             else {
-                if (prefSize == null) {
+                if (prefSize === undefined) {
                     totalWeight += child.getWeight();
                 }
                 else {
                     prefPixels += prefSize;
                     totalPrefWeight += child.getWeight();
                 }
-                numVariable++;
             }
         }
         var resizePreferred = false;
@@ -22385,10 +22416,12 @@ var RowNode = /** @class */ (function (_super) {
             var child = drawChildren[i];
             var prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
-                child._setTempSize(prefSize);
+                if (prefSize !== undefined) {
+                    child._setTempSize(prefSize);
+                }
             }
             else {
-                if (prefSize == null || resizePreferred) {
+                if (prefSize == undefined || resizePreferred) {
                     if (totalWeight === 0) {
                         child._setTempSize(0);
                     }
@@ -22409,14 +22442,13 @@ var RowNode = /** @class */ (function (_super) {
                 for (var i = 0; i < drawChildren.length; i++) {
                     var child = drawChildren[i];
                     var prefSize = child._getPrefSize(this.getOrientation());
-                    if (!child._isFixed() && (prefSize == null || resizePreferred) && totalSizeGiven < pixelSize) {
+                    if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
                         child._setTempSize(child._getTempSize() + 1);
                         totalSizeGiven++;
                     }
                 }
             }
         }
-        var childOrientation = Orientation_1.default.flip(this.getOrientation());
         // layout children
         var p = 0;
         for (var i = 0; i < drawChildren.length; i++) {
@@ -22448,7 +22480,7 @@ var RowNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     RowNode.prototype._calculateSplit = function (splitter, splitterPos) {
-        var rtn = null;
+        var rtn = undefined;
         var drawChildren = this._getDrawChildren();
         var p = drawChildren.indexOf(splitter);
         var pBounds = this._getSplitterBounds(splitter);
@@ -22547,8 +22579,8 @@ var RowNode = /** @class */ (function (_super) {
         var h = this._rect.height;
         var margin = 10; // height of edge rect
         var half = 50; // half width of edge rect
-        var dropInfo = null;
-        if (this._model.isEnableEdgeDock() && this._parent == null) { // _root row
+        var dropInfo = undefined;
+        if (this._model.isEnableEdgeDock() && this._parent === undefined) { // _root row
             if (x < this._rect.x + margin && (yy > h / 2 - half && yy < h / 2 + half)) {
                 var dockLocation = DockLocation_1.default.LEFT;
                 var outlineRect = dockLocation.getDockRect(this._rect);
@@ -22575,9 +22607,9 @@ var RowNode = /** @class */ (function (_super) {
                 outlineRect.y += outlineRect.height;
                 dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
             }
-            if (dropInfo != null) {
+            if (dropInfo !== undefined) {
                 if (!dragNode._canDockInto(dragNode, dropInfo)) {
-                    return null;
+                    return undefined;
                 }
             }
         }
@@ -22590,13 +22622,13 @@ var RowNode = /** @class */ (function (_super) {
         if (parent) {
             parent._removeChild(dragNode);
         }
-        if (parent !== null && parent.getType() === TabSetNode_1.default.TYPE) {
+        if (parent !== undefined && parent.getType() === TabSetNode_1.default.TYPE) {
             parent._setSelected(0);
         }
-        if (parent !== null && parent.getType() === BorderNode_1.default.TYPE) {
+        if (parent !== undefined && parent.getType() === BorderNode_1.default.TYPE) {
             parent._setSelected(-1);
         }
-        var tabSet = null;
+        var tabSet = undefined;
         if (dragNode instanceof TabSetNode_1.default) {
             tabSet = dragNode;
         }
@@ -22697,10 +22729,10 @@ var RowNode = /** @class */ (function (_super) {
     RowNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         attributeDefinitions.add("type", RowNode.TYPE, true);
-        attributeDefinitions.add("id", null);
+        attributeDefinitions.add("id", undefined);
         attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", null);
-        attributeDefinitions.add("height", null);
+        attributeDefinitions.add("width", undefined);
+        attributeDefinitions.add("height", undefined);
         return attributeDefinitions;
     };
     RowNode.TYPE = "row";
@@ -22737,6 +22769,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
+var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var SplitterNode = /** @class */ (function (_super) {
     __extends(SplitterNode, _super);
     /** @hidden @internal */
@@ -22771,11 +22804,11 @@ var SplitterNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     SplitterNode.prototype._getAttributeDefinitions = function () {
-        return null;
+        return new AttributeDefinitions_1.default();
     };
     /** @hidden @internal */
     SplitterNode.prototype._toJson = function () {
-        return null;
+        return undefined;
     };
     SplitterNode.TYPE = "splitter";
     return SplitterNode;
@@ -22816,7 +22849,6 @@ var TabNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     function TabNode(model, json) {
         var _this = _super.call(this, model) || this;
-        _this._tabRect = null; // rect of the tab rather than the tab contents=
         _this._extra = {}; // extra data added to node not saved in json
         TabNode._attributeDefinitions.fromJson(json, _this._attributes);
         model._addNode(_this);
@@ -22826,14 +22858,14 @@ var TabNode = /** @class */ (function (_super) {
         return this._tabRect;
     };
     /** @hidden @internal */
-    TabNode.prototype.setTabRect = function (rect) {
+    TabNode.prototype._setTabRect = function (rect) {
         this._tabRect = rect;
     };
     TabNode.prototype.getName = function () {
-        return this._attributes["name"];
+        return this._getAttr("name");
     };
     TabNode.prototype.getComponent = function () {
-        return this._attributes["component"];
+        return this._getAttributeAsStringOrUndefined("component");
     };
     /**
      * Returns the config attribute that can be used to store node specific data that
@@ -22853,7 +22885,7 @@ var TabNode = /** @class */ (function (_super) {
         return this._extra;
     };
     TabNode.prototype.getIcon = function () {
-        return this._attributes["icon"];
+        return this._getAttributeAsStringOrUndefined("icon");
     };
     TabNode.prototype.isEnableClose = function () {
         return this._getAttr("enableClose");
@@ -22865,7 +22897,7 @@ var TabNode = /** @class */ (function (_super) {
         return this._getAttr("enableRename");
     };
     TabNode.prototype.getClassName = function () {
-        return this._getAttr("className");
+        return this._getAttributeAsStringOrUndefined("className");
     };
     /** @hidden @internal */
     TabNode.prototype._setName = function (name) {
@@ -22906,10 +22938,10 @@ var TabNode = /** @class */ (function (_super) {
     TabNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         attributeDefinitions.add("type", TabNode.TYPE, true);
-        attributeDefinitions.add("id", null).setType(Attribute_1.default.ID);
-        attributeDefinitions.add("name", null).setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("component", null).setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("config", null).setType(Attribute_1.default.JSON);
+        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.ID);
+        attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("component", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("config", undefined).setType(Attribute_1.default.JSON);
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute_1.default.BOOLEAN);
@@ -22970,26 +23002,30 @@ var TabSetNode = /** @class */ (function (_super) {
         return _this;
     }
     TabSetNode.prototype.getName = function () {
-        return this._attributes["name"];
+        return this._getAttributeAsStringOrUndefined("name");
     };
     TabSetNode.prototype.getSelected = function () {
-        return this._attributes["selected"];
+        var selected = this._attributes["selected"];
+        if (selected !== undefined) {
+            return selected;
+        }
+        return -1;
     };
     TabSetNode.prototype.getSelectedNode = function () {
         var selected = this.getSelected();
         if (selected !== -1) {
             return this._children[selected];
         }
-        return null;
+        return undefined;
     };
     TabSetNode.prototype.getWeight = function () {
         return this._attributes["weight"];
     };
     TabSetNode.prototype.getWidth = function () {
-        return this._attributes["width"];
+        return this._getAttributeAsNumberOrUndefined("width");
     };
     TabSetNode.prototype.getHeight = function () {
-        return this._attributes["height"];
+        return this._getAttributeAsNumberOrUndefined("height");
     };
     TabSetNode.prototype.isMaximized = function () {
         return this._model.getMaximizedTabset() === this;
@@ -22999,9 +23035,6 @@ var TabSetNode = /** @class */ (function (_super) {
     };
     TabSetNode.prototype.isEnableDeleteWhenEmpty = function () {
         return this._getAttr("enableDeleteWhenEmpty");
-    };
-    TabSetNode.prototype.isEnableClose = function () {
-        return this._getAttr("enableClose");
     };
     TabSetNode.prototype.isEnableDrop = function () {
         return this._getAttr("enableDrop");
@@ -23019,10 +23052,10 @@ var TabSetNode = /** @class */ (function (_super) {
         return this._getAttr("enableTabStrip");
     };
     TabSetNode.prototype.getClassNameTabStrip = function () {
-        return this._getAttr("classNameTabStrip");
+        return this._getAttributeAsStringOrUndefined("classNameTabStrip");
     };
     TabSetNode.prototype.getClassNameHeader = function () {
-        return this._getAttr("classNameHeader");
+        return this._getAttributeAsStringOrUndefined("classNameHeader");
     };
     TabSetNode.prototype.getHeaderHeight = function () {
         return this._getAttr("headerHeight");
@@ -23040,7 +23073,7 @@ var TabSetNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     TabSetNode.prototype.canDrop = function (dragNode, x, y) {
-        var dropInfo = null;
+        var dropInfo = undefined;
         if (dragNode === this) {
             var dockLocation = DockLocation_1.default.CENTER;
             var outlineRect = this._tabHeaderRect;
@@ -23051,7 +23084,7 @@ var TabSetNode = /** @class */ (function (_super) {
             var outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
-        else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
+        else if (this._children.length > 0 && this._tabHeaderRect != undefined && this._tabHeaderRect.contains(x, y)) {
             var child = this._children[0];
             var r = child.getTabRect();
             var yy = r.y;
@@ -23070,14 +23103,14 @@ var TabSetNode = /** @class */ (function (_super) {
                 }
                 p = childCenter;
             }
-            if (dropInfo == null) {
+            if (dropInfo == undefined) {
                 var dockLocation = DockLocation_1.default.CENTER;
                 var outlineRect = new Rect_1.default(r.getRight() - 2, yy, 3, h);
                 dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
             }
         }
         if (!dragNode._canDockInto(dragNode, dropInfo)) {
-            return null;
+            return undefined;
         }
         return dropInfo;
     };
@@ -23090,10 +23123,9 @@ var TabSetNode = /** @class */ (function (_super) {
         rect = rect.removeInsets(this._getAttr("marginInsets"));
         this._rect = rect;
         rect = rect.removeInsets(this._getAttr("borderInsets"));
-        var showHeader = (this.getName() != null);
+        var showHeader = (this.getName() !== undefined);
         var y = 0;
         if (showHeader) {
-            this._headerRect = new Rect_1.default(rect.x, rect.y, rect.width, this.getHeaderHeight());
             y += this.getHeaderHeight();
         }
         if (this.isEnableTabStrip()) {
@@ -23119,11 +23151,9 @@ var TabSetNode = /** @class */ (function (_super) {
         if (this === dragNode) { // tabset drop into itself
             return; // dock back to itself
         }
-        var selectedNode = null;
         var dragParent = dragNode.getParent();
         var fromIndex = 0;
-        if (dragParent != null) {
-            selectedNode = dragParent.getSelectedNode;
+        if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
         }
         //console.log("removed child: " + fromIndex);
@@ -23132,7 +23162,7 @@ var TabSetNode = /** @class */ (function (_super) {
             index--;
         }
         // for the tabset/border being removed from set the selected index
-        if (dragParent !== null) {
+        if (dragParent !== undefined) {
             if (dragParent.getType() === TabSetNode.TYPE) {
                 dragParent._setSelected(0);
             }
@@ -23174,7 +23204,7 @@ var TabSetNode = /** @class */ (function (_super) {
             this._model._setActiveTabset(this);
         }
         else {
-            var tabSet = null;
+            var tabSet = void 0;
             if (dragNode instanceof TabNode_1.default) {
                 // create new tabset parent
                 //console.log("create a new tabset");
@@ -23261,14 +23291,13 @@ var TabSetNode = /** @class */ (function (_super) {
     TabSetNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         attributeDefinitions.add("type", TabSetNode.TYPE, true);
-        attributeDefinitions.add("id", null).setType(Attribute_1.default.ID);
+        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.ID);
         attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", null);
-        attributeDefinitions.add("height", null);
+        attributeDefinitions.add("width", undefined);
+        attributeDefinitions.add("height", undefined);
         attributeDefinitions.add("selected", 0);
-        attributeDefinitions.add("name", null).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("name", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
-        attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
         attributeDefinitions.addInherited("enableDrag", "tabSetEnableDrag");
         attributeDefinitions.addInherited("enableDivide", "tabSetEnableDivide");
@@ -23326,7 +23355,7 @@ var BorderButton = /** @class */ (function (_super) {
         return _super.call(this, props) || this;
     }
     BorderButton.prototype.onMouseDown = function (event) {
-        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), null);
+        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), function (event) { return undefined; });
     };
     BorderButton.prototype.onClick = function (event) {
         var node = this.props.node;
@@ -23349,8 +23378,7 @@ var BorderButton = /** @class */ (function (_super) {
         // record position of tab in border
         var clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
         var r = this.selfRef.getBoundingClientRect();
-        this.props.node.setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
-        this.contentWidth = this.contentsRef.getBoundingClientRect().width;
+        this.props.node._setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
     };
     BorderButton.prototype.render = function () {
         var _this = this;
@@ -23362,19 +23390,19 @@ var BorderButton = /** @class */ (function (_super) {
         else {
             classNames += " flexlayout__border_button--unselected";
         }
-        if (this.props.node.getClassName() != null) {
+        if (this.props.node.getClassName() !== undefined) {
             classNames += " " + this.props.node.getClassName();
         }
-        var leadingContent = null;
-        if (node.getIcon() != null) {
+        var leadingContent = undefined;
+        if (node.getIcon() !== undefined) {
             leadingContent = React.createElement("img", { src: node.getIcon() });
         }
-        var content = React.createElement("div", { ref: function (ref) { return _this.contentsRef = ref; }, className: "flexlayout__border_button_content" }, node.getName());
-        var closeButton = null;
+        var content = React.createElement("div", { ref: function (ref) { return _this.contentsRef = (ref === null) ? undefined : ref; }, className: "flexlayout__border_button_content" }, node.getName());
+        var closeButton = undefined;
         if (this.props.node.isEnableClose()) {
             closeButton = React.createElement("div", { className: "flexlayout__border_button_trailing", onMouseDown: this.onCloseMouseDown.bind(this), onClick: this.onClose.bind(this), onTouchStart: this.onCloseMouseDown.bind(this) });
         }
-        return React.createElement("div", { ref: function (ref) { return _this.selfRef = ref; }, style: {}, className: classNames, onMouseDown: this.onMouseDown.bind(this), onTouchStart: this.onMouseDown.bind(this) },
+        return React.createElement("div", { ref: function (ref) { return _this.selfRef = (ref === null) ? undefined : ref; }, style: {}, className: classNames, onMouseDown: this.onMouseDown.bind(this), onTouchStart: this.onMouseDown.bind(this) },
             leadingContent,
             content,
             closeButton);
@@ -23382,6 +23410,7 @@ var BorderButton = /** @class */ (function (_super) {
     return BorderButton;
 }(React.Component));
 exports.BorderButton = BorderButton;
+// export default BorderButton;
 
 
 /***/ }),
@@ -23438,8 +23467,8 @@ var BorderTabSet = /** @class */ (function (_super) {
             }
         }
         var borderClasses = "flexlayout__border_" + border.getLocation().getName();
-        if (this.props.border.getClassNameBorder() != null) {
-            borderClasses += " " + this.props.border.getClassNameBorder();
+        if (this.props.border.getClassName() !== undefined) {
+            borderClasses += " " + this.props.border.getClassName();
         }
         // allow customization of tabset right/bottom buttons
         var buttons = [];
@@ -23449,7 +23478,7 @@ var BorderTabSet = /** @class */ (function (_super) {
         //buttons.push(<button
         //    key="1"
         //    className={"flexlayout__tab_toolbar_button-min"}></button>);
-        var toolbar = React.createElement("div", { key: "toolbar", ref: function (toolbar) { return _this.toolbarRef = toolbar; }, className: "flexlayout__border_toolbar_" + border.getLocation().getName() }, buttons);
+        var toolbar = React.createElement("div", { key: "toolbar", ref: function (toolbar) { return _this.toolbarRef = (toolbar === null) ? undefined : toolbar; }, className: "flexlayout__border_toolbar_" + border.getLocation().getName() }, buttons);
         return React.createElement("div", { style: style, className: borderClasses },
             React.createElement("div", { className: "flexlayout__border_inner_" + border.getLocation().getName() }, tabs),
             toolbar);
@@ -23505,6 +23534,10 @@ var Layout = /** @class */ (function (_super) {
     __extends(Layout, _super);
     function Layout(props) {
         var _this = _super.call(this, props) || this;
+        /** @hidden @internal */
+        _this.firstMove = false;
+        /** @hidden @internal */
+        _this.dragDivText = "";
         _this.model = _this.props.model;
         _this.rect = new Rect_1.default(0, 0, 0, 0);
         _this.model._setChangeListener(_this.onModelChange.bind(_this));
@@ -23531,8 +23564,8 @@ var Layout = /** @class */ (function (_super) {
     /** @hidden @internal */
     Layout.prototype.componentWillReceiveProps = function (newProps) {
         if (this.model !== newProps.model) {
-            if (this.model != null) {
-                this.model._setChangeListener(null); // stop listening to old model
+            if (this.model !== undefined) {
+                this.model._setChangeListener(undefined); // stop listening to old model
             }
             this.model = newProps.model;
             this.model._setChangeListener(this.onModelChange.bind(this));
@@ -23566,7 +23599,7 @@ var Layout = /** @class */ (function (_super) {
     /** @hidden @internal */
     Layout.prototype.render = function () {
         var _this = this;
-        this.start = Date.now();
+        // this.start = Date.now();
         var borderComponents = [];
         var tabSetComponents = [];
         var tabComponents = {};
@@ -23590,8 +23623,8 @@ var Layout = /** @class */ (function (_super) {
                 _this.tabIds.push(t);
             }
         });
-        this.layoutTime = (Date.now() - this.start);
-        return (React.createElement("div", { ref: function (self) { return _this.selfRef = self; }, className: "flexlayout__layout" },
+        // this.layoutTime = (Date.now() - this.start);
+        return (React.createElement("div", { ref: function (self) { return _this.selfRef = (self === null) ? undefined : self; }, className: "flexlayout__layout" },
             tabSetComponents,
             this.tabIds.map(function (t) {
                 return tabComponents[t];
@@ -23632,7 +23665,7 @@ var Layout = /** @class */ (function (_super) {
             }
             else if (child instanceof TabNode_1.default) {
                 var selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
-                if (selectedTab == null) {
+                if (selectedTab === undefined) {
                     debugger; // this should not happen!
                 }
                 tabComponents[child.getId()] = React.createElement(Tab_1.Tab, { key: child.getId(), layout: this, node: child, selected: child === selectedTab, factory: this.props.factory });
@@ -23649,7 +23682,7 @@ var Layout = /** @class */ (function (_super) {
     */
     Layout.prototype.addTabToTabSet = function (tabsetId, json) {
         var tabsetNode = this.model.getNodeById(tabsetId);
-        if (tabsetNode != null) {
+        if (tabsetNode !== undefined) {
             this.doAction(Actions_1.default.addNode(json, tabsetId, DockLocation_1.default.CENTER, -1));
         }
     };
@@ -23660,7 +23693,7 @@ var Layout = /** @class */ (function (_super) {
      */
     Layout.prototype.addTabToActiveTabSet = function (json) {
         var tabsetNode = this.model.getActiveTabset();
-        if (tabsetNode != null) {
+        if (tabsetNode !== undefined) {
             this.doAction(Actions_1.default.addNode(json, tabsetNode.getId(), DockLocation_1.default.CENTER, -1));
         }
     };
@@ -23673,7 +23706,7 @@ var Layout = /** @class */ (function (_super) {
     Layout.prototype.addTabWithDragAndDrop = function (dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
-        this.dragStart(null, dragText, TabNode_1.default._fromJson(json, this.model), null, null, null);
+        this.dragStart(undefined, dragText, TabNode_1.default._fromJson(json, this.model), true, undefined, undefined);
     };
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
@@ -23704,13 +23737,13 @@ var Layout = /** @class */ (function (_super) {
     Layout.prototype.onCancelAdd = function () {
         var rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.removeChild(this.dragDiv);
-        this.dragDiv = null;
-        if (this.fnNewNodeDropped != null) {
+        this.dragDiv = undefined;
+        if (this.fnNewNodeDropped != undefined) {
             this.fnNewNodeDropped();
-            this.fnNewNodeDropped = null;
+            this.fnNewNodeDropped = undefined;
         }
         DragDrop_1.default.instance.hideGlass();
-        this.newTabJson = null;
+        this.newTabJson = undefined;
     };
     /** @hidden @internal */
     Layout.prototype.onCancelDrag = function (wasDragging) {
@@ -23726,25 +23759,25 @@ var Layout = /** @class */ (function (_super) {
             }
             catch (e) {
             }
-            this.dragDiv = null;
+            this.dragDiv = undefined;
             this.hideEdges(rootdiv);
-            if (this.fnNewNodeDropped != null) {
+            if (this.fnNewNodeDropped != undefined) {
                 this.fnNewNodeDropped();
-                this.fnNewNodeDropped = null;
+                this.fnNewNodeDropped = undefined;
             }
             DragDrop_1.default.instance.hideGlass();
-            this.newTabJson = null;
+            this.newTabJson = undefined;
         }
     };
     /** @hidden @internal */
     Layout.prototype.onDragDivMouseDown = function (event) {
         event.preventDefault();
-        this.dragStart(event, this.dragDivText, TabNode_1.default._fromJson(this.newTabJson, this.model), true, null, null);
+        this.dragStart(event, this.dragDivText, TabNode_1.default._fromJson(this.newTabJson, this.model), true, undefined, undefined);
     };
     /** @hidden @internal */
     Layout.prototype.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
-        if (this.model.getMaximizedTabset() != null || !allowDrag) {
-            DragDrop_1.default.instance.startDrag(event, null, null, null, null, onClick, onDoubleClick);
+        if (this.model.getMaximizedTabset() !== undefined || !allowDrag) {
+            DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick);
         }
         else {
             this.dragNode = node;
@@ -23754,12 +23787,12 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.onDragStart = function (event) {
-        this.dropInfo = null;
+        this.dropInfo = undefined;
         var rootdiv = ReactDOM.findDOMNode(this);
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.className = "flexlayout__outline_rect";
         rootdiv.appendChild(this.outlineDiv);
-        if (this.dragDiv == null) {
+        if (this.dragDiv == undefined) {
             this.dragDiv = document.createElement("div");
             this.dragDiv.className = "flexlayout__drag_rect";
             this.dragDiv.innerHTML = this.dragDivText;
@@ -23767,7 +23800,7 @@ var Layout = /** @class */ (function (_super) {
         }
         // add edge indicators
         this.showEdges(rootdiv);
-        if (this.dragNode != null && this.dragNode instanceof TabNode_1.default && this.dragNode.getTabRect() != null) {
+        if (this.dragNode !== undefined && this.dragNode instanceof TabNode_1.default && this.dragNode.getTabRect() !== undefined) {
             this.dragNode.getTabRect().positionElement(this.outlineDiv);
         }
         this.firstMove = true;
@@ -23798,19 +23831,19 @@ var Layout = /** @class */ (function (_super) {
         var rootdiv = ReactDOM.findDOMNode(this);
         rootdiv.removeChild(this.outlineDiv);
         rootdiv.removeChild(this.dragDiv);
-        this.dragDiv = null;
+        this.dragDiv = undefined;
         this.hideEdges(rootdiv);
         DragDrop_1.default.instance.hideGlass();
         if (this.dropInfo) {
-            if (this.newTabJson != null) {
+            if (this.newTabJson !== undefined) {
                 this.doAction(Actions_1.default.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
-                if (this.fnNewNodeDropped != null) {
+                if (this.fnNewNodeDropped != undefined) {
                     this.fnNewNodeDropped();
-                    this.fnNewNodeDropped = null;
+                    this.fnNewNodeDropped = undefined;
                 }
-                this.newTabJson = null;
+                this.newTabJson = undefined;
             }
-            else if (this.dragNode != null) {
+            else if (this.dragNode !== undefined) {
                 this.doAction(Actions_1.default.moveNode(this.dragNode.getId(), this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
             }
         }
@@ -23959,22 +23992,24 @@ var Splitter = /** @class */ (function (_super) {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
         };
+        var outlineDiv = this.outlineDiv;
         if (this.props.node.getOrientation() === Orientation_1.default.HORZ) {
-            this.outlineDiv.style.top = this.getBoundPosition(pos.y - 4) + "px";
+            outlineDiv.style.top = this.getBoundPosition(pos.y - 4) + "px";
         }
         else {
-            this.outlineDiv.style.left = this.getBoundPosition(pos.x - 4) + "px";
+            outlineDiv.style.left = this.getBoundPosition(pos.x - 4) + "px";
         }
     };
     Splitter.prototype.onDragEnd = function (event, didDrag) {
         var node = this.props.node;
         var parentNode = node.getParent();
         var value = 0;
+        var outlineDiv = this.outlineDiv;
         if (node.getOrientation() === Orientation_1.default.HORZ) {
-            value = this.outlineDiv.offsetTop;
+            value = outlineDiv.offsetTop;
         }
         else {
-            value = this.outlineDiv.offsetLeft;
+            value = outlineDiv.offsetLeft;
         }
         if (parentNode instanceof BorderNode_1.default) {
             var pos = parentNode._calculateSplit(node, value);
@@ -23982,7 +24017,7 @@ var Splitter = /** @class */ (function (_super) {
         }
         else {
             var splitSpec = parentNode._calculateSplit(this.props.node, value);
-            if (splitSpec != null) {
+            if (splitSpec !== undefined) {
                 this.props.layout.doAction(Actions_1.default.adjustSplit(splitSpec));
             }
         }
@@ -23990,12 +24025,13 @@ var Splitter = /** @class */ (function (_super) {
         rootdiv.removeChild(this.outlineDiv);
     };
     Splitter.prototype.getBoundPosition = function (p) {
+        var bounds = this.pBounds;
         var rtn = p;
-        if (p < this.pBounds[0]) {
-            rtn = this.pBounds[0];
+        if (p < bounds[0]) {
+            rtn = bounds[0];
         }
-        if (p > this.pBounds[1]) {
-            rtn = this.pBounds[1];
+        if (p > bounds[1]) {
+            rtn = bounds[1];
         }
         return rtn;
     };
@@ -24078,7 +24114,7 @@ var Tab = /** @class */ (function (_super) {
         if (parentNode.isMaximized()) {
             style.zIndex = 100;
         }
-        var child = null;
+        var child = undefined;
         if (this.state.renderComponent) {
             child = this.props.factory(node);
         }
@@ -24124,6 +24160,7 @@ var TabButton = /** @class */ (function (_super) {
     __extends(TabButton, _super);
     function TabButton(props) {
         var _this = _super.call(this, props) || this;
+        _this.contentWidth = 0;
         _this.state = { editing: false };
         _this.onEndEdit = _this.onEndEdit.bind(_this);
         return _this;
@@ -24175,7 +24212,7 @@ var TabButton = /** @class */ (function (_super) {
         // record position of tab in node
         var clientRect = ReactDOM.findDOMNode(this.props.layout).getBoundingClientRect();
         var r = this.selfRef.getBoundingClientRect();
-        this.props.node.setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        this.props.node._setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
         this.contentWidth = this.contentRef.getBoundingClientRect().width;
     };
     TabButton.prototype.onTextBoxMouseDown = function (event) {
@@ -24206,27 +24243,27 @@ var TabButton = /** @class */ (function (_super) {
         else {
             classNames += " flexlayout__tab_button--unselected";
         }
-        if (this.props.node.getClassName() != null) {
+        if (this.props.node.getClassName() !== undefined) {
             classNames += " " + this.props.node.getClassName();
         }
-        var leadingContent = null;
-        if (node.getIcon() != null) {
+        var leadingContent = undefined;
+        if (node.getIcon() !== undefined) {
             leadingContent = React.createElement("img", { src: node.getIcon() });
         }
         // allow customization of leading contents (icon) and contents
         var renderState = { leading: leadingContent, content: node.getName() };
         this.props.layout.customizeTab(node, renderState);
-        var content = React.createElement("div", { ref: function (ref) { return _this.contentRef = ref; }, className: "flexlayout__tab_button_content" }, renderState.content);
+        var content = React.createElement("div", { ref: function (ref) { return _this.contentRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_button_content" }, renderState.content);
         var leading = React.createElement("div", { className: "flexlayout__tab_button_leading" }, renderState.leading);
         if (this.state.editing) {
             var contentStyle = { width: this.contentWidth + "px" };
-            content = React.createElement("input", { style: contentStyle, ref: function (ref) { return _this.contentRef = ref; }, className: "flexlayout__tab_button_textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: this.onTextBoxKeyPress.bind(this), onMouseDown: this.onTextBoxMouseDown.bind(this), onTouchStart: this.onTextBoxMouseDown.bind(this) });
+            content = React.createElement("input", { style: contentStyle, ref: function (ref) { return _this.contentRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_button_textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: this.onTextBoxKeyPress.bind(this), onMouseDown: this.onTextBoxMouseDown.bind(this), onTouchStart: this.onTextBoxMouseDown.bind(this) });
         }
-        var closeButton = null;
+        var closeButton = undefined;
         if (this.props.node.isEnableClose()) {
             closeButton = React.createElement("div", { className: "flexlayout__tab_button_trailing", onMouseDown: this.onCloseMouseDown.bind(this), onClick: this.onClose.bind(this), onTouchStart: this.onCloseMouseDown.bind(this) });
         }
-        return React.createElement("div", { ref: function (ref) { return _this.selfRef = ref; }, style: {
+        return React.createElement("div", { ref: function (ref) { return _this.selfRef = (ref === null) ? undefined : ref; }, style: {
                 visibility: this.props.show ? "visible" : "hidden",
                 height: this.props.height
             }, className: classNames, onMouseDown: this.onMouseDown.bind(this), onTouchStart: this.onMouseDown.bind(this) },
@@ -24237,6 +24274,7 @@ var TabButton = /** @class */ (function (_super) {
     return TabButton;
 }(React.Component));
 exports.TabButton = TabButton;
+// export default TabButton;
 
 
 /***/ }),
@@ -24351,21 +24389,21 @@ var TabSet = /** @class */ (function (_super) {
         this.props.layout.customizeTabSet(this.props.node, renderState);
         var headerContent = renderState.headerContent;
         buttons = renderState.buttons;
-        var toolbar = null;
+        var toolbar = undefined;
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
                 buttons.push(React.createElement("button", { key: "max", className: "flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"), onClick: this.onMaximizeToggle.bind(this) }));
             }
-            toolbar = React.createElement("div", { key: "toolbar", ref: function (ref) { return _this.toolbarRef = ref; }, className: "flexlayout__tab_toolbar", onMouseDown: this.onInterceptMouseDown.bind(this) }, buttons);
+            toolbar = React.createElement("div", { key: "toolbar", ref: function (ref) { return _this.toolbarRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_toolbar", onMouseDown: this.onInterceptMouseDown.bind(this) }, buttons);
         }
         if (this.showOverflow === true) {
-            tabs.push(React.createElement("button", { key: "overflowbutton", ref: function (ref) { return _this.overflowbuttonRef = ref; }, className: "flexlayout__tab_button_overflow", onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown.bind(this) }, hiddenTabs.length));
+            tabs.push(React.createElement("button", { key: "overflowbutton", ref: function (ref) { return _this.overflowbuttonRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_button_overflow", onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown.bind(this) }, hiddenTabs.length));
         }
-        var showHeader = node.getName() != null;
-        var header = null;
-        var tabStrip = null;
+        var showHeader = node.getName() !== undefined;
+        var header = undefined;
+        var tabStrip = undefined;
         var tabStripClasses = "flexlayout__tab_header_outer";
-        if (this.props.node.getClassNameTabStrip() != null) {
+        if (this.props.node.getClassNameTabStrip() !== undefined) {
             tabStripClasses += " " + this.props.node.getClassNameTabStrip();
         }
         if (node.isActive() && !showHeader) {
@@ -24382,18 +24420,18 @@ var TabSet = /** @class */ (function (_super) {
             if (node.isMaximized()) {
                 tabHeaderClasses += " flexlayout__tabset-maximized";
             }
-            if (this.props.node.getClassNameHeader() != null) {
+            if (this.props.node.getClassNameHeader() !== undefined) {
                 tabHeaderClasses += " " + this.props.node.getClassNameHeader();
             }
             header = React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, onMouseDown: this.onMouseDown.bind(this), onTouchStart: this.onMouseDown.bind(this) },
                 headerContent,
                 toolbar);
             tabStrip = React.createElement("div", { className: tabStripClasses, style: { height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" } },
-                React.createElement("div", { ref: function (ref) { return _this.headerRef = ref; }, className: "flexlayout__tab_header_inner" }, tabs));
+                React.createElement("div", { ref: function (ref) { return _this.headerRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_header_inner" }, tabs));
         }
         else {
             tabStrip = React.createElement("div", { className: tabStripClasses, style: { top: "0px", height: node.getTabStripHeight() + "px" }, onMouseDown: this.onMouseDown.bind(this), onTouchStart: this.onMouseDown.bind(this) },
-                React.createElement("div", { ref: function (ref) { return _this.headerRef = ref; }, className: "flexlayout__tab_header_inner" }, tabs),
+                React.createElement("div", { ref: function (ref) { return _this.headerRef = (ref === null) ? undefined : ref; }, className: "flexlayout__tab_header_inner" }, tabs),
                 toolbar);
         }
         return React.createElement("div", { style: style, className: "flexlayout__tabset" },
@@ -24406,19 +24444,18 @@ var TabSet = /** @class */ (function (_super) {
         PopupMenu_1.default.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this));
     };
     TabSet.prototype.onOverflowItemSelect = function (item) {
-        var node = this.props.node;
         this.props.layout.doAction(Actions_1.default.selectTab(item.node.getId()));
     };
     TabSet.prototype.onMouseDown = function (event) {
         var name = this.props.node.getName();
-        if (name == null) {
+        if (name === undefined) {
             name = "";
         }
         else {
             name = ": " + name;
         }
         this.props.layout.doAction(Actions_1.default.setActiveTabset(this.props.node.getId()));
-        this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), null, this.onDoubleClick.bind(this));
+        this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), function (event) { return undefined; }, this.onDoubleClick.bind(this));
     };
     TabSet.prototype.onInterceptMouseDown = function (event) {
         event.stopPropagation();
