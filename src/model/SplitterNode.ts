@@ -45,12 +45,12 @@ class SplitterNode extends Node {
 
     /** @hidden @internal */
     _getAttributeDefinitions(): AttributeDefinitions {
-        return null;
+        return new AttributeDefinitions();
     }
 
     /** @hidden @internal */
     _toJson(): any {
-        return null;
+        return undefined;
     }
 }
 

@@ -1,9 +1,6 @@
-'use strict';
-
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import Rect from "../Rect";
-import PopupMenu from "../PopupMenu";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
@@ -20,10 +17,10 @@ export interface ITabButtonProps {
 
 /** @hidden @internal */
 export class TabButton extends React.Component<ITabButtonProps, any> {
-    selfRef: HTMLDivElement;
+    selfRef?: HTMLDivElement;
 
-    contentWidth: number;
-    contentRef: Element;
+    contentWidth: number = 0;
+    contentRef?: Element;
 
     constructor(props: ITabButtonProps) {
         super(props);
@@ -88,7 +85,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const r = (this.selfRef as Element).getBoundingClientRect();
         this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
-        this.contentWidth = this.contentRef.getBoundingClientRect().width;
+        this.contentWidth = (this.contentRef as Element).getBoundingClientRect().width;
     }
 
 
@@ -124,13 +121,13 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
             classNames += " flexlayout__tab_button--unselected";
         }
 
-        if (this.props.node.getClassName() != null) {
+        if (this.props.node.getClassName() !== undefined) {
             classNames += " " + this.props.node.getClassName();
         }
 
-        let leadingContent = null;
+        let leadingContent = undefined;
 
-        if (node.getIcon() != null) {
+        if (node.getIcon() !== undefined) {
             leadingContent = <img src={node.getIcon()} />;
         }
 
@@ -138,13 +135,13 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         const renderState = { leading: leadingContent, content: node.getName() };
         this.props.layout.customizeTab(node, renderState);
 
-        let content = <div ref={ref => this.contentRef = ref} className="flexlayout__tab_button_content">{renderState.content}</div>;
+        let content = <div ref={ref => this.contentRef = (ref===null)?undefined:ref} className="flexlayout__tab_button_content">{renderState.content}</div>;
         const leading = <div className={"flexlayout__tab_button_leading"}>{renderState.leading}</div>;
 
         if (this.state.editing) {
             const contentStyle = { width: this.contentWidth + "px" };
             content = <input style={contentStyle}
-                ref={ref => this.contentRef = ref}
+                ref={ref => this.contentRef = (ref===null)?undefined:ref}
                 className="flexlayout__tab_button_textbox"
                 type="text"
                 autoFocus
@@ -155,7 +152,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
             />;
         }
 
-        let closeButton = null;
+        let closeButton = undefined;
         if (this.props.node.isEnableClose()) {
             closeButton = <div className={"flexlayout__tab_button_trailing"}
                 onMouseDown={this.onCloseMouseDown.bind(this)}
@@ -164,7 +161,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
             />;
         }
 
-        return <div ref={ref => this.selfRef = ref}
+        return <div ref={ref => this.selfRef = (ref===null)?undefined:ref}
             style={{
                 visibility: this.props.show ? "visible" : "hidden",
                 height: this.props.height

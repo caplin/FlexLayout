@@ -15,7 +15,7 @@ class TabNode extends Node implements IDraggable{
     private static _attributeDefinitions: AttributeDefinitions = TabNode._createAttributeDefinitions();
 
     /** @hidden @internal */
-    private _tabRect: Rect;
+    private _tabRect?: Rect;
     /** @hidden @internal */
     private _extra: JSMap<any>;
 
@@ -23,7 +23,6 @@ class TabNode extends Node implements IDraggable{
     constructor(model: Model, json: any) {
         super(model);
 
-        this._tabRect = null; // rect of the tab rather than the tab contents=
         this._extra = {};  // extra data added to node not saved in json
 
         TabNode._attributeDefinitions.fromJson(json, this._attributes);
@@ -40,11 +39,11 @@ class TabNode extends Node implements IDraggable{
     }
 
     getName() {
-        return this._attributes["name"] as string;
+        return this._getAttr("name") as string;
     }
 
     getComponent() {
-        return this._attributes["component"] as string;
+        return this._getAttributeAsStringOrUndefined("component");
     }
 
     /**
@@ -58,16 +57,16 @@ class TabNode extends Node implements IDraggable{
         return this._attributes["config"];
     }
 
-    /** 
+    /**
      * Returns an object that can be used to store transient node specific data that will
-     * NOT be saved in the json. 
+     * NOT be saved in the json.
      */
     getExtraData() {
         return this._extra;
     }
 
     getIcon() {
-        return this._attributes["icon"] as string;
+        return this._getAttributeAsStringOrUndefined("icon");
     }
 
     isEnableClose() {
@@ -83,7 +82,7 @@ class TabNode extends Node implements IDraggable{
     }
 
     getClassName() {
-        return this._getAttr("className") as string;
+        return this._getAttributeAsStringOrUndefined("className");
     }
 
     /** @hidden @internal */
@@ -133,11 +132,11 @@ class TabNode extends Node implements IDraggable{
 
         let attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", TabNode.TYPE, true);
-        attributeDefinitions.add("id", null).setType(Attribute.ID);
+        attributeDefinitions.add("id", undefined).setType(Attribute.ID);
 
-        attributeDefinitions.add("name", null).setType(Attribute.STRING);
-        attributeDefinitions.add("component", null).setType(Attribute.STRING);
-        attributeDefinitions.add("config", null).setType(Attribute.JSON);
+        attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
+        attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
+        attributeDefinitions.add("config", undefined).setType(Attribute.JSON);
 
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);

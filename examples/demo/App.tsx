@@ -6,18 +6,18 @@ import { Node, TabSetNode, TabNode, DropInfo, BorderNode } from "../../src/index
 
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App extends React.Component<any, { layoutFile: string, model: FlexLayout.Model, adding: boolean }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean }> {
 
-    loadingLayoutName: string;
+    loadingLayoutName?: string;
 
     constructor(props:any) {
         super(props);
         this.state = { layoutFile: null, model: null, adding: false };
 
         // save layout when unloading page
-        window.onbeforeunload = function (event:Event) {
+        window.onbeforeunload = (event:Event)=> {
             this.save();
-        }.bind(this);
+        };
 
     }
 
@@ -26,8 +26,8 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
     }
 
     save() {
-        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
-        localStorage.setItem(this.state.layoutFile, jsonStr);
+        var jsonStr = JSON.stringify(this.state.model!.toJson(), null, "\t");
+        localStorage.setItem(this.state.layoutFile!, jsonStr);
     }
 
     loadLayout(layoutName: string, reload?: boolean) {
@@ -57,18 +57,18 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
         // you can control where nodes can be dropped
         //model.setOnAllowDrop(this.allowDrop.bind(this));
 
-        this.setState({ layoutFile: this.loadingLayoutName, model: model });
+        this.setState({ layoutFile: this.loadingLayoutName!, model: model });
     }
 
     allowDrop(dragNode:(TabNode | TabSetNode), dropInfo:DropInfo) {
         let dropNode = dropInfo.node;
 
         // prevent non-border tabs dropping into borders
-        if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
+        if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent()!.getType() != "border"))
             return false;
 
         // prevent border tabs dropping into main layout
-        if (dropNode.getType() != "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
+        if (dropNode.getType() != "border" && (dragNode.getParent() != null && dragNode.getParent()!.getType() == "border"))
             return false;
 
         return true;
@@ -79,7 +79,7 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
     }
 
     onAddClick(event:Event) {
-        if (this.state.model.getMaximizedTabset() == null) {
+        if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
                 name: "a new grid"
@@ -89,7 +89,7 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
     }
 
     onShowLayoutClick(event:Event) {
-        console.log(JSON.stringify(this.state.model.toJson(), null, "\t"));
+        console.log(JSON.stringify(this.state.model!.toJson(), null, "\t"));
     }
 
     onAdded() {
@@ -98,7 +98,7 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
 
     onTableClick(node:Node, event:Event) {
         console.log("tab: \n" + node._toAttributeString());
-        console.log("tabset: \n" + node.getParent()._toAttributeString());
+        console.log("tabset: \n" + node.getParent()!._toAttributeString());
     }
 
     factory(node:TabNode) {
@@ -123,10 +123,10 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
                 node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
                 model = node.getExtraData().model;
                 // save submodel on save event
-                node.setEventListener("save", function (p:any) {
-                     this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:{model:node.getExtraData().model.toJson()}}));
+                node.setEventListener("save", (p:any) => {
+                     this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:{model:node.getExtraData().model.toJson()}}));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
-                }.bind(this)
+                }
                 );
             }
 
@@ -135,6 +135,8 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
         else if (component === "text") {
             return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
         }
+
+        return null;
     }
 
     onSelectLayout(event:React.FormEvent) {
@@ -143,7 +145,7 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
     }
 
     onReloadFromFile(event:Event) {
-        this.loadLayout(this.state.layoutFile, true);
+        this.loadLayout(this.state.layoutFile!, true);
     }
 
     onThemeChange(event:React.FormEvent) {
@@ -153,7 +155,7 @@ class App extends React.Component<any, { layoutFile: string, model: FlexLayout.M
         let newAddress = flexlayout_stylesheet.href.substr(0,index);
         flexlayout_stylesheet.setAttribute("href", newAddress +"/" + target.value + ".css");
         let page_stylesheet = window.document.getElementById("page-stylesheet");
-        page_stylesheet.setAttribute("href", target.value + ".css");
+        page_stylesheet!.setAttribute("href", target.value + ".css");
         this.forceUpdate();
     }
 

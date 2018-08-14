@@ -4,22 +4,22 @@ class DragDrop {
     static instance = new DragDrop();
 
     /** @hidden @internal */
-    private _fDblClick: (event: Event) => void;
+    private _fDblClick: ((event: Event) => void) | undefined;
     /** @hidden @internal */
-    private _fClick: (event: Event) => void;
+    private _fClick: ((event: Event) => void) | undefined;
     /** @hidden @internal */
-    private _fDragEnd: (event: Event) => void;
+    private _fDragEnd: ((event: Event) => void) | undefined;
     /** @hidden @internal */
-    private _fDragMove: (event: Event) => void;
+    private _fDragMove: ((event: Event) => void) | undefined;
     /** @hidden @internal */
-    private _fDragStart: (pos: { clientX: number, clientY: number }) => boolean;
+    private _fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined;
     /** @hidden @internal */
-    private _fDragCancel: (wasDragging: boolean) => void;
+    private _fDragCancel: ((wasDragging: boolean) => void) | undefined;
 
     /** @hidden @internal */
     private _glass: HTMLDivElement;
     /** @hidden @internal */
-    private _manualGlassManagement: boolean;
+    private _manualGlassManagement: boolean = false;
     /** @hidden @internal */
     private _lastClick: number;
     /** @hidden @internal */
@@ -27,13 +27,13 @@ class DragDrop {
     /** @hidden @internal */
     private _clickY: number;
     /** @hidden @internal */
-    private _startX: number;
+    private _startX: number = 0;
     /** @hidden @internal */
-    private _startY: number;
+    private _startY: number = 0;
     /** @hidden @internal */
-    private _glassShowing: boolean;
+    private _glassShowing: boolean = false;
     /** @hidden @internal */
-    private _dragging: boolean;
+    private _dragging: boolean = false;
 
     /** @hidden @internal */
     private constructor() {
@@ -55,7 +55,7 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    addGlass(fCancel: () => void) {
+    addGlass(fCancel: (() => void) | undefined) {
         if (!this._glassShowing) {
             const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
             glassRect.positionElement(this._glass);
@@ -81,7 +81,7 @@ class DragDrop {
 
     /** @hidden @internal */
     private _onKeyPress(event: KeyboardEvent) {
-        if (this._fDragCancel != null && event.keyCode === 27) { // esc
+        if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
             this.hideGlass();
             document.removeEventListener("mousemove", this._onMouseMove);
             document.removeEventListener("mouseup", this._onMouseUp);
@@ -123,20 +123,20 @@ class DragDrop {
         return event;
     }
 
-    startDrag(event: Event,
-        fDragStart: (pos: { clientX: number, clientY: number }) => boolean,
-        fDragMove: (event: Event) => void,
-        fDragEnd: (event: Event) => void,
-        fDragCancel?: () => void,
-        fClick?: (event: Event) => void,
-        fDblClick?: (event: Event) => void) {
+    startDrag(event: Event | undefined,
+        fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined,
+        fDragMove: ((event: Event) => void) | undefined,
+        fDragEnd: ((event: Event) => void) | undefined,
+        fDragCancel?: (() => void) | undefined,
+        fClick?: ((event: Event) => void) | undefined,
+        fDblClick?: ((event: Event) => void) | undefined) {
 
         const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
 
         if (this._dragging) debugger; // should never happen
 
-        if (event != null) {
+        if (event) {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
             this._glass.style.cursor = getComputedStyle(event.target as Element).cursor;

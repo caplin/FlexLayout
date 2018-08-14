@@ -10,21 +10,21 @@ class Attribute {
     static JSON = "Json";
 
     name: string;
-    modelName: string;
+    modelName?: string ;
     defaultValue: any;
-    alwaysWriteJson: boolean;
-    type: string;
+    alwaysWriteJson?: boolean;
+    type?: string;
     values: Array<any>;
     from: number;
     to: number;
 
-    constructor(name: string, modelName: string, defaultValue: any, alwaysWriteJson?: boolean) {
+    constructor(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
         this.name = name;
         this.modelName = modelName;
         this.defaultValue = defaultValue;
         this.alwaysWriteJson = alwaysWriteJson;
 
-        this.type = null;
+        this.type = undefined;
         this.values = [];
         this.from = -99999999;
         this.to = 99999999;

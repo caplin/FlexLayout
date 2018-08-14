@@ -1,12 +1,10 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import Rect from "../Rect";
 import PopupMenu from "../PopupMenu";
 import Actions from "../model/Actions";
 import TabSetNode from "../model/TabSetNode";
 import TabNode from "../model/TabNode";
 import Layout from "./Layout";
-import { TabButton, ITabButtonProps } from "./TabButton";
+import { TabButton} from "./TabButton";
 
 /** @hidden @internal */
 export interface ITabSetProps {
@@ -17,9 +15,9 @@ export interface ITabSetProps {
 
 /** @hidden @internal */
 export class TabSet extends React.Component<ITabSetProps, any> {
-    headerRef: HTMLDivElement;
+    headerRef?: HTMLDivElement;
     overflowbuttonRef: any;
-    toolbarRef: HTMLDivElement;
+    toolbarRef?: HTMLDivElement;
 
     recalcVisibleTabs: boolean;
     showOverflow: boolean;
@@ -56,14 +54,14 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             let hideTabsAfter = 999;
             for (let i = 0; i < node.getChildren().length; i++) {
                 const child = node.getChildren()[i] as TabNode;
-                if (child.getTabRect().getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
+                if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
                     hideTabsAfter = Math.max(0, i - 1);
                     //console.log("tabs truncated to:" + hideTabsAfter);
                     this.showOverflow = node.getChildren().length > 1;
 
                     if (i === 0) {
                         this.showToolbar = false;
-                        if (child.getTabRect().getRight() > node.getRect().getRight() - 20) {
+                        if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
                             this.showOverflow = false;
                         }
                     }
@@ -123,32 +121,32 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         const headerContent = renderState.headerContent;
         buttons = renderState.buttons;
 
-        let toolbar = null;
+        let toolbar = undefined;
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
                 buttons.push(<button key="max"
                     className={"flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")}
                     onClick={this.onMaximizeToggle.bind(this)}></button>);
             }
-            toolbar = <div key="toolbar" ref={ref => this.toolbarRef = ref} className="flexlayout__tab_toolbar"
+            toolbar = <div key="toolbar" ref={ref => this.toolbarRef = (ref===null)?undefined:ref} className="flexlayout__tab_toolbar"
                 onMouseDown={this.onInterceptMouseDown.bind(this)}>
                 {buttons}
             </div>;
         }
 
         if (this.showOverflow === true) {
-            tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = ref} className="flexlayout__tab_button_overflow"
+            tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = (ref===null)?undefined:ref} className="flexlayout__tab_button_overflow"
                 onClick={this.onOverflowClick.bind(this, hiddenTabs)}
                 onMouseDown={this.onInterceptMouseDown.bind(this)}
             >{hiddenTabs.length}</button>);
         }
 
-        let showHeader = node.getName() != null;
-        let header = null;
-        let tabStrip = null;
+        let showHeader = node.getName() !== undefined;
+        let header = undefined;
+        let tabStrip = undefined;
 
         let tabStripClasses = "flexlayout__tab_header_outer";
-        if (this.props.node.getClassNameTabStrip() != null) {
+        if (this.props.node.getClassNameTabStrip() !== undefined) {
             tabStripClasses += " " + this.props.node.getClassNameTabStrip();
         }
         if (node.isActive() && !showHeader) {
@@ -167,7 +165,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             if (node.isMaximized()) {
                 tabHeaderClasses += " flexlayout__tabset-maximized"
             }
-            if (this.props.node.getClassNameHeader() != null) {
+            if (this.props.node.getClassNameHeader() !== undefined) {
                 tabHeaderClasses += " " + this.props.node.getClassNameHeader();
             }
 
@@ -180,7 +178,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             </div>;
             tabStrip = <div className={tabStripClasses}
                 style={{ height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" }}>
-                <div ref={ref => this.headerRef = ref} className="flexlayout__tab_header_inner">
+                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className="flexlayout__tab_header_inner">
                     {tabs}
                 </div>
             </div>;
@@ -189,7 +187,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             tabStrip = <div className={tabStripClasses} style={{ top: "0px", height: node.getTabStripHeight() + "px" }}
                 onMouseDown={this.onMouseDown.bind(this)}
                 onTouchStart={this.onMouseDown.bind(this)}>
-                <div ref={ref => this.headerRef = ref} className="flexlayout__tab_header_inner">
+                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className="flexlayout__tab_header_inner">
                     {tabs}
                 </div>
                 {toolbar}
@@ -209,20 +207,19 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     }
 
     onOverflowItemSelect(item: { name: string, node: TabNode, index: number }) {
-        const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(item.node.getId()));
     }
 
     onMouseDown(event: Event) {
         let name = this.props.node.getName();
-        if (name == null) {
+        if (name === undefined) {
             name = "";
         }
         else {
             name = ": " + name;
         }
         this.props.layout.doAction(Actions.setActiveTabset(this.props.node.getId()));
-        this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), null, this.onDoubleClick.bind(this));
+        this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), (event: Event) => undefined, this.onDoubleClick.bind(this));
     }
 
     onInterceptMouseDown(event: React.MouseEvent<HTMLDivElement>) {

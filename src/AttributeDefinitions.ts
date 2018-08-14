@@ -12,7 +12,7 @@ class AttributeDefinitions {
         this.nameToAttribute = {};
     }
 
-    addWithAll(name: string, modelName: string, defaultValue: any, alwaysWriteJson?: boolean) {
+    addWithAll(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
         let attr = new Attribute(name, modelName, defaultValue, alwaysWriteJson);
         this.attributes.push(attr);
         this.nameToAttribute[name] = attr;
@@ -24,7 +24,7 @@ class AttributeDefinitions {
     }
 
     add(name: string, defaultValue: any, alwaysWriteJson?: boolean) {
-        return this.addWithAll(name, null, defaultValue, alwaysWriteJson);
+        return this.addWithAll(name, undefined, defaultValue, alwaysWriteJson);
     }
 
     getAttributes() {
@@ -33,11 +33,10 @@ class AttributeDefinitions {
 
     getModelName(name: string) {
         let conversion = this.nameToAttribute[name];
-        if (conversion != null) {
+        if (conversion !== undefined) {
             return conversion.modelName;
-        } else {
-            return null;
         }
+        return undefined;
     }
 
     toJson(jsonObj: any, obj: any) {

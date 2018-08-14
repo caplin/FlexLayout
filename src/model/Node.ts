@@ -1,7 +1,5 @@
 import Rect from "../Rect";
 import Model from "./Model";
-import TabNode from "./TabNode";
-import TabSetNode from "./TabSetNode";
 import AttributeDefinitions from "../AttributeDefinitions";
 import Orientation from "../Orientation";
 import DockLocation from "../DockLocation";
@@ -16,7 +14,7 @@ abstract class Node {
     /** @hidden @internal */
     protected _attributes: JSMap<any>;
     /** @hidden @internal */
-    protected _parent: Node;
+    protected _parent?: Node;
     /** @hidden @internal */
     protected _children: Array<Node>;
     /** @hidden @internal */
@@ -28,15 +26,14 @@ abstract class Node {
     /** @hidden @internal */
     protected _listeners: JSMap<(params: any) => void>;
     /** @hidden @internal */
-    protected _dirty: boolean;
+    protected _dirty: boolean = false;
     /** @hidden @internal */
-    protected _tempSize: number;
+    protected _tempSize: number = 0;
 
     /** @hidden @internal */
     protected constructor(model: Model) {
         this._model = model;
         this._attributes = {};
-        this._parent = null;
         this._children = [];
         this._fixed = false;
         this._rect = Rect.empty();
@@ -44,8 +41,34 @@ abstract class Node {
         this._listeners = {};
     }
 
+    /** @hidden @internal */
+    protected _getAttributeAsStringOrUndefined(attr: string) {
+        const value = this._attributes[attr];
+        if (value !== undefined) {
+            return value as string;
+        }
+        return undefined;
+    }
+
+    /** @hidden @internal */
+    protected _getAttributeAsNumberOrUndefined(attr: string) {
+        const value = this._attributes[attr];
+        if (value !== undefined) {
+            return value as number;
+        }
+        return undefined;
+    }
+
     getId() {
-        return this._attributes["id"] as string;
+        let id = this._attributes["id"];
+        if (id !== undefined) {
+            return id as string;
+        }
+
+        id = this._model._nextUniqueId();
+        this._setId(id);
+
+        return id as string;
     }
 
     getModel() {
@@ -73,7 +96,7 @@ abstract class Node {
     }
 
     getOrientation(): Orientation {
-        if (this._parent == null) {
+        if (this._parent === undefined) {
             return Orientation.HORZ;
         }
         else {
@@ -98,7 +121,7 @@ abstract class Node {
     /** @hidden @internal */
     _fireEvent(event: string, params: any) {
         //console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
-        if (this._listeners[event] != null) {
+        if (this._listeners[event] !== undefined) {
             this._listeners[event](params);
         }
     }
@@ -109,7 +132,7 @@ abstract class Node {
 
         if (val === undefined) {
             let modelName = this._getAttributeDefinitions().getModelName(name);
-            if (modelName != null) {
+            if (modelName !== undefined) {
                 val = this._model._getAttribute(modelName);
             }
         }
@@ -137,7 +160,7 @@ abstract class Node {
     }
 
     /** @hidden @internal */
-    _getDrawChildren() {
+    _getDrawChildren(): Array<Node> | undefined{
         return this._children;
     }
 
@@ -172,16 +195,16 @@ abstract class Node {
     }
 
     /** @hidden @internal */
-    _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo {
-        let rtn: DropInfo = null;
+    _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+        let rtn: DropInfo | undefined = undefined;
         if (this._rect.contains(x, y)) {
             rtn = this.canDrop(dragNode, x, y);
-            if (rtn == null) {
+            if (rtn === undefined) {
                 if (this._children.length !== 0) {
                     for (let i = 0; i < this._children.length; i++) {
                         const child = this._children[i];
                         rtn = child._findDropTargetNode(dragNode, x, y);
-                        if (rtn != null) {
+                        if (rtn !== undefined) {
                             break;
                         }
                     }
@@ -193,19 +216,19 @@ abstract class Node {
     }
 
     /** @hidden @internal */
-    canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo {
-        return null;
+    canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+        return undefined;
     }
 
     /** @hidden @internal */
-    _canDockInto(dragNode: (Node & IDraggable), dropInfo: DropInfo): boolean {
-        if (dropInfo != null) {
+    _canDockInto(dragNode: (Node & IDraggable), dropInfo: DropInfo | undefined): boolean {
+        if (dropInfo != undefined) {
             if (dropInfo.location === DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
                 return false;
             }
 
             // prevent named tabset docking into another tabset, since this would lose the header
-            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== null) {
+            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== undefined) {
                 return false;
             }
 
@@ -215,7 +238,7 @@ abstract class Node {
 
             // finally check model callback to check if drop allowed
             if (this._model._getOnAllowDrop()) {
-                return this._model._getOnAllowDrop()(dragNode, dropInfo);
+                return (this._model._getOnAllowDrop() as (dragNode: (Node), dropInfo: DropInfo) => boolean)(dragNode, dropInfo);
             }
         }
         return true;
@@ -276,14 +299,14 @@ abstract class Node {
 
     /** @hidden @internal */
     _toAttributeString() {
-        return JSON.stringify(this._attributes, null, "\t");
+        return JSON.stringify(this._attributes, undefined, "\t");
     }
 
     // implemented by subclasses
     /** @hidden @internal */
     abstract _updateAttrs(json: any): void;
     /** @hidden @internal */
-    abstract _getAttributeDefinitions(): AttributeDefinitions;
+    abstract _getAttributeDefinitions(): AttributeDefinitions ;
     /** @hidden @internal */
     abstract _toJson(): any;
 
