@@ -9,7 +9,7 @@
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack --config webpack_build.config.js",
     "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack -p --config webpack_build_min.config.js",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
