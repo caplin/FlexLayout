@@ -85,6 +85,10 @@ class TabNode extends Node implements IDraggable{
         return this._getAttributeAsStringOrUndefined("className");
     }
 
+    isRenderOnDemand(){
+        return this._getAttr("renderOnDemand") as boolean;
+    }
+
     /** @hidden @internal */
     _setName(name: string) {
         this._attributes["name"] = name;
@@ -143,6 +147,7 @@ class TabNode extends Node implements IDraggable{
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
         attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
+        attributeDefinitions.addInherited("renderOnDemand", "tabRenderOnDemand").setType(Attribute.BOOLEAN);
         return attributeDefinitions;
     }
 }
