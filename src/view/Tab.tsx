@@ -10,7 +10,7 @@ export interface ITabProps {
     layout: Layout,
     selected: boolean,
     node: TabNode,
-    factory: (node:TabNode) => React.ReactNode;
+    factory: (node:TabNode) => React.ReactNode
 }
 
 /** @hidden @internal */
@@ -18,7 +18,7 @@ export class Tab extends React.Component<ITabProps, any> {
 
     constructor(props:ITabProps) {
         super(props);
-        this.state = {renderComponent: !props.node.isRenderOnDemand() || props.selected};
+        this.state = {renderComponent: !props.node.isEnableRenderOnDemand() || props.selected};
     }
 
     componentDidMount() {
@@ -47,6 +47,8 @@ export class Tab extends React.Component<ITabProps, any> {
     }
 
     render() {
+        let cm = this.props.layout.getClassName;
+
         const node = this.props.node;
         const parentNode = node.getParent() as TabSetNode;
         const style:JSMap<any> = node._styleWithPosition({
@@ -62,7 +64,7 @@ export class Tab extends React.Component<ITabProps, any> {
             child = this.props.factory(node);
         }
 
-        return <div className="flexlayout__tab"
+        return <div className={cm("flexlayout__tab")}
                     onMouseDown={this.onMouseDown.bind(this)}
                     onTouchStart={this.onMouseDown.bind(this)}
                     style={style}>{child}

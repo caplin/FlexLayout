@@ -6,7 +6,8 @@ export interface IPopupMenuProps {
     element: Element,
     items:Array<{index:number, name:string}>,
     onHide: ()=>void,
-    onSelect: (item:{index:number, name:string})=>void
+    onSelect: (item:{index:number, name:string})=>void,
+    classNameMapper: (defaultClassName: string) => string
 }
 
 /** @hidden @internal */
@@ -25,13 +26,14 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
 
     static show(triggerElement: Element,
         items: Array<{index:number, name:string}>,
-        onSelect: (item:{index:number, name:string})=>void) {
+        onSelect: (item:{index:number, name:string})=>void,
+        classNameMapper: (defaultClassName: string) => string) {
 
         const triggerRect = triggerElement.getBoundingClientRect();
         const docRect = document.body.getBoundingClientRect();
 
         const elm = document.createElement("div");
-        elm.className = "flexlayout__popup_menu_container";
+        elm.className = classNameMapper("flexlayout__popup_menu_container");
         elm.style.right = (docRect.right - triggerRect.right) + "px";
         elm.style.top = triggerRect.bottom + "px";
         document.body.appendChild(elm);
@@ -41,7 +43,7 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
             document.body.removeChild(elm);
         };
 
-        ReactDOM.render(<PopupMenu element={elm} onSelect={onSelect} onHide={onHide} items={items}/>, elm);
+        ReactDOM.render(<PopupMenu element={elm} onSelect={onSelect} onHide={onHide} items={items} classNameMapper={classNameMapper}/>, elm);
     }
 
     componentDidMount() {
@@ -72,10 +74,10 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     }
 
     render() {
-        const items = this.props.items.map(item => <div key={item.index} className="flexlayout__popup_menu_item"
+        const items = this.props.items.map(item => <div key={item.index} className={this.props.classNameMapper("flexlayout__popup_menu_item")}
                                                         onClick={this.onItemClick.bind(this, item)}>{item.name}</div>);
 
-        return <div className="popup_menu">
+        return <div className={this.props.classNameMapper("flexlayout__popup_menu")}>
             {items}
         </div>;
     }

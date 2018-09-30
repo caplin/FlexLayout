@@ -111,14 +111,16 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
     render() {
-        let classNames = "flexlayout__tab_button";
+        let cm = this.props.layout.getClassName;
+
+        let classNames = cm("flexlayout__tab_button");
         const node = this.props.node;
 
         if (this.props.selected) {
-            classNames += " flexlayout__tab_button--selected";
+            classNames += " " + cm("flexlayout__tab_button--selected");
         }
         else {
-            classNames += " flexlayout__tab_button--unselected";
+            classNames += " " + cm("flexlayout__tab_button--unselected");
         }
 
         if (this.props.node.getClassName() !== undefined) {
@@ -135,14 +137,14 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         const renderState = { leading: leadingContent, content: node.getName() };
         this.props.layout.customizeTab(node, renderState);
 
-        let content = <div ref={ref => this.contentRef = (ref===null)?undefined:ref} className="flexlayout__tab_button_content">{renderState.content}</div>;
-        const leading = <div className={"flexlayout__tab_button_leading"}>{renderState.leading}</div>;
+        let content = <div ref={ref => this.contentRef = (ref===null)?undefined:ref} className={cm("flexlayout__tab_button_content")}>{renderState.content}</div>;
+        const leading = <div className={cm("flexlayout__tab_button_leading")}>{renderState.leading}</div>;
 
         if (this.state.editing) {
             const contentStyle = { width: this.contentWidth + "px" };
             content = <input style={contentStyle}
                 ref={ref => this.contentRef = (ref===null)?undefined:ref}
-                className="flexlayout__tab_button_textbox"
+                className={cm("flexlayout__tab_button_textbox")}
                 type="text"
                 autoFocus
                 defaultValue={node.getName()}
@@ -154,7 +156,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
 
         let closeButton = undefined;
         if (this.props.node.isEnableClose()) {
-            closeButton = <div className={"flexlayout__tab_button_trailing"}
+            closeButton = <div className={cm("flexlayout__tab_button_trailing")}
                 onMouseDown={this.onCloseMouseDown.bind(this)}
                 onClick={this.onClose.bind(this)}
                 onTouchStart={this.onCloseMouseDown.bind(this)}

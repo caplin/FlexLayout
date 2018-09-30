@@ -10,7 +10,6 @@ import { TabButton} from "./TabButton";
 export interface ITabSetProps {
     layout: Layout,
     node: TabSetNode
-
 }
 
 /** @hidden @internal */
@@ -77,6 +76,8 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     }
 
     render() {
+        let cm = this.props.layout.getClassName;
+
         const node = this.props.node;
         const style = node._styleWithPosition();
 
@@ -107,7 +108,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
                         key={child.getId()}
                         selected={isSelected}
                         show={showTab}
-                        height={node.getTabStripHeight()} />);
+                        height={node.getTabStripHeight()}/>);
                 }
             }
         }
@@ -125,17 +126,17 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
                 buttons.push(<button key="max"
-                    className={"flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")}
+                    className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
                     onClick={this.onMaximizeToggle.bind(this)}></button>);
             }
-            toolbar = <div key="toolbar" ref={ref => this.toolbarRef = (ref===null)?undefined:ref} className="flexlayout__tab_toolbar"
+            toolbar = <div key="toolbar" ref={ref => this.toolbarRef = (ref===null)?undefined:ref} className={cm("flexlayout__tab_toolbar")}
                 onMouseDown={this.onInterceptMouseDown.bind(this)}>
                 {buttons}
             </div>;
         }
 
         if (this.showOverflow === true) {
-            tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = (ref===null)?undefined:ref} className="flexlayout__tab_button_overflow"
+            tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = (ref===null)?undefined:ref} className={cm("flexlayout__tab_button_overflow")}
                 onClick={this.onOverflowClick.bind(this, hiddenTabs)}
                 onMouseDown={this.onInterceptMouseDown.bind(this)}
             >{hiddenTabs.length}</button>);
@@ -145,25 +146,25 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         let header = undefined;
         let tabStrip = undefined;
 
-        let tabStripClasses = "flexlayout__tab_header_outer";
+        let tabStripClasses = cm("flexlayout__tab_header_outer");
         if (this.props.node.getClassNameTabStrip() !== undefined) {
             tabStripClasses += " " + this.props.node.getClassNameTabStrip();
         }
         if (node.isActive() && !showHeader) {
-            tabStripClasses += " flexlayout__tabset-selected"
+            tabStripClasses += " " + cm("flexlayout__tabset-selected");
         }
 
         if (node.isMaximized() && !showHeader) {
-            tabStripClasses += " flexlayout__tabset-maximized"
+            tabStripClasses += " " + cm("flexlayout__tabset-maximized");
         }
 
         if (showHeader) {
-            let tabHeaderClasses = "flexlayout__tabset_header";
+            let tabHeaderClasses = cm("flexlayout__tabset_header");
             if (node.isActive()) {
-                tabHeaderClasses += " flexlayout__tabset-selected"
+                tabHeaderClasses += " " + cm("flexlayout__tabset-selected");
             }
             if (node.isMaximized()) {
-                tabHeaderClasses += " flexlayout__tabset-maximized"
+                tabHeaderClasses += " " + cm("flexlayout__tabset-maximized");
             }
             if (this.props.node.getClassNameHeader() !== undefined) {
                 tabHeaderClasses += " " + this.props.node.getClassNameHeader();
@@ -178,7 +179,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             </div>;
             tabStrip = <div className={tabStripClasses}
                 style={{ height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" }}>
-                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className="flexlayout__tab_header_inner">
+                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className={cm("flexlayout__tab_header_inner")}>
                     {tabs}
                 </div>
             </div>;
@@ -187,14 +188,14 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             tabStrip = <div className={tabStripClasses} style={{ top: "0px", height: node.getTabStripHeight() + "px" }}
                 onMouseDown={this.onMouseDown.bind(this)}
                 onTouchStart={this.onMouseDown.bind(this)}>
-                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className="flexlayout__tab_header_inner">
+                <div ref={ref => this.headerRef = (ref===null)?undefined:ref} className={cm("flexlayout__tab_header_inner")}>
                     {tabs}
                 </div>
                 {toolbar}
             </div>;
         }
 
-        return <div style={style} className="flexlayout__tabset">
+        return <div style={style} className={cm("flexlayout__tabset")}>
             {header}
             {tabStrip}
         </div>;
@@ -203,7 +204,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     onOverflowClick(hiddenTabs: Array<{ name: string, node: TabNode, index: number }>, event: React.MouseEvent<HTMLDivElement>) {
         //console.log("hidden tabs: " + hiddenTabs);
         const element = this.overflowbuttonRef as Element;
-        PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this));
+        PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this), this.props.layout.getClassName);
     }
 
     onOverflowItemSelect(item: { name: string, node: TabNode, index: number }) {

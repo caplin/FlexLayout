@@ -28,7 +28,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.style.position = "absolute";
-        this.outlineDiv.className = "flexlayout__splitter_drag";
+        this.outlineDiv.className = this.props.layout.getClassName("flexlayout__splitter_drag");
         this.outlineDiv.style.cursor = this.props.node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";
         this.props.node.getRect().positionElement(this.outlineDiv);
         rootdiv.appendChild(this.outlineDiv);
@@ -102,6 +102,8 @@ export class Splitter extends React.Component<ISplitterProps, any> {
     }
 
     render() {
+        let cm = this.props.layout.getClassName;
+
         const node = this.props.node;
         const style = node._styleWithPosition(
             {
@@ -113,7 +115,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
             style={style}
             onTouchStart={this.onMouseDown.bind(this)}
             onMouseDown={this.onMouseDown.bind(this)}
-            className="flexlayout__splitter">
+            className={cm("flexlayout__splitter")}>
         </div>;
     }
 }

@@ -34,6 +34,7 @@ Features:
 *	customizable tabs and tabset header rendering
 *   esc cancels drag
 *	typescript type declarations included
+*	supports overriding css class names via the classNameProvider prop, for use in css modules
 
 ## Installation
 
@@ -71,6 +72,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onAction | optional     |  function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close) |
 | onRenderTab | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onRenderTabSet | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
+| classNameMapper | optional     |  function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
 
 The model is tree of Node objects that define the structure of the layout.
 
@@ -277,7 +279,7 @@ Attributes allowed in the 'global' element
 | tabEnableRename | true | |
 | tabClassName | null | |
 | tabIcon | null | |
-| tabRenderOnDemand | true | |
+| tabEnableRenderOnDemand | true | |
 | tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | |
 | tabSetEnableDrag | true | |
@@ -323,7 +325,7 @@ Inherited defaults will take their value from the associated global attributes (
 | enableRename | *inherited* | |
 | className | *inherited* | |
 | icon | *inherited* | |
-| renderOnDemand | *inherited* | |
+| enableRenderOnDemand | *inherited* | |
 
 Tab nodes have a getExtraData() method that initially returns an empty object, this is the place to 
 add extra data to a tab node that will not be saved.

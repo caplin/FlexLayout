@@ -56,14 +56,16 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
     }
 
     render() {
-        let classNames = "flexlayout__border_button flexlayout__border_button_" + this.props.border;
+        let cm = this.props.layout.getClassName;
+        let classNames = cm("flexlayout__border_button") + " " +
+                        cm("flexlayout__border_button_" + this.props.border);
         const node = this.props.node;
 
         if (this.props.selected) {
-            classNames += " flexlayout__border_button--selected";
+            classNames += " " + cm("flexlayout__border_button--selected");
         }
         else {
-            classNames += " flexlayout__border_button--unselected";
+            classNames += " " + cm("flexlayout__border_button--unselected");
         }
 
         if (this.props.node.getClassName() !== undefined) {
@@ -76,11 +78,11 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
             leadingContent = <img src={node.getIcon()}/>;
         }
 
-        const content = <div ref={ref => this.contentsRef = (ref===null)?undefined:ref} className="flexlayout__border_button_content">{node.getName()}</div>;
+        const content = <div ref={ref => this.contentsRef = (ref===null)?undefined:ref} className={cm("flexlayout__border_button_content")}>{node.getName()}</div>;
 
         let closeButton = undefined;
         if (this.props.node.isEnableClose()) {
-            closeButton = <div className={"flexlayout__border_button_trailing"}
+            closeButton = <div className={cm("flexlayout__border_button_trailing")}
                                onMouseDown={this.onCloseMouseDown.bind(this)}
                                onClick={this.onClose.bind(this)}
                                onTouchStart={this.onCloseMouseDown.bind(this)}

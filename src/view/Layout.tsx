@@ -26,7 +26,8 @@ export interface ILayoutProps {
     onAction?: (action: Action) => void,
     onRenderTab?: (node: TabNode, renderValues: { leading: React.ReactNode, content: React.ReactNode }) => void,
     onRenderTabSet?: (tabSetNode: (TabSetNode | BorderNode), renderValues: { headerContent?: React.ReactNode, buttons: Array<React.ReactNode> }) => void,
-    onModelChange?: (model: Model) => void
+    onModelChange?: (model: Model) => void,
+    classNameMapper?: (defaultClassName: string) => string
 }
 
 /**
@@ -82,6 +83,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
         this.rect = new Rect(0, 0, 0, 0);
         this.model._setChangeListener(this.onModelChange.bind(this));
         this.updateRect = this.updateRect.bind(this);
+        this.getClassName = this.getClassName.bind(this);
         this.tabIds = [];
     }
 
@@ -140,6 +142,15 @@ export class Layout extends React.Component<ILayoutProps, any> {
     }
 
     /** @hidden @internal */
+    getClassName(defaultClassName:string) {
+        if (this.props.classNameMapper === undefined) {
+            return defaultClassName;
+        } else {
+            return this.props.classNameMapper(defaultClassName);
+        }
+    }
+
+    /** @hidden @internal */
     componentWillUnmount() {
         window.removeEventListener("resize", this.updateRect);
     }
@@ -179,7 +190,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
         // this.layoutTime = (Date.now() - this.start);
 
         return (
-            <div ref={self => this.selfRef = (self===null)?undefined:self} className="flexlayout__layout">
+            <div ref={self => this.selfRef = (self===null)?undefined:self} className={this.getClassName("flexlayout__layout")}>
                 {tabSetComponents}
                 {this.tabIds.map(t => {
                     return tabComponents[t];
@@ -196,7 +207,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
             const border = borderSet.getBorders()[i];
             if (border.isShowing()) {
                 borderComponents.push(<BorderTabSet key={"border_" + border.getLocation().getName()} border={border}
-                    layout={this} />);
+                    layout={this}/>);
                 const drawChildren = border._getDrawChildren();
                 for (let i = 0; i < drawChildren.length; i++) {
                     const child = drawChildren[i];
@@ -303,7 +314,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
         this.dragDivText = dragText;
         this.dragDiv = document.createElement("div");
-        this.dragDiv.className = "flexlayout__drag_rect";
+        this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
         this.dragDiv.innerHTML = this.dragDivText;
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown.bind(this));
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown.bind(this));
@@ -380,12 +391,12 @@ export class Layout extends React.Component<ILayoutProps, any> {
         this.dropInfo = undefined;
         const rootdiv = ReactDOM.findDOMNode(this) as HTMLElement;
         this.outlineDiv = document.createElement("div");
-        this.outlineDiv.className = "flexlayout__outline_rect";
+        this.outlineDiv.className = this.getClassName("flexlayout__outline_rect");
         rootdiv.appendChild(this.outlineDiv);
 
         if (this.dragDiv == undefined) {
             this.dragDiv = document.createElement("div");
-            this.dragDiv.className = "flexlayout__drag_rect";
+            this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
             this.dragDiv.innerHTML = this.dragDivText;
             rootdiv.appendChild(this.dragDiv);
         }
@@ -418,7 +429,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
         const dropInfo = this.model!._findDropTargetNode(this.dragNode!, pos.x, pos.y);
         if (dropInfo) {
             this.dropInfo = dropInfo;
-            this.outlineDiv!.className = dropInfo.className;
+            this.outlineDiv!.className = this.getClassName(dropInfo.className);
             dropInfo.rect.positionElement(this.outlineDiv!);
         }
     }
@@ -460,7 +471,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
             const width = "10px";
 
             this.edgeTopDiv = document.createElement("div");
-            this.edgeTopDiv.className = "flexlayout__edge_rect";
+            this.edgeTopDiv.className = this.getClassName("flexlayout__edge_rect");
             this.edgeTopDiv.style.top = r.y + "px";
             this.edgeTopDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeTopDiv.style.width = length;
@@ -469,7 +480,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
             this.edgeTopDiv.style.borderBottomRightRadius = radius;
 
             this.edgeLeftDiv = document.createElement("div");
-            this.edgeLeftDiv.className = "flexlayout__edge_rect";
+            this.edgeLeftDiv.className = this.getClassName("flexlayout__edge_rect");
             this.edgeLeftDiv.style.top = r.y + (r.height - size) / 2 + "px";
             this.edgeLeftDiv.style.left = r.x + "px";
             this.edgeLeftDiv.style.width = width;
@@ -478,7 +489,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
             this.edgeLeftDiv.style.borderBottomRightRadius = radius;
 
             this.edgeBottomDiv = document.createElement("div");
-            this.edgeBottomDiv.className = "flexlayout__edge_rect";
+            this.edgeBottomDiv.className = this.getClassName("flexlayout__edge_rect");
             this.edgeBottomDiv.style.bottom = (domRect.height - r.getBottom()) + "px";
             this.edgeBottomDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeBottomDiv.style.width = length;
@@ -487,7 +498,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
             this.edgeBottomDiv.style.borderTopRightRadius = radius;
 
             this.edgeRightDiv = document.createElement("div");
-            this.edgeRightDiv.className = "flexlayout__edge_rect";
+            this.edgeRightDiv.className = this.getClassName("flexlayout__edge_rect");
             this.edgeRightDiv.style.top = r.y + (r.height - size) / 2 + "px";
             this.edgeRightDiv.style.right = (domRect.width - r.getRight()) + "px";
             this.edgeRightDiv.style.width = width;

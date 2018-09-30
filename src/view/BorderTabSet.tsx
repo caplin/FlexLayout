@@ -20,6 +20,8 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
     }
 
     render() {
+        let cm = this.props.layout.getClassName;
+
         const border = this.props.border;
         const style = border.getTabHeaderRect()!.styleWithPosition({});
         const tabs = [];
@@ -46,7 +48,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
             }
         }
 
-        let borderClasses = "flexlayout__border_" + border.getLocation().getName();
+        let borderClasses = cm("flexlayout__border_" + border.getLocation().getName());
         if (this.props.border.getClassName() !== undefined) {
             borderClasses += " " + this.props.border.getClassName();
         }
@@ -57,27 +59,21 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         this.props.layout.customizeTabSet(border, renderState);
         buttons = renderState.buttons;
 
-        //buttons.push(<button
-        //    key="1"
-        //    className={"flexlayout__tab_toolbar_button-min"}></button>);
-
         const toolbar = <div
             key="toolbar"
             ref={toolbar=>this.toolbarRef = (toolbar===null)?undefined:toolbar}
-            className={"flexlayout__border_toolbar_" + border.getLocation().getName()}>
+            className={cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
             {buttons}
         </div>;
 
         return <div
             style={style}
             className={borderClasses}>
-            <div className={"flexlayout__border_inner_" + border.getLocation().getName()}>
+            <div className={cm("flexlayout__border_inner_" + border.getLocation().getName())}>
                 {tabs}
             </div>
             {toolbar}
         </div>;
     }
 }
-
-// export default BorderTabSet;
 

@@ -176,7 +176,17 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 model={this.state.model}
                 factory={this.factory.bind(this)}
                 onRenderTab={onRenderTab}
-                onRenderTabSet={onRenderTabSet} />;
+                onRenderTabSet={onRenderTabSet} 
+                // classNameMapper={
+                //     className => {
+                //         console.log(className);
+                //         if (className === "flexlayout__tab_button--selected") {
+                //             className = "override__tab_button--selected";
+                //         }
+                //         return className;
+                //     }
+                // }
+                />;
         }
 
         return <div className="app">
