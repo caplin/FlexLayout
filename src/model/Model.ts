@@ -409,6 +409,7 @@ class Model {
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabClassName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabIcon", undefined).setType(Attribute.STRING);
+        attributeDefinitions.add("tabRenderOnDemand", true).setType(Attribute.BOOLEAN);
 
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
