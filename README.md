@@ -34,7 +34,7 @@ Features:
 *	customizable tabs and tabset header rendering
 *   esc cancels drag
 *	typescript type declarations included
-*	supports overriding css class names via the classNameProvider prop, for use in css modules
+*	supports overriding css class names via the classNameMapper prop, for use in css modules
 
 ## Installation
 
@@ -72,6 +72,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onAction | optional     |  function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close) |
 | onRenderTab | optional     |  function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onRenderTabSet | optional     |  function called when rendering a tabset, allows header and buttons to be customized |
+| onModelChange | optional     |  function called when model has changed  |
 | classNameMapper | optional     |  function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
 
 The model is tree of Node objects that define the structure of the layout.
