@@ -57,7 +57,7 @@ import FlexLayout from "flexlayout-react";
 Include the light or dark style in your html:
 
 ```
-<link rel="stylesheet" href="node_modules/flexLayout-react/style/dark.css" />
+<link rel="stylesheet" href="node_modules/flexlayout-react/style/dark.css" />
 ```
 
 ## Usage
