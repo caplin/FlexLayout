@@ -281,6 +281,7 @@ Attributes allowed in the 'global' element
 | tabClassName | null | |
 | tabIcon | null | |
 | tabEnableRenderOnDemand | true | |
+| tabDragSpeed | 0.3 | CSS transition speed of drag outlines (in seconds) |
 | tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | |
 | tabSetEnableDrag | true | |

@@ -414,7 +414,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
     /** @hidden @internal */
     onDragMove(event: React.MouseEvent<Element>) {
         if (this.firstMove === false) {
-            this.outlineDiv!.style.transition = "top .3s, left .3s, width .3s, height .3s";
+            const speed = this.model!._getAttribute("tabDragSpeed") as number;
+            this.outlineDiv!.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
         }
         this.firstMove = false;
         const clientRect = this.selfRef!.getBoundingClientRect();
