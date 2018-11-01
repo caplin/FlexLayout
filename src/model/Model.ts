@@ -410,6 +410,7 @@ class Model {
         attributeDefinitions.add("tabClassName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabIcon", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabDragSpeed", 0.3).setType(Attribute.NUMBER);
 
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
