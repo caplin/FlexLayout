@@ -93,7 +93,7 @@ class DragDrop {
     /** @hidden @internal */
     private _getLocationEvent(event: any) {
         let posEvent: any = event;
-        if (event.touches) {
+        if (event && event.touches) {
             posEvent = event.touches[0]
         }
         return posEvent;
