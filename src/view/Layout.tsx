@@ -277,7 +277,6 @@ export class Layout extends React.Component<ILayoutProps, any> {
     /**
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
-     * @hidden @internal
      */
     addTabToActiveTabSet(json: any) {
         const tabsetNode = this.model!.getActiveTabset();
@@ -292,7 +291,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDrop(dragText: string, json: any, onDrop: () => void) {
+    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: () => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode._fromJson(json, this.model!), true, undefined, undefined);
@@ -306,7 +305,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDropIndirect(dragText: string, json: any, onDrop: () => void) {
+    addTabWithDragAndDropIndirect(dragText: string, json: any, onDrop?: () => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
 
