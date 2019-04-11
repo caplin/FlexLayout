@@ -26,7 +26,7 @@ export interface ILayoutProps {
     onAction?: (action: Action) => Action | undefined,
     onRenderTab?: (node: TabNode, renderValues: { leading: React.ReactNode, content: React.ReactNode }) => void,
     onRenderTabSet?: (tabSetNode: (TabSetNode | BorderNode), renderValues: { headerContent?: React.ReactNode, buttons: Array<React.ReactNode> }) => void,
-    onModelChange?: (model: Model) => void,
+    onModelChange?: (model: Model, action: Action) => void,
     classNameMapper?: (defaultClassName: string) => string
 }
 
@@ -88,10 +88,10 @@ export class Layout extends React.Component<ILayoutProps, any> {
     }
 
     /** @hidden @internal */
-    onModelChange() {
+    onModelChange(action: Action) {
         this.forceUpdate();
         if (this.props.onModelChange) {
-            this.props.onModelChange(this.model!)
+            this.props.onModelChange(this.model!, action)
         }
     }
 

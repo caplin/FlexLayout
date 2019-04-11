@@ -30,7 +30,7 @@ class Model {
     /** @hidden @internal */
     private _nextId: number;
     /** @hidden @internal */
-    private _changeListener?: (() => void) ;
+    private _changeListener?: ((action: Action) => void) ;
     /** @hidden @internal */
     private _root?: RowNode;
     /** @hidden @internal */
@@ -57,7 +57,7 @@ class Model {
     }
 
      /** @hidden @internal */
-     _setChangeListener(listener: (() => void) | undefined) {
+     _setChangeListener(listener: ((action: Action) => void) | undefined) {
         this._changeListener = listener;
     }
 
@@ -253,7 +253,7 @@ class Model {
         this._updateIdMap();
 
         if (this._changeListener !== undefined) {
-            this._changeListener();
+            this._changeListener(action);
         }
     }
 
