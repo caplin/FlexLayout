@@ -4,6 +4,20 @@
   "description": "A multi-tab layout manager",
   "main": "lib/index.js",
   "types": "./declarations/index.d.ts",
+    "keywords": [
+    "react",
+    "layout",
+    "dock",
+    "panel",
+    "tabs",
+    "drag-and-drop",
+    "float",
+    "window",
+    "drag",
+    "drop",
+    "reactjs",
+    "react-dom"
+  ],
   "scripts": {
     "test": "jasmine",
     "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min",
