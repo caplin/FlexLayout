@@ -1,27 +1,27 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import DragDrop from "../DragDrop";
-import Orientation from "../Orientation";
-import Node from "../model/Node";
-import BorderNode from "../model/BorderNode";
 import Actions from "../model/Actions";
-import SplitterNode from "../model/SplitterNode";
+import BorderNode from "../model/BorderNode";
+import Node from "../model/Node";
 import RowNode from "../model/RowNode";
+import SplitterNode from "../model/SplitterNode";
+import Orientation from "../Orientation";
 import Layout from "./Layout";
 
 /** @hidden @internal */
 export interface ISplitterProps {
-    layout: Layout,
-    node: SplitterNode
+    layout: Layout;
+    node: SplitterNode;
 }
 
 /** @hidden @internal */
 export class Splitter extends React.Component<ISplitterProps, any> {
 
-    pBounds?: Array<number>;
-    outlineDiv?: HTMLDivElement;
+    public pBounds?: number[];
+    public outlineDiv?: HTMLDivElement;
 
-    onMouseDown(event: Event) {
+    public onMouseDown(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         DragDrop.instance.startDrag(event, this.onDragStart.bind(this), this.onDragMove.bind(this), this.onDragEnd.bind(this), this.onDragCancel.bind(this));
         const parentNode = this.props.node.getParent() as RowNode;
         this.pBounds = parentNode._getSplitterBounds(this.props.node);
@@ -34,24 +34,24 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         rootdiv.appendChild(this.outlineDiv);
     }
 
-    onDragCancel(wasDragging: boolean) {
+    public onDragCancel(wasDragging: boolean) {
         const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
         rootdiv.removeChild(this.outlineDiv as Element);
     }
 
-    onDragStart(event: React.MouseEvent<HTMLDivElement>) {
+    public onDragStart() {
 
         return true;
     }
 
-    onDragMove(event: React.MouseEvent<HTMLDivElement>) {
+    public onDragMove(event: React.MouseEvent<Element, MouseEvent>) {
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
         };
 
-        let outlineDiv = this.outlineDiv as HTMLDivElement;
+        const outlineDiv = this.outlineDiv as HTMLDivElement;
 
         if (this.props.node.getOrientation() === Orientation.HORZ) {
             outlineDiv.style.top = this.getBoundPosition(pos.y - 4) + "px";
@@ -61,11 +61,11 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         }
     }
 
-    onDragEnd(event: React.MouseEvent<HTMLDivElement>, didDrag: boolean) {
+    public onDragEnd() {
         const node = this.props.node;
         const parentNode = node.getParent() as RowNode;
         let value = 0;
-        let outlineDiv = this.outlineDiv as HTMLDivElement;
+        const outlineDiv = this.outlineDiv as HTMLDivElement;
         if (node.getOrientation() === Orientation.HORZ) {
             value = outlineDiv.offsetTop;
         }
@@ -88,8 +88,8 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         rootdiv.removeChild(this.outlineDiv as HTMLDivElement);
     }
 
-    getBoundPosition(p: number) {
-        let bounds = this.pBounds as Array<number>;
+    public getBoundPosition(p: number) {
+        const bounds = this.pBounds as number[];
         let rtn = p;
         if (p < bounds[0]) {
             rtn = bounds[0];
@@ -101,8 +101,8 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         return rtn;
     }
 
-    render() {
-        let cm = this.props.layout.getClassName;
+    public render() {
+        const cm = this.props.layout.getClassName;
 
         const node = this.props.node;
         const style = node._styleWithPosition(
@@ -111,12 +111,11 @@ export class Splitter extends React.Component<ISplitterProps, any> {
             }
         );
 
-        return <div
+        return  <div
             style={style}
             onTouchStart={this.onMouseDown.bind(this)}
             onMouseDown={this.onMouseDown.bind(this)}
-            className={cm("flexlayout__splitter")}>
-        </div>;
+            className={cm("flexlayout__splitter")}/>;
     }
 }
 

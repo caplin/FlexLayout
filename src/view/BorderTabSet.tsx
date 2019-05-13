@@ -1,34 +1,30 @@
 import * as React from "react";
-import Border from "../model/BorderNode";
-import {BorderButton} from "./BorderButton";
 import DockLocation from "../DockLocation";
-import Layout from "./Layout";
+import Border from "../model/BorderNode";
 import TabNode from "../model/TabNode";
+import {BorderButton} from "./BorderButton";
+import Layout from "./Layout";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
-    border:Border,
-    layout:Layout
+    border:Border;
+    layout:Layout;
 }
 
 /** @hidden @internal */
 export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
-    toolbarRef?: HTMLDivElement;
+    public toolbarRef?: HTMLDivElement;
 
-    constructor(props:IBorderTabSetProps) {
-        super(props);
-    }
-
-    render() {
-        let cm = this.props.layout.getClassName;
+    public render() {
+        const cm = this.props.layout.getClassName;
 
         const border = this.props.border;
         const style = border.getTabHeaderRect()!.styleWithPosition({});
         const tabs = [];
         if (border.getLocation() !== DockLocation.LEFT) {
             for (let i = 0; i < border.getChildren().length; i++) {
-                let isSelected = border.getSelected() === i;
-                let child = border.getChildren()[i] as TabNode;
+                const isSelected = border.getSelected() === i;
+                const child = border.getChildren()[i] as TabNode;
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border.getLocation().getName()}
                                         node={child}
@@ -38,8 +34,8 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         }
         else {
             for (let i = border.getChildren().length - 1; i >= 0; i--) {
-                let isSelected = border.getSelected() === i;
-                let child = border.getChildren()[i] as TabNode;
+                const isSelected = border.getSelected() === i;
+                const child = border.getChildren()[i] as TabNode;
                 tabs.push(<BorderButton layout={this.props.layout}
                                         border={border.getLocation().getName()}
                                         node={child}
@@ -54,8 +50,8 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         }
 
         // allow customization of tabset right/bottom buttons
-        let buttons:Array<any> = [];
-        const renderState = {headerContent:{}, buttons: buttons};
+        let buttons:any[] = [];
+        const renderState = {headerContent:{}, buttons};
         this.props.layout.customizeTabSet(border, renderState);
         buttons = renderState.buttons;
 
