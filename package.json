@@ -20,11 +20,12 @@
     "react-dom"
   ],
   "scripts": {
-    "test": "jasmine",
+    "devserver": "webpack-dev-server",
     "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min",
     "build:commonjs": "tsc -p tsconfig2.json",
     "build:umd": "webpack --config webpack_build.config.js",
     "build:umd:min": "webpack -p --config webpack_build_min.config.js",
+    "test": "jasmine",
     "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none "
   },
   "author": "Caplin Systems Ltd",
