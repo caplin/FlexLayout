@@ -10,7 +10,7 @@ class DragDrop {
     /** @hidden @internal */
     private _fDragEnd: ((event: Event) => void) | undefined;
     /** @hidden @internal */
-    private _fDragMove: ((event: Event) => void) | undefined;
+    private _fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined;
     /** @hidden @internal */
     private _fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined;
     /** @hidden @internal */
@@ -55,7 +55,7 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    addGlass(fCancel: (() => void) | undefined) {
+    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
         if (!this._glassShowing) {
             const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
             glassRect.positionElement(this._glass);
@@ -109,25 +109,25 @@ class DragDrop {
     }
 
     /** @hidden @internal */
-    private _stopPropagation(event: Event) {
+    private _stopPropagation(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         if (event.stopPropagation) {
             event.stopPropagation();
         }
     }
 
     /** @hidden @internal */
-    private _preventDefault(event: Event) {
+    private _preventDefault(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         if (event.preventDefault) {
             event.preventDefault();
         }
         return event;
     }
 
-    startDrag(event: Event | undefined,
+    startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
         fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined,
-        fDragMove: ((event: Event) => void) | undefined,
+        fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined,
         fDragEnd: ((event: Event) => void) | undefined,
-        fDragCancel?: (() => void) | undefined,
+        fDragCancel?: ((wasDragging: boolean) => void) | undefined,
         fClick?: ((event: Event) => void) | undefined,
         fDblClick?: ((event: Event) => void) | undefined) {
 
@@ -164,7 +164,7 @@ class DragDrop {
     }
 
     /** @hidden @internal */
-    private _onMouseMove(event: Event) {
+    private _onMouseMove(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         const posEvent = this._getLocationEvent(event);
         this._stopPropagation(event);
         this._preventDefault(event);

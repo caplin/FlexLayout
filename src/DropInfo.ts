@@ -1,14 +1,14 @@
-import Rect from "./Rect";
-import Node from "./model/Node";
 import DockLocation from "./DockLocation";
 import IDropTarget from "./model/IDropTarget";
+import Node from "./model/Node";
+import Rect from "./Rect";
 
 class DropInfo {
-    node: (Node & IDropTarget);
-    rect: Rect;
-    location: DockLocation;
-    index: number;
-    className: string;
+    public node: (Node & IDropTarget);
+    public rect: Rect;
+    public location: DockLocation;
+    public index: number;
+    public className: string;
 
     constructor(node: (Node & IDropTarget), rect: Rect, location: DockLocation, index: number, className: string) {
         this.node = node;
