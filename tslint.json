@@ -1,0 +1,19 @@
+{
+    "extends": [
+      "tslint:recommended",
+      "tslint-react",
+      "tslint-config-prettier"
+    ],
+    "rules": {
+      "semicolon": [
+        true,
+        "always"
+      ],
+      "quotemark": [
+        true,
+        "double",
+        "jsx-double"
+      ],
+      "object-literal-sort-keys": false
+    }
+  }

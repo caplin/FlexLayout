@@ -78,7 +78,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         alert("Error loading json config file: " + this.loadingLayoutName + "\n" + reason);
     }
 
-    onAddClick(event:Event) {
+    onAddClick(event:React.MouseEvent) {
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
@@ -88,7 +88,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
     }
 
-    onShowLayoutClick(event:Event) {
+    onShowLayoutClick(event:React.MouseEvent) {
         console.log(JSON.stringify(this.state.model!.toJson(), null, "\t"));
     }
 
@@ -144,7 +144,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         this.loadLayout(target.value);
     }
 
-    onReloadFromFile(event:Event) {
+    onReloadFromFile(event:React.MouseEvent) {
         this.loadLayout(this.state.layoutFile!, true);
     }
 

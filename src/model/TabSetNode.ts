@@ -16,7 +16,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   public static readonly TYPE = "tabset";
 
   /** @hidden @internal */
-  static _fromJson(json: any, model: Model) {
+  public static _fromJson(json: any, model: Model) {
     const newLayoutNode = new TabSetNode(model, json);
 
     if (json.children != null) {
@@ -42,7 +42,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   /** @hidden @internal */
   private static _createAttributeDefinitions(): AttributeDefinitions {
 
-    let attributeDefinitions = new AttributeDefinitions();
+    const attributeDefinitions = new AttributeDefinitions();
     attributeDefinitions.add("type", TabSetNode.TYPE, true);
     attributeDefinitions.add("id", undefined).setType(Attribute.ID);
 
@@ -81,108 +81,108 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     model._addNode(this);
   }
 
-  getName() {
+  public getName() {
     return this._getAttributeAsStringOrUndefined("name");
   }
 
-  getSelected() {
-    const selected = this._attributes["selected"];
+  public getSelected() {
+    const selected = this._attributes.selected;
     if (selected !== undefined) {
       return selected as number;
     }
     return -1;
   }
 
-  getSelectedNode() {
-    let selected = this.getSelected();
+  public getSelectedNode() {
+    const selected = this.getSelected();
     if (selected !== -1) {
       return this._children[selected];
     }
     return undefined;
   }
 
-  getWeight(): number {
-    return this._attributes["weight"] as number;
+  public getWeight(): number {
+    return this._attributes.weight as number;
   }
 
-  getWidth() {
+  public getWidth() {
     return this._getAttributeAsNumberOrUndefined("width");
   }
 
-  getHeight() {
+  public getHeight() {
     return this._getAttributeAsNumberOrUndefined("height");
   }
 
-  isMaximized() {
+  public isMaximized() {
     return this._model.getMaximizedTabset() === this;
   }
 
-  isActive() {
+  public isActive() {
     return this._model.getActiveTabset() === this;
   }
 
-  isEnableDeleteWhenEmpty() {
+  public isEnableDeleteWhenEmpty() {
     return this._getAttr("enableDeleteWhenEmpty") as boolean;
   }
 
-  isEnableDrop() {
+  public isEnableDrop() {
     return this._getAttr("enableDrop") as boolean;
   }
 
-  isEnableDrag() {
+  public isEnableDrag() {
     return this._getAttr("enableDrag") as boolean;
   }
 
-  isEnableDivide() {
+  public isEnableDivide() {
     return this._getAttr("enableDivide") as boolean;
   }
 
-  isEnableMaximize() {
+  public isEnableMaximize() {
     return this._getAttr("enableMaximize") as boolean;
   }
 
-  isEnableTabStrip() {
+  public isEnableTabStrip() {
     return this._getAttr("enableTabStrip") as boolean;
   }
 
-  getClassNameTabStrip() {
+  public getClassNameTabStrip() {
     return this._getAttributeAsStringOrUndefined("classNameTabStrip");
   }
 
-  getClassNameHeader() {
+  public getClassNameHeader() {
     return this._getAttributeAsStringOrUndefined("classNameHeader");
   }
 
-  getHeaderHeight() {
+  public getHeaderHeight() {
     return this._getAttr("headerHeight") as number;
   }
 
-  getTabStripHeight() {
+  public getTabStripHeight() {
     return this._getAttr("tabStripHeight") as number;
   }
 
   /** @hidden @internal */
-  _setWeight(weight: number) {
-    this._attributes["weight"] = weight;
+  public _setWeight(weight: number) {
+    this._attributes.weight = weight;
   }
 
   /** @hidden @internal */
-  _setSelected(index: number) {
-    this._attributes["selected"] = index;
+  public _setSelected(index: number) {
+    this._attributes.selected = index;
   }
 
   /** @hidden @internal */
-  canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
-    let dropInfo = undefined;
+  public canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+    let dropInfo;
 
     if (dragNode === this) {
-      let dockLocation = DockLocation.CENTER;
-      let outlineRect = this._tabHeaderRect;
+      const dockLocation = DockLocation.CENTER;
+      const outlineRect = this._tabHeaderRect;
       dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, "flexlayout__outline_rect");
     }
     else if (this._contentRect!.contains(x, y)) {
-      let dockLocation = DockLocation.getLocation(this._contentRect!, x, y);
-      let outlineRect = dockLocation.getDockRect(this._rect);
+      const dockLocation = DockLocation.getLocation(this._contentRect!, x, y);
+      const outlineRect = dockLocation.getDockRect(this._rect);
       dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
     }
     else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
@@ -197,16 +197,16 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         r = child.getTabRect()!;
         childCenter = r.x + r.width / 2;
         if (x >= p && x < childCenter) {
-          let dockLocation = DockLocation.CENTER;
-          let outlineRect = new Rect(r.x - 2, yy, 3, h);
+          const dockLocation = DockLocation.CENTER;
+          const outlineRect = new Rect(r.x - 2, yy, 3, h);
           dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
           break;
         }
         p = childCenter;
       }
       if (dropInfo == null) {
-        let dockLocation = DockLocation.CENTER;
-        let outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
+        const dockLocation = DockLocation.CENTER;
+        const outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
         dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
       }
     }
@@ -219,7 +219,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
+  public _layout(rect: Rect) {
 
     if (this.isMaximized()) {
       rect = (this._model.getRoot() as Node).getRect();
@@ -247,14 +247,14 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _remove(node: TabNode) {
+  public _remove(node: TabNode) {
     this._removeChild(node);
     this._model._tidy();
     this._setSelected(Math.max(0, this.getSelected() - 1));
   }
 
   /** @hidden @internal */
-  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
+  public drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
     const dockLocation = location;
 
     if (this === dragNode) { // tabset drop into itself
@@ -266,7 +266,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     if (dragParent !== undefined) {
       fromIndex = dragParent._removeChild(dragNode);
     }
-    //console.log("removed child: " + fromIndex);
+    // console.log("removed child: " + fromIndex);
 
     // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
     if (dragNode.getType() === TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
@@ -306,12 +306,12 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
       if (dragNode.getType() === TabNode.TYPE) {
         this._addChild(dragNode, insertPos);
         this._setSelected(insertPos);
-        //console.log("added child at : " + insertPos);
+        // console.log("added child at : " + insertPos);
       }
       else {
         dragNode.getChildren().forEach((child, i) => {
           this._addChild(child, insertPos);
-          //console.log("added child at : " + insertPos);
+          // console.log("added child at : " + insertPos);
           insertPos++;
         });
       }
@@ -322,10 +322,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
       let tabSet: TabSetNode | undefined;
       if (dragNode instanceof TabNode) {
         // create new tabset parent
-        //console.log("create a new tabset");
+        // console.log("create a new tabset");
         tabSet = new TabSetNode(this._model, {});
         tabSet._addChild(dragNode);
-        //console.log("added child at end");
+        // console.log("added child at end");
         dragParent = tabSet;
       }
       else {
@@ -338,18 +338,18 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
       if (parentRow.getOrientation() === dockLocation._orientation) {
         tabSet._setWeight(this.getWeight() / 2);
         this._setWeight(this.getWeight() / 2);
-        //console.log("added child 50% size at: " +  pos + dockLocation.indexPlus);
+        // console.log("added child 50% size at: " +  pos + dockLocation.indexPlus);
         parentRow._addChild(tabSet, pos + dockLocation._indexPlus);
       }
       else {
         // create a new row to host the new tabset (it will go in the opposite direction)
-        //console.log("create a new row");
+        // console.log("create a new row");
         const newRow = new RowNode(this._model, {});
         newRow._setWeight(this.getWeight());
         newRow._addChild(this);
         this._setWeight(50);
         tabSet._setWeight(50);
-        //console.log("added child 50% size at: " +  dockLocation.indexPlus);
+        // console.log("added child 50% size at: " +  dockLocation.indexPlus);
         newRow._addChild(tabSet, dockLocation._indexPlus);
 
         parentRow._removeChild(this);
@@ -363,7 +363,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _toJson(): any {
+  public _toJson(): any {
     const json: any = {};
     TabSetNode._attributeDefinitions.toJson(json, this._attributes);
     json.children = this._children.map((child) => child._toJson());
@@ -380,17 +380,17 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _updateAttrs(json: any) {
+  public _updateAttrs(json: any) {
     TabSetNode._attributeDefinitions.update(json, this._attributes);
   }
 
   /** @hidden @internal */
-  _getAttributeDefinitions() {
+  public _getAttributeDefinitions() {
     return TabSetNode._attributeDefinitions;
   }
 
   /** @hidden @internal */
-  _getPrefSize(orientation: Orientation) {
+  public _getPrefSize(orientation: Orientation) {
     let prefSize = this.getWidth();
     if (orientation === Orientation.VERT) {
       prefSize = this.getHeight();

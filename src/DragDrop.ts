@@ -1,7 +1,7 @@
 import Rect from "./Rect";
 
 class DragDrop {
-    static instance = new DragDrop();
+    public static instance = new DragDrop();
 
     /** @hidden @internal */
     private _fDblClick: ((event: Event) => void) | undefined;
@@ -55,7 +55,7 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
+    public addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
         if (!this._glassShowing) {
             const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
             glassRect.positionElement(this._glass);
@@ -72,58 +72,14 @@ class DragDrop {
         }
     }
 
-    hideGlass() {
+    public hideGlass() {
         if (this._glassShowing) {
             document.body.removeChild(this._glass);
             this._glassShowing = false;
         }
     }
 
-    /** @hidden @internal */
-    private _onKeyPress(event: KeyboardEvent) {
-        if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
-            this.hideGlass();
-            document.removeEventListener("mousemove", this._onMouseMove);
-            document.removeEventListener("mouseup", this._onMouseUp);
-            this._fDragCancel(this._dragging);
-            this._dragging = false;
-        }
-    }
-
-    /** @hidden @internal */
-    private _getLocationEvent(event: any) {
-        let posEvent: any = event;
-        if (event && event.touches) {
-            posEvent = event.touches[0]
-        }
-        return posEvent;
-    }
-
-    /** @hidden @internal */
-    private _getLocationEventEnd(event: any) {
-        let posEvent: any = event;
-        if (event.changedTouches) {
-            posEvent = event.changedTouches[0]
-        }
-        return posEvent;
-    }
-
-    /** @hidden @internal */
-    private _stopPropagation(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
-        if (event.stopPropagation) {
-            event.stopPropagation();
-        }
-    }
-
-    /** @hidden @internal */
-    private _preventDefault(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
-        if (event.preventDefault) {
-            event.preventDefault();
-        }
-        return event;
-    }
-
-    startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
+    public startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
         fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined,
         fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined,
         fDragEnd: ((event: Event) => void) | undefined,
@@ -134,7 +90,7 @@ class DragDrop {
         const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
 
-        if (this._dragging) debugger; // should never happen
+        if (this._dragging) { debugger; } // should never happen
 
         if (event) {
             this._startX = posEvent.clientX;
@@ -161,6 +117,64 @@ class DragDrop {
         document.addEventListener("mousemove", this._onMouseMove);
         document.addEventListener("touchend", this._onMouseUp);
         document.addEventListener("touchmove", this._onMouseMove);
+    }
+
+    public isDragging() {
+        return this._dragging;
+    }
+
+    public toString() {
+        const rtn = "(DragDrop: " +
+            "startX=" + this._startX +
+            ", startY=" + this._startY +
+            ", dragging=" + this._dragging +
+            ")";
+
+        return rtn;
+    }
+
+    /** @hidden @internal */
+    private _onKeyPress(event: KeyboardEvent) {
+        if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
+            this.hideGlass();
+            document.removeEventListener("mousemove", this._onMouseMove);
+            document.removeEventListener("mouseup", this._onMouseUp);
+            this._fDragCancel(this._dragging);
+            this._dragging = false;
+        }
+    }
+
+    /** @hidden @internal */
+    private _getLocationEvent(event: any) {
+        let posEvent: any = event;
+        if (event && event.touches) {
+            posEvent = event.touches[0];
+        }
+        return posEvent;
+    }
+
+    /** @hidden @internal */
+    private _getLocationEventEnd(event: any) {
+        let posEvent: any = event;
+        if (event.changedTouches) {
+            posEvent = event.changedTouches[0];
+        }
+        return posEvent;
+    }
+
+    /** @hidden @internal */
+    private _stopPropagation(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+        if (event.stopPropagation) {
+            event.stopPropagation();
+        }
+    }
+
+    /** @hidden @internal */
+    private _preventDefault(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+        if (event.preventDefault) {
+            event.preventDefault();
+        }
+        return event;
     }
 
     /** @hidden @internal */
@@ -206,7 +220,7 @@ class DragDrop {
             if (this._fDragEnd) {
                 this._fDragEnd(event);
             }
-            //dump("set dragging = false\n");
+            // dump("set dragging = false\n");
         }
         else {
             if (this._fDragCancel) {
@@ -232,20 +246,6 @@ class DragDrop {
             }
         }
         return false;
-    }
-
-    isDragging() {
-        return this._dragging;
-    }
-
-    toString() {
-        const rtn = "(DragDrop: " +
-            "startX=" + this._startX +
-            ", startY=" + this._startY +
-            ", dragging=" + this._dragging +
-            ")";
-
-        return rtn;
     }
 }
 
