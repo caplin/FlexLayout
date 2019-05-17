@@ -1,9 +1,9 @@
 class Orientation {
 
-    public static HORZ = new Orientation("horz");
-    public static VERT = new Orientation("vert");
+    static HORZ = new Orientation("horz");
+    static VERT = new Orientation("vert");
 
-    public static flip(from: Orientation) {
+    static flip(from: Orientation) {
         if (from === Orientation.HORZ) {
             return Orientation.VERT;
         }
@@ -20,7 +20,7 @@ class Orientation {
         this._name = name;
     }
 
-    public toString() {
+    toString() {
         return this._name;
     }
 }

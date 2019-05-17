@@ -4,20 +4,20 @@ import { JSMap } from "./Types";
 
 class DockLocation {
 
-    public static values: JSMap<DockLocation> = {};
-    public static TOP = new DockLocation("top", Orientation.VERT, 0);
-    public static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);
-    public static LEFT = new DockLocation("left", Orientation.HORZ, 0);
-    public static RIGHT = new DockLocation("right", Orientation.HORZ, 1);
-    public static CENTER = new DockLocation("center", Orientation.VERT, 0);
+    static values: JSMap<DockLocation> = {};
+    static TOP = new DockLocation("top", Orientation.VERT, 0);
+    static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);
+    static LEFT = new DockLocation("left", Orientation.HORZ, 0);
+    static RIGHT = new DockLocation("right", Orientation.HORZ, 1);
+    static CENTER = new DockLocation("center", Orientation.VERT, 0);
 
     /** @hidden @internal */
-    public static getByName(name: string): DockLocation {
+    static getByName(name: string): DockLocation {
         return DockLocation.values[name];
     }
 
     /** @hidden @internal */
-    public static getLocation(rect: Rect, x: number, y: number) {
+    static getLocation(rect: Rect, x: number, y: number) {
         if (x < rect.x + rect.width / 4) {
             return DockLocation.LEFT;
         }
@@ -39,11 +39,11 @@ class DockLocation {
     }
 
     /** @hidden @internal */
-    public _name: string;
+    _name: string;
     /** @hidden @internal */
-    public _orientation: Orientation;
+    _orientation: Orientation;
     /** @hidden @internal */
-    public _indexPlus: number;
+    _indexPlus: number;
 
     /** @hidden @internal */
     constructor(name: string, orientation: Orientation, indexPlus: number) {
@@ -53,16 +53,16 @@ class DockLocation {
         DockLocation.values[this._name] = this;
     }
 
-    public getName() {
+    getName() {
         return this._name;
     }
 
-    public getOrientation() {
+    getOrientation() {
         return this._orientation;
     }
 
     /** @hidden @internal */
-    public getDockRect(r: Rect) {
+    getDockRect(r: Rect) {
         if (this === DockLocation.TOP) {
             return new Rect(r.x, r.y, r.width, r.height / 2);
         }
@@ -81,7 +81,7 @@ class DockLocation {
     }
 
     /** @hidden @internal */
-    public split(rect: Rect, size: number) {
+    split(rect: Rect, size: number) {
         if (this === DockLocation.TOP) {
             const r1 = new Rect(rect.x, rect.y, rect.width, size);
             const r2 = new Rect(rect.x, rect.y + size, rect.width, rect.height - size);
@@ -105,7 +105,7 @@ class DockLocation {
     }
 
     /** @hidden @internal */
-    public reflect() {
+    reflect() {
         if (this === DockLocation.TOP) {
             return DockLocation.BOTTOM;
         }
@@ -120,7 +120,7 @@ class DockLocation {
         }
     }
 
-    public toString() {
+    toString() {
         return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
     }
 }

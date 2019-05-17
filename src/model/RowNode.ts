@@ -13,10 +13,10 @@ import TabSetNode from "./TabSetNode";
 
 class RowNode extends Node implements IDropTarget {
 
-  public static readonly TYPE = "row";
+  static readonly TYPE = "row";
 
   /** @hidden @internal */
-  public static _fromJson(json: any, model: Model) {
+  static _fromJson(json: any, model: Model) {
     const newLayoutNode = new RowNode(model, json);
 
     if (json.children != null) {
@@ -63,25 +63,25 @@ class RowNode extends Node implements IDropTarget {
     model._addNode(this);
   }
 
-  public getWeight() {
+  getWeight() {
     return this._attributes.weight as number;
   }
 
-  public getWidth() {
+  getWidth() {
     return this._getAttributeAsNumberOrUndefined("width");
   }
 
-  public getHeight() {
+  getHeight() {
     return this._getAttributeAsNumberOrUndefined("height");
   }
 
   /** @hidden @internal */
-  public _setWeight(weight: number) {
+  _setWeight(weight: number) {
     this._attributes.weight = weight;
   }
 
   /** @hidden @internal */
-  public _layout(rect: Rect) {
+  _layout(rect: Rect) {
     super._layout(rect);
 
     const pixelSize = this._rect._getSize(this.getOrientation());
@@ -180,7 +180,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _getSplitterBounds(splitterNode: SplitterNode) {
+  _getSplitterBounds(splitterNode: SplitterNode) {
     const pBounds = [0, 0];
     const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
     const p = drawChildren.indexOf(splitterNode);
@@ -196,7 +196,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _calculateSplit(splitter: SplitterNode, splitterPos: number) {
+  _calculateSplit(splitter: SplitterNode, splitterPos: number) {
     let rtn;
     const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
     const p = drawChildren.indexOf(splitter);
@@ -221,7 +221,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _getDrawChildren(): Node[] | undefined {
+  _getDrawChildren(): Node[] | undefined {
     if (this._dirty) {
       this._drawChildren = [];
 
@@ -241,7 +241,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _tidy() {
+  _tidy() {
     // console.log("a", this._model.toString());
     let i = 0;
     while (i < this._children.length) {
@@ -302,7 +302,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     const yy = y - this._rect.y;
     const xx = x - this._rect.x;
     const w = this._rect.width;
@@ -350,7 +350,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
     const dockLocation = location;
 
     const parent = dragNode.getParent();
@@ -424,7 +424,7 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _toJson() {
+  _toJson() {
     const json: any = {};
     RowNode._attributeDefinitions.toJson(json, this._attributes);
 
@@ -436,12 +436,12 @@ class RowNode extends Node implements IDropTarget {
     return json;
   }
 
-  public isEnableDrop() {
+  isEnableDrop() {
     return true;
   }
 
   /** @hidden @internal */
-  public _getPrefSize(orientation: Orientation) {
+  _getPrefSize(orientation: Orientation) {
     let prefSize = this.getWidth();
     if (orientation === Orientation.VERT) {
       prefSize = this.getHeight();
@@ -450,12 +450,12 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _getAttributeDefinitions() {
+  _getAttributeDefinitions() {
     return RowNode._attributeDefinitions;
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any) {
+  _updateAttrs(json: any) {
     RowNode._attributeDefinitions.update(json, this._attributes);
   }
 }

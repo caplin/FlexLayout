@@ -13,9 +13,9 @@ export interface IBorderTabSetProps {
 
 /** @hidden @internal */
 export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
-    public toolbarRef?: HTMLDivElement;
+    toolbarRef?: HTMLDivElement;
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
 
         const border = this.props.border;

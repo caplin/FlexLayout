@@ -13,10 +13,10 @@ import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 
 class TabSetNode extends Node implements IDraggable, IDropTarget {
-  public static readonly TYPE = "tabset";
+  static readonly TYPE = "tabset";
 
   /** @hidden @internal */
-  public static _fromJson(json: any, model: Model) {
+  static _fromJson(json: any, model: Model) {
     const newLayoutNode = new TabSetNode(model, json);
 
     if (json.children != null) {
@@ -81,11 +81,11 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     model._addNode(this);
   }
 
-  public getName() {
+  getName() {
     return this._getAttributeAsStringOrUndefined("name");
   }
 
-  public getSelected() {
+  getSelected() {
     const selected = this._attributes.selected;
     if (selected !== undefined) {
       return selected as number;
@@ -93,7 +93,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return -1;
   }
 
-  public getSelectedNode() {
+  getSelectedNode() {
     const selected = this.getSelected();
     if (selected !== -1) {
       return this._children[selected];
@@ -101,78 +101,78 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return undefined;
   }
 
-  public getWeight(): number {
+  getWeight(): number {
     return this._attributes.weight as number;
   }
 
-  public getWidth() {
+  getWidth() {
     return this._getAttributeAsNumberOrUndefined("width");
   }
 
-  public getHeight() {
+  getHeight() {
     return this._getAttributeAsNumberOrUndefined("height");
   }
 
-  public isMaximized() {
+  isMaximized() {
     return this._model.getMaximizedTabset() === this;
   }
 
-  public isActive() {
+  isActive() {
     return this._model.getActiveTabset() === this;
   }
 
-  public isEnableDeleteWhenEmpty() {
+  isEnableDeleteWhenEmpty() {
     return this._getAttr("enableDeleteWhenEmpty") as boolean;
   }
 
-  public isEnableDrop() {
+  isEnableDrop() {
     return this._getAttr("enableDrop") as boolean;
   }
 
-  public isEnableDrag() {
+  isEnableDrag() {
     return this._getAttr("enableDrag") as boolean;
   }
 
-  public isEnableDivide() {
+  isEnableDivide() {
     return this._getAttr("enableDivide") as boolean;
   }
 
-  public isEnableMaximize() {
+  isEnableMaximize() {
     return this._getAttr("enableMaximize") as boolean;
   }
 
-  public isEnableTabStrip() {
+  isEnableTabStrip() {
     return this._getAttr("enableTabStrip") as boolean;
   }
 
-  public getClassNameTabStrip() {
+  getClassNameTabStrip() {
     return this._getAttributeAsStringOrUndefined("classNameTabStrip");
   }
 
-  public getClassNameHeader() {
+  getClassNameHeader() {
     return this._getAttributeAsStringOrUndefined("classNameHeader");
   }
 
-  public getHeaderHeight() {
+  getHeaderHeight() {
     return this._getAttr("headerHeight") as number;
   }
 
-  public getTabStripHeight() {
+  getTabStripHeight() {
     return this._getAttr("tabStripHeight") as number;
   }
 
   /** @hidden @internal */
-  public _setWeight(weight: number) {
+  _setWeight(weight: number) {
     this._attributes.weight = weight;
   }
 
   /** @hidden @internal */
-  public _setSelected(index: number) {
+  _setSelected(index: number) {
     this._attributes.selected = index;
   }
 
   /** @hidden @internal */
-  public canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     let dropInfo;
 
     if (dragNode === this) {
@@ -219,7 +219,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  public _layout(rect: Rect) {
+  _layout(rect: Rect) {
 
     if (this.isMaximized()) {
       rect = (this._model.getRoot() as Node).getRect();
@@ -247,14 +247,14 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  public _remove(node: TabNode) {
+  _remove(node: TabNode) {
     this._removeChild(node);
     this._model._tidy();
     this._setSelected(Math.max(0, this.getSelected() - 1));
   }
 
   /** @hidden @internal */
-  public drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
     const dockLocation = location;
 
     if (this === dragNode) { // tabset drop into itself
@@ -363,7 +363,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  public _toJson(): any {
+  _toJson(): any {
     const json: any = {};
     TabSetNode._attributeDefinitions.toJson(json, this._attributes);
     json.children = this._children.map((child) => child._toJson());
@@ -380,17 +380,17 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any) {
+  _updateAttrs(json: any) {
     TabSetNode._attributeDefinitions.update(json, this._attributes);
   }
 
   /** @hidden @internal */
-  public _getAttributeDefinitions() {
+  _getAttributeDefinitions() {
     return TabSetNode._attributeDefinitions;
   }
 
   /** @hidden @internal */
-  public _getPrefSize(orientation: Orientation) {
+  _getPrefSize(orientation: Orientation) {
     let prefSize = this.getWidth();
     if (orientation === Orientation.VERT) {
       prefSize = this.getHeight();

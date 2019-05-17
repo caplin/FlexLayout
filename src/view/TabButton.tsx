@@ -17,10 +17,10 @@ export interface ITabButtonProps {
 
 /** @hidden @internal */
 export class TabButton extends React.Component<ITabButtonProps, any> {
-    public selfRef?: HTMLDivElement;
+    selfRef?: HTMLDivElement;
 
-    public contentWidth: number = 0;
-    public contentRef?: Element;
+    contentWidth: number = 0;
+    contentRef?: Element;
 
     constructor(props: ITabButtonProps) {
         super(props);
@@ -28,16 +28,16 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         this.onEndEdit = this.onEndEdit.bind(this);
     }
 
-    public onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), this.onDoubleClick.bind(this));
     }
 
-    public onClick(event: Event) {
+    onClick(event: Event) {
         const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
-    public onDoubleClick(event: Event) {
+    onDoubleClick(event: Event) {
         if (this.props.node.isEnableRename()) {
             this.setState({ editing: true });
             document.body.addEventListener("mousedown", this.onEndEdit);
@@ -52,7 +52,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
     }
 
-    public onEndEdit(event: Event) {
+    onEndEdit(event: Event) {
         if (event.target !== this.contentRef) {
             this.setState({ editing: false });
             document.body.removeEventListener("mousedown", this.onEndEdit);
@@ -60,27 +60,27 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
     }
 
-    public onClose(event: React.MouseEvent<HTMLDivElement>) {
+    onClose(event: React.MouseEvent<HTMLDivElement>) {
         const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
-    public onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
         event.stopPropagation();
     }
 
-    public componentDidMount() {
+    componentDidMount() {
         this.updateRect();
     }
 
-    public componentDidUpdate() {
+    componentDidUpdate() {
         this.updateRect();
         if (this.state.editing) {
             (this.contentRef as HTMLInputElement).select();
         }
     }
 
-    public updateRect() {
+    updateRect() {
         // record position of tab in node
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const r = (this.selfRef as Element).getBoundingClientRect();
@@ -89,12 +89,12 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
 
-    public onTextBoxMouseDown(event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) {
+    onTextBoxMouseDown(event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     }
 
-    public onTextBoxKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    onTextBoxKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) { // esc
             this.setState({ editing: false });
@@ -106,11 +106,11 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
     }
 
-    public doRename(node: TabNode, newName: string) {
+    doRename(node: TabNode, newName: string) {
         this.props.layout.doAction(Actions.renameTab(node.getId(), newName));
     }
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
 
         let classNames = cm("flexlayout__tab_button");

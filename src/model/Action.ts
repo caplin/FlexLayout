@@ -1,8 +1,8 @@
 import { JSMap } from "../Types";
 
 class Action {
-    public type: string;
-    public data: JSMap<any>;
+    type: string;
+    data: JSMap<any>;
 
     constructor(type: string, data: JSMap<any>) {
         this.type = type;

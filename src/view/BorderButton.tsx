@@ -15,10 +15,10 @@ export interface IBorderButtonProps {
 
 /** @hidden @internal */
 export class BorderButton extends React.Component<IBorderButtonProps, any> {
-    public selfRef?: HTMLDivElement;
-    public contentsRef?: HTMLDivElement;
+    selfRef?: HTMLDivElement;
+    contentsRef?: HTMLDivElement;
 
-    public onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         this.props.layout.dragStart(
             event,
             "Move: " + this.props.node.getName(),
@@ -28,36 +28,36 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         );
     }
 
-    public onClick() {
+    onClick() {
         const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
-    public onClose(event: React.MouseEvent<HTMLDivElement>) {
+    onClose(event: React.MouseEvent<HTMLDivElement>) {
         const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
-    public onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
         event.stopPropagation();
     }
 
-    public componentDidMount() {
+    componentDidMount() {
         this.updateRect();
     }
 
-    public componentDidUpdate() {
+    componentDidUpdate() {
         this.updateRect();
     }
 
-    public updateRect() {
+    updateRect() {
         // record position of tab in border
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const r = (this.selfRef as Element).getBoundingClientRect();
         this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
     }
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
         let classNames = cm("flexlayout__border_button") + " " +
             cm("flexlayout__border_button_" + this.props.border);

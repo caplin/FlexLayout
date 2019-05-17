@@ -41,7 +41,7 @@ abstract class Node {
     this._listeners = {};
   }
 
-  public getId() {
+  getId() {
     let id = this._attributes.id;
     if (id !== undefined) {
       return id as string;
@@ -53,31 +53,31 @@ abstract class Node {
     return id as string;
   }
 
-  public getModel() {
+  getModel() {
     return this._model;
   }
 
-  public getType() {
+  getType() {
     return this._attributes.type as string;
   }
 
-  public getParent() {
+  getParent() {
     return this._parent;
   }
 
-  public getChildren() {
+  getChildren() {
     return this._children;
   }
 
-  public getRect() {
+  getRect() {
     return this._rect;
   }
 
-  public isVisible() {
+  isVisible() {
     return this._visible;
   }
 
-  public getOrientation(): Orientation {
+  getOrientation(): Orientation {
     if (this._parent === undefined) {
       return Orientation.HORZ;
     }
@@ -87,21 +87,21 @@ abstract class Node {
   }
 
   // event can be: resize, visibility, maximize (on tabset), close
-  public setEventListener(event: string, callback: (params: any) => void) {
+  setEventListener(event: string, callback: (params: any) => void) {
     this._listeners[event] = callback;
   }
 
-  public removeEventListener(event: string) {
+  removeEventListener(event: string) {
     delete this._listeners[event];
   }
 
   /** @hidden @internal */
-  public _setId(id: string) {
+  _setId(id: string) {
     this._attributes.id = id;
   }
 
   /** @hidden @internal */
-  public _fireEvent(event: string, params: any) {
+  _fireEvent(event: string, params: any) {
     // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
     if (this._listeners[event] !== undefined) {
       this._listeners[event](params);
@@ -109,7 +109,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _getAttr(name: string) {
+  _getAttr(name: string) {
     let val = this._attributes[name];
 
     if (val === undefined) {
@@ -124,7 +124,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _forEachNode(fn: (node: Node, level: number) => void, level: number) {
+  _forEachNode(fn: (node: Node, level: number) => void, level: number) {
     fn(this, level);
     level++;
     this._children.forEach((node) => {
@@ -134,7 +134,7 @@ abstract class Node {
 
 
   /** @hidden @internal */
-  public _setVisible(visible: boolean) {
+  _setVisible(visible: boolean) {
     if (visible !== this._visible) {
       this._fireEvent("visibility", { visible });
       this._visible = visible;
@@ -142,42 +142,42 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _getDrawChildren(): Node[] | undefined {
+  _getDrawChildren(): Node[] | undefined {
     return this._children;
   }
 
   /** @hidden @internal */
-  public _setParent(parent: Node) {
+  _setParent(parent: Node) {
     this._parent = parent;
   }
 
   /** @hidden @internal */
-  public _setRect(rect: Rect) {
+  _setRect(rect: Rect) {
     this._rect = rect;
   }
 
   /** @hidden @internal */
-  public _setWeight(weight: number) {
+  _setWeight(weight: number) {
     this._attributes.weight = weight;
   }
 
   /** @hidden @internal */
-  public _setSelected(index: number) {
+  _setSelected(index: number) {
     this._attributes.selected = index;
   }
 
   /** @hidden @internal */
-  public _isFixed() {
+  _isFixed() {
     return this._fixed;
   }
 
   /** @hidden @internal */
-  public _layout(rect: Rect) {
+  _layout(rect: Rect) {
     this._rect = rect;
   }
 
   /** @hidden @internal */
-  public _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     let rtn: DropInfo | undefined;
     if (this._rect.contains(x, y)) {
       rtn = this.canDrop(dragNode, x, y);
@@ -198,12 +198,12 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     return undefined;
   }
 
   /** @hidden @internal */
-  public _canDockInto(dragNode: (Node & IDraggable), dropInfo: DropInfo | undefined): boolean {
+  _canDockInto(dragNode: (Node & IDraggable), dropInfo: DropInfo | undefined): boolean {
     if (dropInfo != null) {
       if (dropInfo.location === DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
         return false;
@@ -227,7 +227,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _removeChild(childNode: Node) {
+  _removeChild(childNode: Node) {
     const pos = this._children.indexOf(childNode);
     if (pos !== -1) {
       this._children.splice(pos, 1);
@@ -237,7 +237,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _addChild(childNode: Node, pos?: number) {
+  _addChild(childNode: Node, pos?: number) {
     if (pos != null) {
       this._children.splice(pos, 0, childNode);
     }
@@ -251,13 +251,13 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _removeAll() {
+  _removeAll() {
     this._children = [];
     this._dirty = true;
   }
 
   /** @hidden @internal */
-  public _styleWithPosition(style?: JSMap<any>) {
+  _styleWithPosition(style?: JSMap<any>) {
     if (style == null) {
       style = {};
     }
@@ -265,32 +265,32 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  public _getTempSize() {
+  _getTempSize() {
     return this._tempSize;
   }
 
   /** @hidden @internal */
-  public _setTempSize(value: number) {
+  _setTempSize(value: number) {
     this._tempSize = value;
   }
 
   /** @hidden @internal */
-  public isEnableDivide() {
+  isEnableDivide() {
     return true;
   }
 
   /** @hidden @internal */
-  public _toAttributeString() {
+  _toAttributeString() {
     return JSON.stringify(this._attributes, undefined, "\t");
   }
 
   // implemented by subclasses
   /** @hidden @internal */
-  public abstract _updateAttrs(json: any): void;
+  abstract _updateAttrs(json: any): void;
   /** @hidden @internal */
-  public abstract _getAttributeDefinitions(): AttributeDefinitions;
+  abstract _getAttributeDefinitions(): AttributeDefinitions;
   /** @hidden @internal */
-  public abstract _toJson(): any;
+  abstract _toJson(): any;
 
   /** @hidden @internal */
   protected _getAttributeAsStringOrUndefined(attr: string) {

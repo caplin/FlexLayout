@@ -6,17 +6,17 @@ import Action from "./Action";
  */
 class Actions {
 
-  public static ADD_NODE = "FlexLayout_AddNode";
-  public static MOVE_NODE = "FlexLayout_MoveNode";
-  public static DELETE_TAB = "FlexLayout_DeleteTab";
-  public static RENAME_TAB = "FlexLayout_RenameTab";
-  public static SELECT_TAB = "FlexLayout_SelectTab";
-  public static SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
-  public static ADJUST_SPLIT = "FlexLayout_AdjustSplit";
-  public static ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
-  public static MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
-  public static UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
-  public static UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
+  static ADD_NODE = "FlexLayout_AddNode";
+  static MOVE_NODE = "FlexLayout_MoveNode";
+  static DELETE_TAB = "FlexLayout_DeleteTab";
+  static RENAME_TAB = "FlexLayout_RenameTab";
+  static SELECT_TAB = "FlexLayout_SelectTab";
+  static SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
+  static ADJUST_SPLIT = "FlexLayout_AdjustSplit";
+  static ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
+  static MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
+  static UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
+  static UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
 
   /**
    * Adds a tab node to the given tabset node
@@ -26,7 +26,7 @@ class Actions {
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
    * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *}}
    */
-  public static addNode(json: any, toNodeId: string, location: DockLocation, index: number): Action {
+  static addNode(json: any, toNodeId: string, location: DockLocation, index: number): Action {
     return new Action(Actions.ADD_NODE, { json, toNode: toNodeId, location: location.getName(), index });
   }
 
@@ -38,7 +38,7 @@ class Actions {
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
    * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
    */
-  public static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number): Action {
+  static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number): Action {
     return new Action(Actions.MOVE_NODE, {
       fromNode: fromNodeId,
       toNode: toNodeId,
@@ -52,7 +52,7 @@ class Actions {
    * @param tabNodeId the id of the node to delete
    * @returns {{type: (string|string), node: *}}
    */
-  public static deleteTab(tabNodeId: string): Action {
+  static deleteTab(tabNodeId: string): Action {
     return new Action(Actions.DELETE_TAB, { node: tabNodeId });
   }
 
@@ -62,7 +62,7 @@ class Actions {
    * @param text the test of the tab
    * @returns {{type: (string|string), node: *, text: *}}
    */
-  public static renameTab(tabNodeId: string, text: string): Action {
+  static renameTab(tabNodeId: string, text: string): Action {
     return new Action(Actions.RENAME_TAB, { node: tabNodeId, text });
   }
 
@@ -71,7 +71,7 @@ class Actions {
    * @param tabNodeId the id of the node to set selected
    * @returns {{type: (string|string), tabNode: *}}
    */
-  public static selectTab(tabNodeId: string): Action {
+  static selectTab(tabNodeId: string): Action {
     return new Action(Actions.SELECT_TAB, { tabNode: tabNodeId });
   }
 
@@ -80,7 +80,7 @@ class Actions {
    * @param tabsetNodeId the id of the tabset node to set as active
    * @returns {{type: (string|string), tabsetNode: *}}
    */
-  public static setActiveTabset(tabsetNodeId: string): Action {
+  static setActiveTabset(tabsetNodeId: string): Action {
     return new Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId });
   }
 
@@ -92,7 +92,7 @@ class Actions {
    * @param splitSpec an object the defines the new split between two tabsets, see example below.
    * @returns {{type: (string|string), node1: *, weight1: *, pixelWidth1: *, node2: *, weight2: *, pixelWidth2: *}}
    */
-  public static adjustSplit(splitSpec: { node1Id: string, weight1: number, pixelWidth1: number, node2Id: string, weight2: number, pixelWidth2: number }): Action {
+  static adjustSplit(splitSpec: { node1Id: string, weight1: number, pixelWidth1: number, node2Id: string, weight2: number, pixelWidth2: number }): Action {
     const node1 = splitSpec.node1Id;
     const node2 = splitSpec.node2Id;
 
@@ -102,7 +102,7 @@ class Actions {
     });
   }
 
-  public static adjustBorderSplit(nodeId: string, pos: number): Action {
+  static adjustBorderSplit(nodeId: string, pos: number): Action {
     return new Action(Actions.ADJUST_BORDER_SPLIT, { node: nodeId, pos });
   }
 
@@ -111,7 +111,7 @@ class Actions {
    * @param tabsetNodeId the id of the tabset to maximize
    * @returns {{type: (string|string), node: *}}
    */
-  public static maximizeToggle(tabsetNodeId: string): Action {
+  static maximizeToggle(tabsetNodeId: string): Action {
     return new Action(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId });
   }
 
@@ -120,7 +120,7 @@ class Actions {
    * @param attributes the json for the model attributes to update (merge into the existing attributes)
    * @returns {{type: (string|string), json: *}}
    */
-  public static updateModelAttributes(attributes: any): Action {
+  static updateModelAttributes(attributes: any): Action {
     return new Action(Actions.UPDATE_MODEL_ATTRIBUTES, { json: attributes });
   }
 
@@ -130,7 +130,7 @@ class Actions {
    * @param attributes the json attributes to update (merge with the existing attributes)
    * @returns {{type: (string|string), node: *, json: *}}
    */
-  public static updateNodeAttributes(nodeId: string, attributes: any): Action {
+  static updateNodeAttributes(nodeId: string, attributes: any): Action {
     return new Action(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
   }
 }

@@ -5,7 +5,7 @@ import Node from "./Node";
 
 class SplitterNode extends Node {
 
-  public static readonly TYPE: string = "splitter";
+  static readonly TYPE: string = "splitter";
 
   /** @hidden @internal */
   constructor(model: Model) {
@@ -16,40 +16,40 @@ class SplitterNode extends Node {
   }
 
   /** @hidden @internal */
-  public getWidth() {
+  getWidth() {
     return this._model.getSplitterSize();
   }
 
   /** @hidden @internal */
-  public getHeight() {
+  getHeight() {
     return this._model.getSplitterSize();
   }
 
   /** @hidden @internal */
-  public getWeight(): number {
+  getWeight(): number {
     return 0;
   }
 
   /** @hidden @internal */
-  public _setWeight(value: number): void {
+  _setWeight(value: number): void {
   }
 
   /** @hidden @internal */
-  public _getPrefSize(orientation: Orientation): number {
+  _getPrefSize(orientation: Orientation): number {
     return this._model.getSplitterSize();
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any): void {
+  _updateAttrs(json: any): void {
   }
 
   /** @hidden @internal */
-  public _getAttributeDefinitions(): AttributeDefinitions {
+  _getAttributeDefinitions(): AttributeDefinitions {
     return new AttributeDefinitions();
   }
 
   /** @hidden @internal */
-  public _toJson(): any {
+  _toJson(): any {
     return undefined;
   }
 }

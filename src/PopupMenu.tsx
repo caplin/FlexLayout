@@ -14,7 +14,7 @@ export interface IPopupMenuProps {
 /** @hidden @internal */
 class PopupMenu extends React.Component<IPopupMenuProps, any> {
 
-  public static show(triggerElement: Element,
+  static show(triggerElement: Element,
     items: Array<{ index: number, node: TabNode, name: string }>,
     onSelect: (item: { index: number, node: TabNode, name: string }) => void,
     classNameMapper: (defaultClassName: string) => string) {
@@ -36,9 +36,9 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     ReactDOM.render(<PopupMenu element={elm} onSelect={onSelect} onHide={onHide} items={items} classNameMapper={classNameMapper} />, elm);
   }
 
-  public items: Array<{ index: number, name: string }> = [];
-  public hidden: boolean = true;
-  public elm?: Element;
+  items: Array<{ index: number, name: string }> = [];
+  hidden: boolean = true;
+  elm?: Element;
 
 
   constructor(props: IPopupMenuProps) {
@@ -47,34 +47,34 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     this.hidden = false;
   }
 
-  public componentDidMount() {
+  componentDidMount() {
     document.addEventListener("mouseup", this.onDocMouseUp);
   }
 
-  public componentWillUnmount() {
+  componentWillUnmount() {
     document.removeEventListener("mouseup", this.onDocMouseUp);
   }
 
-  public onDocMouseUp(event: Event) {
+  onDocMouseUp(event: Event) {
     setTimeout(() => {
       this.hide();
     }, 0);
   }
 
-  public hide() {
+  hide() {
     if (!this.hidden) {
       this.props.onHide();
       this.hidden = true;
     }
   }
 
-  public onItemClick(item: { index: number, node: TabNode, name: string }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  onItemClick(item: { index: number, node: TabNode, name: string }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     this.props.onSelect(item);
     this.hide();
     event.stopPropagation();
   }
 
-  public render() {
+  render() {
     const items = this.props.items.map(item => <div key={item.index} className={this.props.classNameMapper("flexlayout__popup_menu_item")}
       onClick={this.onItemClick.bind(this, item)}>{item.name}</div>);
 

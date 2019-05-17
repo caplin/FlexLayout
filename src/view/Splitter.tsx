@@ -18,10 +18,10 @@ export interface ISplitterProps {
 /** @hidden @internal */
 export class Splitter extends React.Component<ISplitterProps, any> {
 
-    public pBounds?: number[];
-    public outlineDiv?: HTMLDivElement;
+    pBounds?: number[];
+    outlineDiv?: HTMLDivElement;
 
-    public onMouseDown(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    onMouseDown(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         DragDrop.instance.startDrag(event, this.onDragStart.bind(this), this.onDragMove.bind(this), this.onDragEnd.bind(this), this.onDragCancel.bind(this));
         const parentNode = this.props.node.getParent() as RowNode;
         this.pBounds = parentNode._getSplitterBounds(this.props.node);
@@ -34,17 +34,17 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         rootdiv.appendChild(this.outlineDiv);
     }
 
-    public onDragCancel(wasDragging: boolean) {
+    onDragCancel(wasDragging: boolean) {
         const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
         rootdiv.removeChild(this.outlineDiv as Element);
     }
 
-    public onDragStart() {
+    onDragStart() {
 
         return true;
     }
 
-    public onDragMove(event: React.MouseEvent<Element, MouseEvent>) {
+    onDragMove(event: React.MouseEvent<Element, MouseEvent>) {
         const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
         const pos = {
             x: event.clientX - clientRect.left,
@@ -61,7 +61,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         }
     }
 
-    public onDragEnd() {
+    onDragEnd() {
         const node = this.props.node;
         const parentNode = node.getParent() as RowNode;
         let value = 0;
@@ -88,7 +88,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         rootdiv.removeChild(this.outlineDiv as HTMLDivElement);
     }
 
-    public getBoundPosition(p: number) {
+    getBoundPosition(p: number) {
         const bounds = this.pBounds as number[];
         let rtn = p;
         if (p < bounds[0]) {
@@ -101,7 +101,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         return rtn;
     }
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
 
         const node = this.props.node;

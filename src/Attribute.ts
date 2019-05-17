@@ -1,22 +1,22 @@
 /** @hidden @internal */
 class Attribute {
 
-    public static ENUM = "Enum";
-    public static INT = "Int";
-    public static NUMBER = "Number";
-    public static STRING = "String";
-    public static BOOLEAN = "Boolean";
-    public static ID = "Id";
-    public static JSON = "Json";
+    static ENUM = "Enum";
+    static INT = "Int";
+    static NUMBER = "Number";
+    static STRING = "String";
+    static BOOLEAN = "Boolean";
+    static ID = "Id";
+    static JSON = "Json";
 
-    public name: string;
-    public modelName?: string ;
-    public defaultValue: any;
-    public alwaysWriteJson?: boolean;
-    public type?: string;
-    public values: any[];
-    public from: number;
-    public to: number;
+    name: string;
+    modelName?: string ;
+    defaultValue: any;
+    alwaysWriteJson?: boolean;
+    type?: string;
+    values: any[];
+    from: number;
+    to: number;
 
     constructor(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
         this.name = name;
@@ -30,22 +30,22 @@ class Attribute {
         this.to = 99999999;
     }
 
-    public setType(value: string) {
+    setType(value: string) {
         this.type = value;
         return this;
     }
 
-    public setValues(...args: any[]) {
+    setValues(...args: any[]) {
         this.values = args;
         return this;
     }
 
-    public setFrom(value: number) {
+    setFrom(value: number) {
         this.from = value;
         return this;
     }
 
-    public setTo(value: number) {
+    setTo(value: number) {
         this.to = value;
         return this;
     }

@@ -21,15 +21,15 @@ export class Tab extends React.Component<ITabProps, any> {
         this.state = { renderComponent: !props.node.isEnableRenderOnDemand() || props.selected };
     }
 
-    public componentDidMount() {
+    componentDidMount() {
         // console.log("mount " + this.props.node.getName());
     }
 
-    public componentWillUnmount() {
+    componentWillUnmount() {
         // console.log("unmount " + this.props.node.getName());
     }
 
-    public componentWillReceiveProps(newProps: ITabProps) {
+    componentWillReceiveProps(newProps: ITabProps) {
         if (!this.state.renderComponent && newProps.selected) {
             // load on demand
             // console.log("load on demand: " + this.props.node.getName());
@@ -37,7 +37,7 @@ export class Tab extends React.Component<ITabProps, any> {
         }
     }
 
-    public onMouseDown() {
+    onMouseDown() {
         const parent = this.props.node.getParent() as TabSetNode;
         if (parent.getType() === TabSetNode.TYPE) {
             if (!parent.isActive()) {
@@ -46,7 +46,7 @@ export class Tab extends React.Component<ITabProps, any> {
         }
     }
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
 
         const node = this.props.node;

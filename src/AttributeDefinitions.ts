@@ -4,34 +4,34 @@ import { JSMap } from "./Types";
 /** @hidden @internal */
 class AttributeDefinitions {
 
-    public attributes: Attribute[];
-    public nameToAttribute: JSMap<Attribute>;
+    attributes: Attribute[];
+    nameToAttribute: JSMap<Attribute>;
 
     constructor() {
         this.attributes = [];
         this.nameToAttribute = {};
     }
 
-    public addWithAll(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
+    addWithAll(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
         const attr = new Attribute(name, modelName, defaultValue, alwaysWriteJson);
         this.attributes.push(attr);
         this.nameToAttribute[name] = attr;
         return attr;
     }
 
-    public addInherited(name: string, modelName: string) {
+    addInherited(name: string, modelName: string) {
         return this.addWithAll(name, modelName, undefined, false);
     }
 
-    public add(name: string, defaultValue: any, alwaysWriteJson?: boolean) {
+    add(name: string, defaultValue: any, alwaysWriteJson?: boolean) {
         return this.addWithAll(name, undefined, defaultValue, alwaysWriteJson);
     }
 
-    public getAttributes() {
+    getAttributes() {
         return this.attributes;
     }
 
-    public getModelName(name: string) {
+    getModelName(name: string) {
         const conversion = this.nameToAttribute[name];
         if (conversion !== undefined) {
             return conversion.modelName;
@@ -39,7 +39,7 @@ class AttributeDefinitions {
         return undefined;
     }
 
-    public toJson(jsonObj: any, obj: any) {
+    toJson(jsonObj: any, obj: any) {
         this.attributes.forEach((attr) => {
             const fromValue = obj[attr.name];
             if (attr.alwaysWriteJson || fromValue !== attr.defaultValue) {
@@ -48,7 +48,7 @@ class AttributeDefinitions {
         });
     }
 
-    public fromJson(jsonObj: any, obj: any) {
+    fromJson(jsonObj: any, obj: any) {
         this.attributes.forEach((attr) => {
             const fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
@@ -60,7 +60,7 @@ class AttributeDefinitions {
         });
     }
 
-    public update(jsonObj: any, obj: any) {
+    update(jsonObj: any, obj: any) {
         this.attributes.forEach((attr) => {
 
             const fromValue = jsonObj[attr.name];
@@ -70,7 +70,7 @@ class AttributeDefinitions {
         });
     }
 
-    public setDefaults(obj: any) {
+    setDefaults(obj: any) {
         this.attributes.forEach((attr) => {
             obj[attr.name] = attr.defaultValue;
         });

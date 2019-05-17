@@ -13,10 +13,10 @@ import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 
 class BorderNode extends Node implements IDropTarget {
-  public static readonly TYPE = "border";
+  static readonly TYPE = "border";
 
   /** @hidden @internal */
-  public static _fromJson(json: any, model: Model) {
+  static _fromJson(json: any, model: Model) {
 
     const location = DockLocation.getByName(json.location);
     const border = new BorderNode(location, json, model);
@@ -71,96 +71,96 @@ class BorderNode extends Node implements IDropTarget {
     model._addNode(this);
   }
 
-  public getLocation() {
+  getLocation() {
     return this._location;
   }
 
-  public getTabHeaderRect() {
+  getTabHeaderRect() {
     return this._tabHeaderRect;
   }
 
-  public getContentRect() {
+  getContentRect() {
     return this._contentRect;
   }
 
-  public isEnableDrop() {
+  isEnableDrop() {
     return this._getAttr("enableDrop") as boolean;
   }
 
-  public getClassName() {
+  getClassName() {
     return this._getAttributeAsStringOrUndefined("className");
   }
 
-  public getBorderBarSize() {
+  getBorderBarSize() {
     return this._getAttr("barSize") as number;
   }
 
-  public getSize() {
+  getSize() {
     return this._attributes.size as number;
   }
 
-  public getSelected(): number {
+  getSelected(): number {
     return this._attributes.selected as number;
   }
 
-  public getSelectedNode(): Node | undefined {
+  getSelectedNode(): Node | undefined {
     if (this.getSelected() !== -1) {
       return this._children[this.getSelected()];
     }
     return undefined;
   }
 
-  public getOrientation() {
+  getOrientation() {
     return this._location.getOrientation();
   }
 
-  public isMaximized() {
+  isMaximized() {
     return false;
   }
 
-  public isShowing() {
+  isShowing() {
     return this._attributes.show as boolean;
   }
 
   /** @hidden @internal */
-  public _setSelected(index: number) {
+  _setSelected(index: number) {
     this._attributes.selected = index;
   }
 
   /** @hidden @internal */
-  public _setSize(pos: number) {
+  _setSize(pos: number) {
     this._attributes.size = pos;
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any) {
+  _updateAttrs(json: any) {
     BorderNode._attributeDefinitions.update(json, this._attributes);
   }
 
   /** @hidden @internal */
-  public _getDrawChildren() {
+  _getDrawChildren() {
     return this._drawChildren;
   }
 
   /** @hidden @internal */
-  public _setAdjustedSize(size: number) {
+  _setAdjustedSize(size: number) {
     this._adjustedSize = size;
   }
 
   /** @hidden @internal */
-  public _getAdjustedSize() {
+  _getAdjustedSize() {
     return this._adjustedSize;
   }
 
   /** @hidden @internal */
-  public _layoutBorderOuter(outer: Rect) {
+  _layoutBorderOuter(outer: Rect) {
     const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
     this._tabHeaderRect = split1.start;
     return split1.end;
   }
 
   /** @hidden @internal */
-  public _layoutBorderInner(inner: Rect) {
+  _layoutBorderInner(inner: Rect) {
     this._drawChildren = [];
     const location = this._location;
 
@@ -190,7 +190,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _remove(node: TabNode) {
+  _remove(node: TabNode) {
     if (this.getSelected() !== -1) {
       const selectedNode = this._children[this.getSelected()];
       if (node === selectedNode) {
@@ -211,7 +211,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  canDrop(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     if (dragNode.getType() !== TabNode.TYPE) {
       return undefined;
     }
@@ -295,7 +295,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
     let fromIndex = 0;
     const parent: Node | undefined = dragNode.getParent();
     if (parent !== undefined) {
@@ -344,7 +344,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _toJson() {
+  _toJson() {
     const json: any = {};
     BorderNode._attributeDefinitions.toJson(json, this._attributes);
     json.location = this._location.getName();
@@ -353,7 +353,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _getSplitterBounds(splitter: SplitterNode) {
+  _getSplitterBounds(splitter: SplitterNode) {
     const pBounds = [0, 0];
     const outerRect = this._model._getOuterInnerRects().outer;
     const innerRect = this._model._getOuterInnerRects().inner;
@@ -374,7 +374,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _calculateSplit(splitter: SplitterNode, splitterPos: number) {
+  _calculateSplit(splitter: SplitterNode, splitterPos: number) {
     const pBounds = this._getSplitterBounds(splitter);
     if (this._location === DockLocation.BOTTOM || this._location === DockLocation.RIGHT) {
       return Math.max(0, pBounds[1] - splitterPos);
@@ -384,7 +384,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  public _getAttributeDefinitions() {
+  _getAttributeDefinitions() {
     return BorderNode._attributeDefinitions;
   }
 }

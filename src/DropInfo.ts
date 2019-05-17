@@ -4,11 +4,11 @@ import Node from "./model/Node";
 import Rect from "./Rect";
 
 class DropInfo {
-    public node: (Node & IDropTarget);
-    public rect: Rect;
-    public location: DockLocation;
-    public index: number;
-    public className: string;
+    node: (Node & IDropTarget);
+    rect: Rect;
+    location: DockLocation;
+    index: number;
+    className: string;
 
     constructor(node: (Node & IDropTarget), rect: Rect, location: DockLocation, index: number, className: string) {
         this.node = node;

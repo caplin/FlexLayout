@@ -1,7 +1,7 @@
 import Rect from "./Rect";
 
 class DragDrop {
-    public static instance = new DragDrop();
+    static instance = new DragDrop();
 
     /** @hidden @internal */
     private _fDblClick: ((event: Event) => void) | undefined;
@@ -55,7 +55,7 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    public addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
+    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
         if (!this._glassShowing) {
             const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
             glassRect.positionElement(this._glass);
@@ -72,14 +72,14 @@ class DragDrop {
         }
     }
 
-    public hideGlass() {
+    hideGlass() {
         if (this._glassShowing) {
             document.body.removeChild(this._glass);
             this._glassShowing = false;
         }
     }
 
-    public startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
+    startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
         fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined,
         fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined,
         fDragEnd: ((event: Event) => void) | undefined,
@@ -119,11 +119,11 @@ class DragDrop {
         document.addEventListener("touchmove", this._onMouseMove);
     }
 
-    public isDragging() {
+    isDragging() {
         return this._dragging;
     }
 
-    public toString() {
+    toString() {
         const rtn = "(DragDrop: " +
             "startX=" + this._startX +
             ", startY=" + this._startY +

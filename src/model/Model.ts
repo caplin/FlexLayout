@@ -26,7 +26,7 @@ class Model {
    * @param json the json model to load
    * @returns {Model} a new Model object
    */
-  public static fromJson(json: any) {
+  static fromJson(json: any) {
     const model = new Model();
     Model._attributeDefinitions.fromJson(json.global, model._attributes);
 
@@ -111,7 +111,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _setChangeListener(listener: (() => void) | undefined) {
+  _setChangeListener(listener: (() => void) | undefined) {
     this._changeListener = listener;
   }
 
@@ -119,24 +119,24 @@ class Model {
   /**
    * Get the currently active tabset node
    */
-  public getActiveTabset() {
+  getActiveTabset() {
     return this._activeTabSet;
   }
 
   /** @hidden @internal */
-  public _setActiveTabset(tabsetNode: TabSetNode) {
+  _setActiveTabset(tabsetNode: TabSetNode) {
     this._activeTabSet = tabsetNode;
   }
 
   /**
    * Get the currently maximized tabset node
    */
-  public getMaximizedTabset() {
+  getMaximizedTabset() {
     return this._maximizedTabSet;
   }
 
   /** @hidden @internal */
-  public _setMaximizedTabset(tabsetNode: TabSetNode) {
+  _setMaximizedTabset(tabsetNode: TabSetNode) {
     this._maximizedTabSet = tabsetNode;
   }
 
@@ -144,7 +144,7 @@ class Model {
    * Gets the root RowNode of the model
    * @returns {RowNode}
    */
-  public getRoot() {
+  getRoot() {
     return this._root as RowNode;
   }
 
@@ -152,12 +152,12 @@ class Model {
    * Gets the
    * @returns {BorderSet|*}
    */
-  public getBorderSet() {
+  getBorderSet() {
     return this._borders;
   }
 
   /** @hidden @internal */
-  public _getOuterInnerRects() {
+  _getOuterInnerRects() {
     return this._borderRects;
   }
 
@@ -165,7 +165,7 @@ class Model {
    * Visits all the nodes in the model and calls the given function for each
    * @param fn a function that takes visited node and a integer level as parameters
    */
-  public visitNodes(fn: (node: Node, level: number) => void) {
+  visitNodes(fn: (node: Node, level: number) => void) {
     this._borders._forEachNode(fn);
     (this._root as RowNode)._forEachNode(fn, 0);
   }
@@ -174,7 +174,7 @@ class Model {
    * Gets a node by its id
    * @param id the id to find
    */
-  public getNodeById(id: string) {
+  getNodeById(id: string) {
     return this._idMap[id];
   }
 
@@ -183,7 +183,7 @@ class Model {
    * Actions should be generated via static methods on the Actions class
    * @param action the action to perform
    */
-  public doAction(action: Action) {
+  doAction(action: Action) {
     // console.log(action);
     switch (action.type) {
       case Actions.ADD_NODE:
@@ -314,7 +314,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _updateIdMap() {
+  _updateIdMap() {
     // regenerate idMap to stop it building up
     this._idMap = {};
     this.visitNodes((node) => this._idMap[node.getId()] = node);
@@ -322,7 +322,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _adjustSplitSide(node: (TabSetNode | RowNode), weight: number, pixels: number) {
+  _adjustSplitSide(node: (TabSetNode | RowNode), weight: number, pixels: number) {
     node._setWeight(weight);
     if (node.getWidth() != null && node.getOrientation() === Orientation.VERT) {
       node._updateAttrs({ width: pixels });
@@ -336,7 +336,7 @@ class Model {
    * Converts the model to a json object
    * @returns {*} json object that represents this model
    */
-  public toJson() {
+  toJson() {
     const json: any = { global: {}, layout: {} };
     Model._attributeDefinitions.toJson(json.global, this._attributes);
 
@@ -350,16 +350,16 @@ class Model {
     return json;
   }
 
-  public getSplitterSize() {
+  getSplitterSize() {
     return this._attributes.splitterSize as number;
   }
 
-  public isEnableEdgeDock() {
+  isEnableEdgeDock() {
     return this._attributes.enableEdgeDock as boolean;
   }
 
   /** @hidden @internal */
-  public _addNode(node: Node) {
+  _addNode(node: Node) {
     const id = node.getId();
     if (this._idMap[id] !== undefined) {
       throw new Error(`Error: each node must have a unique id, duplicate id:${node.getId()}`);
@@ -371,7 +371,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _layout(rect: Rect) {
+  _layout(rect: Rect) {
     // let start = Date.now();
     this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect });
     rect = this._borderRects.inner.removeInsets(this._getAttribute("marginInsets"));
@@ -382,7 +382,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number) {
+  _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number) {
     let node = (this._root as RowNode)._findDropTargetNode(dragNode, x, y);
     if (node === undefined) {
       node = this._borders._findDropTargetNode(dragNode, x, y);
@@ -391,19 +391,19 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _tidy() {
+  _tidy() {
     // console.log("before _tidy", this.toString());
     (this._root as RowNode)._tidy();
     // console.log("after _tidy", this.toString());
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any) {
+  _updateAttrs(json: any) {
     Model._attributeDefinitions.update(json, this._attributes);
   }
 
   /** @hidden @internal */
-  public _nextUniqueId() {
+  _nextUniqueId() {
     this._nextId++;
     while (this._idMap["#" + this._nextId] !== undefined) {
       this._nextId++;
@@ -413,7 +413,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  public _getAttribute(name: string): any {
+  _getAttribute(name: string): any {
     return this._attributes[name];
   }
 
@@ -421,16 +421,16 @@ class Model {
    * Sets a function to allow/deny dropping a node
    * @param onAllowDrop function that takes the drag node and DropInfo and returns true if the drop is allowed
    */
-  public setOnAllowDrop(onAllowDrop: (dragNode: Node, dropInfo: DropInfo) => boolean) {
+  setOnAllowDrop(onAllowDrop: (dragNode: Node, dropInfo: DropInfo) => boolean) {
     this._onAllowDrop = onAllowDrop;
   }
 
   /** @hidden @internal */
-  public _getOnAllowDrop() {
+  _getOnAllowDrop() {
     return this._onAllowDrop;
   }
 
-  public toString() {
+  toString() {
     return JSON.stringify(this.toJson());
   }
 }

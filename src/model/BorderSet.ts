@@ -9,7 +9,7 @@ import Node from "./Node";
 class BorderSet {
 
   /** @hidden @internal */
-  public static _fromJson(json: any, model: Model) {
+  static _fromJson(json: any, model: Model) {
     const borderSet = new BorderSet(model);
     borderSet._borders = json.map((borderJson: any) => BorderNode._fromJson(borderJson, model));
     return borderSet;
@@ -25,12 +25,12 @@ class BorderSet {
     this._borders = [];
   }
 
-  public getBorders() {
+  getBorders() {
     return this._borders;
   }
 
   /** @hidden @internal */
-  public _forEachNode(fn: (node: Node, level: number) => void) {
+  _forEachNode(fn: (node: Node, level: number) => void) {
     this._borders.forEach((borderNode) => {
       fn(borderNode, 0);
       borderNode.getChildren().forEach((node) => {
@@ -40,12 +40,12 @@ class BorderSet {
   }
 
   /** @hidden @internal */
-  public _toJson() {
+  _toJson() {
     return this._borders.map((borderNode) => borderNode._toJson());
   }
 
   /** @hidden @internal */
-  public _layoutBorder(outerInnerRects: { inner: Rect, outer: Rect }) {
+  _layoutBorder(outerInnerRects: { inner: Rect, outer: Rect }) {
 
     const rect = outerInnerRects.outer;
     const height = rect.height;
@@ -118,7 +118,7 @@ class BorderSet {
   }
 
   /** @hidden @internal */
-  public _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
+  _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
     for (let i = 0; i < this._borders.length; i++) {
       const border = this._borders[i];
       if (border.isShowing()) {

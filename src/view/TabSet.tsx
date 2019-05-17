@@ -14,13 +14,13 @@ export interface ITabSetProps {
 
 /** @hidden @internal */
 export class TabSet extends React.Component<ITabSetProps, any> {
-    public headerRef?: HTMLDivElement;
-    public overflowbuttonRef: any;
-    public toolbarRef?: HTMLDivElement;
+    headerRef?: HTMLDivElement;
+    overflowbuttonRef: any;
+    toolbarRef?: HTMLDivElement;
 
-    public recalcVisibleTabs: boolean;
-    public showOverflow: boolean;
-    public showToolbar: boolean;
+    recalcVisibleTabs: boolean;
+    showOverflow: boolean;
+    showToolbar: boolean;
 
     constructor(props: ITabSetProps) {
         super(props);
@@ -30,22 +30,22 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.state = { hideTabsAfter: 999 };
     }
 
-    public componentDidMount() {
+    componentDidMount() {
         this.updateVisibleTabs();
     }
 
-    public componentDidUpdate() {
+    componentDidUpdate() {
         this.updateVisibleTabs();
     }
 
-    public componentWillReceiveProps(nextProps: ITabSetProps) {
+    componentWillReceiveProps(nextProps: ITabSetProps) {
         this.showToolbar = true;
         this.showOverflow = false;
         this.recalcVisibleTabs = true;
         this.setState({ hideTabsAfter: 999 });
     }
 
-    public updateVisibleTabs() {
+    updateVisibleTabs() {
         const node = this.props.node;
 
         if (node.isEnableTabStrip() && this.recalcVisibleTabs) {
@@ -75,7 +75,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         }
     }
 
-    public render() {
+    render() {
         const cm = this.props.layout.getClassName;
 
         const node = this.props.node;
@@ -201,17 +201,17 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         </div>;
     }
 
-    public onOverflowClick(hiddenTabs: Array<{ name: string, node: TabNode, index: number }>) {
+    onOverflowClick(hiddenTabs: Array<{ name: string, node: TabNode, index: number }>) {
         // console.log("hidden tabs: " + hiddenTabs);
         const element = this.overflowbuttonRef as Element;
         PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect.bind(this), this.props.layout.getClassName);
     }
 
-    public onOverflowItemSelect(item: { name: string, node: TabNode, index: number }) {
+    onOverflowItemSelect(item: { name: string, node: TabNode, index: number }) {
         this.props.layout.doAction(Actions.selectTab(item.node.getId()));
     }
 
-    public onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
         let name = this.props.node.getName();
         if (name === undefined) {
             name = "";
@@ -223,17 +223,17 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), (event: Event) => undefined, this.onDoubleClick.bind(this));
     }
 
-    public onInterceptMouseDown(event: React.MouseEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    onInterceptMouseDown(event: React.MouseEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         event.stopPropagation();
     }
 
-    public onMaximizeToggle() {
+    onMaximizeToggle() {
         if (this.props.node.isEnableMaximize()) {
             this.props.layout.maximize(this.props.node);
         }
     }
 
-    public onDoubleClick(event: Event) {
+    onDoubleClick(event: Event) {
         if (this.props.node.isEnableMaximize()) {
             this.props.layout.maximize(this.props.node);
         }

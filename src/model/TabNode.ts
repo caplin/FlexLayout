@@ -10,10 +10,10 @@ import TabSetNode from "./TabSetNode";
 
 class TabNode extends Node implements IDraggable {
 
-  public static readonly TYPE = "tab";
+  static readonly TYPE = "tab";
 
   /** @hidden @internal */
-  public static _fromJson(json: any, model: Model) {
+  static _fromJson(json: any, model: Model) {
     const newLayoutNode = new TabNode(model, json);
     return newLayoutNode;
   }
@@ -55,20 +55,20 @@ class TabNode extends Node implements IDraggable {
     model._addNode(this);
   }
 
-  public getTabRect() {
+  getTabRect() {
     return this._tabRect;
   }
 
   /** @hidden @internal */
-  public _setTabRect(rect: Rect) {
+  _setTabRect(rect: Rect) {
     this._tabRect = rect;
   }
 
-  public getName() {
+  getName() {
     return this._getAttr("name") as string;
   }
 
-  public getComponent() {
+  getComponent() {
     return this._getAttributeAsStringOrUndefined("component");
   }
 
@@ -79,7 +79,7 @@ class TabNode extends Node implements IDraggable {
    * this.state.model.doAction(
    *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
    */
-  public getConfig() {
+  getConfig() {
     return this._attributes.config;
   }
 
@@ -87,41 +87,41 @@ class TabNode extends Node implements IDraggable {
    * Returns an object that can be used to store transient node specific data that will
    * NOT be saved in the json.
    */
-  public getExtraData() {
+  getExtraData() {
     return this._extra;
   }
 
-  public getIcon() {
+  getIcon() {
     return this._getAttributeAsStringOrUndefined("icon");
   }
 
-  public isEnableClose() {
+  isEnableClose() {
     return this._getAttr("enableClose") as boolean;
   }
 
-  public isEnableDrag() {
+  isEnableDrag() {
     return this._getAttr("enableDrag") as boolean;
   }
 
-  public isEnableRename() {
+  isEnableRename() {
     return this._getAttr("enableRename") as boolean;
   }
 
-  public getClassName() {
+  getClassName() {
     return this._getAttributeAsStringOrUndefined("className");
   }
 
-  public isEnableRenderOnDemand() {
+  isEnableRenderOnDemand() {
     return this._getAttr("enableRenderOnDemand") as boolean;
   }
 
   /** @hidden @internal */
-  public _setName(name: string) {
+  _setName(name: string) {
     this._attributes.name = name;
   }
 
   /** @hidden @internal */
-  public _layout(rect: Rect) {
+  _layout(rect: Rect) {
     if (!rect.equals(this._rect)) {
       this._fireEvent("resize", { rect });
     }
@@ -129,25 +129,25 @@ class TabNode extends Node implements IDraggable {
   }
 
   /** @hidden @internal */
-  public _delete() {
+  _delete() {
     (this._parent as TabSetNode | BorderNode)._remove(this);
     this._fireEvent("close", {});
   }
 
   /** @hidden @internal */
-  public _toJson() {
+  _toJson() {
     const json = {};
     TabNode._attributeDefinitions.toJson(json, this._attributes);
     return json;
   }
 
   /** @hidden @internal */
-  public _updateAttrs(json: any) {
+  _updateAttrs(json: any) {
     TabNode._attributeDefinitions.update(json, this._attributes);
   }
 
   /** @hidden @internal */
-  public _getAttributeDefinitions() {
+  _getAttributeDefinitions() {
     return TabNode._attributeDefinitions;
   }
 }
