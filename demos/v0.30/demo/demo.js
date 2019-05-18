@@ -25358,6 +25358,9 @@ exports.default = DockLocation;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
+var canUseDOM = !!((typeof window !== "undefined" &&
+    window.document &&
+    window.document.createElement));
 var DragDrop = /** @class */ (function () {
     /** @hidden @internal */
     function DragDrop() {
@@ -25371,12 +25374,14 @@ var DragDrop = /** @class */ (function () {
         this._glassShowing = false;
         /** @hidden @internal */
         this._dragging = false;
-        this._glass = document.createElement("div");
-        this._glass.style.zIndex = "998";
-        this._glass.style.position = "absolute";
-        this._glass.style.backgroundColor = "white";
-        this._glass.style.opacity = ".00"; // may need to be .01 for IE???
-        this._glass.style.filter = "alpha(opacity=01)";
+        if (canUseDOM) { // check for serverside rendering
+            this._glass = document.createElement("div");
+            this._glass.style.zIndex = "998";
+            this._glass.style.position = "absolute";
+            this._glass.style.backgroundColor = "white";
+            this._glass.style.opacity = ".00"; // may need to be .01 for IE???
+            this._glass.style.filter = "alpha(opacity=01)";
+        }
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
@@ -25578,6 +25583,25 @@ var DropInfo = /** @class */ (function () {
     return DropInfo;
 }());
 exports.default = DropInfo;
+
+
+/***/ }),
+
+/***/ "./src/I18nLabel.ts":
+/*!**************************!*\
+  !*** ./src/I18nLabel.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var I18nLabel;
+(function (I18nLabel) {
+    I18nLabel["Move_Tab"] = "Move: ";
+    I18nLabel["Move_Tabset"] = "Move tabset";
+})(I18nLabel = exports.I18nLabel || (exports.I18nLabel = {}));
 
 
 /***/ }),
@@ -25804,6 +25828,8 @@ var DragDrop_1 = __webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts");
 exports.DragDrop = DragDrop_1.default;
 var DropInfo_1 = __webpack_require__(/*! ./DropInfo */ "./src/DropInfo.ts");
 exports.DropInfo = DropInfo_1.default;
+var I18nLabel_1 = __webpack_require__(/*! ./I18nLabel */ "./src/I18nLabel.ts");
+exports.I18nLabel = I18nLabel_1.I18nLabel;
 var Action_1 = __webpack_require__(/*! ./model/Action */ "./src/model/Action.ts");
 exports.Action = Action_1.default;
 var Actions_1 = __webpack_require__(/*! ./model/Actions */ "./src/model/Actions.ts");
@@ -25816,8 +25842,6 @@ var Model_1 = __webpack_require__(/*! ./model/Model */ "./src/model/Model.ts");
 exports.Model = Model_1.default;
 var Node_1 = __webpack_require__(/*! ./model/Node */ "./src/model/Node.ts");
 exports.Node = Node_1.default;
-// import IDraggable from './model/IDraggable'
-// import IDropTarget from './model/IDropTarget'
 var RowNode_1 = __webpack_require__(/*! ./model/RowNode */ "./src/model/RowNode.ts");
 exports.RowNode = RowNode_1.default;
 var SplitterNode_1 = __webpack_require__(/*! ./model/SplitterNode */ "./src/model/SplitterNode.ts");
@@ -25834,6 +25858,7 @@ var Layout_1 = __webpack_require__(/*! ./view/Layout */ "./src/view/Layout.tsx")
 exports.Layout = Layout_1.default;
 exports.default = {
     Layout: Layout_1.default,
+    I18nLabel: I18nLabel_1.I18nLabel,
     Actions: Actions_1.default,
     Action: Action_1.default,
     Model: Model_1.default,
@@ -26433,8 +26458,8 @@ var BorderSet = /** @class */ (function () {
         var adjustableWidth = 0;
         var showingBorders = this._borders.filter(function (border) { return border.isShowing(); });
         // sum size of borders to see they will fit
-        for (var i = 0; i < showingBorders.length; i++) {
-            var border = showingBorders[i];
+        for (var _i = 0, showingBorders_1 = showingBorders; _i < showingBorders_1.length; _i++) {
+            var border = showingBorders_1[_i];
             if (border.isShowing()) {
                 border._setAdjustedSize(border.getSize());
                 var visible = border.getSelected() !== -1;
@@ -26489,8 +26514,8 @@ var BorderSet = /** @class */ (function () {
     };
     /** @hidden @internal */
     BorderSet.prototype._findDropTargetNode = function (dragNode, x, y) {
-        for (var i = 0; i < this._borders.length; i++) {
-            var border = this._borders[i];
+        for (var _i = 0, _a = this._borders; _i < _a.length; _i++) {
+            var border = _a[_i];
             if (border.isShowing()) {
                 var dropInfo = border.canDrop(dragNode, x, y);
                 if (dropInfo !== undefined) {
@@ -27031,8 +27056,8 @@ var Node = /** @class */ (function () {
             rtn = this.canDrop(dragNode, x, y);
             if (rtn === undefined) {
                 if (this._children.length !== 0) {
-                    for (var i = 0; i < this._children.length; i++) {
-                        var child = this._children[i];
+                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                        var child = _a[_i];
                         rtn = child._findDropTargetNode(dragNode, x, y);
                         if (rtn !== undefined) {
                             break;
@@ -27187,8 +27212,8 @@ var RowNode = /** @class */ (function (_super) {
     RowNode._fromJson = function (json, model) {
         var newLayoutNode = new RowNode(model, json);
         if (json.children != null) {
-            for (var i = 0; i < json.children.length; i++) {
-                var jsonChild = json.children[i];
+            for (var _i = 0, _a = json.children; _i < _a.length; _i++) {
+                var jsonChild = _a[_i];
                 if (jsonChild.type === TabSetNode_1.default.TYPE) {
                     var child = TabSetNode_1.default._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
@@ -27233,8 +27258,8 @@ var RowNode = /** @class */ (function (_super) {
         var prefPixels = 0;
         var totalPrefWeight = 0;
         var drawChildren = this._getDrawChildren();
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
+        for (var _i = 0, drawChildren_1 = drawChildren; _i < drawChildren_1.length; _i++) {
+            var child = drawChildren_1[_i];
             var prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
                 if (prefSize !== undefined) {
@@ -27261,8 +27286,8 @@ var RowNode = /** @class */ (function (_super) {
         // assign actual pixel sizes
         var totalSizeGiven = 0;
         var variableSize = 0;
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
+        for (var _a = 0, drawChildren_2 = drawChildren; _a < drawChildren_2.length; _a++) {
+            var child = drawChildren_2[_a];
             var prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
                 if (prefSize !== undefined) {
@@ -27288,8 +27313,8 @@ var RowNode = /** @class */ (function (_super) {
         // adjust sizes to exactly fit
         if (variableSize > 0) {
             while (totalSizeGiven < pixelSize) {
-                for (var i = 0; i < drawChildren.length; i++) {
-                    var child = drawChildren[i];
+                for (var _b = 0, drawChildren_3 = drawChildren; _b < drawChildren_3.length; _b++) {
+                    var child = drawChildren_3[_b];
                     var prefSize = child._getPrefSize(this.getOrientation());
                     if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
                         child._setTempSize(child._getTempSize() + 1);
@@ -27300,8 +27325,8 @@ var RowNode = /** @class */ (function (_super) {
         }
         // layout children
         var p = 0;
-        for (var i = 0; i < drawChildren.length; i++) {
-            var child = drawChildren[i];
+        for (var _c = 0, drawChildren_4 = drawChildren; _c < drawChildren_4.length; _c++) {
+            var child = drawChildren_4[_c];
             if (this.getOrientation() === Orientation_1.default.HORZ) {
                 child._layout(new Rect_1.default(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height));
             }
@@ -27382,8 +27407,9 @@ var RowNode = /** @class */ (function (_super) {
                     if (subchild instanceof RowNode) {
                         var subChildrenTotal = 0;
                         var subChildChildren = subchild.getChildren();
-                        for (var j = 0; j < subChildChildren.length; j++) {
-                            var subsubChild = subChildChildren[j];
+                        for (var _i = 0, subChildChildren_1 = subChildChildren; _i < subChildChildren_1.length; _i++) {
+                            var ssc = subChildChildren_1[_i];
+                            var subsubChild = ssc;
                             subChildrenTotal += subsubChild.getWeight();
                         }
                         for (var j = 0; j < subChildChildren.length; j++) {
@@ -28171,6 +28197,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 /** @hidden @internal */
@@ -28179,7 +28206,8 @@ var BorderButton = /** @class */ (function (_super) {
     function BorderButton() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.onMouseDown = function (event) {
-            _this.props.layout.dragStart(event, "Move: " + _this.props.node.getName(), _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, function (event2) { return undefined; });
+            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tab, _this.props.node.getName());
+            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, function (event2) { return undefined; });
         };
         _this.onClick = function () {
             var node = _this.props.node;
@@ -28769,6 +28797,16 @@ var Layout = /** @class */ (function (_super) {
             this.props.onRenderTabSet(tabSetNode, renderValues);
         }
     };
+    Layout.prototype.i18nName = function (id, param) {
+        var message = undefined;
+        if (this.props.i18nMapper) {
+            message = this.props.i18nMapper(id, param);
+        }
+        if (message === undefined) {
+            message = id + (param === undefined ? "" : param);
+        }
+        return message;
+    };
     return Layout;
 }(React.Component));
 exports.Layout = Layout;
@@ -29001,6 +29039,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 /** @hidden @internal */
@@ -29010,7 +29049,8 @@ var TabButton = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         _this.contentWidth = 0;
         _this.onMouseDown = function (event) {
-            _this.props.layout.dragStart(event, "Move: " + _this.props.node.getName(), _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, _this.onDoubleClick);
+            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tab, _this.props.node.getName());
+            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, _this.onDoubleClick);
         };
         _this.onClick = function (event) {
             var node = _this.props.node;
@@ -29152,6 +29192,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
 var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
@@ -29177,7 +29218,8 @@ var TabSet = /** @class */ (function (_super) {
                 name = ": " + name;
             }
             _this.props.layout.doAction(Actions_1.default.setActiveTabset(_this.props.node.getId()));
-            _this.props.layout.dragStart(event, "Move tabset" + name, _this.props.node, _this.props.node.isEnableDrag(), function (event2) { return undefined; }, _this.onDoubleClick);
+            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tabset, name);
+            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), function (event2) { return undefined; }, _this.onDoubleClick);
         };
         _this.onInterceptMouseDown = function (event) {
             event.stopPropagation();
