@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import DockLocation from "../DockLocation";
 import DragDrop from "../DragDrop";
+import { I18nLabel } from "../I18nLabel";
 import Action from "../model/Action";
 import Actions from "../model/Actions";
 import BorderNode from "../model/BorderNode";
@@ -37,16 +38,13 @@ export interface ILayoutProps {
   ) => void;
   onModelChange?: (model: Model) => void;
   classNameMapper?: (defaultClassName: string) => string;
-  i18nMapper?: (id: string, param?: string) => string;
+  i18nMapper?: (id: I18nLabel, param?: string) => string;
 }
 
 /**
  * A React component that hosts a multi-tabbed layout
  */
 export class Layout extends React.Component<ILayoutProps, any> {
-
-  static I18N_MOVE_TAB = "Move: ";
-  static I18N_MOVE_TABSET = "Move tabset";
 
   /** @hidden @internal */
   selfRef?: HTMLDivElement;
@@ -679,7 +677,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
     }
   }
 
-  i18nName(id: string, param?: string) {
+  i18nName(id: I18nLabel, param?: string) {
     if (this.props.i18nMapper) {
       return this.props.i18nMapper(id, param);
     } else {

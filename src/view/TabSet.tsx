@@ -1,4 +1,5 @@
 import * as React from "react";
+import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
@@ -220,7 +221,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             name = ": " + name;
         }
         this.props.layout.doAction(Actions.setActiveTabset(this.props.node.getId()));
-        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TABSET, name);
+        const message = this.props.layout.i18nName(I18nLabel.Move_Tabset, name);
         this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), (event2: Event) => undefined, this.onDoubleClick);
     }
 

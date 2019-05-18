@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import Rect from "../Rect";
@@ -19,7 +20,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
     contentsRef?: HTMLDivElement;
 
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TAB, this.props.node.getName());
+        const message = this.props.layout.i18nName(I18nLabel.Move_Tab, this.props.node.getName());
         this.props.layout.dragStart(
             event,
             message,

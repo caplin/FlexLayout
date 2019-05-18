@@ -188,9 +188,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 // }
                 // i18nMapper = {
                 //     (id, param?) => {
-                //         if (id === FlexLayout.Layout.I18N_MOVE_TAB) {
+                //         if (id === FlexLayout.I18nLabel.Move_Tab) {
                 //             return `move this tab: ${param}`;
-                //         } else if (id === FlexLayout.Layout.I18N_MOVE_TABSET) {
+                //         } else if (id === FlexLayout.I18nLabel.Move_Tabset) {
                 //             return `move this tabset`
                 //         }
                 //         return "";

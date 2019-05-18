@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
@@ -29,7 +30,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TAB, this.props.node.getName());
+        const message = this.props.layout.i18nName(I18nLabel.Move_Tab, this.props.node.getName());
         this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), this.onClick, this.onDoubleClick);
     }
 
