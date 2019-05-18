@@ -142,7 +142,7 @@ class Main extends React.Component {
         this.state = {model: FlexLayout.Model.fromJson(json)};
     }
 
-    factory(node) {
+    factory = (node) => {
         var component = node.getComponent();
         if (component === "button") {
             return <button>{node.getName()}</button>;
@@ -151,7 +151,7 @@ class Main extends React.Component {
 
     render() {
         return (
-            <FlexLayout.Layout model={this.state.model} factory={this.factory.bind(this)}/>
+            <FlexLayout.Layout model={this.state.model} factory={this.factory}/>
         )
     }
 }
@@ -456,9 +456,9 @@ Example:
         let config = this.props.node.getConfig();
 
         // save state in flexlayout node tree
-        this.props.node.setEventListener("save", function (p) {
+        this.props.node.setEventListener("save", (p) => {
              config.subject = this.subject;
-        }.bind(this));
+        };
     }
 
 ```

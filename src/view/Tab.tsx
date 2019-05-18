@@ -37,7 +37,7 @@ export class Tab extends React.Component<ITabProps, any> {
         }
     }
 
-    onMouseDown() {
+    onMouseDown = () => {
         const parent = this.props.node.getParent() as TabSetNode;
         if (parent.getType() === TabSetNode.TYPE) {
             if (!parent.isActive()) {
@@ -65,8 +65,8 @@ export class Tab extends React.Component<ITabProps, any> {
         }
 
         return <div className={cm("flexlayout__tab")}
-            onMouseDown={this.onMouseDown.bind(this)}
-            onTouchStart={this.onMouseDown.bind(this)}
+            onMouseDown={this.onMouseDown}
+            onTouchStart={this.onMouseDown}
             style={style}>{child}
         </div>;
     }

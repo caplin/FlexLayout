@@ -18,27 +18,27 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
     selfRef?: HTMLDivElement;
     contentsRef?: HTMLDivElement;
 
-    onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         this.props.layout.dragStart(
             event,
             "Move: " + this.props.node.getName(),
             this.props.node, this.props.node.isEnableDrag(),
-            this.onClick.bind(this),
-            (event: Event) => undefined
-        );
+            this.onClick,
+            (event2: Event) => undefined
+        );  
     }
 
-    onClick() {
+    onClick = () => {
         const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
-    onClose(event: React.MouseEvent<HTMLDivElement>) {
+    onClose = (event: React.MouseEvent<HTMLDivElement>) => {
         const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
-    onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    onCloseMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
         event.stopPropagation();
     }
 
@@ -93,17 +93,17 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         let closeButton;
         if (this.props.node.isEnableClose()) {
             closeButton = <div className={cm("flexlayout__border_button_trailing")}
-                onMouseDown={this.onCloseMouseDown.bind(this)}
-                onClick={this.onClose.bind(this)}
-                onTouchStart={this.onCloseMouseDown.bind(this)}
+                onMouseDown={this.onCloseMouseDown}
+                onClick={this.onClose}
+                onTouchStart={this.onCloseMouseDown}
             />;
         }
 
         return <div ref={ref => this.selfRef = (ref === null) ? undefined : ref}
             style={{}}
             className={classNames}
-            onMouseDown={this.onMouseDown.bind(this)}
-            onTouchStart={this.onMouseDown.bind(this)}>
+            onMouseDown={this.onMouseDown}
+            onTouchStart={this.onMouseDown}>
             {leading}
             {content}
             {closeButton}

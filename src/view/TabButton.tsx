@@ -25,19 +25,19 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     constructor(props: ITabButtonProps) {
         super(props);
         this.state = { editing: false };
-        this.onEndEdit = this.onEndEdit.bind(this);
+        this.onEndEdit = this.onEndEdit;
     }
 
-    onMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
-        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick.bind(this), this.onDoubleClick.bind(this));
+    onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
+        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick, this.onDoubleClick);
     }
 
-    onClick(event: Event) {
+    onClick = (event: Event) => {
         const node = this.props.node;
         this.props.layout.doAction(Actions.selectTab(node.getId()));
     }
 
-    onDoubleClick(event: Event) {
+    onDoubleClick = (event: Event) => {
         if (this.props.node.isEnableRename()) {
             this.setState({ editing: true });
             document.body.addEventListener("mousedown", this.onEndEdit);
@@ -52,7 +52,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
     }
 
-    onEndEdit(event: Event) {
+    onEndEdit = (event: Event) => {
         if (event.target !== this.contentRef) {
             this.setState({ editing: false });
             document.body.removeEventListener("mousedown", this.onEndEdit);
@@ -60,12 +60,12 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
     }
 
-    onClose(event: React.MouseEvent<HTMLDivElement>) {
+    onClose = (event: React.MouseEvent<HTMLDivElement>) => {
         const node = this.props.node;
         this.props.layout.doAction(Actions.deleteTab(node.getId()));
     }
 
-    onCloseMouseDown(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    onCloseMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
         event.stopPropagation();
     }
 
@@ -89,12 +89,12 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
 
-    onTextBoxMouseDown(event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) {
+    onTextBoxMouseDown = (event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     }
 
-    onTextBoxKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) { // esc
             this.setState({ editing: false });
@@ -148,18 +148,18 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
                 type="text"
                 autoFocus={true}
                 defaultValue={node.getName()}
-                onKeyDown={this.onTextBoxKeyPress.bind(this)}
-                onMouseDown={this.onTextBoxMouseDown.bind(this)}
-                onTouchStart={this.onTextBoxMouseDown.bind(this)}
+                onKeyDown={this.onTextBoxKeyPress}
+                onMouseDown={this.onTextBoxMouseDown}
+                onTouchStart={this.onTextBoxMouseDown}
             />;
         }
 
         let closeButton;
         if (this.props.node.isEnableClose()) {
             closeButton = <div className={cm("flexlayout__tab_button_trailing")}
-                onMouseDown={this.onCloseMouseDown.bind(this)}
-                onClick={this.onClose.bind(this)}
-                onTouchStart={this.onCloseMouseDown.bind(this)}
+                onMouseDown={this.onCloseMouseDown}
+                onClick={this.onClose}
+                onTouchStart={this.onCloseMouseDown}
             />;
         }
 
@@ -169,8 +169,8 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
                 height: this.props.height
             }}
             className={classNames}
-            onMouseDown={this.onMouseDown.bind(this)}
-            onTouchStart={this.onMouseDown.bind(this)}>
+            onMouseDown={this.onMouseDown}
+            onTouchStart={this.onMouseDown}>
             {leading}
             {content}
             {closeButton}

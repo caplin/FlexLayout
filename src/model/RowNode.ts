@@ -20,8 +20,7 @@ class RowNode extends Node implements IDropTarget {
     const newLayoutNode = new RowNode(model, json);
 
     if (json.children != null) {
-      for (let i = 0; i < json.children.length; i++) {
-        const jsonChild = json.children[i];
+      for (const jsonChild of json.children) {
         if (jsonChild.type === TabSetNode.TYPE) {
           const child = TabSetNode._fromJson(jsonChild, model);
           newLayoutNode._addChild(child);
@@ -92,8 +91,7 @@ class RowNode extends Node implements IDropTarget {
     let totalPrefWeight = 0;
     const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
 
-    for (let i = 0; i < drawChildren.length; i++) {
-      const child = drawChildren[i];
+    for (const child of drawChildren) {
       const prefSize = child._getPrefSize(this.getOrientation());
       if (child._isFixed()) {
         if (prefSize !== undefined) {
@@ -122,8 +120,7 @@ class RowNode extends Node implements IDropTarget {
     // assign actual pixel sizes
     let totalSizeGiven = 0;
     let variableSize = 0;
-    for (let i = 0; i < drawChildren.length; i++) {
-      const child = drawChildren[i];
+    for (const child of drawChildren) {
       const prefSize = child._getPrefSize(this.getOrientation());
       if (child._isFixed()) {
         if (prefSize !== undefined) {
@@ -151,8 +148,7 @@ class RowNode extends Node implements IDropTarget {
     // adjust sizes to exactly fit
     if (variableSize > 0) {
       while (totalSizeGiven < pixelSize) {
-        for (let i = 0; i < drawChildren.length; i++) {
-          const child = drawChildren[i];
+        for (const child of drawChildren) {
           const prefSize = child._getPrefSize(this.getOrientation());
           if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
             child._setTempSize(child._getTempSize() + 1);
@@ -164,9 +160,7 @@ class RowNode extends Node implements IDropTarget {
 
     // layout children
     let p = 0;
-    for (let i = 0; i < drawChildren.length; i++) {
-      const child = drawChildren[i];
-
+    for (const child of drawChildren) {
       if (this.getOrientation() === Orientation.HORZ) {
         child._layout(new Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height));
       }
@@ -260,8 +254,8 @@ class RowNode extends Node implements IDropTarget {
           if (subchild instanceof RowNode) {
             let subChildrenTotal = 0;
             const subChildChildren = subchild.getChildren();
-            for (let j = 0; j < subChildChildren.length; j++) {
-              const subsubChild = subChildChildren[j] as RowNode | TabSetNode;
+            for (const ssc of subChildChildren) {
+              const subsubChild = ssc as RowNode | TabSetNode;
               subChildrenTotal += subsubChild.getWeight();
             }
             for (let j = 0; j < subChildChildren.length; j++) {

@@ -54,14 +54,14 @@ class Main extends React.Component {
         this.state = {model: FlexLayout.Model.fromJson(json)};
     }
 
-    factory(node) {
+    factory = (node) => {
         var component = node.getComponent();
         if (component === "text") {
             return <div dangerouslySetInnerHTML={{__html:node.getConfig().text}}/>;
         }
     }
 
-    onAdd(event) {
+    onAdd = (event) => {
         this.refs.layout.addTabWithDragAndDropIndirect("Add panel<br>(Drag to location)", {
             component: "text",
             name: "added",
@@ -72,11 +72,11 @@ class Main extends React.Component {
     render() {
         return (
             <div className="outer">
-                <button onClick={this.onAdd.bind(this)}>Add</button>
+                <button onClick={this.onAdd}>Add</button>
                 <div className="inner">
                     <FlexLayout.Layout ref="layout"
                                        model={this.state.model}
-                                       factory={this.factory.bind(this)}/>
+                                       factory={this.factory}/>
                 </div>
             </div>
         );

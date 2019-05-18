@@ -46,21 +46,21 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
 
         if (!loaded) {
-            Utils.downloadFile("layouts/" + layoutName + ".layout", this.load.bind(this), this.error.bind(this));
+            Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
         }
     }
 
-    load(jsonText:string) {
+    load = (jsonText:string) => {
         let json = JSON.parse(jsonText);
         let model = FlexLayout.Model.fromJson(json);
 
         // you can control where nodes can be dropped
-        //model.setOnAllowDrop(this.allowDrop.bind(this));
+        //model.setOnAllowDrop(this.allowDrop);
 
         this.setState({ layoutFile: this.loadingLayoutName!, model: model });
     }
 
-    allowDrop(dragNode:(TabNode | TabSetNode), dropInfo:DropInfo) {
+    allowDrop = (dragNode:(TabNode | TabSetNode), dropInfo:DropInfo) => {
         let dropNode = dropInfo.node;
 
         // prevent non-border tabs dropping into borders
@@ -74,34 +74,34 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         return true;
     }
 
-    error(reason:string) {
+    error = (reason:string) => {
         alert("Error loading json config file: " + this.loadingLayoutName + "\n" + reason);
     }
 
-    onAddClick(event:React.MouseEvent) {
+    onAddClick = (event:React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
                 name: "a new grid"
-            }, this.onAdded.bind(this));
+            }, this.onAdded);
             this.setState({ adding: true });
         }
     }
 
-    onShowLayoutClick(event:React.MouseEvent) {
+    onShowLayoutClick = (event:React.MouseEvent) => {
         console.log(JSON.stringify(this.state.model!.toJson(), null, "\t"));
     }
 
-    onAdded() {
+    onAdded = () => {
         this.setState({ adding: false });
     }
 
-    onTableClick(node:Node, event:Event) {
+    onTableClick = (node:Node, event:Event) => {
         console.log("tab: \n" + node._toAttributeString());
         console.log("tabset: \n" + node.getParent()!._toAttributeString());
     }
 
-    factory(node:TabNode) {
+    factory = (node:TabNode) => {
         // log lifecycle events
         //node.setEventListener("resize", function(p){console.log("resize");});
         //node.setEventListener("visibility", function(p){console.log("visibility");});
@@ -130,7 +130,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 );
             }
 
-            return <FlexLayout.Layout model={model} factory={this.factory.bind(this)} />;
+            return <FlexLayout.Layout model={model} factory={this.factory} />;
         }
         else if (component === "text") {
             return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
@@ -139,16 +139,16 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         return null;
     }
 
-    onSelectLayout(event:React.FormEvent) {
+    onSelectLayout = (event:React.FormEvent) => {
         var target = event.target as HTMLSelectElement;
         this.loadLayout(target.value);
     }
 
-    onReloadFromFile(event:React.MouseEvent) {
+    onReloadFromFile = (event:React.MouseEvent) => {
         this.loadLayout(this.state.layoutFile!, true);
     }
 
-    onThemeChange(event:React.FormEvent) {
+    onThemeChange = (event:React.FormEvent) => {
         var target = event.target as HTMLSelectElement;
         let flexlayout_stylesheet : any= window.document.getElementById("flexlayout-stylesheet");
         let index = flexlayout_stylesheet.href.lastIndexOf("/");
@@ -174,7 +174,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             contents = <FlexLayout.Layout
                 ref="layout"
                 model={this.state.model}
-                factory={this.factory.bind(this)}
+                factory={this.factory}
                 onRenderTab={onRenderTab}
                 onRenderTabSet={onRenderTabSet} 
                 // classNameMapper={
@@ -191,7 +191,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
         return <div className="app">
             <div className="toolbar">
-                <select onChange={this.onSelectLayout.bind(this)}>
+                <select onChange={this.onSelectLayout}>
                     <option value="default">Default</option>
                     <option value="simple">Simple</option>
                     <option value="justsplitters">Just Splitters</option>
@@ -200,10 +200,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="preferred">Using Preferred size</option>
                     <option value="trader">Trader</option>
                 </select>
-                <button onClick={this.onReloadFromFile.bind(this)}>reload from file</button>
-                <button disabled={this.state.adding} style={{ float: "right" }} onClick={this.onAddClick.bind(this)}>Add</button>
-                <button style={{ float: "right" }} onClick={this.onShowLayoutClick.bind(this)}>Show Layout JSON in Console</button>
-                <select style={{ float: "right" }} onChange={this.onThemeChange.bind(this)}>
+                <button onClick={this.onReloadFromFile}>reload from file</button>
+                <button disabled={this.state.adding} style={{ float: "right" }} onClick={this.onAddClick}>Add</button>
+                <button style={{ float: "right" }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
+                <select style={{ float: "right" }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                 </select>

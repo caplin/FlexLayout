@@ -46,7 +46,6 @@ class DragDrop {
 
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
-
         this._onKeyPress = this._onKeyPress.bind(this);
 
         this._lastClick = 0;

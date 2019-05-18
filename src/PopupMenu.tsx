@@ -28,7 +28,7 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     elm.style.top = triggerRect.bottom + "px";
     document.body.appendChild(elm);
 
-    const onHide = function () {
+    const onHide = () => {
       ReactDOM.unmountComponentAtNode(elm);
       document.body.removeChild(elm);
     };
@@ -43,7 +43,7 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
 
   constructor(props: IPopupMenuProps) {
     super(props);
-    this.onDocMouseUp = this.onDocMouseUp.bind(this);
+    this.onDocMouseUp = this.onDocMouseUp;
     this.hidden = false;
   }
 
@@ -55,7 +55,7 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
     document.removeEventListener("mouseup", this.onDocMouseUp);
   }
 
-  onDocMouseUp(event: Event) {
+  onDocMouseUp = (event: Event) => {
     setTimeout(() => {
       this.hide();
     }, 0);

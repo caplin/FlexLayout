@@ -26,6 +26,7 @@
     "build:umd": "webpack --config webpack_build.config.js",
     "build:umd:min": "webpack -p --config webpack_build_min.config.js",
     "test": "jasmine",
+    "lint": "tslint -c tslint.json 'src/**/*.ts*' ",
     "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none "
   },
   "author": "Caplin Systems Ltd",

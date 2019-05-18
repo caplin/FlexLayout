@@ -58,8 +58,7 @@ class BorderSet {
     const showingBorders = this._borders.filter((border) => border.isShowing());
 
     // sum size of borders to see they will fit
-    for (let i = 0; i < showingBorders.length; i++) {
-      const border = showingBorders[i];
+    for (const border of showingBorders) {
       if (border.isShowing()) {
         border._setAdjustedSize(border.getSize());
         const visible = border.getSelected() !== -1;
@@ -81,10 +80,10 @@ class BorderSet {
     }
 
     // adjust border sizes if too large
-    let i = 0;
+    let j = 0;
     while ((sumWidth > width && adjustableWidth > 0)
       || (sumHeight > height && adjustableHeight > 0)) {
-      const border = showingBorders[i];
+      const border = showingBorders[j];
       if (border.getSelected() !== -1) { // visible
         const size = border._getAdjustedSize();
         if (sumWidth > width && adjustableWidth > 0
@@ -102,7 +101,7 @@ class BorderSet {
           adjustableHeight--;
         }
       }
-      i = (i + 1) % showingBorders.length;
+      j = (j + 1) % showingBorders.length;
     }
 
     showingBorders.forEach((border) => {
@@ -119,8 +118,7 @@ class BorderSet {
 
   /** @hidden @internal */
   _findDropTargetNode(dragNode: (Node & IDraggable), x: number, y: number): DropInfo | undefined {
-    for (let i = 0; i < this._borders.length; i++) {
-      const border = this._borders[i];
+    for (const border of this._borders) {
       if (border.isShowing()) {
         const dropInfo = border.canDrop(dragNode, x, y);
         if (dropInfo !== undefined) {

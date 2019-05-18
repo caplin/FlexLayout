@@ -183,8 +183,7 @@ abstract class Node {
       rtn = this.canDrop(dragNode, x, y);
       if (rtn === undefined) {
         if (this._children.length !== 0) {
-          for (let i = 0; i < this._children.length; i++) {
-            const child = this._children[i];
+          for (const child of this._children) {
             rtn = child._findDropTargetNode(dragNode, x, y);
             if (rtn !== undefined) {
               break;
