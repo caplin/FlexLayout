@@ -42,8 +42,6 @@
     "awesome-typescript-loader": "^5.2.0",
     "jasmine": "^3.3.12",
     "prettier": "^1.17.1",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
     "source-map-loader": "^0.2.3",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
