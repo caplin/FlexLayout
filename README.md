@@ -74,6 +74,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |
 | onModelChange   | optional          | function called when model has changed |
 | classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
+| i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
 
 The model is tree of Node objects that define the structure of the layout.
 

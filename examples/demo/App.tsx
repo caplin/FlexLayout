@@ -193,7 +193,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 //         } else if (id === FlexLayout.I18nLabel.Move_Tabset) {
                 //             return `move this tabset`
                 //         }
-                //         return "";
+                //         return undefined;
                 //     }
                 // }
                 />;

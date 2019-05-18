@@ -38,7 +38,7 @@ export interface ILayoutProps {
   ) => void;
   onModelChange?: (model: Model) => void;
   classNameMapper?: (defaultClassName: string) => string;
-  i18nMapper?: (id: I18nLabel, param?: string) => string;
+  i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
 }
 
 /**
@@ -678,11 +678,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
   }
 
   i18nName(id: I18nLabel, param?: string) {
+    let message = undefined;
     if (this.props.i18nMapper) {
-      return this.props.i18nMapper(id, param);
-    } else {
-      return id + (param === undefined ? "" : param);
+      message = this.props.i18nMapper(id, param);
     }
+    if (message === undefined) {
+      message = id + (param === undefined ? "" : param);
+    }
+    return message;
   }
 }
 
