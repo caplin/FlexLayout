@@ -1,5 +1,11 @@
 import Rect from "./Rect";
 
+const canUseDOM = !!(
+    (typeof window !== "undefined" &&
+    window.document && 
+    window.document.createElement)
+  );
+
 class DragDrop {
     static instance = new DragDrop();
 
@@ -17,7 +23,7 @@ class DragDrop {
     private _fDragCancel: ((wasDragging: boolean) => void) | undefined;
 
     /** @hidden @internal */
-    private _glass: HTMLDivElement;
+    private _glass: HTMLDivElement | undefined;
     /** @hidden @internal */
     private _manualGlassManagement: boolean = false;
     /** @hidden @internal */
@@ -37,12 +43,14 @@ class DragDrop {
 
     /** @hidden @internal */
     private constructor() {
-        this._glass = document.createElement("div");
-        this._glass.style.zIndex = "998";
-        this._glass.style.position = "absolute";
-        this._glass.style.backgroundColor = "white";
-        this._glass.style.opacity = ".00"; // may need to be .01 for IE???
-        this._glass.style.filter = "alpha(opacity=01)";
+        if ( canUseDOM ) { // check for serverside rendering
+            this._glass = document.createElement("div");
+            this._glass.style.zIndex = "998";
+            this._glass.style.position = "absolute";
+            this._glass.style.backgroundColor = "white";
+            this._glass.style.opacity = ".00"; // may need to be .01 for IE???
+            this._glass.style.filter = "alpha(opacity=01)";
+        }
 
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -57,11 +65,11 @@ class DragDrop {
     addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
         if (!this._glassShowing) {
             const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
-            glassRect.positionElement(this._glass);
-            document.body.appendChild(this._glass);
-            this._glass.tabIndex = -1;
-            this._glass.focus();
-            this._glass.addEventListener("keydown", this._onKeyPress);
+            glassRect.positionElement(this._glass!);
+            document.body.appendChild(this._glass!);
+            this._glass!.tabIndex = -1;
+            this._glass!.focus();
+            this._glass!.addEventListener("keydown", this._onKeyPress);
             this._glassShowing = true;
             this._fDragCancel = fCancel;
             this._manualGlassManagement = false;
@@ -73,7 +81,7 @@ class DragDrop {
 
     hideGlass() {
         if (this._glassShowing) {
-            document.body.removeChild(this._glass);
+            document.body.removeChild(this._glass!);
             this._glassShowing = false;
         }
     }
@@ -94,14 +102,14 @@ class DragDrop {
         if (event) {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
-            this._glass.style.cursor = getComputedStyle(event.target as Element).cursor;
+            this._glass!.style.cursor = getComputedStyle(event.target as Element).cursor;
             this._stopPropagation(event);
             this._preventDefault(event);
         }
         else {
             this._startX = 0;
             this._startY = 0;
-            this._glass.style.cursor = "default";
+            this._glass!.style.cursor = "default";
         }
 
         this._dragging = false;
@@ -185,7 +193,7 @@ class DragDrop {
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
             this._dragging = true;
             if (this._fDragStart) {
-                this._glass.style.cursor = "move";
+                this._glass!.style.cursor = "move";
                 this._dragging = this._fDragStart({ "clientX": this._startX, "clientY": this._startY });
             }
         }
