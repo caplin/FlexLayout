@@ -37,12 +37,17 @@ export interface ILayoutProps {
   ) => void;
   onModelChange?: (model: Model) => void;
   classNameMapper?: (defaultClassName: string) => string;
+  i18nMapper?: (id: string, param?: string) => string;
 }
 
 /**
  * A React component that hosts a multi-tabbed layout
  */
 export class Layout extends React.Component<ILayoutProps, any> {
+
+  static I18N_MOVE_TAB = "Move: ";
+  static I18N_MOVE_TABSET = "Move tabset";
+
   /** @hidden @internal */
   selfRef?: HTMLDivElement;
 
@@ -671,6 +676,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
   ) {
     if (this.props.onRenderTabSet) {
       this.props.onRenderTabSet(tabSetNode, renderValues);
+    }
+  }
+
+  i18nName(id: string, param?: string) {
+    if (this.props.i18nMapper) {
+      return this.props.i18nMapper(id, param);
+    } else {
+      return id + (param === undefined ? "" : param);
     }
   }
 }

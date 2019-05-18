@@ -220,7 +220,8 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             name = ": " + name;
         }
         this.props.layout.doAction(Actions.setActiveTabset(this.props.node.getId()));
-        this.props.layout.dragStart(event, "Move tabset" + name, this.props.node, this.props.node.isEnableDrag(), (event2: Event) => undefined, this.onDoubleClick);
+        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TABSET, name);
+        this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), (event2: Event) => undefined, this.onDoubleClick);
     }
 
     onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

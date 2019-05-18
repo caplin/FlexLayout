@@ -29,7 +29,8 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        this.props.layout.dragStart(event, "Move: " + this.props.node.getName(), this.props.node, this.props.node.isEnableDrag(), this.onClick, this.onDoubleClick);
+        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TAB, this.props.node.getName());
+        this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), this.onClick, this.onDoubleClick);
     }
 
     onClick = (event: Event) => {

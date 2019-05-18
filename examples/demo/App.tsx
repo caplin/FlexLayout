@@ -186,6 +186,16 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 //         return className;
                 //     }
                 // }
+                // i18nMapper = {
+                //     (id, param?) => {
+                //         if (id === FlexLayout.Layout.I18N_MOVE_TAB) {
+                //             return `move this tab: ${param}`;
+                //         } else if (id === FlexLayout.Layout.I18N_MOVE_TABSET) {
+                //             return `move this tabset`
+                //         }
+                //         return "";
+                //     }
+                // }
                 />;
         }
 

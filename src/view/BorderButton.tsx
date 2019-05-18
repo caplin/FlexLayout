@@ -19,9 +19,10 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
     contentsRef?: HTMLDivElement;
 
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
+        const message = this.props.layout.i18nName(Layout.I18N_MOVE_TAB, this.props.node.getName());
         this.props.layout.dragStart(
             event,
-            "Move: " + this.props.node.getName(),
+            message,
             this.props.node, this.props.node.isEnableDrag(),
             this.onClick,
             (event2: Event) => undefined
