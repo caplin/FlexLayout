@@ -97,7 +97,9 @@ class DragDrop {
         const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
 
-        if (this._dragging) { debugger; } // should never happen
+        if (this._dragging) { 
+          console.warn("this._dragging true on startDrag should never happen")
+        }
 
         if (event) {
             this._startX = posEvent.clientX;
