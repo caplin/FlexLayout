@@ -297,7 +297,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
           (child.getParent() as TabSetNode).getSelected()
         ];
         if (selectedTab === undefined) {
-          debugger; // this should not happen!
+          // this should not happen!
+          console.warn("undefined selectedTab should not happen");
         }
         tabComponents[child.getId()] = (
           <Tab
