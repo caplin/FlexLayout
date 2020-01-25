@@ -127,6 +127,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
                 buttons.push(<button key="max"
+                    aria-label={node.isMaximized() ? "Minimize" : "Maximize"}
                     className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
                     onClick={this.onMaximizeToggle}/>);
             }
@@ -138,6 +139,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
 
         if (this.showOverflow === true) {
             tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_button_overflow")}
+                onTouchStart={this.onInterceptMouseDown}
                 onClick={this.onOverflowClick.bind(this, hiddenTabs)}
                 onMouseDown={this.onInterceptMouseDown}
             >{hiddenTabs.length}</button>);
