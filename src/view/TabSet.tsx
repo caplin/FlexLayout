@@ -226,8 +226,8 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         const message = this.props.layout.i18nName(I18nLabel.Move_Tabset, name);
         this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), (event2: Event) => undefined, this.onDoubleClick);
     }
-
-    onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    
+    onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
         event.stopPropagation();
     }
 
