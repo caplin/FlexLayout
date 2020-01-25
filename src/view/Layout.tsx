@@ -120,7 +120,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
   }
 
   /** @hidden @internal */
-  componentWillReceiveProps(newProps: ILayoutProps) {
+  UNSAFE_componentWillReceiveProps(newProps: ILayoutProps) {
     if (this.model !== newProps.model) {
       if (this.model !== undefined) {
         this.model._setChangeListener(undefined); // stop listening to old model
