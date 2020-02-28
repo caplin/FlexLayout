@@ -14,6 +14,9 @@ export interface ITabButtonProps {
     show: boolean;
     selected: boolean;
     height: number;
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    closeIcon?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -129,14 +132,15 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
             classNames += " " + this.props.node.getClassName();
         }
 
-        let leadingContent;
+        let leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
+        let titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
 
-        if (node.getIcon() !== undefined) {
+        if (typeof leadingContent === 'undefined' && typeof node.getIcon() !== 'undefined') {
             leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
         }
 
         // allow customization of leading contents (icon) and contents
-        const renderState = { leading: leadingContent, content: node.getName() };
+        const renderState = { leading: leadingContent, content: titleContent };
         this.props.layout.customizeTab(node, renderState);
 
         let content = <div ref={ref => this.contentRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_button_content")}>{renderState.content}</div>;
@@ -162,7 +166,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
                 onMouseDown={this.onCloseMouseDown}
                 onClick={this.onClose}
                 onTouchStart={this.onCloseMouseDown}
-            />;
+            >{this.props.closeIcon}</div>;
         }
 
         return <div ref={ref => this.selfRef = (ref === null) ? undefined : ref}

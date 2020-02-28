@@ -11,6 +11,9 @@ import { TabButton } from "./TabButton";
 export interface ITabSetProps {
     layout: Layout;
     node: TabSetNode;
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    closeIcon?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -109,7 +112,10 @@ export class TabSet extends React.Component<ITabSetProps, any> {
                         key={child.getId()}
                         selected={isSelected}
                         show={showTab}
-                        height={node.getTabStripHeight()} />);
+                        height={node.getTabStripHeight()}
+                        iconFactory={this.props.iconFactory}
+                        titleFactory={this.props.titleFactory}
+                        closeIcon={this.props.closeIcon} />);
                 }
             }
         }
