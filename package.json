@@ -42,8 +42,6 @@
     "awesome-typescript-loader": "^5.2.0",
     "jasmine": "^3.5.0",
     "prettier": "^1.19.1",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
     "source-map-loader": "^0.2.3",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
@@ -54,5 +52,6 @@
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.1"
   },
-  "dependencies": {}
+  "dependencies": {
+  }
 }
