@@ -140,13 +140,15 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     titleFactory = (node: TabNode) => {
-        if (node.getId() === '#3') return;
-        return <>({node.getId()}) {node.getName()}</>
+        if (node.getId() === 'custom-tab') {
+            return <>(Added by titleFactory) {node.getName()}</>
+        }
+        return;
     }
 
     iconFactory = (node: TabNode) => {
-        if (node.getId() === '#8') {
-            return <>:)</>
+        if (node.getId() === 'custom-tab') {
+            return <><span style={{ marginRight: 3 }}>:)</span></>
         }
         return;
     }

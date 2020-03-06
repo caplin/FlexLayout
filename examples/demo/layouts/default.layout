@@ -15,6 +15,12 @@
 						"name": "FX",
 						"component": "grid",
 						"id": "#6"
+					},
+					{
+						"type": "tab",
+						"name": "Custom Tab",
+						"component": "grid",
+						"id": "custom-tab"
 					}
 				]
 			},
