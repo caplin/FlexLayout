@@ -139,6 +139,20 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         return null;
     }
 
+    titleFactory = (node: TabNode) => {
+        if (node.getId() === 'custom-tab') {
+            return <>(Added by titleFactory) {node.getName()}</>
+        }
+        return;
+    }
+
+    iconFactory = (node: TabNode) => {
+        if (node.getId() === 'custom-tab') {
+            return <><span style={{ marginRight: 3 }}>:)</span></>
+        }
+        return;
+    }
+
     onSelectLayout = (event:React.FormEvent) => {
         var target = event.target as HTMLSelectElement;
         this.loadLayout(target.value);
@@ -175,6 +189,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 ref="layout"
                 model={this.state.model}
                 factory={this.factory}
+                titleFactory={this.titleFactory}
+                iconFactory={this.iconFactory}
                 onRenderTab={onRenderTab}
                 onRenderTabSet={onRenderTabSet} 
                 // classNameMapper={

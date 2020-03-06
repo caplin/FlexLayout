@@ -9,6 +9,9 @@ import Layout from "./Layout";
 export interface IBorderTabSetProps {
     border:Border;
     layout:Layout;
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    closeIcon?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -29,7 +32,10 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
                                         border={border.getLocation().getName()}
                                         node={child}
                                         key={child.getId()}
-                                        selected={isSelected}/>);
+                                        selected={isSelected}
+                                        iconFactory={this.props.iconFactory}
+                                        titleFactory={this.props.titleFactory}
+                                        closeIcon={this.props.closeIcon}/>);
             }
         }
         else {
@@ -40,7 +46,10 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
                                         border={border.getLocation().getName()}
                                         node={child}
                                         key={child.getId()}
-                                        selected={isSelected}/>);
+                                        selected={isSelected}
+                                        iconFactory={this.props.iconFactory}
+                                        titleFactory={this.props.titleFactory}
+                                        closeIcon={this.props.closeIcon}/>);
             }
         }
 

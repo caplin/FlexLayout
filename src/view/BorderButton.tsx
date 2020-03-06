@@ -12,6 +12,9 @@ export interface IBorderButtonProps {
     node: TabNode;
     selected: boolean;
     border: string;
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    closeIcon?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -76,16 +79,15 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
             classNames += " " + this.props.node.getClassName();
         }
 
-        let leadingContent;
-
-        if (node.getIcon() !== undefined) {
+        let leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
+        let titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
+        
+        if (typeof leadingContent === 'undefined' && typeof node.getIcon() !== 'undefined') {
             leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
         }
 
-
-
         // allow customization of leading contents (icon) and contents
-        const renderState = { leading: leadingContent, content: node.getName() };
+        const renderState = { leading: leadingContent, content: titleContent };
         this.props.layout.customizeTab(node, renderState);
 
         const content = <div ref={ref => this.contentsRef = (ref === null) ? undefined : ref} className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
@@ -98,7 +100,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
                 onMouseDown={this.onCloseMouseDown}
                 onClick={this.onClose}
                 onTouchStart={this.onCloseMouseDown}
-            />;
+            >{this.props.closeIcon}</div>;
         }
 
         return <div ref={ref => this.selfRef = (ref === null) ? undefined : ref}

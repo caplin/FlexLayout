@@ -24,6 +24,9 @@ import { TabSet } from "./TabSet";
 export interface ILayoutProps {
   model: Model;
   factory: (node: TabNode) => React.ReactNode;
+  iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+  titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+  closeIcon?: React.ReactNode;
   onAction?: (action: Action) => Action | undefined;
   onRenderTab?: (
     node: TabNode,
@@ -242,6 +245,9 @@ export class Layout extends React.Component<ILayoutProps, any> {
             key={"border_" + border.getLocation().getName()}
             border={border}
             layout={this}
+            iconFactory={this.props.iconFactory}
+            titleFactory={this.props.titleFactory}
+            closeIcon={this.props.closeIcon}
           />
         );
         const drawChildren = border._getDrawChildren();
@@ -284,7 +290,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
         );
       } else if (child instanceof TabSetNode) {
         tabSetComponents.push(
-          <TabSet key={child.getId()} layout={this} node={child} />
+          <TabSet
+            key={child.getId()}
+            layout={this}
+            node={child}
+            iconFactory={this.props.iconFactory}
+            titleFactory={this.props.titleFactory}
+            closeIcon={this.props.closeIcon}
+          />
         );
         this.renderChildren(
           child,
