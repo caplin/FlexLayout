@@ -14,6 +14,8 @@ export interface ITabSetProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     closeIcon?: React.ReactNode;
+    minimizeIcon?: React.ReactNode;
+    maximizeIcon?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -132,10 +134,31 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         let toolbar;
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
-                buttons.push(<button key="max"
-                    aria-label={node.isMaximized() ? "Minimize" : "Maximize"}
-                    className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
-                    onClick={this.onMaximizeToggle}/>);
+                if (node.isMaximized()) {
+                    buttons.push(this.props.minimizeIcon ?
+                      <div
+                        aria-label="Minimize"
+                        onClick={this.onMaximizeToggle}>
+                          {this.props.minimizeIcon}
+                      </div>
+                      : <button key="max"
+                            aria-label="Minimize"
+                            className={cm("flexlayout__tab_toolbar_button-max")}
+                            onClick={this.onMaximizeToggle}>
+                    </button>)
+                } else {
+                    buttons.push(this.props.maximizeIcon ?
+                      <div
+                        aria-label="Maximize"
+                        onClick={this.onMaximizeToggle}>
+                          {this.props.maximizeIcon}
+                      </div>
+                      : <button key="max"
+                             aria-label="Maximize"
+                             className={cm("flexlayout__tab_toolbar_button-min")}
+                             onClick={this.onMaximizeToggle}>
+                    </button>)
+                }
             }
             toolbar = <div key="toolbar" ref={ref => this.toolbarRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_toolbar")}
                 onMouseDown={this.onInterceptMouseDown}>

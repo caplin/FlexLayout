@@ -27,6 +27,8 @@ export interface ILayoutProps {
   iconFactory?: (node: TabNode) => React.ReactNode | undefined;
   titleFactory?: (node: TabNode) => React.ReactNode | undefined;
   closeIcon?: React.ReactNode;
+  minimizeIcon?: React.ReactNode;
+  maximizeIcon?: React.ReactNode;
   onAction?: (action: Action) => Action | undefined;
   onRenderTab?: (
     node: TabNode,
@@ -297,6 +299,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
             iconFactory={this.props.iconFactory}
             titleFactory={this.props.titleFactory}
             closeIcon={this.props.closeIcon}
+            minimizeIcon={this.props.minimizeIcon}
+            maximizeIcon={this.props.maximizeIcon}
           />
         );
         this.renderChildren(
