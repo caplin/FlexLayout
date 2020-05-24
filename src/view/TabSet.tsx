@@ -44,38 +44,43 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     }
 
     updateVisibleTabs() {
-        const node = this.props.node;
-
         if (this.recalcVisibleTabs) {
+            const node = this.props.node;
             if (node.isEnableTabStrip()) {
                 const toolbarWidth = (this.toolbarRef as Element).getBoundingClientRect().width;
+                let showOverflow = false;
+                let showToolbar = true;
                 let hideTabsAfter = 999;
                 for (let i = 0; i < node.getChildren().length; i++) {
                     const child = node.getChildren()[i] as TabNode;
                     if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
                         hideTabsAfter = Math.max(0, i - 1);
-                        // console.log("tabs truncated to:" + hideTabsAfter);
-                        this.showOverflow = node.getChildren().length > 1;
+                        showOverflow = node.getChildren().length > 1;
 
                         if (i === 0) {
-                            this.showToolbar = false;
+                            showToolbar = false;
                             if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
-                                this.showOverflow = false;
+                                showOverflow = false;
                             }
                         }
 
                         break;
                     }
                 }
-                if (this.hideTabsAfter !== hideTabsAfter) {
+                if (this.showOverflow !== showOverflow
+                    || this.showToolbar !== showToolbar
+                    || this.hideTabsAfter !== hideTabsAfter 
+                    ) {
+                    this.showOverflow = showOverflow;
+                    this.showToolbar = showToolbar;
                     this.hideTabsAfter = hideTabsAfter;
-                    this.forceUpdate();
+                    this.recalcVisibleTabs = false; 
+                    this.forceUpdate(); // re-render with adjusted values
                 }
             }
-            this.recalcVisibleTabs = false;
         } else {
-            this.showToolbar = true;
             this.showOverflow = false;
+            this.showToolbar = true;
             this.hideTabsAfter = 999;
             this.recalcVisibleTabs = true;
         }
