@@ -21,16 +21,8 @@ export class Tab extends React.Component<ITabProps, any> {
         this.state = { renderComponent: !props.node.isEnableRenderOnDemand() || props.selected };
     }
 
-    componentDidMount() {
-        // console.log("mount " + this.props.node.getName());
-    }
-
-    componentWillUnmount() {
-        // console.log("unmount " + this.props.node.getName());
-    }
-
-    UNSAFE_componentWillReceiveProps(newProps: ITabProps) {
-        if (!this.state.renderComponent && newProps.selected) {
+    componentDidUpdate() {
+        if (!this.state.renderComponent && this.props.selected) {
             // load on demand
             // console.log("load on demand: " + this.props.node.getName());
             this.setState({ renderComponent: true });

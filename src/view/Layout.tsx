@@ -97,8 +97,6 @@ export class Layout extends React.Component<ILayoutProps, any> {
     this.model = this.props.model;
     this.rect = new Rect(0, 0, 0, 0);
     this.model._setChangeListener(this.onModelChange);
-    this.updateRect = this.updateRect;
-    this.getClassName = this.getClassName;
     this.tabIds = [];
   }
 
@@ -123,18 +121,6 @@ export class Layout extends React.Component<ILayoutProps, any> {
   }
 
   /** @hidden @internal */
-  UNSAFE_componentWillReceiveProps(newProps: ILayoutProps) {
-    if (this.model !== newProps.model) {
-      if (this.model !== undefined) {
-        this.model._setChangeListener(undefined); // stop listening to old model
-      }
-      this.model = newProps.model;
-      this.model._setChangeListener(this.onModelChange);
-      this.forceUpdate();
-    }
-  }
-
-  /** @hidden @internal */
   componentDidMount() {
     this.updateRect();
 
@@ -145,6 +131,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
   /** @hidden @internal */
   componentDidUpdate() {
     this.updateRect();
+    if (this.model !== this.props.model) {
+      if (this.model !== undefined) {
+        this.model._setChangeListener(undefined); // stop listening to old model
+      }
+      this.model = this.props.model;
+      this.model._setChangeListener(this.onModelChange);
+      this.forceUpdate();
+    }
     // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
   }
 

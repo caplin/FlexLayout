@@ -25,13 +25,14 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     recalcVisibleTabs: boolean;
     showOverflow: boolean;
     showToolbar: boolean;
+    hideTabsAfter: number;
 
     constructor(props: ITabSetProps) {
         super(props);
         this.recalcVisibleTabs = true;
         this.showOverflow = false;
         this.showToolbar = true;
-        this.state = { hideTabsAfter: 999 };
+        this.hideTabsAfter= 999;
     }
 
     componentDidMount() {
@@ -42,40 +43,41 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.updateVisibleTabs();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps: ITabSetProps) {
-        this.showToolbar = true;
-        this.showOverflow = false;
-        this.recalcVisibleTabs = true;
-        this.setState({ hideTabsAfter: 999 });
-    }
-
     updateVisibleTabs() {
         const node = this.props.node;
 
-        if (node.isEnableTabStrip() && this.recalcVisibleTabs) {
-            const toolbarWidth = (this.toolbarRef as Element).getBoundingClientRect().width;
-            let hideTabsAfter = 999;
-            for (let i = 0; i < node.getChildren().length; i++) {
-                const child = node.getChildren()[i] as TabNode;
-                if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
-                    hideTabsAfter = Math.max(0, i - 1);
-                    // console.log("tabs truncated to:" + hideTabsAfter);
-                    this.showOverflow = node.getChildren().length > 1;
+        if (this.recalcVisibleTabs) {
+            if (node.isEnableTabStrip()) {
+                const toolbarWidth = (this.toolbarRef as Element).getBoundingClientRect().width;
+                let hideTabsAfter = 999;
+                for (let i = 0; i < node.getChildren().length; i++) {
+                    const child = node.getChildren()[i] as TabNode;
+                    if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
+                        hideTabsAfter = Math.max(0, i - 1);
+                        // console.log("tabs truncated to:" + hideTabsAfter);
+                        this.showOverflow = node.getChildren().length > 1;
 
-                    if (i === 0) {
-                        this.showToolbar = false;
-                        if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
-                            this.showOverflow = false;
+                        if (i === 0) {
+                            this.showToolbar = false;
+                            if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
+                                this.showOverflow = false;
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                    }
+                }
+                if (this.hideTabsAfter !== hideTabsAfter) {
+                    this.hideTabsAfter = hideTabsAfter;
+                    this.forceUpdate();
                 }
             }
-            if (this.state.hideTabsAfter !== hideTabsAfter) {
-                this.setState({ hideTabsAfter });
-            }
             this.recalcVisibleTabs = false;
+        } else {
+            this.showToolbar = true;
+            this.showOverflow = false;
+            this.hideTabsAfter = 999;
+            this.recalcVisibleTabs = true;
         }
     }
 
@@ -94,11 +96,11 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         if (node.isEnableTabStrip()) {
             for (let i = 0; i < node.getChildren().length; i++) {
                 let isSelected = this.props.node.getSelected() === i;
-                const showTab = this.state.hideTabsAfter >= i;
+                const showTab = this.hideTabsAfter >= i;
 
                 let child = node.getChildren()[i] as TabNode;
 
-                if (this.state.hideTabsAfter === i && this.props.node.getSelected() > this.state.hideTabsAfter) {
+                if (this.hideTabsAfter === i && this.props.node.getSelected() > this.hideTabsAfter) {
                     hiddenTabs.push({ name: child.getName(), node: child, index: i });
                     child = node.getChildren()[this.props.node.getSelected()] as TabNode;
                     isSelected = true;
