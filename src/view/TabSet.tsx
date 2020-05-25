@@ -18,9 +18,8 @@ export interface ITabSetProps {
 
 /** @hidden @internal */
 export class TabSet extends React.Component<ITabSetProps, any> {
-    headerRef?: HTMLDivElement;
-    overflowbuttonRef: any;
-    toolbarRef?: HTMLDivElement;
+    toolbarRef: React.RefObject<HTMLDivElement>;
+    overflowbuttonRef: React.RefObject<HTMLButtonElement>;
 
     recalcVisibleTabs: boolean;
     showOverflow: boolean;
@@ -33,6 +32,8 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.showOverflow = false;
         this.showToolbar = true;
         this.hideTabsAfter= 999;
+        this.toolbarRef = React.createRef<HTMLDivElement>();
+        this.overflowbuttonRef = React.createRef<HTMLButtonElement>();
     }
 
     componentDidMount() {
@@ -47,7 +48,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         if (this.recalcVisibleTabs) {
             const node = this.props.node;
             if (node.isEnableTabStrip()) {
-                const toolbarWidth = (this.toolbarRef as Element).getBoundingClientRect().width;
+                const toolbarWidth = this.toolbarRef.current!.getBoundingClientRect().width;
                 let showOverflow = false;
                 let showToolbar = true;
                 let hideTabsAfter = 999;
@@ -144,14 +145,14 @@ export class TabSet extends React.Component<ITabSetProps, any> {
                     className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
                     onClick={this.onMaximizeToggle}/>);
             }
-            toolbar = <div key="toolbar" ref={ref => this.toolbarRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_toolbar")}
+            toolbar = <div key="toolbar" ref={this.toolbarRef} className={cm("flexlayout__tab_toolbar")}
                 onMouseDown={this.onInterceptMouseDown}>
                 {buttons}
             </div>;
         }
 
         if (this.showOverflow === true) {
-            tabs.push(<button key="overflowbutton" ref={ref => this.overflowbuttonRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_button_overflow")}
+            tabs.push(<button key="overflowbutton" ref={this.overflowbuttonRef} className={cm("flexlayout__tab_button_overflow")}
                 onTouchStart={this.onInterceptMouseDown}
                 onClick={this.onOverflowClick.bind(this, hiddenTabs)}
                 onMouseDown={this.onInterceptMouseDown}
@@ -195,7 +196,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             </div>;
             tabStrip = <div className={tabStripClasses}
                 style={{ height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" }}>
-                <div ref={ref => this.headerRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_header_inner")}>
+                <div className={cm("flexlayout__tab_header_inner")}>
                     {tabs}
                 </div>
             </div>;
@@ -204,7 +205,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             tabStrip = <div className={tabStripClasses} style={{ top: "0px", height: node.getTabStripHeight() + "px" }}
                 onMouseDown={this.onMouseDown}
                 onTouchStart={this.onMouseDown}>
-                <div ref={ref => this.headerRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_header_inner")}>
+                <div className={cm("flexlayout__tab_header_inner")}>
                     {tabs}
                 </div>
                 {toolbar}
@@ -219,7 +220,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
 
     onOverflowClick = (hiddenTabs: Array<{ name: string, node: TabNode, index: number }>) => {
         // console.log("hidden tabs: " + hiddenTabs);
-        const element = this.overflowbuttonRef as Element;
+        const element = this.overflowbuttonRef.current!;
         PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect, this.props.layout.getClassName);
     }
 

@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import DragDrop from "../DragDrop";
 import Actions from "../model/Actions";
 import BorderNode from "../model/BorderNode";
@@ -25,7 +24,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onDragCancel);
         const parentNode = this.props.node.getParent() as RowNode;
         this.pBounds = parentNode._getSplitterBounds(this.props.node);
-        const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
+        const rootdiv = this.props.layout.selfRef.current!;
         this.outlineDiv = document.createElement("div");
         this.outlineDiv.style.position = "absolute";
         this.outlineDiv.className = this.props.layout.getClassName("flexlayout__splitter_drag");
@@ -35,7 +34,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
     }
 
     onDragCancel = (wasDragging: boolean) => {
-        const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
+        const rootdiv = this.props.layout.selfRef.current!;
         rootdiv.removeChild(this.outlineDiv as Element);
     }
 
@@ -45,7 +44,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
     }
 
     onDragMove = (event: React.MouseEvent<Element, MouseEvent>) => {
-        const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
+        const clientRect = this.props.layout.domRect;
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
@@ -84,7 +83,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
             }
         }
 
-        const rootdiv = ReactDOM.findDOMNode(this.props.layout) as Element;
+        const rootdiv = this.props.layout.selfRef.current!;
         rootdiv.removeChild(this.outlineDiv as HTMLDivElement);
     }
 

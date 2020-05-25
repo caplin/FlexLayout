@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
@@ -19,9 +18,13 @@ export interface IBorderButtonProps {
 
 /** @hidden @internal */
 export class BorderButton extends React.Component<IBorderButtonProps, any> {
-    selfRef?: HTMLDivElement;
-    contentsRef?: HTMLDivElement;
+    selfRef: React.RefObject<HTMLDivElement>;
 
+    constructor(props: IBorderButtonProps) {
+        super(props);
+        this.selfRef = React.createRef<HTMLDivElement>();
+      }
+    
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         const message = this.props.layout.i18nName(I18nLabel.Move_Tab, this.props.node.getName());
         this.props.layout.dragStart(
@@ -57,9 +60,9 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
 
     updateRect() {
         // record position of tab in border
-        const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
-        const r = (this.selfRef as Element).getBoundingClientRect();
-        this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        const clientRect = this.props.layout.domRect;
+        const r = this.selfRef.current!.getBoundingClientRect();
+        this.props.node._setTabRect(new Rect(r.left - clientRect.x, r.top - clientRect.y, r.width, r.height));
     }
 
     render() {
@@ -90,7 +93,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         const renderState = { leading: leadingContent, content: titleContent };
         this.props.layout.customizeTab(node, renderState);
 
-        const content = <div ref={ref => this.contentsRef = (ref === null) ? undefined : ref} className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
+        const content = <div className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
         const leading = <div className={cm("flexlayout__border_button_leading")}>{renderState.leading}</div>;
 
 
@@ -103,7 +106,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
             >{this.props.closeIcon}</div>;
         }
 
-        return <div ref={ref => this.selfRef = (ref === null) ? undefined : ref}
+        return <div ref={this.selfRef}
             style={{}}
             className={classNames}
             onMouseDown={this.onMouseDown}

@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import DockLocation from "../DockLocation";
 import DragDrop from "../DragDrop";
 import { I18nLabel } from "../I18nLabel";
@@ -50,12 +49,14 @@ export interface ILayoutProps {
 export class Layout extends React.Component<ILayoutProps, any> {
 
   /** @hidden @internal */
-  selfRef?: HTMLDivElement;
+  selfRef: React.RefObject<HTMLDivElement>;
 
   /** @hidden @internal */
   private model?: Model;
   /** @hidden @internal */
   private rect: Rect;
+  /** @hidden @internal */
+  domRect?: any;
   /** @hidden @internal */
   private centerRect?: Rect;
 
@@ -96,8 +97,10 @@ export class Layout extends React.Component<ILayoutProps, any> {
     super(props);
     this.model = this.props.model;
     this.rect = new Rect(0, 0, 0, 0);
+    this.domRect = {x:0, y:0, width:0, height:0};
     this.model._setChangeListener(this.onModelChange);
     this.tabIds = [];
+    this.selfRef = React.createRef<HTMLDivElement>();
   }
 
   /** @hidden @internal */
@@ -144,8 +147,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
   /** @hidden @internal */
   updateRect = () => {
-    const domRect = (this.selfRef as HTMLDivElement).getBoundingClientRect();
-    const rect = new Rect(0, 0, domRect.width, domRect.height);
+    this.domRect = this.selfRef.current!.getBoundingClientRect();
+    const rect = new Rect(0, 0, this.domRect.width, this.domRect.height);
     if (!rect.equals(this.rect)) {
       this.rect = rect;
       this.forceUpdate();
@@ -212,7 +215,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
     return (
       <div
-        ref={self => (this.selfRef = self === null ? undefined : self)}
+        ref={this.selfRef}
         className={this.getClassName("flexlayout__layout")}
       >
         {tabSetComponents}
@@ -408,13 +411,13 @@ export class Layout extends React.Component<ILayoutProps, any> {
     this.dragDiv.style.left = r.x + "px";
     this.dragDiv.style.top = r.y + "px";
 
-    const rootdiv = ReactDOM.findDOMNode(this);
+    const rootdiv = this.selfRef.current;
     rootdiv!.appendChild(this.dragDiv);
   }
 
   /** @hidden @internal */
   onCancelAdd = () => {
-    const rootdiv = ReactDOM.findDOMNode(this);
+    const rootdiv = this.selfRef.current;
     rootdiv!.removeChild(this.dragDiv!);
     this.dragDiv = undefined;
     if (this.fnNewNodeDropped != null) {
@@ -428,7 +431,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
   /** @hidden @internal */
   onCancelDrag = (wasDragging: boolean) => {
     if (wasDragging) {
-      const rootdiv = ReactDOM.findDOMNode(this) as HTMLDivElement;
+      const rootdiv = this.selfRef.current!;
 
       try {
         rootdiv.removeChild(this.outlineDiv!);
@@ -499,7 +502,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
   /** @hidden @internal */
   onDragStart = () => {
     this.dropInfo = undefined;
-    const rootdiv = ReactDOM.findDOMNode(this) as HTMLElement;
+    const rootdiv = this.selfRef.current!;
     this.outlineDiv = document.createElement("div");
     this.outlineDiv.className = this.getClassName("flexlayout__outline_rect");
     rootdiv.appendChild(this.outlineDiv);
@@ -532,7 +535,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
       this.outlineDiv!.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
     }
     this.firstMove = false;
-    const clientRect = this.selfRef!.getBoundingClientRect();
+    const clientRect = this.selfRef.current!.getBoundingClientRect();
     const pos = {
       x: event.clientX - clientRect.left,
       y: event.clientY - clientRect.top
@@ -556,7 +559,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
   /** @hidden @internal */
   onDragEnd = () => {
-    const rootdiv = ReactDOM.findDOMNode(this) as HTMLElement;
+    const rootdiv = this.selfRef.current!;
     rootdiv.removeChild(this.outlineDiv!);
     rootdiv.removeChild(this.dragDiv!);
     this.dragDiv = undefined;

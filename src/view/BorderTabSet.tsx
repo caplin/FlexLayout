@@ -16,8 +16,6 @@ export interface IBorderTabSetProps {
 
 /** @hidden @internal */
 export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
-    toolbarRef?: HTMLDivElement;
-
     render() {
         const cm = this.props.layout.getClassName;
 
@@ -66,7 +64,6 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
 
         const toolbar = <div
             key="toolbar"
-            ref={toolbar2=>this.toolbarRef = (toolbar2===null)?undefined:toolbar2}
             className={cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
             {buttons}
         </div>;

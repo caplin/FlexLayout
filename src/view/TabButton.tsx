@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
@@ -21,15 +20,16 @@ export interface ITabButtonProps {
 
 /** @hidden @internal */
 export class TabButton extends React.Component<ITabButtonProps, any> {
-    selfRef?: HTMLDivElement;
-
+    selfRef: React.RefObject<HTMLDivElement>;
+    contentRef: React.RefObject<HTMLInputElement>;
     contentWidth: number = 0;
-    contentRef?: Element;
 
     constructor(props: ITabButtonProps) {
         super(props);
         this.state = { editing: false };
         this.onEndEdit = this.onEndEdit;
+        this.selfRef = React.createRef<HTMLDivElement>();
+        this.contentRef = React.createRef<HTMLInputElement>();
     }
 
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
@@ -58,7 +58,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     }
 
     onEndEdit = (event: Event) => {
-        if (event.target !== this.contentRef) {
+        if (event.target !== this.contentRef.current!) {
             this.setState({ editing: false });
             document.body.removeEventListener("mousedown", this.onEndEdit);
             document.body.removeEventListener("touchstart", this.onEndEdit);
@@ -81,16 +81,16 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
     componentDidUpdate() {
         this.updateRect();
         if (this.state.editing) {
-            (this.contentRef as HTMLInputElement).select();
+            (this.contentRef.current! as HTMLInputElement).select();
         }
     }
 
     updateRect() {
         // record position of tab in node
-        const clientRect = (ReactDOM.findDOMNode(this.props.layout) as Element).getBoundingClientRect();
-        const r = (this.selfRef as Element).getBoundingClientRect();
-        this.props.node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
-        this.contentWidth = (this.contentRef as Element).getBoundingClientRect().width;
+        const layoutRect = this.props.layout.domRect;
+        const r = this.selfRef.current!.getBoundingClientRect();
+        this.props.node._setTabRect(new Rect(r.left - layoutRect.x, r.top - layoutRect.y, r.width, r.height));
+        this.contentWidth = this.contentRef.current!.getBoundingClientRect().width;
     }
 
 
@@ -143,13 +143,13 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         const renderState = { leading: leadingContent, content: titleContent };
         this.props.layout.customizeTab(node, renderState);
 
-        let content = <div ref={ref => this.contentRef = (ref === null) ? undefined : ref} className={cm("flexlayout__tab_button_content")}>{renderState.content}</div>;
+        let content = <div ref={this.contentRef} className={cm("flexlayout__tab_button_content")}>{renderState.content}</div>;
         const leading = <div className={cm("flexlayout__tab_button_leading")}>{renderState.leading}</div>;
 
         if (this.state.editing) {
             const contentStyle = { width: this.contentWidth + "px" };
             content = <input style={contentStyle}
-                ref={ref => this.contentRef = (ref === null) ? undefined : ref}
+                ref={this.contentRef}
                 className={cm("flexlayout__tab_button_textbox")}
                 type="text"
                 autoFocus={true}
@@ -169,7 +169,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
             >{this.props.closeIcon}</div>;
         }
 
-        return <div ref={ref => this.selfRef = (ref === null) ? undefined : ref}
+        return <div ref={this.selfRef}
             style={{
                 visibility: this.props.show ? "visible" : "hidden",
                 height: this.props.height
