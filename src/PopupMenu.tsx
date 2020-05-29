@@ -24,8 +24,16 @@ class PopupMenu extends React.Component<IPopupMenuProps, any> {
 
     const elm = document.createElement("div");
     elm.className = classNameMapper("flexlayout__popup_menu_container");
-    elm.style.right = (docRect.right - triggerRect.right) + "px";
-    elm.style.top = triggerRect.bottom + "px";
+    if (triggerRect.x < docRect.width/2) {
+      elm.style.left = (triggerRect.left) + "px";
+    } else {
+      elm.style.right = (docRect.right - triggerRect.right) + "px";
+    }
+    if (triggerRect.y < docRect.height/2) {
+      elm.style.top = (triggerRect.top) + "px";
+    } else {
+      elm.style.bottom = (docRect.bottom - triggerRect.bottom) + "px";
+    }
     document.body.appendChild(elm);
 
     const onHide = () => {

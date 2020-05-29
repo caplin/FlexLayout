@@ -378,4 +378,17 @@
     right:0;
 }
 
+.flexlayout__border_button_overflow_top,
+.flexlayout__border_button_overflow_bottom,
+.flexlayout__border_button_overflow_right,
+.flexlayout__border_button_overflow_left {
+    width: 20px;
+    height:15px;
+    margin-top:2px;
+    padding-left:12px;
+    border:none;
+    font-size: 10px;
+    font-family: Arial, sans-serif;
+    background: transparent url("../images/more.png") no-repeat left;
+}
 
