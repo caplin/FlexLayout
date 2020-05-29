@@ -16,22 +16,25 @@ export interface ITabSetProps {
     closeIcon?: React.ReactNode;
 }
 
+const MAX_TABS: number = 999;
+
 /** @hidden @internal */
 export class TabSet extends React.Component<ITabSetProps, any> {
     toolbarRef: React.RefObject<HTMLDivElement>;
     overflowbuttonRef: React.RefObject<HTMLButtonElement>;
 
-    recalcVisibleTabs: boolean;
+    hideTabsAfter: number;
     showOverflow: boolean;
     showToolbar: boolean;
-    hideTabsAfter: number;
+    renderAllTabs: boolean;
 
     constructor(props: ITabSetProps) {
         super(props);
-        this.recalcVisibleTabs = true;
+        this.hideTabsAfter = MAX_TABS;
         this.showOverflow = false;
         this.showToolbar = true;
-        this.hideTabsAfter= 999;
+        this.renderAllTabs = true;
+
         this.toolbarRef = React.createRef<HTMLDivElement>();
         this.overflowbuttonRef = React.createRef<HTMLButtonElement>();
     }
@@ -45,49 +48,40 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     }
 
     updateVisibleTabs() {
-        if (this.recalcVisibleTabs) {
-            const node = this.props.node;
+        const node = this.props.node;
+
+        if (this.renderAllTabs) {
             if (node.isEnableTabStrip()) {
                 const toolbarWidth = this.toolbarRef.current!.getBoundingClientRect().width;
-                let showOverflow = false;
-                let showToolbar = true;
-                let hideTabsAfter = 999;
                 for (let i = 0; i < node.getChildren().length; i++) {
                     const child = node.getChildren()[i] as TabNode;
                     if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
-                        hideTabsAfter = Math.max(0, i - 1);
-                        showOverflow = node.getChildren().length > 1;
-
+                        this.hideTabsAfter = Math.max(0, i - 1);
+                        this.showOverflow = node.getChildren().length > 1;
                         if (i === 0) {
-                            showToolbar = false;
+                            this.showToolbar = false;
                             if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
-                                showOverflow = false;
+                                this.showOverflow = false;
                             }
                         }
-
-                        break;
+                        this.renderAllTabs = false;
+                        this.forceUpdate(); // re-render to hide some tabs
+                        return;
                     }
-                }
-                if (this.showOverflow !== showOverflow
-                    || this.showToolbar !== showToolbar
-                    || this.hideTabsAfter !== hideTabsAfter 
-                    ) {
-                    this.showOverflow = showOverflow;
-                    this.showToolbar = showToolbar;
-                    this.hideTabsAfter = hideTabsAfter;
-                    this.recalcVisibleTabs = false; 
-                    this.forceUpdate(); // re-render with adjusted values
                 }
             }
         } else {
-            this.showOverflow = false;
-            this.showToolbar = true;
-            this.hideTabsAfter = 999;
-            this.recalcVisibleTabs = true;
+            this.renderAllTabs = true;
         }
     }
 
     render() {
+        if (this.renderAllTabs) {
+            this.hideTabsAfter = MAX_TABS;
+            this.showOverflow = false;
+            this.showToolbar = true;
+        }
+
         const cm = this.props.layout.getClassName;
 
         const node = this.props.node;

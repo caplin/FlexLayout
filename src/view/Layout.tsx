@@ -171,6 +171,13 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
   /** @hidden @internal */
   render() {
+    // first render will be used to find the size
+    if (this.rect.width === 0) { 
+      return (
+        <div ref={this.selfRef}
+          className={this.getClassName("flexlayout__layout")} />
+      );
+    }
     // this.start = Date.now();
     const borderComponents: React.ReactNode[] = [];
     const tabSetComponents: React.ReactNode[] = [];
