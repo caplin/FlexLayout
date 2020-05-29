@@ -14,6 +14,8 @@ export interface ITabSetProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     closeIcon?: React.ReactNode;
+    minimizeIcon?: React.ReactNode;
+    maximizeIcon?: React.ReactNode;
 }
 
 const MAX_TABS: number = 999;
@@ -134,10 +136,25 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         let toolbar;
         if (this.showToolbar === true) {
             if (this.props.node.isEnableMaximize()) {
-                buttons.push(<button key="max"
-                    aria-label={node.isMaximized() ? "Minimize" : "Maximize"}
-                    className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
-                    onClick={this.onMaximizeToggle}/>);
+                if (node.isMaximized()) {
+                    buttons.push(this.props.minimizeIcon ?
+                      <div key="min" aria-label="Minimize" onClick={this.onMaximizeToggle}>
+                          {this.props.minimizeIcon}
+                      </div>
+                      : <button key="min" aria-label="Minimize"
+                                className={cm("flexlayout__tab_toolbar_button-max")}
+                                onClick={this.onMaximizeToggle}>
+                        </button>)
+                } else {
+                    buttons.push(this.props.maximizeIcon ?
+                      <div key="max" aria-label="Maximize" onClick={this.onMaximizeToggle}>
+                          {this.props.maximizeIcon}
+                      </div>
+                      : <button key="max" aria-label="Maximize"
+                                className={cm("flexlayout__tab_toolbar_button-min")}
+                                onClick={this.onMaximizeToggle}>
+                        </button>)
+                }
             }
             toolbar = <div key="toolbar" ref={this.toolbarRef} className={cm("flexlayout__tab_toolbar")}
                 onMouseDown={this.onInterceptMouseDown}>
@@ -234,7 +251,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         const message = this.props.layout.i18nName(I18nLabel.Move_Tabset, name);
         this.props.layout.dragStart(event, message, this.props.node, this.props.node.isEnableDrag(), (event2: Event) => undefined, this.onDoubleClick);
     }
-    
+
     onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
         event.stopPropagation();
     }
