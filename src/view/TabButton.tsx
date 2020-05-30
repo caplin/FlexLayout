@@ -89,7 +89,7 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         // record position of tab in node
         const layoutRect = this.props.layout.domRect;
         const r = this.selfRef.current!.getBoundingClientRect();
-        this.props.node._setTabRect(new Rect(r.left - layoutRect.x, r.top - layoutRect.y, r.width, r.height));
+        this.props.node._setTabRect(new Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
         this.contentWidth = this.contentRef.current!.getBoundingClientRect().width;
     }
 
