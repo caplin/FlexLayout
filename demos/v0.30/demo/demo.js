@@ -32162,6 +32162,10 @@ var BorderTabSet = /** @class */ (function (_super) {
     BorderTabSet.prototype.componentDidMount = function () {
         this.updateVisibleTabs();
     };
+    BorderTabSet.prototype.shouldComponentUpdate = function () {
+        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
+        return true;
+    };
     BorderTabSet.prototype.componentDidUpdate = function () {
         this.updateVisibleTabs();
     };
@@ -32273,7 +32277,7 @@ var BorderTabSet = /** @class */ (function (_super) {
         if (this.showToolbar === true) {
             toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
         }
-        if (this.showOverflow === true) {
+        if (this.showOverflow === true && hiddenTabs.length > 0) {
             var overflowButton = (React.createElement("button", { key: "overflowbutton", ref: this.overflowbuttonRef, className: cm("flexlayout__border_button_overflow_" + border.getLocation().getName()), onTouchStart: this.onInterceptMouseDown, onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown }, hiddenTabs.length));
             tabs.push(overflowButton);
         }
@@ -33193,6 +33197,10 @@ var TabSet = /** @class */ (function (_super) {
     TabSet.prototype.componentDidMount = function () {
         this.updateVisibleTabs();
     };
+    TabSet.prototype.shouldComponentUpdate = function () {
+        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
+        return true;
+    };
     TabSet.prototype.componentDidUpdate = function () {
         this.updateVisibleTabs();
     };
@@ -33296,7 +33304,7 @@ var TabSet = /** @class */ (function (_super) {
             }
             toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: this.onInterceptMouseDown }, buttons);
         }
-        if (this.showOverflow === true) {
+        if (this.showOverflow === true && hiddenTabs.length > 0) {
             tabs.push(React.createElement("button", { key: "overflowbutton", ref: this.overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), onTouchStart: this.onInterceptMouseDown, onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown }, hiddenTabs.length));
         }
         var showHeader = node.getName() !== undefined;
