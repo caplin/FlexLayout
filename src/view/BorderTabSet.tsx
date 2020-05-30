@@ -191,7 +191,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
             </div>;
         }
 
-        if (this.showOverflow === true) {
+        if (this.showOverflow === true && hiddenTabs.length > 0) {
             const overflowButton = (<button key="overflowbutton" ref={this.overflowbuttonRef}
                                             className={cm("flexlayout__border_button_overflow_" + border.getLocation().getName())}
                                             onTouchStart={this.onInterceptMouseDown}

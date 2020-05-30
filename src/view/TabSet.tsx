@@ -175,7 +175,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             </div>;
         }
 
-        if (this.showOverflow === true) {
+        if (this.showOverflow === true && hiddenTabs.length > 0) {
             tabs.push(<button key="overflowbutton" ref={this.overflowbuttonRef}
                               className={cm("flexlayout__tab_button_overflow")}
                               onTouchStart={this.onInterceptMouseDown}
