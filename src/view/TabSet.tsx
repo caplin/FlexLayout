@@ -43,6 +43,11 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.updateVisibleTabs();
     }
 
+    shouldComponentUpdate() { 
+        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
+        return true;
+    }
+
     componentDidUpdate() {
         this.updateVisibleTabs();
     }

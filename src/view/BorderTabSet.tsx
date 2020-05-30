@@ -44,6 +44,11 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         this.updateVisibleTabs();
     }
 
+    shouldComponentUpdate() { 
+        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
+        return true;
+    }
+
     componentDidUpdate() {
         this.updateVisibleTabs();
     }
