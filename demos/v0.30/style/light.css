@@ -218,7 +218,8 @@
 }
 
 .flexlayout__popup_menu {
-
+    font-size: 12px;
+    font-family: Arial, sans-serif;
 }
 
 .flexlayout__popup_menu_item {
