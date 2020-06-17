@@ -43,7 +43,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         this.updateVisibleTabs();
     }
 
-    shouldComponentUpdate() { 
+    shouldComponentUpdate() {
         this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
         return true;
     }
@@ -121,6 +121,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         const cm = this.props.layout.getClassName;
 
         const node = this.props.node;
+        const selectedTabNode: TabNode = this.props.node.getSelectedNode() as TabNode;
         const style = node._styleWithPosition();
 
         if (this.props.node.isMaximized()) {
@@ -168,12 +169,24 @@ export class TabSet extends React.Component<ITabSetProps, any> {
 
         let toolbar;
         if (this.showToolbar === true) {
+            if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+                const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
+                buttons.push(<button key="float"
+                                     aria-label={floatTitle}
+                                     title={floatTitle}
+                                     className={cm("flexlayout__tab_toolbar_button-float")}
+                                     onClick={this.onFloatTab}/>);
+            }
             if (this.props.node.isEnableMaximize()) {
+                const minTitle = this.props.layout.i18nName(I18nLabel.Minimize);
+                const maxTitle = this.props.layout.i18nName(I18nLabel.Maximize);
                 buttons.push(<button key="max"
-                                     aria-label={node.isMaximized() ? "Minimize" : "Maximize"}
+                                     aria-label={node.isMaximized() ? minTitle : maxTitle}
+                                     title={node.isMaximized() ? minTitle : maxTitle}
                                      className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
                                      onClick={this.onMaximizeToggle}/>);
             }
+
             toolbar = <div key="toolbar" ref={this.toolbarRef} className={cm("flexlayout__tab_toolbar")}
                            onMouseDown={this.onInterceptMouseDown}>
                 {buttons}
@@ -276,6 +289,13 @@ export class TabSet extends React.Component<ITabSetProps, any> {
     onMaximizeToggle = () => {
         if (this.props.node.isEnableMaximize()) {
             this.props.layout.maximize(this.props.node);
+        }
+    }
+
+    onFloatTab = () => {
+        const selectedTabNode: TabNode = this.props.node.getSelectedNode() as TabNode;
+        if (selectedTabNode !== undefined) {
+            this.props.layout.doAction(Actions.floatTab(selectedTabNode.getId()));
         }
     }
 

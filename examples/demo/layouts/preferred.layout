@@ -1,5 +1,7 @@
 {
-"global": {},
+  "global": {
+    "tabEnableFloat": true
+  },
 "layout":{
   "type": "row",
   "weight": 100,

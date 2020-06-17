@@ -24,7 +24,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         super(props);
         this.selfRef = React.createRef<HTMLDivElement>();
       }
-    
+
     onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         const message = this.props.layout.i18nName(I18nLabel.Move_Tab, this.props.node.getName());
         this.props.layout.dragStart(
@@ -33,7 +33,7 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
             this.props.node, this.props.node.isEnableDrag(),
             this.onClick,
             (event2: Event) => undefined
-        );  
+        );
     }
 
     onClick = () => {
@@ -83,9 +83,9 @@ export class BorderButton extends React.Component<IBorderButtonProps, any> {
         }
 
         let leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
-        let titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
-        
-        if (typeof leadingContent === 'undefined' && typeof node.getIcon() !== 'undefined') {
+        const titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
+
+        if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
             leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
         }
 

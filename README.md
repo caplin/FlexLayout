@@ -23,12 +23,13 @@ Features:
 *	maximize tabset (double click tabset header or use icon)
 *	tab overflow (show menu when tabs overflow)
 *   border tabsets
+*   popout tabs into new browser windows (only enabled in latest browsers)
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
 *	themeing - light and dark
 *	touch events - works on mobile devices (iPad, Android)
 *   add tabs using drag, indirect drag, add to active tabset, add to tabset by id
-*   preferred pixel size tabsets
+*   preferred pixel size tabsets (try to keep their size when window resizes)
 *   headed tabsets
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
@@ -269,6 +270,36 @@ tabs or drag and drop).
 ```
  global: {tabSetEnableTabStrip:false},
 ```
+## Floating Tabs (Popouts)
+
+Note: this feature only works for Chrome, Firefox, Safari, latest Edge (the Chrome based one) and Opera, it does
+NOT work for any version of IE or the previous version of Edge. For unsupported browsers the popout icons
+will not be shown and any saved layout with popouts will show with all their tabs in the main layout.
+
+For supported browsers tabs can be rendered into external browser windows (for use in multi-monitor setups)
+by configuring them with the enableFloat attribute. When this attribute is present
+an additional icon is shown in the tab header bar allowing the tab to be popped out
+into an external window.
+
+For popouts to work there needs to be an additional html page 'popout.html' hosted
+at the same location as the main page. The popout.html is the host page for the
+popped out tab, it should contain the required style sheets and have a <div> 
+element with id="content" (see the demo example code).
+
+Because popouts are rendering into a different document to the main layout any code in the popped out
+tab that uses the global document or window objects will not work correctly (for example custom popup menus), 
+they need to instead use the document/window of the popout. To get the document/window of the popout use the
+following method on one of the elements rendered in the popout (for example a ref or target in an event handler):
+
+```
+    const currentDocument = this.selfRef.current.ownerDocument;
+    const currentWindow = currentDocument.defaultView!;
+```
+
+In the above code selfRef is a React ref to the toplevel element being rendered.
+
+Note: some libraries already support popout windows by allowing you to specify the document to use, 
+for example see the getDocument() callback in agGrid at https://www.ag-grid.com/javascript-grid-callbacks/
 
 ## Global Config attributes
 
@@ -282,6 +313,7 @@ Attributes allowed in the 'global' element
 | tabEnableClose | true | |
 | tabEnableDrag | true | |
 | tabEnableRename | true | |
+| tabEnableFloat | false | enable popouts in all tabs (in popout capable browser) |
 | tabClassName | null | |
 | tabIcon | null | |
 | tabEnableRenderOnDemand | true | |
@@ -329,6 +361,8 @@ Inherited defaults will take their value from the associated global attributes (
 | enableClose | *inherited* | |
 | enableDrag | *inherited* | |
 | enableRename | *inherited* | |
+| enableFloat | *inherited* | enable popout (in popout capable browser) |
+| floating | false | |
 | className | *inherited* | |
 | icon | *inherited* | |
 | enableRenderOnDemand | *inherited* | |

@@ -1,20 +1,19 @@
 {
-	"global": {},
+	"global": {
+		"tabEnableFloat": true
+	},
 	"layout": {
 		"type": "row",
-		"id": "#4",
 		"children": [
 			{
 				"type": "tabset",
 				"weight": 12.5,
 				"active": true,
-				"id": "#5",
 				"children": [
 					{
 						"type": "tab",
 						"name": "FX",
-						"component": "grid",
-						"id": "#6"
+						"component": "grid"
 					},
 					{
 						"type": "tab",
@@ -27,13 +26,11 @@
 			{
 				"type": "tabset",
 				"weight": 25,
-				"id": "#7",
 				"children": [
 					{
 						"type": "tab",
 						"name": "FI",
-						"component": "grid",
-						"id": "#8"
+						"component": "grid"
 					}
 				]
 			}
@@ -48,8 +45,7 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Navigation",
-					"component": "grid",
-					"id": "#24"
+					"component": "grid"
 				}
 			]
 		},
@@ -61,8 +57,7 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Options",
-					"component": "grid",
-					"id": "#3"
+					"component": "grid"
 				}
 			]
 		},
@@ -74,15 +69,13 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Activity Blotter",
-					"component": "grid",
-					"id": "#2"
+					"component": "grid"
 				},
 				{
 					"type": "tab",
 					"enableClose":false,
 					"name": "Execution Blotter",
-					"component": "grid",
-					"id": "#1"
+					"component": "grid"
 				}
 			]
 		}

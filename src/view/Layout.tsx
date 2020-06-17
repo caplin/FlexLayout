@@ -1,7 +1,7 @@
 import * as React from "react";
 import DockLocation from "../DockLocation";
 import DragDrop from "../DragDrop";
-import { I18nLabel } from "../I18nLabel";
+import {I18nLabel} from "../I18nLabel";
 import Action from "../model/Action";
 import Actions from "../model/Actions";
 import BorderNode from "../model/BorderNode";
@@ -13,12 +13,15 @@ import RowNode from "../model/RowNode";
 import SplitterNode from "../model/SplitterNode";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
+import FloatingWindow from "./FloatingWindow";
 import Rect from "../Rect";
-import { JSMap } from "../Types";
-import { BorderTabSet } from "./BorderTabSet";
-import { Splitter } from "./Splitter";
-import { Tab } from "./Tab";
-import { TabSet } from "./TabSet";
+import {JSMap} from "../Types";
+import {BorderTabSet} from "./BorderTabSet";
+import {Splitter} from "./Splitter";
+import {Tab} from "./Tab";
+import {TabSet} from "./TabSet";
+import {FloatingWindowTab} from "./FloatingWindowTab";
+import {TabFloating} from "./TabFloating";
 
 export interface ILayoutProps {
   model: Model;
@@ -92,6 +95,9 @@ export class Layout extends React.Component<ILayoutProps, any> {
   private edgeTopDiv?: HTMLDivElement;
   /** @hidden @internal */
   private fnNewNodeDropped?: () => void;
+  /** @hidden @internal */
+  private currentDocument?: HTMLDocument;
+  private currentWindow?: Window;
 
   constructor(props: ILayoutProps) {
     super(props);
@@ -128,7 +134,9 @@ export class Layout extends React.Component<ILayoutProps, any> {
     this.updateRect();
 
     // need to re-render if size changes
-    window.addEventListener("resize", this.updateRect);
+    this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
+    this.currentWindow = this.currentDocument.defaultView!;
+    this.currentWindow!.addEventListener("resize", this.updateRect);
   }
 
   /** @hidden @internal */
@@ -164,6 +172,10 @@ export class Layout extends React.Component<ILayoutProps, any> {
     }
   }
 
+  getCurrentDocument() {
+    return this.currentDocument;
+  }
+
   /** @hidden @internal */
   componentWillUnmount() {
     window.removeEventListener("resize", this.updateRect);
@@ -172,7 +184,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
   /** @hidden @internal */
   render() {
     // first render will be used to find the size
-    if (this.rect.width === 0) { 
+    if (this.rect.width === 0) {
       return (
         <div ref={this.selfRef}
           className={this.getClassName("flexlayout__layout")} />
@@ -181,6 +193,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
     // this.start = Date.now();
     const borderComponents: React.ReactNode[] = [];
     const tabSetComponents: React.ReactNode[] = [];
+    const floatingWindows: React.ReactNode[] = [];
     const tabComponents: JSMap<React.ReactNode> = {};
     const splitterComponents: React.ReactNode[] = [];
 
@@ -190,12 +203,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
       this.model!.getBorderSet(),
       borderComponents,
       tabComponents,
+      floatingWindows,
       splitterComponents
     );
     this.renderChildren(
       this.model!.getRoot(),
       tabSetComponents,
       tabComponents,
+      floatingWindows,
       splitterComponents
     );
 
@@ -231,8 +246,21 @@ export class Layout extends React.Component<ILayoutProps, any> {
         })}
         {borderComponents}
         {splitterComponents}
+        {floatingWindows}
       </div>
     );
+  }
+
+  onCloseWindow = (id: string) => {
+      this.doAction(Actions.unFloatTab(id));
+      try {
+          (this.model!.getNodeById(id) as TabNode)._setWindow(undefined);
+      } catch (e) { // catch incase it was a model change
+      }
+  }
+
+  onSetWindow = (id: string, window: Window) => {
+    (this.model!.getNodeById(id) as TabNode)._setWindow(window);
   }
 
   /** @hidden @internal */
@@ -240,6 +268,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
     borderSet: BorderSet,
     borderComponents: React.ReactNode[],
     tabComponents: JSMap<React.ReactNode>,
+    floatingWindows: React.ReactNode[],
     splitterComponents: React.ReactNode[]
   ) {
     for (const border of borderSet.getBorders()) {
@@ -262,15 +291,42 @@ export class Layout extends React.Component<ILayoutProps, any> {
               <Splitter key={child.getId()} layout={this} node={child} />
             );
           } else if (child instanceof TabNode) {
-            tabComponents[child.getId()] = (
-              <Tab
-                key={child.getId()}
-                layout={this}
-                node={child}
-                selected={i === border.getSelected()}
-                factory={this.props.factory}
-              />
-            );
+            if (child.isFloating()) {
+              const rect = this._getScreenRect(child);
+              floatingWindows.push((
+                  <FloatingWindow
+                      key={child.getId()}
+                      url="popout.html"
+                      rect={rect}
+                      title={child.getName()}
+                      id={child.getId()}
+                      onSetWindow={this.onSetWindow}
+                      onCloseWindow={this.onCloseWindow}>
+                    <FloatingWindowTab
+                        layout={this}
+                        node={child}
+                        factory={this.props.factory}
+                    />
+                  </FloatingWindow>
+              ));
+              tabComponents[child.getId()] = (
+                  <TabFloating
+                      key={child.getId()}
+                      layout={this}
+                      node={child}
+                      selected={i === border.getSelected()}
+                  />);
+            } else {
+              tabComponents[child.getId()] = (
+                  <Tab
+                      key={child.getId()}
+                      layout={this}
+                      node={child}
+                      selected={i === border.getSelected()}
+                      factory={this.props.factory}
+                  />
+              );
+            }
           }
           i++;
         }
@@ -283,6 +339,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
     node: RowNode | TabSetNode,
     tabSetComponents: React.ReactNode[],
     tabComponents: JSMap<React.ReactNode>,
+    floatingWindows: React.ReactNode[],
     splitterComponents: React.ReactNode[]
   ) {
     const drawChildren = node._getDrawChildren();
@@ -307,6 +364,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
           child,
           tabSetComponents,
           tabComponents,
+          floatingWindows,
           splitterComponents
         );
       } else if (child instanceof TabNode) {
@@ -317,26 +375,64 @@ export class Layout extends React.Component<ILayoutProps, any> {
           // this should not happen!
           console.warn("undefined selectedTab should not happen");
         }
-        tabComponents[child.getId()] = (
-          <Tab
-            key={child.getId()}
-            layout={this}
-            node={child}
-            selected={child === selectedTab}
-            factory={this.props.factory}
-          />
-        );
+        if (child.isFloating()) {
+          const rect = this._getScreenRect(child);
+          floatingWindows.push((
+              <FloatingWindow
+                  key={child.getId()}
+                  url="popout.html"
+                  rect={rect}
+                  title={child.getName()}
+                  id={child.getId()}
+                  onSetWindow={this.onSetWindow}
+                  onCloseWindow={this.onCloseWindow}>
+                <FloatingWindowTab
+                    layout={this}
+                    node={child}
+                    factory={this.props.factory}
+                />
+              </FloatingWindow>
+          ));
+          tabComponents[child.getId()] = (
+              <TabFloating
+                  key={child.getId()}
+                  layout={this}
+                  node={child}
+                  selected={child === selectedTab}
+              />);
+        } else {
+          tabComponents[child.getId()] = (
+              <Tab
+                  key={child.getId()}
+                  layout={this}
+                  node={child}
+                  selected={child === selectedTab}
+                  factory={this.props.factory}
+              />
+          );
+        }
       } else {
         // is row
         this.renderChildren(
           child as RowNode,
           tabSetComponents,
           tabComponents,
+          floatingWindows,
           splitterComponents
         );
       }
     }
   }
+
+    _getScreenRect(node: TabNode) {
+        const rect = node!.getRect()!.clone();
+        const bodyRect: DOMRect = this.selfRef.current!.getBoundingClientRect();
+        const navHeight = Math.min(80, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
+        const navWidth = Math.min(80, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
+        rect.x = rect.x + bodyRect.x + this.currentWindow!.screenX + navWidth;
+        rect.y = rect.y + bodyRect.y + this.currentWindow!.screenY + navHeight;
+        return rect;
+    }
 
   /**
    * Adds a new tab to the given tabset
@@ -401,7 +497,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
     DragDrop.instance.addGlass(this.onCancelAdd);
 
     this.dragDivText = dragText;
-    this.dragDiv = document.createElement("div");
+    this.dragDiv = this.currentDocument!.createElement("div");
     this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
     this.dragDiv.innerHTML = this.dragDivText;
     this.dragDiv.addEventListener(
@@ -510,12 +606,12 @@ export class Layout extends React.Component<ILayoutProps, any> {
   onDragStart = () => {
     this.dropInfo = undefined;
     const rootdiv = this.selfRef.current!;
-    this.outlineDiv = document.createElement("div");
+    this.outlineDiv = this.currentDocument!.createElement("div");
     this.outlineDiv.className = this.getClassName("flexlayout__outline_rect");
     rootdiv.appendChild(this.outlineDiv);
 
     if (this.dragDiv == null) {
-      this.dragDiv = document.createElement("div");
+      this.dragDiv = this.currentDocument!.createElement("div");
       this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
       this.dragDiv.innerHTML = this.dragDivText;
       rootdiv.appendChild(this.dragDiv);
@@ -612,7 +708,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
       const radius = "50px";
       const width = "10px";
 
-      this.edgeTopDiv = document.createElement("div");
+      this.edgeTopDiv = this.currentDocument!.createElement("div");
       this.edgeTopDiv.className = this.getClassName("flexlayout__edge_rect");
       this.edgeTopDiv.style.top = r.y + "px";
       this.edgeTopDiv.style.left = r.x + (r.width - size) / 2 + "px";
@@ -621,7 +717,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
       this.edgeTopDiv.style.borderBottomLeftRadius = radius;
       this.edgeTopDiv.style.borderBottomRightRadius = radius;
 
-      this.edgeLeftDiv = document.createElement("div");
+      this.edgeLeftDiv = this.currentDocument!.createElement("div");
       this.edgeLeftDiv.className = this.getClassName("flexlayout__edge_rect");
       this.edgeLeftDiv.style.top = r.y + (r.height - size) / 2 + "px";
       this.edgeLeftDiv.style.left = r.x + "px";
@@ -630,7 +726,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
       this.edgeLeftDiv.style.borderTopRightRadius = radius;
       this.edgeLeftDiv.style.borderBottomRightRadius = radius;
 
-      this.edgeBottomDiv = document.createElement("div");
+      this.edgeBottomDiv = this.currentDocument!.createElement("div");
       this.edgeBottomDiv.className = this.getClassName("flexlayout__edge_rect");
       this.edgeBottomDiv.style.bottom = domRect.height - r.getBottom() + "px";
       this.edgeBottomDiv.style.left = r.x + (r.width - size) / 2 + "px";
@@ -639,7 +735,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
       this.edgeBottomDiv.style.borderTopLeftRadius = radius;
       this.edgeBottomDiv.style.borderTopRightRadius = radius;
 
-      this.edgeRightDiv = document.createElement("div");
+      this.edgeRightDiv = this.currentDocument!.createElement("div");
       this.edgeRightDiv.className = this.getClassName("flexlayout__edge_rect");
       this.edgeRightDiv.style.top = r.y + (r.height - size) / 2 + "px";
       this.edgeRightDiv.style.right = domRect.width - r.getRight() + "px";
@@ -696,7 +792,7 @@ export class Layout extends React.Component<ILayoutProps, any> {
   }
 
   i18nName(id: I18nLabel, param?: string) {
-    let message = undefined;
+    let message;
     if (this.props.i18nMapper) {
       message = this.props.i18nMapper(id, param);
     }

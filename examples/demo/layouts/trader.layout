@@ -4,8 +4,8 @@
 		"enableEdgeDock": true,
 		"tabSetEnableMaximize": true,
 		"tabEnableClose": true,
-		"tabSetEnableTabStrip": true
-
+		"tabSetEnableTabStrip": true,
+		"tabEnableFloat": true
 	},
 	"layout": {
 		"type": "row",

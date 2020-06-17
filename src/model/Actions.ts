@@ -17,6 +17,8 @@ class Actions {
   static MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
   static UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
   static UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
+  static FLOAT_TAB = "FlexLayout_FloatTab";
+  static UNFLOAT_TAB = "FlexLayout_UnFloatTab";
 
   /**
    * Adds a tab node to the given tabset node
@@ -132,6 +134,14 @@ class Actions {
    */
   static updateNodeAttributes(nodeId: string, attributes: any): Action {
     return new Action(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
+  }
+
+  static floatTab(nodeId: string): Action {
+    return new Action(Actions.FLOAT_TAB, { node: nodeId });
+  }
+
+  static unFloatTab(nodeId: string): Action {
+    return new Action(Actions.UNFLOAT_TAB, { node: nodeId });
   }
 }
 

@@ -133,9 +133,9 @@ export class TabButton extends React.Component<ITabButtonProps, any> {
         }
 
         let leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
-        let titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
+        const titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
 
-        if (typeof leadingContent === 'undefined' && typeof node.getIcon() !== 'undefined') {
+        if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
             leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
         }
 

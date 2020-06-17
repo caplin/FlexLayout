@@ -25,7 +25,7 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         const parentNode = this.props.node.getParent() as RowNode;
         this.pBounds = parentNode._getSplitterBounds(this.props.node);
         const rootdiv = this.props.layout.selfRef.current!;
-        this.outlineDiv = document.createElement("div");
+        this.outlineDiv = this.props.layout.getCurrentDocument()!.createElement("div");
         this.outlineDiv.style.position = "absolute";
         this.outlineDiv.className = this.props.layout.getClassName("flexlayout__splitter_drag");
         this.outlineDiv.style.cursor = this.props.node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";

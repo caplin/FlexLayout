@@ -192,7 +192,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 titleFactory={this.titleFactory}
                 iconFactory={this.iconFactory}
                 onRenderTab={onRenderTab}
-                onRenderTabSet={onRenderTabSet} 
+                onRenderTabSet={onRenderTabSet}
                 // classNameMapper={
                 //     className => {
                 //         console.log(className);

@@ -2,7 +2,7 @@ import Rect from "./Rect";
 
 const canUseDOM = !!(
     (typeof window !== "undefined" &&
-    window.document && 
+    window.document &&
     window.document.createElement)
   );
 
@@ -41,6 +41,8 @@ class DragDrop {
     /** @hidden @internal */
     private _dragging: boolean = false;
 
+    private _document?: HTMLDocument;
+
     /** @hidden @internal */
     private constructor() {
         if ( canUseDOM ) { // check for serverside rendering
@@ -62,11 +64,15 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
+    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined, currentDocument?: HTMLDocument) {
         if (!this._glassShowing) {
-            const glassRect = new Rect(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight);
+            if (!currentDocument) {
+                currentDocument = window.document;
+            }
+            this._document = currentDocument;
+            const glassRect = new Rect(0, 0, currentDocument!.documentElement.clientWidth, currentDocument!.documentElement.clientHeight);
             glassRect.positionElement(this._glass!);
-            document.body.appendChild(this._glass!);
+            currentDocument!.body.appendChild(this._glass!);
             this._glass!.tabIndex = -1;
             this._glass!.focus();
             this._glass!.addEventListener("keydown", this._onKeyPress);
@@ -81,8 +87,9 @@ class DragDrop {
 
     hideGlass() {
         if (this._glassShowing) {
-            document.body.removeChild(this._glass!);
+            this._document!.body.removeChild(this._glass!);
             this._glassShowing = false;
+            this._document = undefined;
         }
     }
 
@@ -94,11 +101,13 @@ class DragDrop {
         fClick?: ((event: Event) => void) | undefined,
         fDblClick?: ((event: Event) => void) | undefined) {
 
+        const currentDocument = ((event!.currentTarget) as HTMLDivElement).ownerDocument;
+        this._document = currentDocument;
         const posEvent = this._getLocationEvent(event);
-        this.addGlass(fDragCancel);
+        this.addGlass(fDragCancel, currentDocument);
 
-        if (this._dragging) { 
-          console.warn("this._dragging true on startDrag should never happen")
+        if (this._dragging) {
+          console.warn("this._dragging true on startDrag should never happen");
         }
 
         if (event) {
@@ -122,10 +131,10 @@ class DragDrop {
         this._fClick = fClick;
         this._fDblClick = fDblClick;
 
-        document.addEventListener("mouseup", this._onMouseUp);
-        document.addEventListener("mousemove", this._onMouseMove);
-        document.addEventListener("touchend", this._onMouseUp);
-        document.addEventListener("touchmove", this._onMouseMove);
+        this._document.addEventListener("mouseup", this._onMouseUp);
+        this._document.addEventListener("mousemove", this._onMouseMove);
+        this._document.addEventListener("touchend", this._onMouseUp);
+        this._document.addEventListener("touchmove", this._onMouseMove);
     }
 
     isDragging() {
@@ -145,9 +154,9 @@ class DragDrop {
     /** @hidden @internal */
     private _onKeyPress(event: KeyboardEvent) {
         if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
+            this._document!.removeEventListener("mousemove", this._onMouseMove);
+            this._document!.removeEventListener("mouseup", this._onMouseUp);
             this.hideGlass();
-            document.removeEventListener("mousemove", this._onMouseMove);
-            document.removeEventListener("mouseup", this._onMouseUp);
             this._fDragCancel(this._dragging);
             this._dragging = false;
         }
@@ -215,14 +224,14 @@ class DragDrop {
         this._stopPropagation(event);
         this._preventDefault(event);
 
+        this._document!.removeEventListener("mousemove", this._onMouseMove);
+        this._document!.removeEventListener("mouseup", this._onMouseUp);
+        this._document!.removeEventListener("touchend", this._onMouseUp);
+        this._document!.removeEventListener("touchmove", this._onMouseMove);
+
         if (!this._manualGlassManagement) {
             this.hideGlass();
         }
-
-        document.removeEventListener("mousemove", this._onMouseMove);
-        document.removeEventListener("mouseup", this._onMouseUp);
-        document.removeEventListener("touchend", this._onMouseUp);
-        document.removeEventListener("touchmove", this._onMouseMove);
 
         if (this._dragging) {
             this._dragging = false;

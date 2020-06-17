@@ -4,7 +4,7 @@ import Rect from "../Rect";
 import { JSMap } from "../Types";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
-import Model from "./Model";
+import Model, {supportsFloat} from "./Model";
 import Node from "./Node";
 import TabSetNode from "./TabSetNode";
 
@@ -30,6 +30,7 @@ class TabNode extends Node implements IDraggable {
     attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
     attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
     attributeDefinitions.add("config", undefined).setType(Attribute.JSON);
+    attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
 
     attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
@@ -37,6 +38,7 @@ class TabNode extends Node implements IDraggable {
     attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
     attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
     attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute.BOOLEAN);
     return attributeDefinitions;
   }
 
@@ -44,6 +46,8 @@ class TabNode extends Node implements IDraggable {
   private _tabRect?: Rect;
   /** @hidden @internal */
   private _extra: JSMap<any>;
+    /** @hidden @internal */
+    private _window?: Window;
 
   /** @hidden @internal */
   constructor(model: Model, json: any) {
@@ -53,6 +57,10 @@ class TabNode extends Node implements IDraggable {
 
     TabNode._attributeDefinitions.fromJson(json, this._attributes);
     model._addNode(this);
+  }
+
+  getWindow() {
+      return this._window;
   }
 
   getTabRect() {
@@ -91,12 +99,22 @@ class TabNode extends Node implements IDraggable {
     return this._extra;
   }
 
+  isFloating() {
+    const configFloating =  this._getAttr("floating") as boolean;
+    return configFloating && supportsFloat;
+  }
+
   getIcon() {
     return this._getAttributeAsStringOrUndefined("icon");
   }
 
   isEnableClose() {
     return this._getAttr("enableClose") as boolean;
+  }
+
+  isEnableFloat() {
+    const allowFloat = this._getAttr("enableFloat") as boolean;
+    return allowFloat && supportsFloat;
   }
 
   isEnableDrag() {
@@ -118,6 +136,11 @@ class TabNode extends Node implements IDraggable {
   /** @hidden @internal */
   _setName(name: string) {
     this._attributes.name = name;
+  }
+
+  /** @hidden @internal */
+  _setFloating(float: boolean) {
+    this._attributes.floating = float;
   }
 
   /** @hidden @internal */
@@ -150,6 +173,10 @@ class TabNode extends Node implements IDraggable {
   _getAttributeDefinitions() {
     return TabNode._attributeDefinitions;
   }
+
+    _setWindow(window: Window | undefined) {
+      this._window = window;
+    }
 }
 
 export default TabNode;

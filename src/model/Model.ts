@@ -16,6 +16,13 @@ import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 
+// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
+// not work on any version if IE or the original Edge browser
+// Assume any recent browser not IE or original Edge will work
+// @ts-ignore
+const isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
+export const supportsFloat: boolean = !isIEorEdge;
+
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -50,6 +57,7 @@ class Model {
 
     // tab
     attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("tabEnableFloat", false).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabClassName", undefined).setType(Attribute.STRING);
@@ -124,7 +132,7 @@ class Model {
   }
 
   /** @hidden @internal */
-  _setActiveTabset(tabsetNode: TabSetNode) {
+  _setActiveTabset(tabsetNode: TabSetNode | undefined) {
     this._activeTabSet = tabsetNode;
   }
 
@@ -212,6 +220,22 @@ class Model {
           if (node instanceof TabNode) {
             delete this._idMap[action.data.node];
             node._delete();
+          }
+          break;
+        }
+      case Actions.FLOAT_TAB:
+        {
+          const node = this._idMap[action.data.node];
+          if (node instanceof TabNode) {
+            node._setFloating(true);
+          }
+          break;
+        }
+      case Actions.UNFLOAT_TAB:
+        {
+          const node = this._idMap[action.data.node];
+          if (node instanceof TabNode) {
+            node._setFloating(false);
           }
           break;
         }

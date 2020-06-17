@@ -1,8 +1,11 @@
+0.4.0
+Added ability to popout tabs into new browser windows.
+
 0.3.11
 Added overflow menu to border tabs
 Fixed issues running on IE11
 
 0.3.10
 Removed deprecated React lifecycle methods, will now work
-in React strict mode without warnings (for example, in apps 
+in React strict mode without warnings (for example, in apps
 created with Create React App).

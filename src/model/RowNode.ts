@@ -50,7 +50,7 @@ class RowNode extends Node implements IDropTarget {
     return attributeDefinitions;
   }
   /** @hidden @internal */
-  private _drawChildren: Array<(Node)>;
+  private _drawChildren: Node[];
 
   /** @hidden @internal */
   constructor(model: Model, json: any) {
@@ -289,6 +289,7 @@ class RowNode extends Node implements IDropTarget {
     // add tabset into empty root
     if (this === this._model.getRoot() && this._children.length === 0) {
       const child = new TabSetNode(this._model, { type: "tabset" });
+      this._model._setActiveTabset(child);
       this._addChild(child);
     }
 

@@ -7,6 +7,7 @@ import Layout from "./Layout";
 import PopupMenu from "../PopupMenu";
 import Actions from "../model/Actions";
 import {TabSet} from "./TabSet";
+import {I18nLabel} from "../I18nLabel";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
@@ -44,7 +45,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
         this.updateVisibleTabs();
     }
 
-    shouldComponentUpdate() { 
+    shouldComponentUpdate() {
         this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
         return true;
     }
@@ -116,16 +117,23 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
 
     onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
         event.stopPropagation();
-    };
+    }
 
     onOverflowClick = (hiddenTabs: Array<{ name: string, node: TabNode, index: number }>) => {
         const element = this.overflowbuttonRef.current!;
         PopupMenu.show(element, hiddenTabs, this.onOverflowItemSelect, this.props.layout.getClassName);
-    };
+    }
 
     onOverflowItemSelect = (item: { name: string, node: TabNode, index: number }) => {
         this.props.layout.doAction(Actions.selectTab(item.node.getId()));
-    };
+    }
+
+    onFloatTab = () => {
+        const selectedTabNode = this.props.border.getChildren()[this.props.border.getSelected()] as TabNode;
+        if (selectedTabNode !== undefined) {
+            this.props.layout.doAction(Actions.floatTab(selectedTabNode.getId()));
+        }
+    }
 
     render() {
         if (this.renderAllTabs) {
@@ -188,6 +196,18 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
 
         let toolbar;
         if (this.showToolbar === true) {
+            const selectedIndex = border.getSelected();
+            if (selectedIndex != -1) {
+                const selectedTabNode = border.getChildren()[selectedIndex] as TabNode;
+                if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+                    const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
+                    buttons.push(<button key="float"
+                                         aria-label={floatTitle}
+                                         title={floatTitle}
+                                         className={cm("flexlayout__tab_toolbar_button-float")}
+                                         onClick={this.onFloatTab}/>);
+                }
+            }
             toolbar = <div
                 key="toolbar"
                 ref={this.toolbarRef}
