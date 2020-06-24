@@ -4,7 +4,7 @@ import Rect from "../Rect";
 import { JSMap } from "../Types";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
-import Model, {supportsFloat} from "./Model";
+import Model from "./Model";
 import Node from "./Node";
 import TabSetNode from "./TabSetNode";
 
@@ -101,7 +101,7 @@ class TabNode extends Node implements IDraggable {
 
   isFloating() {
     const configFloating =  this._getAttr("floating") as boolean;
-    return configFloating && supportsFloat;
+    return configFloating;
   }
 
   getIcon() {
@@ -114,7 +114,7 @@ class TabNode extends Node implements IDraggable {
 
   isEnableFloat() {
     const allowFloat = this._getAttr("enableFloat") as boolean;
-    return allowFloat && supportsFloat;
+    return allowFloat;
   }
 
   isEnableDrag() {

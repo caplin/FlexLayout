@@ -169,7 +169,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
 
         let toolbar;
         if (this.showToolbar === true) {
-            if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+            if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                 const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
                 buttons.push(<button key="float"
                                      aria-label={floatTitle}

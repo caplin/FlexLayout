@@ -44,7 +44,17 @@ export interface ILayoutProps {
   onModelChange?: (model: Model) => void;
   classNameMapper?: (defaultClassName: string) => string;
   i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
+  supportsPopout?: boolean | undefined;
+  popoutURL?: string | undefined;
 }
+
+// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
+// not work on any version if IE or the original Edge browser
+// Assume any recent browser not IE or original Edge will work
+// @ts-ignore
+const isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
+const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+const defaultSupportsPopout: boolean = !isIEorEdge && !isMobile;
 
 /**
  * A React component that hosts a multi-tabbed layout
@@ -98,6 +108,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
   /** @hidden @internal */
   private currentDocument?: HTMLDocument;
   private currentWindow?: Window;
+  private supportsPopout: boolean;
+  private popoutURL: string;
 
   constructor(props: ILayoutProps) {
     super(props);
@@ -107,6 +119,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
     this.model._setChangeListener(this.onModelChange);
     this.tabIds = [];
     this.selfRef = React.createRef<HTMLDivElement>();
+    this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
+    this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
   }
 
   /** @hidden @internal */
@@ -174,6 +188,14 @@ export class Layout extends React.Component<ILayoutProps, any> {
 
   getCurrentDocument() {
     return this.currentDocument;
+  }
+
+  isSupportsPopout() {
+    return this.supportsPopout;
+  }
+
+  getPopoutURL() {
+    return this.popoutURL;
   }
 
   /** @hidden @internal */
@@ -291,12 +313,12 @@ export class Layout extends React.Component<ILayoutProps, any> {
               <Splitter key={child.getId()} layout={this} node={child} />
             );
           } else if (child instanceof TabNode) {
-            if (child.isFloating()) {
+            if (this.supportsPopout && child.isFloating()) {
               const rect = this._getScreenRect(child);
               floatingWindows.push((
                   <FloatingWindow
                       key={child.getId()}
-                      url="popout.html"
+                      url={this.popoutURL}
                       rect={rect}
                       title={child.getName()}
                       id={child.getId()}
@@ -375,12 +397,12 @@ export class Layout extends React.Component<ILayoutProps, any> {
           // this should not happen!
           console.warn("undefined selectedTab should not happen");
         }
-        if (child.isFloating()) {
+        if (this.supportsPopout && child.isFloating()) {
           const rect = this._getScreenRect(child);
           floatingWindows.push((
               <FloatingWindow
                   key={child.getId()}
-                  url="popout.html"
+                  url={this.popoutURL}
                   rect={rect}
                   title={child.getName()}
                   id={child.getId()}

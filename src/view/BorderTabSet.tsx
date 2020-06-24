@@ -199,7 +199,7 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
             const selectedIndex = border.getSelected();
             if (selectedIndex != -1) {
                 const selectedTabNode = border.getChildren()[selectedIndex] as TabNode;
-                if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+                if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                     const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
                     buttons.push(<button key="float"
                                          aria-label={floatTitle}

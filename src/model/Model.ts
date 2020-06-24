@@ -16,12 +16,6 @@ import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 
-// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
-// not work on any version if IE or the original Edge browser
-// Assume any recent browser not IE or original Edge will work
-// @ts-ignore
-const isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
-export const supportsFloat: boolean = !isIEorEdge;
 
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component

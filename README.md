@@ -79,6 +79,8 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onModelChange   | optional          | function called when model has changed |
 | classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
 | i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
+| supportsPopout  | optional          | if left undefined will do simple check based on userAgent |
+| popoutURL      | optional          | URL of popout window relative to origin, defaults to popout.html |
 
 The model is tree of Node objects that define the structure of the layout.
 
@@ -282,9 +284,8 @@ an additional icon is shown in the tab header bar allowing the tab to be popped 
 into an external window.
 
 For popouts to work there needs to be an additional html page 'popout.html' hosted
-at the same location as the main page. The popout.html is the host page for the
-popped out tab, it should contain the required style sheets and have a <div> 
-element with id="content" (see the demo example code).
+at the same location as the main page (copy the one from examples/demo). The popout.html is the host page for the
+popped out tab, the styles from the main page will be copied into it at runtime.
 
 Because popouts are rendering into a different document to the main layout any code in the popped out
 tab that uses the global document or window objects will not work correctly (for example custom popup menus), 
