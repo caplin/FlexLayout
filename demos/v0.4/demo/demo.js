@@ -29425,7 +29425,7 @@ var I18nLabel;
     I18nLabel["Maximize"] = "Maximize";
     I18nLabel["Minimize"] = "Minimize";
     I18nLabel["Float_Tab"] = "Show in floating window";
-    I18nLabel["Floating_Window_Message"] = "This tab is shown in a floating window";
+    I18nLabel["Floating_Window_Message"] = "This panel is shown in a floating window";
     I18nLabel["Floating_Window_Show_Window"] = "Show window";
     I18nLabel["Floating_Window_Dock_Window"] = "Dock window";
 })(I18nLabel = exports.I18nLabel || (exports.I18nLabel = {}));
@@ -30390,7 +30390,6 @@ exports.default = BorderSet;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.supportsFloat = void 0;
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
@@ -30402,12 +30401,6 @@ var BorderSet_1 = __webpack_require__(/*! ./BorderSet */ "./src/model/BorderSet.
 var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
-// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
-// not work on any version if IE or the original Edge browser
-// Assume any recent browser not IE or original Edge will work
-// @ts-ignore
-var isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
-exports.supportsFloat = !isIEorEdge;
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -31565,7 +31558,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var Model_1 = __webpack_require__(/*! ./Model */ "./src/model/Model.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var TabNode = /** @class */ (function (_super) {
     __extends(TabNode, _super);
@@ -31635,7 +31627,7 @@ var TabNode = /** @class */ (function (_super) {
     };
     TabNode.prototype.isFloating = function () {
         var configFloating = this._getAttr("floating");
-        return configFloating && Model_1.supportsFloat;
+        return configFloating;
     };
     TabNode.prototype.getIcon = function () {
         return this._getAttributeAsStringOrUndefined("icon");
@@ -31645,7 +31637,7 @@ var TabNode = /** @class */ (function (_super) {
     };
     TabNode.prototype.isEnableFloat = function () {
         var allowFloat = this._getAttr("enableFloat");
-        return allowFloat && Model_1.supportsFloat;
+        return allowFloat;
     };
     TabNode.prototype.isEnableDrag = function () {
         return this._getAttr("enableDrag");
@@ -32352,7 +32344,7 @@ var BorderTabSet = /** @class */ (function (_super) {
             var selectedIndex = border.getSelected();
             if (selectedIndex != -1) {
                 var selectedTabNode = border.getChildren()[selectedIndex];
-                if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+                if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                     var floatTitle = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
                     buttons.push(React.createElement("button", { key: "float", "aria-label": floatTitle, title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
                 }
@@ -32410,21 +32402,34 @@ var FloatingWindow = /** @class */ (function (_super) {
     FloatingWindow.prototype.componentDidMount = function () {
         var _this = this;
         var r = this.props.rect;
-        var newWindow = window.open(this.props.url, this.props.title, "left=" + r.x + ",top=" + r.y + ",width=" + r.width + ",height=" + r.height);
-        if (newWindow !== null) {
-            this.props.onSetWindow(this.props.id, newWindow);
+        var popupWindow = window.open(this.props.url, this.props.title, "left=" + r.x + ",top=" + r.y + ",width=" + r.width + ",height=" + r.height);
+        if (popupWindow !== null) {
+            this.window = popupWindow;
+            this.props.onSetWindow(this.props.id, popupWindow);
+            // listen for parent unloading to remove all popups
             window.addEventListener("beforeunload", function () {
+                if (_this.window) {
+                    _this.window.close();
+                    _this.window = undefined;
+                }
+            });
+            // listen for popup unloading
+            popupWindow.addEventListener("beforeunload", function () {
                 _this.props.onCloseWindow(_this.props.id);
             });
-            this.window = newWindow;
-            newWindow.addEventListener("load", function () {
-                _this.window.document.title = _this.props.title;
-                _this.window.addEventListener("beforeunload", function () {
-                    _this.props.onCloseWindow(_this.props.id);
-                });
-                var content = _this.window.document.querySelector("#content");
+            popupWindow.addEventListener("load", function () {
+                var popupDocument = popupWindow.document;
+                popupDocument.title = _this.props.title;
+                var content = popupDocument.createElement("div");
+                content.className = "flexlayout__floating_window_content";
+                popupDocument.body.appendChild(content);
+                copyStyles(popupDocument);
                 _this.setState({ content: content });
             });
+        }
+        else {
+            console.warn("Unable to open window " + this.props.url);
+            this.props.onCloseWindow(this.props.id);
         }
     };
     FloatingWindow.prototype.componentWillUnmount = function () {
@@ -32448,6 +32453,30 @@ var FloatingWindow = /** @class */ (function (_super) {
     return FloatingWindow;
 }(React.Component));
 exports.default = FloatingWindow;
+function copyStyles(doc) {
+    var head = doc.head;
+    Array.from(window.document.styleSheets).forEach(function (styleSheet) {
+        if (styleSheet.href) { // prefer links since they will keep paths to images etc
+            var styleElement = doc.createElement('link');
+            styleElement.type = styleSheet.type;
+            styleElement.rel = 'stylesheet';
+            styleElement.href = styleSheet.href;
+            head.appendChild(styleElement);
+        }
+        else {
+            try {
+                var rules = styleSheet.cssRules;
+                var style_1 = doc.createElement('style');
+                Array.from(rules).forEach(function (cssRule) {
+                    style_1.appendChild(doc.createTextNode(cssRule.cssText));
+                });
+                head.appendChild(style_1);
+            }
+            catch (e) { // styleSheet.cssRules can thro security exception
+            }
+        }
+    });
+}
 
 
 /***/ }),
@@ -32535,6 +32564,13 @@ var Tab_1 = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
 var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 var FloatingWindowTab_1 = __webpack_require__(/*! ./FloatingWindowTab */ "./src/view/FloatingWindowTab.tsx");
 var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
+// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
+// not work on any version if IE or the original Edge browser
+// Assume any recent browser not IE or original Edge will work
+// @ts-ignore
+var isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
+var isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+var defaultSupportsPopout = !isIEorEdge && !isMobile;
 /**
  * A React component that hosts a multi-tabbed layout
  */
@@ -32705,6 +32741,8 @@ var Layout = /** @class */ (function (_super) {
         _this.model._setChangeListener(_this.onModelChange);
         _this.tabIds = [];
         _this.selfRef = React.createRef();
+        _this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
+        _this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         return _this;
     }
     /** @hidden @internal */
@@ -32742,6 +32780,12 @@ var Layout = /** @class */ (function (_super) {
     };
     Layout.prototype.getCurrentDocument = function () {
         return this.currentDocument;
+    };
+    Layout.prototype.isSupportsPopout = function () {
+        return this.supportsPopout;
+    };
+    Layout.prototype.getPopoutURL = function () {
+        return this.popoutURL;
     };
     /** @hidden @internal */
     Layout.prototype.componentWillUnmount = function () {
@@ -32803,9 +32847,9 @@ var Layout = /** @class */ (function (_super) {
                         splitterComponents.push(React.createElement(Splitter_1.Splitter, { key: child.getId(), layout: this, node: child }));
                     }
                     else if (child instanceof TabNode_1.default) {
-                        if (child.isFloating()) {
+                        if (this.supportsPopout && child.isFloating()) {
                             var rect = this._getScreenRect(child);
-                            floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: "popout.html", rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                            floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
                                 React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory }))));
                             tabComponents[child.getId()] = (React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, node: child, selected: i === border.getSelected() }));
                         }
@@ -32836,9 +32880,9 @@ var Layout = /** @class */ (function (_super) {
                     // this should not happen!
                     console.warn("undefined selectedTab should not happen");
                 }
-                if (child.isFloating()) {
+                if (this.supportsPopout && child.isFloating()) {
                     var rect = this._getScreenRect(child);
-                    floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: "popout.html", rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                    floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
                         React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory }))));
                     tabComponents[child.getId()] = (React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, node: child, selected: child === selectedTab }));
                 }
@@ -33637,7 +33681,7 @@ var TabSet = /** @class */ (function (_super) {
         buttons = renderState.buttons;
         var toolbar;
         if (this.showToolbar === true) {
-            if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+            if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                 var floatTitle = this.props.layout.i18nName(__1.I18nLabel.Float_Tab);
                 buttons.push(React.createElement("button", { key: "float", "aria-label": floatTitle, title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
             }
