@@ -3,6 +3,7 @@ Copy styles into popout tabs
 
 0.4.0
 Added ability to popout tabs into new browser windows.
+Press the 'reload from file' button in the demo app to load new layouts with the popout attribute.
 
 0.3.11
 Added overflow menu to border tabs
