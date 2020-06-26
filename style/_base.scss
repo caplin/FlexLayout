@@ -1,0 +1,454 @@
+@mixin absoluteFill {
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+}
+
+.flexlayout {
+  &__layout {
+    @include absoluteFill;
+    overflow: hidden;
+  }
+
+  &__splitter {
+    background-color: $color_2;
+
+    &:hover {
+      background-color: $color_4;
+    }
+
+    &_drag {
+      border-radius: 5px;
+      background-color: $color_5;
+      z-index: 1000;
+    }
+  }
+
+  &__outline_rect {
+    position: absolute;
+    cursor: move;
+    border: 2px solid $color_drag1;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
+    border-radius: 5px;
+    z-index: 1000;
+    box-sizing: border-box;
+
+    &_edge {
+      cursor: move;
+      border: 2px solid $color_drag2;
+      box-shadow: inset 0 0 60px rgba(0, 0, 0, .2);
+      border-radius: 5px;
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+  }
+
+  &__edge_rect {
+    position: absolute;
+    z-index: 1000;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .2);
+    background-color: gray;
+  }
+
+  &__drag_rect {
+    position: absolute;
+    cursor: move;
+    color: $color_text;
+    background-color: $color_1;
+    border: 2px solid $color_4;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .3);
+    border-radius: 5px;
+    z-index: 1000;
+    box-sizing: border-box;
+    opacity: 0.9;
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px;
+    word-wrap: break-word;
+    font-size: $font-size;
+    font-family: $font-family;
+  }
+
+  &__tabset {
+    overflow: hidden;
+    background-color: $color_1;
+    box-sizing: border-box;
+
+    &_header {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background-color: $color_1;
+      color: $color_text;
+      padding: 3px 3px 3px 5px;
+      box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+      box-sizing: border-box;
+      font-size: $font-size;
+      font-family: $font-family;
+
+      &_outer {
+        background-color: $color_1;
+        position: absolute;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+      }
+
+      &_inner {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 10000px;
+      }
+    }
+
+    &-selected {
+      background-image: linear-gradient($color_background, $color_4);
+    }
+
+    &-maximized {
+      background-image: linear-gradient($color_6, $color_2);
+    }
+  }
+
+  &__tab {
+    overflow: auto;
+    position: absolute;
+    box-sizing: border-box;
+    color: $color_text;
+    background-color: $color_background;
+  }
+
+  &__tab_button {
+      cursor: pointer;
+      padding: 2px 8px 3px 8px;
+      margin: 2px;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+      float: left;
+      vertical-align: top;
+      box-sizing: border-box;
+      font-size: $font-size;
+      font-family: $font-family;
+
+      &--selected, &:hover {
+        background-color: $color_3;
+        color: $color_text;
+      }
+
+      &--unselected {
+        color: gray;
+      }
+
+      &_leading {
+        float: left;
+        display: inline-block;
+      }
+
+      &_content {
+        float: left;
+        display: inline-block;
+      }
+
+      &_textbox {
+        float: left;
+        border: none;
+        color: green;
+        background-color: $color_3;
+      }
+
+      &_textbox:focus {
+        outline: none;
+      }
+
+      &_trailing {
+        float: left;
+        display: inline-block;
+        margin-left: 8px;
+        margin-top: 3px;
+        width: 8px;
+        height: 8px;
+      }
+
+      &:hover &_trailing,
+      &--selected &_trailing {
+        background: transparent url("../images/close.png") no-repeat center;
+      }
+
+      &_overflow {
+        float: left;
+        width: 20px;
+        height: 15px;
+        margin-top: 2px;
+        padding-left: 12px;
+        border: none;
+        color: $color_text;
+        font-size: $font-size-overflow;
+        font-family: $font-family;
+        background: transparent url("../images/more.png") no-repeat left;
+      }
+    }
+
+  &__tab_toolbar {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    font-size: $font-size;
+    font-family: $font-family;
+
+    @mixin toolbar_button {
+      width: 20px;
+      height: 20px;
+      border: none;
+      outline-width: 0;
+    }
+
+    &_button-min {
+      @include toolbar_button;
+      background: transparent url("../images/maximize.png") no-repeat center;
+    }
+
+    &_button-max {
+      @include toolbar_button;
+      background: transparent url("../images/restore.png") no-repeat center;
+    }
+
+    &_button-float {
+      @include toolbar_button;
+      background: transparent url("../images/popout.png") no-repeat center;
+    }
+  }
+
+  &__popup_menu {
+    font-size: $font-size;
+    font-family: $font-family;
+
+    &_item {
+      padding: 2px 10px 2px 10px;
+    }
+
+    &_item:hover {
+      background-color: $color_6;
+    }
+
+    &_container {
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+      border: 1px solid $color_6;
+      color: $color_text;
+      background: $color_background;
+      border-radius: 3px;
+      position: absolute;
+      z-index: 1000;
+    }
+  }
+
+  &__border {
+    @mixin borderCommon {
+      background-color: $color_2;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    &_top {
+      @include borderCommon;
+      border-bottom: 1px solid $color_3;
+    }
+
+    &_bottom {
+      @include borderCommon;
+      border-top: 1px solid $color_3;
+    }
+
+    &_left {
+      @include borderCommon;
+      border-right: 1px solid $color_3;
+    }
+
+    &_right {
+      @include borderCommon;
+      border-left: 1px solid $color_3;
+    }
+
+    @mixin borderInner {
+      white-space: nowrap;
+    }
+
+    &_inner_bottom, &_inner_top {
+      @include borderInner;
+    }
+
+    &_inner_left {
+      @include borderInner;
+      position: absolute;
+      right: 23px;
+      transform-origin: top right;
+      transform: rotate(-90deg);
+    }
+
+    &_inner_right {
+      @include borderInner;
+      position: absolute;
+      left: 23px;
+      transform-origin: top left;
+      transform: rotate(90deg);
+    }
+  }
+
+  &__border_button {
+    display: inline-block;
+    cursor: pointer;
+    padding: 2px 8px 3px 8px;
+    margin: 2px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+    border-radius: 3px;
+    vertical-align: top;
+    box-sizing: border-box;
+    white-space: nowrap;
+    font-size: $font-size;
+    font-family: $font-family;
+    background-color: $color_3;
+
+    &--selected, &:hover {
+      background-color: $color_3;
+      color: $color_text;
+    }
+
+    &--unselected {
+      color: gray;
+    }
+
+    &_leading {
+      display: inline;
+    }
+
+    &_content {
+      display: inline-block;
+    }
+
+    &_trailing {
+      display: inline-block;
+      margin-left: 8px;
+      margin-top: 3px;
+      width: 8px;
+      height: 8px;
+    }
+
+    &:hover &_trailing,
+    &--selected &_trailing {
+      background: transparent url("../images/close.png") no-repeat center;
+    }
+    &_overflow_top,
+    &_overflow_bottom,
+    &_overflow_right,
+    &_overflow_left {
+      width: 20px;
+      height: 15px;
+      margin-top: 2px;
+      padding-left: 12px;
+      border: none;
+      font-size: $font-size-overflow;
+      font-family: $font-family;
+      background: transparent url("../images/more.png") no-repeat left;
+    }
+  }
+
+  &__border_toolbar {
+    @mixin toolbar {
+      position: absolute;
+      display: flex;
+      align-items: center;
+    }
+
+    &_left {
+      @include toolbar;
+      flex-direction: column;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    &_right {
+      @include toolbar;
+      flex-direction: column;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    &_top {
+      @include toolbar;
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+
+    &_bottom {
+      @include toolbar;
+      top: 0;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
+  &__floating_window {
+    _body {
+      height: 100%;
+    }
+
+    &_content {
+      @include absoluteFill;
+    }
+
+    &_tab {
+      overflow: auto;
+      @include absoluteFill;
+
+      box-sizing: border-box;
+      background-color: $color_background;
+      color: $color_text;
+    }
+  }
+
+  &__tab_floating {
+    overflow: auto;
+    position: absolute;
+    box-sizing: border-box;
+    color: $color_text;
+    background-color: $color_background;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &_inner {
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    &_inner div {
+      margin-bottom: 5px;
+      text-align: center;
+    }
+
+    &_inner div a {
+      color: royalblue;
+    }
+  }
+
+}
+
+
+

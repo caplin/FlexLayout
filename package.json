@@ -1,6 +1,6 @@
 {
   "name": "flexlayout-react",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A multi-tab layout manager",
   "main": "lib/index.js",
   "types": "./declarations/index.d.ts",
@@ -8,7 +8,7 @@
     "react",
     "layout",
     "dock",
-    "panel",
+    "float",
     "tabs",
     "drag-and-drop",
     "tabset",
@@ -21,13 +21,14 @@
   ],
   "scripts": {
     "devserver": "webpack-dev-server",
-    "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min",
+    "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
     "build:commonjs": "tsc -p tsconfig2.json",
     "build:umd": "webpack --config webpack_build.config.js",
     "build:umd:min": "webpack -p --config webpack_build_min.config.js",
     "test": "jasmine",
     "lint": "tslint -c tslint.json 'src/**/*.ts*' ",
-    "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none "
+    "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none ",
+    "css": "sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
   },
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
@@ -43,6 +44,7 @@
     "awesome-typescript-loader": "^5.2.0",
     "jasmine": "^3.5.0",
     "prettier": "^2.0.5",
+    "sass": "^1.26.9",
     "source-map-loader": "^0.2.3",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",

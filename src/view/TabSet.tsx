@@ -178,7 +178,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
                                      onClick={this.onFloatTab}/>);
             }
             if (this.props.node.isEnableMaximize()) {
-                const minTitle = this.props.layout.i18nName(I18nLabel.Minimize);
+                const minTitle = this.props.layout.i18nName(I18nLabel.Restore);
                 const maxTitle = this.props.layout.i18nName(I18nLabel.Maximize);
                 buttons.push(<button key="max"
                                      aria-label={node.isMaximized() ? minTitle : maxTitle}
@@ -206,7 +206,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
         let header;
         let tabStrip;
 
-        let tabStripClasses = cm("flexlayout__tab_header_outer");
+        let tabStripClasses = cm("flexlayout__tabset_header_outer");
         if (this.props.node.getClassNameTabStrip() !== undefined) {
             tabStripClasses += " " + this.props.node.getClassNameTabStrip();
         }
@@ -239,7 +239,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             </div>;
             tabStrip = <div className={tabStripClasses}
                             style={{height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px"}}>
-                <div className={cm("flexlayout__tab_header_inner")}>
+                <div className={cm("flexlayout__tabset_header_inner")}>
                     {tabs}
                 </div>
             </div>;
@@ -247,7 +247,7 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             tabStrip = <div className={tabStripClasses} style={{top: "0px", height: node.getTabStripHeight() + "px"}}
                             onMouseDown={this.onMouseDown}
                             onTouchStart={this.onMouseDown}>
-                <div className={cm("flexlayout__tab_header_inner")}>
+                <div className={cm("flexlayout__tabset_header_inner")}>
                     {tabs}
                 </div>
                 {toolbar}

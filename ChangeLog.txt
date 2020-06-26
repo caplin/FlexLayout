@@ -1,3 +1,6 @@
+0.4.2
+Use Sass to generate light and dark themes
+
 0.4.1
 Copy styles into popout tabs
 
