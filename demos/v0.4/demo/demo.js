@@ -29423,7 +29423,7 @@ var I18nLabel;
     I18nLabel["Move_Tab"] = "Move: ";
     I18nLabel["Move_Tabset"] = "Move tabset";
     I18nLabel["Maximize"] = "Maximize";
-    I18nLabel["Minimize"] = "Minimize";
+    I18nLabel["Restore"] = "Restore";
     I18nLabel["Float_Tab"] = "Show in floating window";
     I18nLabel["Floating_Window_Message"] = "This panel is shown in a floating window";
     I18nLabel["Floating_Window_Show_Window"] = "Show window";
@@ -33686,7 +33686,7 @@ var TabSet = /** @class */ (function (_super) {
                 buttons.push(React.createElement("button", { key: "float", "aria-label": floatTitle, title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
             }
             if (this.props.node.isEnableMaximize()) {
-                var minTitle = this.props.layout.i18nName(__1.I18nLabel.Minimize);
+                var minTitle = this.props.layout.i18nName(__1.I18nLabel.Restore);
                 var maxTitle = this.props.layout.i18nName(__1.I18nLabel.Maximize);
                 buttons.push(React.createElement("button", { key: "max", "aria-label": node.isMaximized() ? minTitle : maxTitle, title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: this.onMaximizeToggle }));
             }
@@ -33698,7 +33698,7 @@ var TabSet = /** @class */ (function (_super) {
         var showHeader = node.getName() !== undefined;
         var header;
         var tabStrip;
-        var tabStripClasses = cm("flexlayout__tab_header_outer");
+        var tabStripClasses = cm("flexlayout__tabset_header_outer");
         if (this.props.node.getClassNameTabStrip() !== undefined) {
             tabStripClasses += " " + this.props.node.getClassNameTabStrip();
         }
@@ -33723,11 +33723,11 @@ var TabSet = /** @class */ (function (_super) {
                 headerContent,
                 toolbar);
             tabStrip = React.createElement("div", { className: tabStripClasses, style: { height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" } },
-                React.createElement("div", { className: cm("flexlayout__tab_header_inner") }, tabs));
+                React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs));
         }
         else {
             tabStrip = React.createElement("div", { className: tabStripClasses, style: { top: "0px", height: node.getTabStripHeight() + "px" }, onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown },
-                React.createElement("div", { className: cm("flexlayout__tab_header_inner") }, tabs),
+                React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs),
                 toolbar);
         }
         return React.createElement("div", { style: style, className: cm("flexlayout__tabset") },
