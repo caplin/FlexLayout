@@ -172,7 +172,6 @@ export class TabSet extends React.Component<ITabSetProps, any> {
             if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                 const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
                 buttons.push(<button key="float"
-                                     aria-label={floatTitle}
                                      title={floatTitle}
                                      className={cm("flexlayout__tab_toolbar_button-float")}
                                      onClick={this.onFloatTab}/>);
@@ -181,7 +180,6 @@ export class TabSet extends React.Component<ITabSetProps, any> {
                 const minTitle = this.props.layout.i18nName(I18nLabel.Restore);
                 const maxTitle = this.props.layout.i18nName(I18nLabel.Maximize);
                 buttons.push(<button key="max"
-                                     aria-label={node.isMaximized() ? minTitle : maxTitle}
                                      title={node.isMaximized() ? minTitle : maxTitle}
                                      className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
                                      onClick={this.onMaximizeToggle}/>);

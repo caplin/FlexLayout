@@ -202,7 +202,6 @@ export class BorderTabSet extends React.Component<IBorderTabSetProps, any> {
                 if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                     const floatTitle = this.props.layout.i18nName(I18nLabel.Float_Tab);
                     buttons.push(<button key="float"
-                                         aria-label={floatTitle}
                                          title={floatTitle}
                                          className={cm("flexlayout__tab_toolbar_button-float")}
                                          onClick={this.onFloatTab}/>);
