@@ -41,7 +41,13 @@ export class Tab extends React.Component<ITabProps, any> {
     render() {
         const cm = this.props.layout.getClassName;
 
+        let classNames = cm("flexlayout__tab");
         const node = this.props.node;
+
+        if (this.props.node.getClassName() !== undefined) {
+            classNames += " " + this.props.node.getClassName();
+        }
+
         const parentNode = node.getParent() as TabSetNode;
         const style: JSMap<any> = node._styleWithPosition({
             display: this.props.selected ? "block" : "none"
@@ -56,7 +62,7 @@ export class Tab extends React.Component<ITabProps, any> {
             child = this.props.factory(node);
         }
 
-        return <div className={cm("flexlayout__tab")}
+        return <div className={classNames}
             onMouseDown={this.onMouseDown}
             onTouchStart={this.onMouseDown}
             style={style}>{child}
