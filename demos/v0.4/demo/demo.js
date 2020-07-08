@@ -140,6 +140,23 @@ var App = /** @class */ (function (_super) {
         };
         _this.onAddClick = function (event) {
             if (_this.state.model.getMaximizedTabset() == null) {
+                _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
+                    component: "grid",
+                    name: "a new grid"
+                }, _this.onAdded);
+                _this.setState({ adding: true });
+            }
+        };
+        _this.onAddActiveClick = function (event) {
+            if (_this.state.model.getMaximizedTabset() == null) {
+                _this.refs.layout.addTabToActiveTabSet({
+                    component: "grid",
+                    name: "a new grid"
+                });
+            }
+        };
+        _this.onAddIndirectClick = function (event) {
+            if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                     component: "grid",
                     name: "a new grid"
@@ -273,10 +290,12 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "complex" }, "Complex"),
                     React.createElement("option", { value: "preferred" }, "Using Preferred size"),
                     React.createElement("option", { value: "trader" }, "Trader")),
-                React.createElement("button", { onClick: this.onReloadFromFile }, "reload from file"),
-                React.createElement("button", { disabled: this.state.adding, style: { float: "right" }, onClick: this.onAddClick }, "Add"),
-                React.createElement("button", { style: { float: "right" }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                React.createElement("select", { style: { float: "right" }, onChange: this.onThemeChange },
+                React.createElement("button", { onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "reload from file"),
+                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDrop", onClick: this.onAddClick }, "Add"),
+                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect"),
+                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                React.createElement("button", { style: { float: "right", marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
+                React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
                     React.createElement("option", { value: "dark" }, "Dark"))),
             React.createElement("div", { className: "contents" }, contents));
@@ -29230,9 +29249,13 @@ var DragDrop = /** @class */ (function () {
             this._document = undefined;
         }
     };
-    DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick) {
-        var currentDocument = (event.currentTarget).ownerDocument;
-        this._document = currentDocument;
+    DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument) {
+        if (currentDocument) {
+            this._document = currentDocument;
+        }
+        else {
+            this._document = window.document;
+        }
         var posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel, currentDocument);
         if (this._dragging) {
@@ -30474,7 +30497,12 @@ var Model = /** @class */ (function () {
      * Get the currently active tabset node
      */
     Model.prototype.getActiveTabset = function () {
-        return this._activeTabSet;
+        if (this._activeTabSet && this.getNodeById(this._activeTabSet.getId())) {
+            return this._activeTabSet;
+        }
+        else {
+            return undefined;
+        }
     };
     /** @hidden @internal */
     Model.prototype._setActiveTabset = function (tabsetNode) {
@@ -32346,7 +32374,7 @@ var BorderTabSet = /** @class */ (function (_super) {
                 var selectedTabNode = border.getChildren()[selectedIndex];
                 if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                     var floatTitle = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-                    buttons.push(React.createElement("button", { key: "float", "aria-label": floatTitle, title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
+                    buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
                 }
             }
             toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
@@ -32660,12 +32688,12 @@ var Layout = /** @class */ (function (_super) {
         /** @hidden @internal */
         _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
             if (_this.model.getMaximizedTabset() !== undefined || !allowDrag) {
-                DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick);
+                DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument);
             }
             else {
                 _this.dragNode = node;
                 _this.dragDivText = dragDivText;
-                DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick);
+                DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick, _this.currentDocument);
             }
         };
         /** @hidden @internal */
@@ -33090,7 +33118,7 @@ var Splitter = /** @class */ (function (_super) {
     function Splitter() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.onMouseDown = function (event) {
-            DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onDragCancel);
+            DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onDragCancel, undefined, undefined, _this.props.layout.getCurrentDocument());
             var parentNode = _this.props.node.getParent();
             _this.pBounds = parentNode._getSplitterBounds(_this.props.node);
             var rootdiv = _this.props.layout.selfRef.current;
@@ -33683,12 +33711,12 @@ var TabSet = /** @class */ (function (_super) {
         if (this.showToolbar === true) {
             if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
                 var floatTitle = this.props.layout.i18nName(__1.I18nLabel.Float_Tab);
-                buttons.push(React.createElement("button", { key: "float", "aria-label": floatTitle, title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
+                buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
             }
             if (this.props.node.isEnableMaximize()) {
                 var minTitle = this.props.layout.i18nName(__1.I18nLabel.Restore);
                 var maxTitle = this.props.layout.i18nName(__1.I18nLabel.Maximize);
-                buttons.push(React.createElement("button", { key: "max", "aria-label": node.isMaximized() ? minTitle : maxTitle, title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: this.onMaximizeToggle }));
+                buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: this.onMaximizeToggle }));
             }
             toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: this.onInterceptMouseDown }, buttons);
         }
