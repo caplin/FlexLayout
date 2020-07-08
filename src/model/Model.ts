@@ -122,7 +122,11 @@ class Model {
    * Get the currently active tabset node
    */
   getActiveTabset() {
-    return this._activeTabSet;
+    if (this._activeTabSet && this.getNodeById(this._activeTabSet.getId())) {
+      return this._activeTabSet;
+    } else {
+      return undefined;
+    }
   }
 
   /** @hidden @internal */

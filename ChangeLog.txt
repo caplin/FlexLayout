@@ -1,3 +1,6 @@
+0.4.3
+Fix addTabWithDragAndDrop not working since 0.4.0
+
 0.4.2
 Use Sass to generate light and dark themes
 

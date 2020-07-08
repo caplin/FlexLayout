@@ -21,7 +21,15 @@ export class Splitter extends React.Component<ISplitterProps, any> {
     outlineDiv?: HTMLDivElement;
 
     onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onDragCancel);
+        DragDrop.instance.startDrag(event, 
+            this.onDragStart, 
+            this.onDragMove, 
+            this.onDragEnd, 
+            this.onDragCancel,
+            undefined,
+            undefined,
+            this.props.layout.getCurrentDocument()
+            );
         const parentNode = this.props.node.getParent() as RowNode;
         this.pBounds = parentNode._getSplitterBounds(this.props.node);
         const rootdiv = this.props.layout.selfRef.current!;

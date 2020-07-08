@@ -99,10 +99,15 @@ class DragDrop {
         fDragEnd: ((event: Event) => void) | undefined,
         fDragCancel?: ((wasDragging: boolean) => void) | undefined,
         fClick?: ((event: Event) => void) | undefined,
-        fDblClick?: ((event: Event) => void) | undefined) {
+        fDblClick?: ((event: Event) => void) | undefined,
+        currentDocument?: Document) {
 
-        const currentDocument = ((event!.currentTarget) as HTMLDivElement).ownerDocument;
-        this._document = currentDocument;
+        if (currentDocument) {
+            this._document = currentDocument;
+        } else {
+            this._document = window.document;
+        }
+
         const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel, currentDocument);
 

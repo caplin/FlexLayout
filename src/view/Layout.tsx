@@ -607,7 +607,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
         undefined,
         undefined,
         onClick,
-        onDoubleClick
+        onDoubleClick,
+        this.currentDocument
       );
     } else {
       this.dragNode = node;
@@ -619,7 +620,8 @@ export class Layout extends React.Component<ILayoutProps, any> {
         this.onDragEnd,
         this.onCancelDrag,
         onClick,
-        onDoubleClick
+        onDoubleClick,
+        this.currentDocument
       );
     }
   }

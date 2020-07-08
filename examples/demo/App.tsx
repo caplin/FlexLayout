@@ -80,6 +80,26 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onAddClick = (event:React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
+            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
+                component: "grid",
+                name: "a new grid"
+            }, this.onAdded);
+            this.setState({ adding: true });
+        }
+    }
+
+    onAddActiveClick = (event:React.MouseEvent) => {
+        if (this.state.model!.getMaximizedTabset() == null) {
+            (this.refs.layout as FlexLayout.Layout).addTabToActiveTabSet({
+                component: "grid",
+                name: "a new grid"
+            });
+        }
+    }
+
+
+    onAddIndirectClick = (event:React.MouseEvent) => {
+        if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
                 name: "a new grid"
@@ -226,10 +246,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="preferred">Using Preferred size</option>
                     <option value="trader">Trader</option>
                 </select>
-                <button onClick={this.onReloadFromFile}>reload from file</button>
-                <button disabled={this.state.adding} style={{ float: "right" }} onClick={this.onAddClick}>Add</button>
-                <button style={{ float: "right" }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
-                <select style={{ float: "right" }} onChange={this.onThemeChange}>
+                <button onClick={this.onReloadFromFile} style={{marginLeft:5}}>reload from file</button>
+                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabWithDragAndDrop" onClick={this.onAddClick}>Add</button>
+                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
+                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                <button style={{ float: "right", marginLeft:5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
+                <select style={{ float: "right", marginLeft:5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                 </select>
