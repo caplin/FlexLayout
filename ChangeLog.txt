@@ -1,3 +1,8 @@
+0.4.4
+Changed all components except Layout to use React Hooks.
+Popouts now wait for style sheets to load.
+Fixed problem rendering popouts in Safari.
+
 0.4.3
 Fix addTabWithDragAndDrop not working since 0.4.0
 

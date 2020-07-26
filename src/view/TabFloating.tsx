@@ -3,71 +3,65 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import {JSMap} from "../Types";
-import Layout from "./Layout";
+import {ILayoutCallbacks} from "./Layout";
 import {I18nLabel} from "../I18nLabel";
 
 /** @hidden @internal */
 export interface ITabFloatingProps {
-    layout: Layout;
+    layout: ILayoutCallbacks;
     selected: boolean;
     node: TabNode;
 }
 
 /** @hidden @internal */
-export class TabFloating extends React.Component<ITabFloatingProps, any> {
+export const TabFloating = (props: ITabFloatingProps) => {
+    const {layout, selected, node} = props;
 
-    constructor(props: ITabFloatingProps) {
-        super(props);
-    }
-
-    onMouseDown = () => {
-        const parent = this.props.node.getParent() as TabSetNode;
+    const onMouseDown = () => {
+        const parent = node.getParent() as TabSetNode;
         if (parent.getType() === TabSetNode.TYPE) {
             if (!parent.isActive()) {
-                this.props.layout.doAction(Actions.setActiveTabset(parent.getId()));
+                layout.doAction(Actions.setActiveTabset(parent.getId()));
             }
         }
-    }
+    };
 
-    onClickFocus = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const onClickFocus = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         event.preventDefault();
-        if (this.props.node.getWindow()) {
-            this.props.node.getWindow()!.focus();
+        if (node.getWindow()) {
+            node.getWindow()!.focus();
         }
-    }
+    };
 
-    onClickDock = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const onClickDock = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         event.preventDefault();
-        this.props.layout.doAction(Actions.unFloatTab(this.props.node.getId()));
+        layout.doAction(Actions.unFloatTab(node.getId()));
+    };
+
+    const cm = layout.getClassName;
+
+    const parentNode = node.getParent() as TabSetNode;
+    const style: JSMap<any> = node._styleWithPosition({
+        display: selected ? "flex" : "none"
+    });
+
+    if (parentNode.isMaximized()) {
+        style.zIndex = 100;
     }
+    const message = layout.i18nName(I18nLabel.Floating_Window_Message);
+    const showMessage = layout.i18nName(I18nLabel.Floating_Window_Show_Window);
+    const dockMessage = layout.i18nName(I18nLabel.Floating_Window_Dock_Window);
 
-    render() {
-        const cm = this.props.layout.getClassName;
-
-        const node = this.props.node;
-        const parentNode = node.getParent() as TabSetNode;
-        const style: JSMap<any> = node._styleWithPosition({
-            display: this.props.selected ? "flex" : "none"
-        });
-
-        if (parentNode.isMaximized()) {
-            style.zIndex = 100;
-        }
-        const message = this.props.layout.i18nName(I18nLabel.Floating_Window_Message);
-        const showMessage = this.props.layout.i18nName(I18nLabel.Floating_Window_Show_Window);
-        const dockMessage = this.props.layout.i18nName(I18nLabel.Floating_Window_Dock_Window);
-
-        return (
-            <div className={cm("flexlayout__tab_floating")}
-                 onMouseDown={this.onMouseDown}
-                 onTouchStart={this.onMouseDown}
-                 style={style}>
-                <div className={cm("flexlayout__tab_floating_inner")}>
-                    <div>{message}</div>
-                    <div><a href="#" onClick={this.onClickFocus}>{showMessage}</a></div>
-                    <div><a href="#" onClick={this.onClickDock}>{dockMessage}</a></div>
-                </div>
-            </div>);
-    }
-}
+    return (
+        <div className={cm("flexlayout__tab_floating")}
+             onMouseDown={onMouseDown}
+             onTouchStart={onMouseDown}
+             style={style}>
+            <div className={cm("flexlayout__tab_floating_inner")}>
+                <div>{message}</div>
+                <div><a href="#" onClick={onClickFocus}>{showMessage}</a></div>
+                <div><a href="#" onClick={onClickDock}>{dockMessage}</a></div>
+            </div>
+        </div>);
+};
 

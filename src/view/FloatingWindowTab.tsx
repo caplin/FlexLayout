@@ -1,30 +1,23 @@
 import * as React from "react";
 import TabNode from "../model/TabNode";
-import Layout from "./Layout";
+import {ILayoutCallbacks} from "./Layout";
 
 /** @hidden @internal */
 export interface IFloatingWindowTabProps {
-    layout: Layout;
+    layout: ILayoutCallbacks;
     node: TabNode;
     factory: (node: TabNode) => React.ReactNode;
 }
 
 /** @hidden @internal */
-export class FloatingWindowTab extends React.Component<IFloatingWindowTabProps, any> {
+export const FloatingWindowTab = (props: IFloatingWindowTabProps) => {
+    const {layout, node, factory} = props;
+    const cm = layout.getClassName;
+    const child = factory(node);
 
-    constructor(props: IFloatingWindowTabProps) {
-        super(props);
-    }
-
-    render() {
-        const cm = this.props.layout.getClassName;
-        const node = this.props.node;
-        const child = this.props.factory(node);
-
-        return (
-            <div className={cm("flexlayout__floating_window_tab")}>
-                {child}
-            </div>
-        );
-    }
-}
+    return (
+        <div className={cm("flexlayout__floating_window_tab")}>
+            {child}
+        </div>
+    );
+};

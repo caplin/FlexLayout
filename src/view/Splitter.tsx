@@ -6,97 +6,94 @@ import Node from "../model/Node";
 import RowNode from "../model/RowNode";
 import SplitterNode from "../model/SplitterNode";
 import Orientation from "../Orientation";
-import Layout from "./Layout";
+import {ILayoutCallbacks} from "./Layout";
 
 /** @hidden @internal */
 export interface ISplitterProps {
-    layout: Layout;
+    layout: ILayoutCallbacks;
     node: SplitterNode;
 }
 
 /** @hidden @internal */
-export class Splitter extends React.Component<ISplitterProps, any> {
+export const Splitter = (props: ISplitterProps) => {
+    const {layout, node} = props;
 
-    pBounds?: number[];
-    outlineDiv?: HTMLDivElement;
+    const pBounds = React.useRef<number[]>([]);
+    const outlineDiv = React.useRef<HTMLDivElement | undefined>(undefined);
 
-    onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        DragDrop.instance.startDrag(event, 
-            this.onDragStart, 
-            this.onDragMove, 
-            this.onDragEnd, 
-            this.onDragCancel,
+    const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
+        DragDrop.instance.startDrag(event,
+            onDragStart,
+            onDragMove,
+            onDragEnd,
+            onDragCancel,
             undefined,
             undefined,
-            this.props.layout.getCurrentDocument()
-            );
-        const parentNode = this.props.node.getParent() as RowNode;
-        this.pBounds = parentNode._getSplitterBounds(this.props.node);
-        const rootdiv = this.props.layout.selfRef.current!;
-        this.outlineDiv = this.props.layout.getCurrentDocument()!.createElement("div");
-        this.outlineDiv.style.position = "absolute";
-        this.outlineDiv.className = this.props.layout.getClassName("flexlayout__splitter_drag");
-        this.outlineDiv.style.cursor = this.props.node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";
-        this.props.node.getRect().positionElement(this.outlineDiv);
-        rootdiv.appendChild(this.outlineDiv);
-    }
+            layout.getCurrentDocument()
+        );
+        const parentNode = node.getParent() as RowNode;
+        pBounds.current = parentNode._getSplitterBounds(node);
+        const rootdiv = layout.getRootDiv();
+        outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
+        outlineDiv.current.style.position = "absolute";
+        outlineDiv.current.className = layout.getClassName("flexlayout__splitter_drag");
+        outlineDiv.current.style.cursor = node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";
+        node.getRect().positionElement(outlineDiv.current);
+        rootdiv.appendChild(outlineDiv.current);
+    };
 
-    onDragCancel = (wasDragging: boolean) => {
-        const rootdiv = this.props.layout.selfRef.current!;
-        rootdiv.removeChild(this.outlineDiv as Element);
-    }
+    const onDragCancel = (wasDragging: boolean) => {
+        const rootdiv = layout.getRootDiv();
+        rootdiv.removeChild(outlineDiv.current as Element);
+    };
 
-    onDragStart = () => {
-
+    const onDragStart = () => {
         return true;
-    }
+    };
 
-    onDragMove = (event: React.MouseEvent<Element, MouseEvent>) => {
-        const clientRect = this.props.layout.domRect;
+    const onDragMove = (event: React.MouseEvent<Element, MouseEvent>) => {
+        const clientRect = layout.getDomRect();
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top
         };
 
-        const outlineDiv = this.outlineDiv as HTMLDivElement;
-
-        if (this.props.node.getOrientation() === Orientation.HORZ) {
-            outlineDiv.style.top = this.getBoundPosition(pos.y - 4) + "px";
+        if (outlineDiv) {
+            if (node.getOrientation() === Orientation.HORZ) {
+                outlineDiv.current!.style.top = getBoundPosition(pos.y - 4) + "px";
+            } else {
+                outlineDiv.current!.style.left = getBoundPosition(pos.x - 4) + "px";
+            }
         }
-        else {
-            outlineDiv.style.left = this.getBoundPosition(pos.x - 4) + "px";
-        }
-    }
+    };
 
-    onDragEnd = () => {
-        const node = this.props.node;
+    const onDragEnd = () => {
         const parentNode = node.getParent() as RowNode;
         let value = 0;
-        const outlineDiv = this.outlineDiv as HTMLDivElement;
-        if (node.getOrientation() === Orientation.HORZ) {
-            value = outlineDiv.offsetTop;
-        }
-        else {
-            value = outlineDiv.offsetLeft;
+        if (outlineDiv) {
+            if (node.getOrientation() === Orientation.HORZ) {
+                value = outlineDiv.current!.offsetTop;
+            } else {
+                value = outlineDiv.current!.offsetLeft;
+            }
         }
 
         if (parentNode instanceof BorderNode) {
             const pos = (parentNode as BorderNode)._calculateSplit(node, value);
-            this.props.layout.doAction(Actions.adjustBorderSplit((node.getParent() as Node).getId(), pos));
-        }
-        else {
-            const splitSpec = parentNode._calculateSplit(this.props.node, value);
+            layout.doAction(Actions.adjustBorderSplit((node.getParent() as Node).getId(), pos));
+        } else {
+            const splitSpec = parentNode._calculateSplit(node, value);
             if (splitSpec !== undefined) {
-                this.props.layout.doAction(Actions.adjustSplit(splitSpec));
+                layout.doAction(Actions.adjustSplit(splitSpec));
             }
         }
 
-        const rootdiv = this.props.layout.selfRef.current!;
-        rootdiv.removeChild(this.outlineDiv as HTMLDivElement);
-    }
+        const rootdiv = layout.getRootDiv();
+        rootdiv.removeChild(outlineDiv.current as HTMLDivElement);
+    };
 
-    getBoundPosition(p: number) {
-        const bounds = this.pBounds as number[];
+    const getBoundPosition = (p: number) => {
+        const bounds = pBounds.current as number[];
         let rtn = p;
         if (p < bounds[0]) {
             rtn = bounds[0];
@@ -106,24 +103,18 @@ export class Splitter extends React.Component<ISplitterProps, any> {
         }
 
         return rtn;
-    }
+    };
 
-    render() {
-        const cm = this.props.layout.getClassName;
+    const cm = layout.getClassName;
+    const style = node._styleWithPosition(
+        {
+            cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
+        }
+    );
 
-        const node = this.props.node;
-        const style = node._styleWithPosition(
-            {
-                cursor: this.props.node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
-            }
-        );
-
-        return  <div
-            style={style}
-            onTouchStart={this.onMouseDown}
-            onMouseDown={this.onMouseDown}
-            className={cm("flexlayout__splitter")}/>;
-    }
-}
-
-// export default Splitter;
+    return <div
+        style={style}
+        onTouchStart={onMouseDown}
+        onMouseDown={onMouseDown}
+        className={cm("flexlayout__splitter")}/>;
+};

@@ -2,6 +2,7 @@ import * as React from "react";
 import {createPortal} from "react-dom";
 import Rect from "../Rect";
 
+/** @hidden @internal */
 export interface IFloatingWindowProps {
     title: string;
     id: string;
@@ -11,86 +12,82 @@ export interface IFloatingWindowProps {
     onSetWindow: (id: string, window: Window) => void;
 }
 
-export interface IFloatingWindowState {
-    content?: HTMLElement;
-}
+/** @hidden @internal */
+export const FloatingWindow  = (props : React.PropsWithChildren<IFloatingWindowProps>) => {
+    const {title, id, url, rect, onCloseWindow, onSetWindow, children} = props;
+    const popoutWindow = React.useRef<Window | null>(null);
+    const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
 
-export default class FloatingWindow extends React.Component<IFloatingWindowProps, IFloatingWindowState> {
-    private window?: Window;
+    React.useLayoutEffect( () => {
+        const r = rect;
+        popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
+        if (popoutWindow.current !== null) {
+            onSetWindow(id, popoutWindow.current);
 
-    constructor(props: IFloatingWindowProps) {
-        super(props);
-        this.window = undefined;
-        this.state = {content: undefined};
-    }
-
-    componentDidMount() {
-        const r = this.props.rect;
-        const popupWindow = window.open(this.props.url, this.props.title, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
-        if (popupWindow !== null) {
-            this.window = popupWindow;
-            this.props.onSetWindow(this.props.id, popupWindow);
-
-            // listen for parent unloading to remove all popups
+            // listen for parent unloading to remove all popouts
             window.addEventListener("beforeunload", () => {
-                if (this.window) {
-                    this.window.close();
-                    this.window = undefined;
+                if (popoutWindow.current) {
+                    popoutWindow.current.close();
+                    popoutWindow.current = null;
                 }
             });
 
-            // listen for popup unloading
-            popupWindow.addEventListener("beforeunload", () => {
-                this.props.onCloseWindow(this.props.id);
-            });
+            popoutWindow.current.addEventListener("load", () => {
+                const popoutDocument = popoutWindow.current!.document;
+                popoutDocument.title = title;
+                const popoutContent = popoutDocument.createElement("div");
+                popoutContent.className = "flexlayout__floating_window_content";
+                popoutDocument.body.appendChild(popoutContent);
+                copyStyles(popoutDocument).then(() => {
+                    setContent(popoutContent);
+                });
 
-            popupWindow.addEventListener("load", () => {
-                const popupDocument = popupWindow.document;
-                popupDocument.title = this.props.title;
-                const content = popupDocument.createElement("div");
-                content.className = "flexlayout__floating_window_content";
-                popupDocument.body.appendChild(content);
-                copyStyles(popupDocument);
-                this.setState({content});
+                // listen for popout unloading (needs to be after load for safari)
+                popoutWindow.current!.addEventListener("beforeunload", () => {
+                    onCloseWindow(id);
+                });
             });
         } else {
-            console.warn(`Unable to open window ${this.props.url}`);
-            this.props.onCloseWindow(this.props.id);
+            console.warn(`Unable to open window ${url}`);
+            onCloseWindow(id);
         }
-    }
 
-    componentWillUnmount() {
-        // delay so refresh will close window
-        setTimeout(() => {
-            if (this.window) {
-                this.window.close();
-                this.window = undefined;
-            }
-        }, 0);
-    }
+        return () => {
+            // delay so refresh will close window
+            setTimeout(() => {
+                if (popoutWindow.current) {
+                    popoutWindow.current.close();
+                    popoutWindow.current = null;
+                }
+            }, 0);
+        };
+    }, []);
 
-    render() {
-        if (this.state.content !== undefined) {
-            return createPortal(this.props.children, this.state.content!);
-        } else {
-            return null;
-        }
+    if (content !== undefined) {
+        return createPortal(children, content!);
+    } else {
+        return null;
     }
-}
+};
 
-function copyStyles(doc: Document) {
+function copyStyles(doc: Document) : Promise<boolean[]> {
     const head = doc.head;
+    const promises : Promise<boolean>[] = [];
     Array.from(window.document.styleSheets).forEach(styleSheet => {
         if (styleSheet.href) { // prefer links since they will keep paths to images etc
-            let styleElement = doc.createElement('link');
+            const styleElement = doc.createElement("link");
             styleElement.type = styleSheet.type;
-            styleElement.rel = 'stylesheet';
+            styleElement.rel = "stylesheet";
             styleElement.href = styleSheet.href!;
             head.appendChild(styleElement);
+            promises.push(new Promise((resolve, reject) => {
+                styleElement.onload = () => resolve(true);
+            }));
+
         } else {
             try {
                 const rules = styleSheet.cssRules;
-                const style = doc.createElement('style');
+                const style = doc.createElement("style");
                 Array.from(rules).forEach(cssRule => {
                     style.appendChild(doc.createTextNode(cssRule.cssText));
                 });
@@ -99,4 +96,5 @@ function copyStyles(doc: Document) {
             }
         }
     });
+    return Promise.all(promises);
 }

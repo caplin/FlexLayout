@@ -2,17 +2,17 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as FlexLayout from "../../src/index";
 import Utils from "./Utils";
-import { Node, TabSetNode, TabNode, DropInfo, BorderNode } from "../../src/index";
+import {Node, TabSetNode, TabNode, DropInfo, BorderNode, Actions, Action} from "../../src/index";
 
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean }> {
 
     loadingLayoutName?: string;
 
     constructor(props:any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false };
+        this.state = { layoutFile: null, model: null, adding: false, maximized: false };
 
         // save layout when unloading page
         window.onbeforeunload = (event:Event)=> {
@@ -121,6 +121,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         console.log("tabset: \n" + node.getParent()!._toAttributeString());
     }
 
+    onAction = (action: Action) => {
+        if (action.type === Actions.MAXIMIZE_TOGGLE) {
+            this.setState({maximized: this.state.model!.getMaximizedTabset() === undefined})
+        }
+        return action;
+    }
+
     factory = (node:TabNode) => {
         // log lifecycle events
         //node.setEventListener("resize", function(p){console.log("resize");});
@@ -209,6 +216,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 ref="layout"
                 model={this.state.model}
                 factory={this.factory}
+                onAction={this.onAction}
                 titleFactory={this.titleFactory}
                 iconFactory={this.iconFactory}
                 onRenderTab={onRenderTab}
@@ -247,9 +255,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="trader">Trader</option>
                 </select>
                 <button onClick={this.onReloadFromFile} style={{marginLeft:5}}>reload from file</button>
-                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabWithDragAndDrop" onClick={this.onAddClick}>Add</button>
-                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
-                <button disabled={this.state.adding} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabWithDragAndDrop" onClick={this.onAddClick}>Add Drag</button>
+                <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
+                <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
                 <button style={{ float: "right", marginLeft:5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
                 <select style={{ float: "right", marginLeft:5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>

@@ -89,7 +89,7 @@ class RowNode extends Node implements IDropTarget {
     let fixedPixels = 0;
     let prefPixels = 0;
     let totalPrefWeight = 0;
-    const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
+    const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
 
     for (const child of drawChildren) {
       const prefSize = child._getPrefSize(this.getOrientation());
@@ -176,7 +176,7 @@ class RowNode extends Node implements IDropTarget {
   /** @hidden @internal */
   _getSplitterBounds(splitterNode: SplitterNode) {
     const pBounds = [0, 0];
-    const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
+    const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
     const p = drawChildren.indexOf(splitterNode);
     if (this.getOrientation() === Orientation.HORZ) {
       pBounds[0] = drawChildren[p - 1].getRect().x;
@@ -192,7 +192,7 @@ class RowNode extends Node implements IDropTarget {
   /** @hidden @internal */
   _calculateSplit(splitter: SplitterNode, splitterPos: number) {
     let rtn;
-    const drawChildren = this._getDrawChildren() as Array<RowNode | TabSetNode | SplitterNode>;
+    const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
     const p = drawChildren.indexOf(splitter);
     const pBounds = this._getSplitterBounds(splitter);
 
