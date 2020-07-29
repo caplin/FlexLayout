@@ -113,6 +113,7 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var FlexLayout = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
+var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
@@ -173,6 +174,12 @@ var App = /** @class */ (function (_super) {
         _this.onTableClick = function (node, event) {
             console.log("tab: \n" + node._toAttributeString());
             console.log("tabset: \n" + node.getParent()._toAttributeString());
+        };
+        _this.onAction = function (action) {
+            if (action.type === index_1.Actions.MAXIMIZE_TOGGLE) {
+                _this.setState({ maximized: _this.state.model.getMaximizedTabset() === undefined });
+            }
+            return action;
         };
         _this.factory = function (node) {
             // log lifecycle events
@@ -237,7 +244,7 @@ var App = /** @class */ (function (_super) {
             page_stylesheet.setAttribute("href", target.value + ".css");
             _this.forceUpdate();
         };
-        _this.state = { layoutFile: null, model: null, adding: false };
+        _this.state = { layoutFile: null, model: null, adding: false, maximized: false };
         // save layout when unloading page
         window.onbeforeunload = function (event) {
             _this.save();
@@ -278,7 +285,7 @@ var App = /** @class */ (function (_super) {
         };
         var contents = "loading ...";
         if (this.state.model !== null) {
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet });
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet });
         }
         return React.createElement("div", { className: "app" },
             React.createElement("div", { className: "toolbar" },
@@ -291,9 +298,9 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "preferred" }, "Using Preferred size"),
                     React.createElement("option", { value: "trader" }, "Trader")),
                 React.createElement("button", { onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "reload from file"),
-                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDrop", onClick: this.onAddClick }, "Add"),
-                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect"),
-                React.createElement("button", { disabled: this.state.adding, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDrop", onClick: this.onAddClick }, "Add Drag"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
                 React.createElement("button", { style: { float: "right", marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
                 React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
@@ -29500,88 +29507,65 @@ exports.default = Orientation;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.showPopup = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-/** @hidden @internal */
-var PopupMenu = /** @class */ (function (_super) {
-    __extends(PopupMenu, _super);
-    function PopupMenu(props) {
-        var _this = _super.call(this, props) || this;
-        _this.items = [];
-        _this.hidden = true;
-        _this.onDocMouseUp = function (event) {
-            setTimeout(function () {
-                _this.hide();
-            }, 0);
-        };
-        _this.onDocMouseUp = _this.onDocMouseUp;
-        _this.hidden = false;
-        return _this;
+function showPopup(triggerElement, items, onSelect, classNameMapper) {
+    var triggerRect = triggerElement.getBoundingClientRect();
+    var currentDocument = triggerElement.ownerDocument;
+    var docRect = currentDocument.body.getBoundingClientRect();
+    var elm = currentDocument.createElement("div");
+    elm.className = classNameMapper("flexlayout__popup_menu_container");
+    if (triggerRect.left < docRect.width / 2) {
+        elm.style.left = (triggerRect.left) + "px";
     }
-    PopupMenu.show = function (triggerElement, items, onSelect, classNameMapper) {
-        var triggerRect = triggerElement.getBoundingClientRect();
-        var docRect = document.body.getBoundingClientRect();
-        var elm = document.createElement("div");
-        elm.className = classNameMapper("flexlayout__popup_menu_container");
-        if (triggerRect.left < docRect.width / 2) {
-            elm.style.left = (triggerRect.left) + "px";
-        }
-        else {
-            elm.style.right = (docRect.right - triggerRect.right) + "px";
-        }
-        if (triggerRect.top < docRect.height / 2) {
-            elm.style.top = (triggerRect.top) + "px";
-        }
-        else {
-            elm.style.bottom = (docRect.bottom - triggerRect.bottom) + "px";
-        }
-        document.body.appendChild(elm);
-        var onHide = function () {
-            ReactDOM.unmountComponentAtNode(elm);
-            document.body.removeChild(elm);
+    else {
+        elm.style.right = (docRect.right - triggerRect.right) + "px";
+    }
+    if (triggerRect.top < docRect.height / 2) {
+        elm.style.top = (triggerRect.top) + "px";
+    }
+    else {
+        elm.style.bottom = (docRect.bottom - triggerRect.bottom) + "px";
+    }
+    currentDocument.body.appendChild(elm);
+    var onHide = function () {
+        ReactDOM.unmountComponentAtNode(elm);
+        currentDocument.body.removeChild(elm);
+    };
+    ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper }), elm);
+}
+exports.showPopup = showPopup;
+/** @hidden @internal */
+var PopupMenu = function (props) {
+    var currentDocument = props.currentDocument, items = props.items, onHide = props.onHide, onSelect = props.onSelect, classNameMapper = props.classNameMapper;
+    var hidden = React.useRef(false);
+    React.useEffect(function () {
+        currentDocument.addEventListener("mouseup", onDocMouseUp);
+        return function () {
+            currentDocument.removeEventListener("mouseup", onDocMouseUp);
         };
-        ReactDOM.render(React.createElement(PopupMenu, { element: elm, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper }), elm);
+    }, []);
+    var onDocMouseUp = function (event) {
+        setTimeout(function () {
+            hide();
+        }, 0);
     };
-    PopupMenu.prototype.componentDidMount = function () {
-        document.addEventListener("mouseup", this.onDocMouseUp);
-    };
-    PopupMenu.prototype.componentWillUnmount = function () {
-        document.removeEventListener("mouseup", this.onDocMouseUp);
-    };
-    PopupMenu.prototype.hide = function () {
-        if (!this.hidden) {
-            this.props.onHide();
-            this.hidden = true;
+    var hide = function () {
+        if (!hidden.current) {
+            onHide();
+            hidden.current = true;
         }
     };
-    PopupMenu.prototype.onItemClick = function (item, event) {
-        this.props.onSelect(item);
-        this.hide();
+    var onItemClick = function (item, event) {
+        onSelect(item);
+        hide();
         event.stopPropagation();
     };
-    PopupMenu.prototype.render = function () {
-        var _this = this;
-        var items = this.props.items.map(function (item) { return React.createElement("div", { key: item.index, className: _this.props.classNameMapper("flexlayout__popup_menu_item"), onClick: _this.onItemClick.bind(_this, item) }, item.name); });
-        return React.createElement("div", { className: this.props.classNameMapper("flexlayout__popup_menu") }, items);
-    };
-    return PopupMenu;
-}(React.Component));
-/** @hidden @internal */
-exports.default = PopupMenu;
+    var itemElements = items.map(function (item) { return React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); } }, item.name); });
+    return React.createElement("div", { className: classNameMapper("flexlayout__popup_menu") }, itemElements);
+};
 
 
 /***/ }),
@@ -32097,19 +32081,6 @@ exports.default = TabSetNode;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BorderButton = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -32117,77 +32088,62 @@ var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 /** @hidden @internal */
-var BorderButton = /** @class */ (function (_super) {
-    __extends(BorderButton, _super);
-    function BorderButton(props) {
-        var _this = _super.call(this, props) || this;
-        _this.onMouseDown = function (event) {
-            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tab, _this.props.node.getName());
-            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, function (event2) { return undefined; });
-        };
-        _this.onClick = function () {
-            var node = _this.props.node;
-            _this.props.layout.doAction(Actions_1.default.selectTab(node.getId()));
-        };
-        _this.onClose = function (event) {
-            var node = _this.props.node;
-            _this.props.layout.doAction(Actions_1.default.deleteTab(node.getId()));
-        };
-        _this.onCloseMouseDown = function (event) {
-            event.stopPropagation();
-        };
-        _this.selfRef = React.createRef();
-        return _this;
-    }
-    BorderButton.prototype.componentDidMount = function () {
-        this.updateRect();
+exports.BorderButton = function (props) {
+    var layout = props.layout, node = props.node, selected = props.selected, border = props.border, iconFactory = props.iconFactory, titleFactory = props.titleFactory, closeIcon = props.closeIcon;
+    var selfRef = React.useRef(null);
+    var onMouseDown = function (event) {
+        var message = layout.i18nName(__1.I18nLabel.Move_Tab, node.getName());
+        props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, function (event2) { return undefined; });
     };
-    BorderButton.prototype.componentDidUpdate = function () {
-        this.updateRect();
+    var onClick = function () {
+        layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
-    BorderButton.prototype.updateRect = function () {
+    var onClose = function (event) {
+        layout.doAction(Actions_1.default.deleteTab(node.getId()));
+    };
+    var onCloseMouseDown = function (event) {
+        event.stopPropagation();
+    };
+    React.useLayoutEffect(function () {
+        updateRect();
+    });
+    var updateRect = function () {
         // record position of tab in border
-        var clientRect = this.props.layout.domRect;
-        var r = this.selfRef.current.getBoundingClientRect();
-        this.props.node._setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        var clientRect = layout.getDomRect();
+        var r = selfRef.current.getBoundingClientRect();
+        node._setTabRect(new Rect_1.default(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
     };
-    BorderButton.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var classNames = cm("flexlayout__border_button") + " " +
-            cm("flexlayout__border_button_" + this.props.border);
-        var node = this.props.node;
-        if (this.props.selected) {
-            classNames += " " + cm("flexlayout__border_button--selected");
-        }
-        else {
-            classNames += " " + cm("flexlayout__border_button--unselected");
-        }
-        if (this.props.node.getClassName() !== undefined) {
-            classNames += " " + this.props.node.getClassName();
-        }
-        var leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
-        var titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
-        if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
-            leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
-        }
-        // allow customization of leading contents (icon) and contents
-        var renderState = { leading: leadingContent, content: titleContent };
-        this.props.layout.customizeTab(node, renderState);
-        var content = React.createElement("div", { className: cm("flexlayout__border_button_content") }, renderState.content);
-        var leading = React.createElement("div", { className: cm("flexlayout__border_button_leading") }, renderState.leading);
-        var closeButton;
-        if (this.props.node.isEnableClose()) {
-            closeButton = React.createElement("div", { className: cm("flexlayout__border_button_trailing"), onMouseDown: this.onCloseMouseDown, onClick: this.onClose, onTouchStart: this.onCloseMouseDown }, this.props.closeIcon);
-        }
-        return React.createElement("div", { ref: this.selfRef, style: {}, className: classNames, onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown },
-            leading,
-            content,
-            closeButton);
-    };
-    return BorderButton;
-}(React.Component));
-exports.BorderButton = BorderButton;
-// export default BorderButton;
+    var cm = layout.getClassName;
+    var classNames = cm("flexlayout__border_button") + " " +
+        cm("flexlayout__border_button_" + border);
+    if (selected) {
+        classNames += " " + cm("flexlayout__border_button--selected");
+    }
+    else {
+        classNames += " " + cm("flexlayout__border_button--unselected");
+    }
+    if (node.getClassName() !== undefined) {
+        classNames += " " + node.getClassName();
+    }
+    var leadingContent = iconFactory ? iconFactory(node) : undefined;
+    var titleContent = (titleFactory ? titleFactory(node) : undefined) || node.getName();
+    if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
+        leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
+    }
+    // allow customization of leading contents (icon) and contents
+    var renderState = { leading: leadingContent, content: titleContent };
+    layout.customizeTab(node, renderState);
+    var content = React.createElement("div", { className: cm("flexlayout__border_button_content") }, renderState.content);
+    var leading = React.createElement("div", { className: cm("flexlayout__border_button_leading") }, renderState.leading);
+    var closeButton;
+    if (node.isEnableClose()) {
+        closeButton = React.createElement("div", { className: cm("flexlayout__border_button_trailing"), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, closeIcon);
+    }
+    return React.createElement("div", { ref: selfRef, style: {}, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+        leading,
+        content,
+        closeButton);
+};
 
 
 /***/ }),
@@ -32201,19 +32157,6 @@ exports.BorderButton = BorderButton;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BorderTabSet = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -32225,72 +32168,45 @@ var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var MAX_TABS = 999;
 /** @hidden @internal */
-var BorderTabSet = /** @class */ (function (_super) {
-    __extends(BorderTabSet, _super);
-    function BorderTabSet(props) {
-        var _this = _super.call(this, props) || this;
-        _this.onInterceptMouseDown = function (event) {
-            event.stopPropagation();
-        };
-        _this.onOverflowClick = function (hiddenTabs) {
-            var element = _this.overflowbuttonRef.current;
-            PopupMenu_1.default.show(element, hiddenTabs, _this.onOverflowItemSelect, _this.props.layout.getClassName);
-        };
-        _this.onOverflowItemSelect = function (item) {
-            _this.props.layout.doAction(Actions_1.default.selectTab(item.node.getId()));
-        };
-        _this.onFloatTab = function () {
-            var selectedTabNode = _this.props.border.getChildren()[_this.props.border.getSelected()];
-            if (selectedTabNode !== undefined) {
-                _this.props.layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
-            }
-        };
-        _this.hideTabsAfter = MAX_TABS;
-        _this.showOverflow = false;
-        _this.showToolbar = true;
-        _this.renderAllTabs = true;
-        _this.toolbarRef = React.createRef();
-        _this.overflowbuttonRef = React.createRef();
-        return _this;
-    }
-    BorderTabSet.prototype.componentDidMount = function () {
-        this.updateVisibleTabs();
-    };
-    BorderTabSet.prototype.shouldComponentUpdate = function () {
-        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
-        return true;
-    };
-    BorderTabSet.prototype.componentDidUpdate = function () {
-        this.updateVisibleTabs();
-    };
-    BorderTabSet.prototype.updateVisibleTabs = function () {
-        var _this = this;
-        if (this.renderAllTabs) {
-            var node_1 = this.props.border;
+exports.BorderTabSet = function (props) {
+    var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, closeIcon = props.closeIcon;
+    var toolbarRef = React.useRef(null);
+    var overflowbuttonRef = React.useRef(null);
+    var hideTabsAfter = React.useRef(MAX_TABS);
+    var showOverflow = React.useRef(false);
+    var showToolbar = React.useRef(true);
+    var renderAllTabs = React.useRef(true);
+    var _a = React.useState(0), forceUpdateCount = _a[0], setForceUpdateCount = _a[1];
+    React.useLayoutEffect(function () {
+        updateVisibleTabs();
+    });
+    var updateVisibleTabs = function () {
+        if (renderAllTabs.current) {
+            var node_1 = border;
             if (node_1.getChildren().length > 0) {
                 var lastChild = node_1.getChildren()[node_1.getChildren().length - 1];
                 var isTabVisible = function (i, child, childEnd, borderEnd, toolbarSize) {
                     if (childEnd > borderEnd - (20 + toolbarSize)) {
-                        _this.hideTabsAfter = Math.max(0, i - 1);
-                        _this.showOverflow = node_1.getChildren().length > 1;
+                        hideTabsAfter.current = Math.max(0, i - 1);
+                        showOverflow.current = node_1.getChildren().length > 1;
                         if (i === 0) {
-                            _this.showToolbar = false;
+                            showToolbar.current = false;
                             if (childEnd > borderEnd - 20) {
-                                _this.showOverflow = false;
+                                showOverflow.current = false;
                             }
                         }
-                        _this.renderAllTabs = false;
-                        _this.forceUpdate(); // re-render to hide some tabs
+                        renderAllTabs.current = false;
+                        setForceUpdateCount(forceUpdateCount + 1);
                         return false;
                     }
                     return true;
                 };
                 if (node_1.getLocation() === DockLocation_1.default.TOP
                     || node_1.getLocation() === DockLocation_1.default.BOTTOM) {
-                    var toolbarSize = this.toolbarRef.current.getBoundingClientRect().width;
+                    var toolbarSize = toolbarRef.current.getBoundingClientRect().width;
                     var borderEnd = node_1.getTabHeaderRect().getRight();
                     if (lastChild.getTabRect().getRight() > borderEnd - toolbarSize) {
-                        var modifiedChildren = TabSet_1.TabSet.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
+                        var modifiedChildren = TabSet_1.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
                         for (var i = 0; i < modifiedChildren.length; i++) {
                             var childTabNode = modifiedChildren[i];
                             var childEnd = childTabNode.getTabRect().getRight();
@@ -32301,10 +32217,10 @@ var BorderTabSet = /** @class */ (function (_super) {
                     }
                 }
                 else {
-                    var toolbarSize = this.toolbarRef.current.getBoundingClientRect().height;
+                    var toolbarSize = toolbarRef.current.getBoundingClientRect().height;
                     var borderEnd = node_1.getTabHeaderRect().getBottom();
                     if (lastChild.getTabRect().getBottom() > borderEnd - toolbarSize) {
-                        var modifiedChildren = TabSet_1.TabSet.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
+                        var modifiedChildren = TabSet_1.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
                         for (var i = 0; i < modifiedChildren.length; i++) {
                             var childTabNode = modifiedChildren[i];
                             var childEnd = childTabNode.getTabRect().getBottom();
@@ -32317,79 +32233,89 @@ var BorderTabSet = /** @class */ (function (_super) {
             }
         }
         else {
-            this.renderAllTabs = true;
+            renderAllTabs.current = true;
         }
     };
-    BorderTabSet.prototype.render = function () {
-        var _this = this;
-        if (this.renderAllTabs) {
-            this.hideTabsAfter = MAX_TABS;
-            this.showOverflow = false;
-            this.showToolbar = true;
-        }
-        var cm = this.props.layout.getClassName;
-        var border = this.props.border;
-        var style = border.getTabHeaderRect().styleWithPosition({});
-        var tabs = [];
-        var hiddenTabs = [];
-        var layoutTab = function (i) {
-            var isSelected = border.getSelected() === i;
-            var showTab = _this.hideTabsAfter >= i;
-            var child = border.getChildren()[i];
-            if (_this.hideTabsAfter === i && border.getSelected() > _this.hideTabsAfter) {
-                hiddenTabs.push({ name: child.getName(), node: child, index: i });
-                child = border.getChildren()[border.getSelected()];
-                isSelected = true;
-            }
-            else if (!showTab && !isSelected) {
-                hiddenTabs.push({ name: child.getName(), node: child, index: i });
-            }
-            if (showTab) {
-                tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: _this.props.layout, border: border.getLocation().getName(), node: child, key: child.getId(), selected: isSelected, iconFactory: _this.props.iconFactory, titleFactory: _this.props.titleFactory, closeIcon: _this.props.closeIcon }));
-            }
-        };
-        if (border.getLocation() !== DockLocation_1.default.LEFT) {
-            for (var i = 0; i < border.getChildren().length; i++) {
-                layoutTab(i);
-            }
-        }
-        else {
-            for (var i = border.getChildren().length - 1; i >= 0; i--) {
-                layoutTab(i);
-            }
-        }
-        var borderClasses = cm("flexlayout__border_" + border.getLocation().getName());
-        if (this.props.border.getClassName() !== undefined) {
-            borderClasses += " " + this.props.border.getClassName();
-        }
-        // allow customization of tabset right/bottom buttons
-        var buttons = [];
-        var renderState = { headerContent: {}, buttons: buttons };
-        this.props.layout.customizeTabSet(border, renderState);
-        buttons = renderState.buttons;
-        var toolbar;
-        if (this.showToolbar === true) {
-            var selectedIndex = border.getSelected();
-            if (selectedIndex != -1) {
-                var selectedTabNode = border.getChildren()[selectedIndex];
-                if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-                    var floatTitle = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-                    buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
-                }
-            }
-            toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
-        }
-        if (this.showOverflow === true && hiddenTabs.length > 0) {
-            var overflowButton = (React.createElement("button", { key: "overflowbutton", ref: this.overflowbuttonRef, className: cm("flexlayout__border_button_overflow_" + border.getLocation().getName()), onTouchStart: this.onInterceptMouseDown, onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown }, hiddenTabs.length));
-            tabs.push(overflowButton);
-        }
-        return React.createElement("div", { style: style, className: borderClasses },
-            React.createElement("div", { className: cm("flexlayout__border_inner_" + border.getLocation().getName()) }, tabs),
-            toolbar);
+    var onInterceptMouseDown = function (event) {
+        event.stopPropagation();
     };
-    return BorderTabSet;
-}(React.Component));
-exports.BorderTabSet = BorderTabSet;
+    var onOverflowClick = function () {
+        var element = overflowbuttonRef.current;
+        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+    };
+    var onOverflowItemSelect = function (item) {
+        layout.doAction(Actions_1.default.selectTab(item.node.getId()));
+    };
+    var onFloatTab = function () {
+        var selectedTabNode = border.getChildren()[border.getSelected()];
+        if (selectedTabNode !== undefined) {
+            layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
+        }
+    };
+    if (renderAllTabs.current) {
+        hideTabsAfter.current = MAX_TABS;
+        showOverflow.current = false;
+        showToolbar.current = true;
+    }
+    var cm = layout.getClassName;
+    var style = border.getTabHeaderRect().styleWithPosition({});
+    var tabs = [];
+    var hiddenTabs = [];
+    var layoutTab = function (i) {
+        var isSelected = border.getSelected() === i;
+        var showTab = hideTabsAfter.current >= i;
+        var child = border.getChildren()[i];
+        if (hideTabsAfter.current === i && border.getSelected() > hideTabsAfter.current) {
+            hiddenTabs.push({ name: child.getName(), node: child, index: i });
+            child = border.getChildren()[border.getSelected()];
+            isSelected = true;
+        }
+        else if (!showTab && !isSelected) {
+            hiddenTabs.push({ name: child.getName(), node: child, index: i });
+        }
+        if (showTab) {
+            tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, closeIcon: closeIcon }));
+        }
+    };
+    if (border.getLocation() !== DockLocation_1.default.LEFT) {
+        for (var i = 0; i < border.getChildren().length; i++) {
+            layoutTab(i);
+        }
+    }
+    else {
+        for (var i = border.getChildren().length - 1; i >= 0; i--) {
+            layoutTab(i);
+        }
+    }
+    var borderClasses = cm("flexlayout__border_" + border.getLocation().getName());
+    if (border.getClassName() !== undefined) {
+        borderClasses += " " + border.getClassName();
+    }
+    // allow customization of tabset right/bottom buttons
+    var buttons = [];
+    var renderState = { headerContent: {}, buttons: buttons };
+    layout.customizeTabSet(border, renderState);
+    buttons = renderState.buttons;
+    var toolbar;
+    if (showToolbar.current === true) {
+        var selectedIndex = border.getSelected();
+        if (selectedIndex !== -1) {
+            var selectedTabNode = border.getChildren()[selectedIndex];
+            if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+                var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
+                buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: onFloatTab }));
+            }
+        }
+        toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
+    }
+    if (showOverflow.current === true && hiddenTabs.length > 0) {
+        var overflowButton = (React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__border_button_overflow_" + border.getLocation().getName()), onTouchStart: onInterceptMouseDown, onClick: function () { return onOverflowClick(); }, onMouseDown: onInterceptMouseDown }, hiddenTabs.length));
+        tabs.push(overflowButton);
+    }
+    return React.createElement("div", { style: style, className: borderClasses },
+        React.createElement("div", { className: cm("flexlayout__border_inner_" + border.getLocation().getName()) }, tabs),
+        toolbar);
+};
 
 
 /***/ }),
@@ -32403,98 +32329,81 @@ exports.BorderTabSet = BorderTabSet;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.FloatingWindow = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_dom_1 = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var FloatingWindow = /** @class */ (function (_super) {
-    __extends(FloatingWindow, _super);
-    function FloatingWindow(props) {
-        var _this = _super.call(this, props) || this;
-        _this.window = undefined;
-        _this.state = { content: undefined };
-        return _this;
-    }
-    FloatingWindow.prototype.componentDidMount = function () {
-        var _this = this;
-        var r = this.props.rect;
-        var popupWindow = window.open(this.props.url, this.props.title, "left=" + r.x + ",top=" + r.y + ",width=" + r.width + ",height=" + r.height);
-        if (popupWindow !== null) {
-            this.window = popupWindow;
-            this.props.onSetWindow(this.props.id, popupWindow);
-            // listen for parent unloading to remove all popups
+/** @hidden @internal */
+exports.FloatingWindow = function (props) {
+    var title = props.title, id = props.id, url = props.url, rect = props.rect, onCloseWindow = props.onCloseWindow, onSetWindow = props.onSetWindow, children = props.children;
+    var popoutWindow = React.useRef(null);
+    var _a = React.useState(undefined), content = _a[0], setContent = _a[1];
+    React.useLayoutEffect(function () {
+        var r = rect;
+        popoutWindow.current = window.open(url, id, "left=" + r.x + ",top=" + r.y + ",width=" + r.width + ",height=" + r.height);
+        if (popoutWindow.current !== null) {
+            onSetWindow(id, popoutWindow.current);
+            // listen for parent unloading to remove all popouts
             window.addEventListener("beforeunload", function () {
-                if (_this.window) {
-                    _this.window.close();
-                    _this.window = undefined;
+                if (popoutWindow.current) {
+                    popoutWindow.current.close();
+                    popoutWindow.current = null;
                 }
             });
-            // listen for popup unloading
-            popupWindow.addEventListener("beforeunload", function () {
-                _this.props.onCloseWindow(_this.props.id);
-            });
-            popupWindow.addEventListener("load", function () {
-                var popupDocument = popupWindow.document;
-                popupDocument.title = _this.props.title;
-                var content = popupDocument.createElement("div");
-                content.className = "flexlayout__floating_window_content";
-                popupDocument.body.appendChild(content);
-                copyStyles(popupDocument);
-                _this.setState({ content: content });
+            popoutWindow.current.addEventListener("load", function () {
+                var popoutDocument = popoutWindow.current.document;
+                popoutDocument.title = title;
+                var popoutContent = popoutDocument.createElement("div");
+                popoutContent.className = "flexlayout__floating_window_content";
+                popoutDocument.body.appendChild(popoutContent);
+                copyStyles(popoutDocument).then(function () {
+                    setContent(popoutContent);
+                });
+                // listen for popout unloading (needs to be after load for safari)
+                popoutWindow.current.addEventListener("beforeunload", function () {
+                    onCloseWindow(id);
+                });
             });
         }
         else {
-            console.warn("Unable to open window " + this.props.url);
-            this.props.onCloseWindow(this.props.id);
+            console.warn("Unable to open window " + url);
+            onCloseWindow(id);
         }
-    };
-    FloatingWindow.prototype.componentWillUnmount = function () {
-        var _this = this;
-        // delay so refresh will close window
-        setTimeout(function () {
-            if (_this.window) {
-                _this.window.close();
-                _this.window = undefined;
-            }
-        }, 0);
-    };
-    FloatingWindow.prototype.render = function () {
-        if (this.state.content !== undefined) {
-            return react_dom_1.createPortal(this.props.children, this.state.content);
-        }
-        else {
-            return null;
-        }
-    };
-    return FloatingWindow;
-}(React.Component));
-exports.default = FloatingWindow;
+        return function () {
+            // delay so refresh will close window
+            setTimeout(function () {
+                if (popoutWindow.current) {
+                    popoutWindow.current.close();
+                    popoutWindow.current = null;
+                }
+            }, 0);
+        };
+    }, []);
+    if (content !== undefined) {
+        return react_dom_1.createPortal(children, content);
+    }
+    else {
+        return null;
+    }
+};
 function copyStyles(doc) {
     var head = doc.head;
+    var promises = [];
     Array.from(window.document.styleSheets).forEach(function (styleSheet) {
         if (styleSheet.href) { // prefer links since they will keep paths to images etc
-            var styleElement = doc.createElement('link');
-            styleElement.type = styleSheet.type;
-            styleElement.rel = 'stylesheet';
-            styleElement.href = styleSheet.href;
-            head.appendChild(styleElement);
+            var styleElement_1 = doc.createElement("link");
+            styleElement_1.type = styleSheet.type;
+            styleElement_1.rel = "stylesheet";
+            styleElement_1.href = styleSheet.href;
+            head.appendChild(styleElement_1);
+            promises.push(new Promise(function (resolve, reject) {
+                styleElement_1.onload = function () { return resolve(true); };
+            }));
         }
         else {
             try {
                 var rules = styleSheet.cssRules;
-                var style_1 = doc.createElement('style');
+                var style_1 = doc.createElement("style");
                 Array.from(rules).forEach(function (cssRule) {
                     style_1.appendChild(doc.createTextNode(cssRule.cssText));
                 });
@@ -32504,6 +32413,7 @@ function copyStyles(doc) {
             }
         }
     });
+    return Promise.all(promises);
 }
 
 
@@ -32518,37 +32428,16 @@ function copyStyles(doc) {
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FloatingWindowTab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /** @hidden @internal */
-var FloatingWindowTab = /** @class */ (function (_super) {
-    __extends(FloatingWindowTab, _super);
-    function FloatingWindowTab(props) {
-        return _super.call(this, props) || this;
-    }
-    FloatingWindowTab.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var node = this.props.node;
-        var child = this.props.factory(node);
-        return (React.createElement("div", { className: cm("flexlayout__floating_window_tab") }, child));
-    };
-    return FloatingWindowTab;
-}(React.Component));
-exports.FloatingWindowTab = FloatingWindowTab;
+exports.FloatingWindowTab = function (props) {
+    var layout = props.layout, node = props.node, factory = props.factory;
+    var cm = layout.getClassName;
+    var child = factory(node);
+    return (React.createElement("div", { className: cm("flexlayout__floating_window_tab") }, child));
+};
 
 
 /***/ }),
@@ -32584,12 +32473,12 @@ var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions
 var SplitterNode_1 = __webpack_require__(/*! ../model/SplitterNode */ "./src/model/SplitterNode.ts");
 var TabNode_1 = __webpack_require__(/*! ../model/TabNode */ "./src/model/TabNode.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
-var FloatingWindow_1 = __webpack_require__(/*! ./FloatingWindow */ "./src/view/FloatingWindow.tsx");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var BorderTabSet_1 = __webpack_require__(/*! ./BorderTabSet */ "./src/view/BorderTabSet.tsx");
 var Splitter_1 = __webpack_require__(/*! ./Splitter */ "./src/view/Splitter.tsx");
 var Tab_1 = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
 var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
+var FloatingWindow_1 = __webpack_require__(/*! ./FloatingWindow */ "./src/view/FloatingWindow.tsx");
 var FloatingWindowTab_1 = __webpack_require__(/*! ./FloatingWindowTab */ "./src/view/FloatingWindowTab.tsx");
 var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -32635,6 +32524,7 @@ var Layout = /** @class */ (function (_super) {
                 return _this.props.classNameMapper(defaultClassName);
             }
         };
+        /** @hidden @internal */
         _this.onCloseWindow = function (id) {
             _this.doAction(Actions_1.default.unFloatTab(id));
             try {
@@ -32643,6 +32533,7 @@ var Layout = /** @class */ (function (_super) {
             catch (e) { // catch incase it was a model change
             }
         };
+        /** @hidden @internal */
         _this.onSetWindow = function (id, window) {
             _this.model.getNodeById(id)._setWindow(window);
         };
@@ -32665,11 +32556,13 @@ var Layout = /** @class */ (function (_super) {
                 try {
                     rootdiv.removeChild(_this.outlineDiv);
                 }
-                catch (e) { }
+                catch (e) {
+                }
                 try {
                     rootdiv.removeChild(_this.dragDiv);
                 }
-                catch (e) { }
+                catch (e) {
+                }
                 _this.dragDiv = undefined;
                 _this.hideEdges(rootdiv);
                 if (_this.fnNewNodeDropped != null) {
@@ -32771,6 +32664,7 @@ var Layout = /** @class */ (function (_super) {
         _this.selfRef = React.createRef();
         _this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         _this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
+        _this.firstRender = true;
         return _this;
     }
     /** @hidden @internal */
@@ -32806,24 +32700,36 @@ var Layout = /** @class */ (function (_super) {
         }
         // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
     };
+    /** @hidden @internal */
     Layout.prototype.getCurrentDocument = function () {
         return this.currentDocument;
     };
+    /** @hidden @internal */
+    Layout.prototype.getDomRect = function () {
+        return this.domRect;
+    };
+    /** @hidden @internal */
+    Layout.prototype.getRootDiv = function () {
+        return this.selfRef.current;
+    };
+    /** @hidden @internal */
     Layout.prototype.isSupportsPopout = function () {
         return this.supportsPopout;
     };
+    /** @hidden @internal */
     Layout.prototype.getPopoutURL = function () {
         return this.popoutURL;
     };
     /** @hidden @internal */
     Layout.prototype.componentWillUnmount = function () {
-        window.removeEventListener("resize", this.updateRect);
+        this.currentWindow.removeEventListener("resize", this.updateRect);
     };
     /** @hidden @internal */
     Layout.prototype.render = function () {
         var _this = this;
-        // first render will be used to find the size
-        if (this.rect.width === 0) {
+        // first render will be used to find the size (via selfRef)
+        if (this.firstRender) {
+            this.firstRender = false;
             return (React.createElement("div", { ref: this.selfRef, className: this.getClassName("flexlayout__layout") }));
         }
         // this.start = Date.now();
@@ -32877,7 +32783,7 @@ var Layout = /** @class */ (function (_super) {
                     else if (child instanceof TabNode_1.default) {
                         if (this.supportsPopout && child.isFloating()) {
                             var rect = this._getScreenRect(child);
-                            floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                            floatingWindows.push((React.createElement(FloatingWindow_1.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
                                 React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory }))));
                             tabComponents[child.getId()] = (React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, node: child, selected: i === border.getSelected() }));
                         }
@@ -32910,7 +32816,7 @@ var Layout = /** @class */ (function (_super) {
                 }
                 if (this.supportsPopout && child.isFloating()) {
                     var rect = this._getScreenRect(child);
-                    floatingWindows.push((React.createElement(FloatingWindow_1.default, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                    floatingWindows.push((React.createElement(FloatingWindow_1.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
                         React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory }))));
                     tabComponents[child.getId()] = (React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, node: child, selected: child === selectedTab }));
                 }
@@ -32924,6 +32830,7 @@ var Layout = /** @class */ (function (_super) {
             }
         }
     };
+    /** @hidden @internal */
     Layout.prototype._getScreenRect = function (node) {
         var rect = node.getRect().clone();
         var bodyRect = this.selfRef.current.getBoundingClientRect();
@@ -33046,7 +32953,8 @@ var Layout = /** @class */ (function (_super) {
                 rootdiv.removeChild(this.edgeBottomDiv);
                 rootdiv.removeChild(this.edgeRightDiv);
             }
-            catch (e) { }
+            catch (e) {
+            }
         }
     };
     /** @hidden @internal */
@@ -33065,6 +32973,7 @@ var Layout = /** @class */ (function (_super) {
             this.props.onRenderTabSet(tabSetNode, renderValues);
         }
     };
+    /** @hidden @internal */
     Layout.prototype.i18nName = function (id, param) {
         var message;
         if (this.props.i18nMapper) {
@@ -33092,19 +33001,6 @@ exports.default = Layout;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Splitter = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -33113,71 +33009,70 @@ var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions
 var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 /** @hidden @internal */
-var Splitter = /** @class */ (function (_super) {
-    __extends(Splitter, _super);
-    function Splitter() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.onMouseDown = function (event) {
-            DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onDragCancel, undefined, undefined, _this.props.layout.getCurrentDocument());
-            var parentNode = _this.props.node.getParent();
-            _this.pBounds = parentNode._getSplitterBounds(_this.props.node);
-            var rootdiv = _this.props.layout.selfRef.current;
-            _this.outlineDiv = _this.props.layout.getCurrentDocument().createElement("div");
-            _this.outlineDiv.style.position = "absolute";
-            _this.outlineDiv.className = _this.props.layout.getClassName("flexlayout__splitter_drag");
-            _this.outlineDiv.style.cursor = _this.props.node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize";
-            _this.props.node.getRect().positionElement(_this.outlineDiv);
-            rootdiv.appendChild(_this.outlineDiv);
+exports.Splitter = function (props) {
+    var layout = props.layout, node = props.node;
+    var pBounds = React.useRef([]);
+    var outlineDiv = React.useRef(undefined);
+    var onMouseDown = function (event) {
+        DragDrop_1.default.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument());
+        var parentNode = node.getParent();
+        pBounds.current = parentNode._getSplitterBounds(node);
+        var rootdiv = layout.getRootDiv();
+        outlineDiv.current = layout.getCurrentDocument().createElement("div");
+        outlineDiv.current.style.position = "absolute";
+        outlineDiv.current.className = layout.getClassName("flexlayout__splitter_drag");
+        outlineDiv.current.style.cursor = node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize";
+        node.getRect().positionElement(outlineDiv.current);
+        rootdiv.appendChild(outlineDiv.current);
+    };
+    var onDragCancel = function (wasDragging) {
+        var rootdiv = layout.getRootDiv();
+        rootdiv.removeChild(outlineDiv.current);
+    };
+    var onDragStart = function () {
+        return true;
+    };
+    var onDragMove = function (event) {
+        var clientRect = layout.getDomRect();
+        var pos = {
+            x: event.clientX - clientRect.left,
+            y: event.clientY - clientRect.top
         };
-        _this.onDragCancel = function (wasDragging) {
-            var rootdiv = _this.props.layout.selfRef.current;
-            rootdiv.removeChild(_this.outlineDiv);
-        };
-        _this.onDragStart = function () {
-            return true;
-        };
-        _this.onDragMove = function (event) {
-            var clientRect = _this.props.layout.domRect;
-            var pos = {
-                x: event.clientX - clientRect.left,
-                y: event.clientY - clientRect.top
-            };
-            var outlineDiv = _this.outlineDiv;
-            if (_this.props.node.getOrientation() === Orientation_1.default.HORZ) {
-                outlineDiv.style.top = _this.getBoundPosition(pos.y - 4) + "px";
-            }
-            else {
-                outlineDiv.style.left = _this.getBoundPosition(pos.x - 4) + "px";
-            }
-        };
-        _this.onDragEnd = function () {
-            var node = _this.props.node;
-            var parentNode = node.getParent();
-            var value = 0;
-            var outlineDiv = _this.outlineDiv;
+        if (outlineDiv) {
             if (node.getOrientation() === Orientation_1.default.HORZ) {
-                value = outlineDiv.offsetTop;
+                outlineDiv.current.style.top = getBoundPosition(pos.y - 4) + "px";
             }
             else {
-                value = outlineDiv.offsetLeft;
+                outlineDiv.current.style.left = getBoundPosition(pos.x - 4) + "px";
             }
-            if (parentNode instanceof BorderNode_1.default) {
-                var pos = parentNode._calculateSplit(node, value);
-                _this.props.layout.doAction(Actions_1.default.adjustBorderSplit(node.getParent().getId(), pos));
+        }
+    };
+    var onDragEnd = function () {
+        var parentNode = node.getParent();
+        var value = 0;
+        if (outlineDiv) {
+            if (node.getOrientation() === Orientation_1.default.HORZ) {
+                value = outlineDiv.current.offsetTop;
             }
             else {
-                var splitSpec = parentNode._calculateSplit(_this.props.node, value);
-                if (splitSpec !== undefined) {
-                    _this.props.layout.doAction(Actions_1.default.adjustSplit(splitSpec));
-                }
+                value = outlineDiv.current.offsetLeft;
             }
-            var rootdiv = _this.props.layout.selfRef.current;
-            rootdiv.removeChild(_this.outlineDiv);
-        };
-        return _this;
-    }
-    Splitter.prototype.getBoundPosition = function (p) {
-        var bounds = this.pBounds;
+        }
+        if (parentNode instanceof BorderNode_1.default) {
+            var pos = parentNode._calculateSplit(node, value);
+            layout.doAction(Actions_1.default.adjustBorderSplit(node.getParent().getId(), pos));
+        }
+        else {
+            var splitSpec = parentNode._calculateSplit(node, value);
+            if (splitSpec !== undefined) {
+                layout.doAction(Actions_1.default.adjustSplit(splitSpec));
+            }
+        }
+        var rootdiv = layout.getRootDiv();
+        rootdiv.removeChild(outlineDiv.current);
+    };
+    var getBoundPosition = function (p) {
+        var bounds = pBounds.current;
         var rtn = p;
         if (p < bounds[0]) {
             rtn = bounds[0];
@@ -33187,18 +33082,12 @@ var Splitter = /** @class */ (function (_super) {
         }
         return rtn;
     };
-    Splitter.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var node = this.props.node;
-        var style = node._styleWithPosition({
-            cursor: this.props.node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize"
-        });
-        return React.createElement("div", { style: style, onTouchStart: this.onMouseDown, onMouseDown: this.onMouseDown, className: cm("flexlayout__splitter") });
-    };
-    return Splitter;
-}(React.Component));
-exports.Splitter = Splitter;
-// export default Splitter;
+    var cm = layout.getClassName;
+    var style = node._styleWithPosition({
+        cursor: node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize"
+    });
+    return React.createElement("div", { style: style, onTouchStart: onMouseDown, onMouseDown: onMouseDown, className: cm("flexlayout__splitter") });
+};
 
 
 /***/ }),
@@ -33212,67 +33101,44 @@ exports.Splitter = Splitter;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Tab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 /** @hidden @internal */
-var Tab = /** @class */ (function (_super) {
-    __extends(Tab, _super);
-    function Tab(props) {
-        var _this = _super.call(this, props) || this;
-        _this.onMouseDown = function () {
-            var parent = _this.props.node.getParent();
-            if (parent.getType() === TabSetNode_1.default.TYPE) {
-                if (!parent.isActive()) {
-                    _this.props.layout.doAction(Actions_1.default.setActiveTabset(parent.getId()));
-                }
-            }
-        };
-        _this.state = { renderComponent: !props.node.isEnableRenderOnDemand() || props.selected };
-        return _this;
-    }
-    Tab.prototype.componentDidUpdate = function () {
-        if (!this.state.renderComponent && this.props.selected) {
+exports.Tab = function (props) {
+    var layout = props.layout, selected = props.selected, node = props.node, factory = props.factory;
+    var _a = React.useState(!props.node.isEnableRenderOnDemand() || props.selected), renderComponent = _a[0], setRenderComponent = _a[1];
+    React.useLayoutEffect(function () {
+        if (!renderComponent && selected) {
             // load on demand
-            // console.log("load on demand: " + this.props.node.getName());
-            this.setState({ renderComponent: true });
+            // console.log("load on demand: " + node.getName());
+            setRenderComponent(true);
+        }
+    });
+    var onMouseDown = function () {
+        var parent = node.getParent();
+        if (parent.getType() === TabSetNode_1.default.TYPE) {
+            if (!parent.isActive()) {
+                layout.doAction(Actions_1.default.setActiveTabset(parent.getId()));
+            }
         }
     };
-    Tab.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var node = this.props.node;
-        var parentNode = node.getParent();
-        var style = node._styleWithPosition({
-            display: this.props.selected ? "block" : "none"
-        });
-        if (parentNode.isMaximized()) {
-            style.zIndex = 100;
-        }
-        var child;
-        if (this.state.renderComponent) {
-            child = this.props.factory(node);
-        }
-        return React.createElement("div", { className: cm("flexlayout__tab"), onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown, style: style }, child);
-    };
-    return Tab;
-}(React.Component));
-exports.Tab = Tab;
-// export default Tab;
+    var cm = layout.getClassName;
+    var parentNode = node.getParent();
+    var style = node._styleWithPosition({
+        display: selected ? "block" : "none"
+    });
+    if (parentNode.isMaximized()) {
+        style.zIndex = 100;
+    }
+    var child;
+    if (renderComponent) {
+        child = factory(node);
+    }
+    return React.createElement("div", { className: cm("flexlayout__tab"), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style }, child);
+};
 
 
 /***/ }),
@@ -33286,149 +33152,116 @@ exports.Tab = Tab;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TabButton = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
+var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 /** @hidden @internal */
-var TabButton = /** @class */ (function (_super) {
-    __extends(TabButton, _super);
-    function TabButton(props) {
-        var _this = _super.call(this, props) || this;
-        _this.contentWidth = 0;
-        _this.onMouseDown = function (event) {
-            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tab, _this.props.node.getName());
-            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), _this.onClick, _this.onDoubleClick);
-        };
-        _this.onClick = function (event) {
-            var node = _this.props.node;
-            _this.props.layout.doAction(Actions_1.default.selectTab(node.getId()));
-        };
-        _this.onDoubleClick = function (event) {
-            if (_this.props.node.isEnableRename()) {
-                _this.setState({ editing: true });
-                document.body.addEventListener("mousedown", _this.onEndEdit);
-                document.body.addEventListener("touchstart", _this.onEndEdit);
-            }
-            else {
-                var parentNode = _this.props.node.getParent();
-                if (parentNode.isEnableMaximize()) {
-                    _this.props.layout.maximize(parentNode);
-                }
-            }
-        };
-        _this.onEndEdit = function (event) {
-            if (event.target !== _this.contentRef.current) {
-                _this.setState({ editing: false });
-                document.body.removeEventListener("mousedown", _this.onEndEdit);
-                document.body.removeEventListener("touchstart", _this.onEndEdit);
-            }
-        };
-        _this.onClose = function (event) {
-            var node = _this.props.node;
-            _this.props.layout.doAction(Actions_1.default.deleteTab(node.getId()));
-        };
-        _this.onCloseMouseDown = function (event) {
-            event.stopPropagation();
-        };
-        _this.onTextBoxMouseDown = function (event) {
-            // console.log("onTextBoxMouseDown");
-            event.stopPropagation();
-        };
-        _this.onTextBoxKeyPress = function (event) {
-            // console.log(event, event.keyCode);
-            if (event.keyCode === 27) { // esc
-                _this.setState({ editing: false });
-            }
-            else if (event.keyCode === 13) { // enter
-                _this.setState({ editing: false });
-                var node = _this.props.node;
-                _this.props.layout.doAction(Actions_1.default.renameTab(node.getId(), event.target.value));
-            }
-        };
-        _this.state = { editing: false };
-        _this.onEndEdit = _this.onEndEdit;
-        _this.selfRef = React.createRef();
-        _this.contentRef = React.createRef();
-        return _this;
-    }
-    TabButton.prototype.componentDidMount = function () {
-        this.updateRect();
+exports.TabButton = function (props) {
+    var layout = props.layout, node = props.node, show = props.show, selected = props.selected, height = props.height, iconFactory = props.iconFactory, titleFactory = props.titleFactory, closeIcon = props.closeIcon;
+    var selfRef = React.useRef(null);
+    var contentRef = React.useRef(null);
+    var contentWidth = React.useRef(0);
+    var _a = React.useState(false), editing = _a[0], setEditing = _a[1];
+    var onMouseDown = function (event) {
+        var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tab, node.getName());
+        layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
     };
-    TabButton.prototype.componentDidUpdate = function () {
-        this.updateRect();
-        if (this.state.editing) {
-            this.contentRef.current.select();
-        }
+    var onClick = function (event) {
+        layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
-    TabButton.prototype.updateRect = function () {
-        // record position of tab in node
-        var layoutRect = this.props.layout.domRect;
-        var r = this.selfRef.current.getBoundingClientRect();
-        this.props.node._setTabRect(new Rect_1.default(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
-        this.contentWidth = this.contentRef.current.getBoundingClientRect().width;
-    };
-    TabButton.prototype.doRename = function (node, newName) {
-        this.props.layout.doAction(Actions_1.default.renameTab(node.getId(), newName));
-    };
-    TabButton.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var classNames = cm("flexlayout__tab_button");
-        var node = this.props.node;
-        if (this.props.selected) {
-            classNames += " " + cm("flexlayout__tab_button--selected");
+    var onDoubleClick = function (event) {
+        if (node.isEnableRename()) {
+            setEditing(true);
+            layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
+            layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
         }
         else {
-            classNames += " " + cm("flexlayout__tab_button--unselected");
+            var parentNode = node.getParent();
+            if (parentNode.isEnableMaximize()) {
+                layout.maximize(parentNode);
+            }
         }
-        if (this.props.node.getClassName() !== undefined) {
-            classNames += " " + this.props.node.getClassName();
-        }
-        var leadingContent = this.props.iconFactory ? this.props.iconFactory(node) : undefined;
-        var titleContent = (this.props.titleFactory ? this.props.titleFactory(node) : undefined) || node.getName();
-        if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
-            leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
-        }
-        // allow customization of leading contents (icon) and contents
-        var renderState = { leading: leadingContent, content: titleContent };
-        this.props.layout.customizeTab(node, renderState);
-        var content = React.createElement("div", { ref: this.contentRef, className: cm("flexlayout__tab_button_content") }, renderState.content);
-        var leading = React.createElement("div", { className: cm("flexlayout__tab_button_leading") }, renderState.leading);
-        if (this.state.editing) {
-            var contentStyle = { width: this.contentWidth + "px" };
-            content = React.createElement("input", { style: contentStyle, ref: this.contentRef, className: cm("flexlayout__tab_button_textbox"), type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: this.onTextBoxKeyPress, onMouseDown: this.onTextBoxMouseDown, onTouchStart: this.onTextBoxMouseDown });
-        }
-        var closeButton;
-        if (this.props.node.isEnableClose()) {
-            closeButton = React.createElement("div", { className: cm("flexlayout__tab_button_trailing"), onMouseDown: this.onCloseMouseDown, onClick: this.onClose, onTouchStart: this.onCloseMouseDown }, this.props.closeIcon);
-        }
-        return React.createElement("div", { ref: this.selfRef, style: {
-                visibility: this.props.show ? "visible" : "hidden",
-                height: this.props.height
-            }, className: classNames, onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown },
-            leading,
-            content,
-            closeButton);
     };
-    return TabButton;
-}(React.Component));
-exports.TabButton = TabButton;
-// export default TabButton;
+    var onEndEdit = function (event) {
+        if (event.target !== contentRef.current) {
+            setEditing(false);
+            layout.getCurrentDocument().body.removeEventListener("mousedown", onEndEdit);
+            layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
+        }
+    };
+    var onClose = function (event) {
+        layout.doAction(Actions_1.default.deleteTab(node.getId()));
+    };
+    var onCloseMouseDown = function (event) {
+        event.stopPropagation();
+    };
+    React.useLayoutEffect(function () {
+        updateRect();
+        if (editing) {
+            contentRef.current.select();
+        }
+    });
+    var updateRect = function () {
+        // record position of tab in node
+        var layoutRect = layout.getDomRect();
+        var r = selfRef.current.getBoundingClientRect();
+        node._setTabRect(new Rect_1.default(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        contentWidth.current = contentRef.current.getBoundingClientRect().width;
+    };
+    var onTextBoxMouseDown = function (event) {
+        // console.log("onTextBoxMouseDown");
+        event.stopPropagation();
+    };
+    var onTextBoxKeyPress = function (event) {
+        // console.log(event, event.keyCode);
+        if (event.keyCode === 27) { // esc
+            setEditing(false);
+        }
+        else if (event.keyCode === 13) { // enter
+            setEditing(false);
+            layout.doAction(Actions_1.default.renameTab(node.getId(), event.target.value));
+        }
+    };
+    var cm = layout.getClassName;
+    var classNames = cm("flexlayout__tab_button");
+    if (selected) {
+        classNames += " " + cm("flexlayout__tab_button--selected");
+    }
+    else {
+        classNames += " " + cm("flexlayout__tab_button--unselected");
+    }
+    if (node.getClassName() !== undefined) {
+        classNames += " " + node.getClassName();
+    }
+    var leadingContent = iconFactory ? iconFactory(node) : undefined;
+    var titleContent = (titleFactory ? titleFactory(node) : undefined) || node.getName();
+    if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
+        leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
+    }
+    // allow customization of leading contents (icon) and contents
+    var renderState = { leading: leadingContent, content: titleContent };
+    layout.customizeTab(node, renderState);
+    var content = React.createElement("div", { ref: contentRef, className: cm("flexlayout__tab_button_content") }, renderState.content);
+    var leading = React.createElement("div", { className: cm("flexlayout__tab_button_leading") }, renderState.leading);
+    if (editing) {
+        var contentStyle = { width: contentWidth + "px" };
+        content = React.createElement("input", { style: contentStyle, ref: contentRef, className: cm("flexlayout__tab_button_textbox"), type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown });
+    }
+    var closeButton;
+    if (node.isEnableClose()) {
+        closeButton = React.createElement("div", { className: cm("flexlayout__tab_button_trailing"), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, closeIcon);
+    }
+    return React.createElement("div", { ref: selfRef, style: {
+            visibility: show ? "visible" : "hidden",
+            height: height
+        }, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+        leading,
+        content,
+        closeButton);
+};
 
 
 /***/ }),
@@ -33442,19 +33275,6 @@ exports.TabButton = TabButton;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TabFloating = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -33462,54 +33282,45 @@ var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 /** @hidden @internal */
-var TabFloating = /** @class */ (function (_super) {
-    __extends(TabFloating, _super);
-    function TabFloating(props) {
-        var _this = _super.call(this, props) || this;
-        _this.onMouseDown = function () {
-            var parent = _this.props.node.getParent();
-            if (parent.getType() === TabSetNode_1.default.TYPE) {
-                if (!parent.isActive()) {
-                    _this.props.layout.doAction(Actions_1.default.setActiveTabset(parent.getId()));
-                }
+exports.TabFloating = function (props) {
+    var layout = props.layout, selected = props.selected, node = props.node;
+    var onMouseDown = function () {
+        var parent = node.getParent();
+        if (parent.getType() === TabSetNode_1.default.TYPE) {
+            if (!parent.isActive()) {
+                layout.doAction(Actions_1.default.setActiveTabset(parent.getId()));
             }
-        };
-        _this.onClickFocus = function (event) {
-            event.preventDefault();
-            if (_this.props.node.getWindow()) {
-                _this.props.node.getWindow().focus();
-            }
-        };
-        _this.onClickDock = function (event) {
-            event.preventDefault();
-            _this.props.layout.doAction(Actions_1.default.unFloatTab(_this.props.node.getId()));
-        };
-        return _this;
-    }
-    TabFloating.prototype.render = function () {
-        var cm = this.props.layout.getClassName;
-        var node = this.props.node;
-        var parentNode = node.getParent();
-        var style = node._styleWithPosition({
-            display: this.props.selected ? "flex" : "none"
-        });
-        if (parentNode.isMaximized()) {
-            style.zIndex = 100;
         }
-        var message = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
-        var showMessage = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
-        var dockMessage = this.props.layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Dock_Window);
-        return (React.createElement("div", { className: cm("flexlayout__tab_floating"), onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown, style: style },
-            React.createElement("div", { className: cm("flexlayout__tab_floating_inner") },
-                React.createElement("div", null, message),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: this.onClickFocus }, showMessage)),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: this.onClickDock }, dockMessage)))));
     };
-    return TabFloating;
-}(React.Component));
-exports.TabFloating = TabFloating;
+    var onClickFocus = function (event) {
+        event.preventDefault();
+        if (node.getWindow()) {
+            node.getWindow().focus();
+        }
+    };
+    var onClickDock = function (event) {
+        event.preventDefault();
+        layout.doAction(Actions_1.default.unFloatTab(node.getId()));
+    };
+    var cm = layout.getClassName;
+    var parentNode = node.getParent();
+    var style = node._styleWithPosition({
+        display: selected ? "flex" : "none"
+    });
+    if (parentNode.isMaximized()) {
+        style.zIndex = 100;
+    }
+    var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
+    var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
+    var dockMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Dock_Window);
+    return (React.createElement("div", { className: cm("flexlayout__tab_floating"), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
+        React.createElement("div", { className: cm("flexlayout__tab_floating_inner") },
+            React.createElement("div", null, message),
+            React.createElement("div", null,
+                React.createElement("a", { href: "#", onClick: onClickFocus }, showMessage)),
+            React.createElement("div", null,
+                React.createElement("a", { href: "#", onClick: onClickDock }, dockMessage)))));
+};
 
 
 /***/ }),
@@ -33523,19 +33334,6 @@ exports.TabFloating = TabFloating;
 
 "use strict";
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __spreadArrays = (this && this.__spreadArrays) || function () {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -33544,119 +33342,71 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TabSet = void 0;
+exports.TabSet = exports.getModifiedNodeList = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
+var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
 var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
 var MAX_TABS = 999;
+/*
+    Since selected tab is always shown, move it to first position when
+    determining the number for tabs that can be shown
+ */
 /** @hidden @internal */
-var TabSet = /** @class */ (function (_super) {
-    __extends(TabSet, _super);
-    function TabSet(props) {
-        var _this = _super.call(this, props) || this;
-        _this.onOverflowClick = function (hiddenTabs) {
-            // console.log("hidden tabs: " + hiddenTabs);
-            var element = _this.overflowbuttonRef.current;
-            PopupMenu_1.default.show(element, hiddenTabs, _this.onOverflowItemSelect, _this.props.layout.getClassName);
-        };
-        _this.onOverflowItemSelect = function (item) {
-            _this.props.layout.doAction(Actions_1.default.selectTab(item.node.getId()));
-        };
-        _this.onMouseDown = function (event) {
-            var name = _this.props.node.getName();
-            if (name === undefined) {
-                name = "";
-            }
-            else {
-                name = ": " + name;
-            }
-            _this.props.layout.doAction(Actions_1.default.setActiveTabset(_this.props.node.getId()));
-            var message = _this.props.layout.i18nName(__1.I18nLabel.Move_Tabset, name);
-            _this.props.layout.dragStart(event, message, _this.props.node, _this.props.node.isEnableDrag(), function (event2) { return undefined; }, _this.onDoubleClick);
-        };
-        _this.onInterceptMouseDown = function (event) {
-            event.stopPropagation();
-        };
-        _this.onMaximizeToggle = function () {
-            if (_this.props.node.isEnableMaximize()) {
-                _this.props.layout.maximize(_this.props.node);
-            }
-        };
-        _this.onFloatTab = function () {
-            var selectedTabNode = _this.props.node.getSelectedNode();
-            if (selectedTabNode !== undefined) {
-                _this.props.layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
-            }
-        };
-        _this.onDoubleClick = function (event) {
-            if (_this.props.node.isEnableMaximize()) {
-                _this.props.layout.maximize(_this.props.node);
-            }
-        };
-        _this.hideTabsAfter = MAX_TABS;
-        _this.showOverflow = false;
-        _this.showToolbar = true;
-        _this.renderAllTabs = true;
-        _this.toolbarRef = React.createRef();
-        _this.overflowbuttonRef = React.createRef();
-        return _this;
-    }
-    TabSet.prototype.componentDidMount = function () {
-        this.updateVisibleTabs();
-    };
-    TabSet.prototype.shouldComponentUpdate = function () {
-        this.renderAllTabs = true; // since not the force update of a second render to adjust tabs
-        return true;
-    };
-    TabSet.prototype.componentDidUpdate = function () {
-        this.updateVisibleTabs();
-    };
-    /*
-        Since selected tab is always shown, move it to first position when
-        determining the number for tabs that can be shown
-     */
-    TabSet.getModifiedNodeList = function (nodes, selectedIndex) {
-        var modifiedChildren = __spreadArrays(nodes);
-        if (selectedIndex !== -1 && selectedIndex !== 0) {
-            var selected = nodes[selectedIndex];
-            var selectedRect = selected.getTabRect();
-            // move selected node to first position
-            modifiedChildren.splice(selectedIndex, 1);
-            modifiedChildren.unshift(selected);
-            selected.getTabRect().x = nodes[0].getTabRect().x;
-            selected.getTabRect().y = nodes[0].getTabRect().y; // for vertical border
-            // adjust x,y of tabs 1-selectedindex to account for insersion of selected at 0
-            for (var i = 1; i <= selectedIndex; i++) {
-                var child = modifiedChildren[i];
-                child.getTabRect().x += selectedRect.width;
-                child.getTabRect().y += selectedRect.height; // for vertical border
-            }
+function getModifiedNodeList(nodes, selectedIndex) {
+    var modifiedChildren = __spreadArrays(nodes);
+    if (selectedIndex !== -1 && selectedIndex !== 0) {
+        var selected = nodes[selectedIndex];
+        var selectedRect = selected.getTabRect();
+        // move selected node to first position
+        modifiedChildren.splice(selectedIndex, 1);
+        modifiedChildren.unshift(selected);
+        selected.getTabRect().x = nodes[0].getTabRect().x;
+        selected.getTabRect().y = nodes[0].getTabRect().y; // for vertical border
+        // adjust x,y of tabs 1-selectedindex to account for insersion of selected at 0
+        for (var i = 1; i <= selectedIndex; i++) {
+            var child = modifiedChildren[i];
+            child.getTabRect().x += selectedRect.width;
+            child.getTabRect().y += selectedRect.height; // for vertical border
         }
-        return modifiedChildren;
-    };
-    TabSet.prototype.updateVisibleTabs = function () {
-        if (this.renderAllTabs) {
-            var node = this.props.node;
+    }
+    return modifiedChildren;
+}
+exports.getModifiedNodeList = getModifiedNodeList;
+/** @hidden @internal */
+exports.TabSet = function (props) {
+    var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, closeIcon = props.closeIcon;
+    var toolbarRef = React.useRef(null);
+    var overflowbuttonRef = React.useRef(null);
+    var hideTabsAfter = React.useRef(MAX_TABS);
+    var showOverflow = React.useRef(false);
+    var showToolbar = React.useRef(true);
+    var renderAllTabs = React.useRef(true);
+    var _a = React.useState(0), forceUpdateCount = _a[0], setForceUpdateCount = _a[1];
+    React.useLayoutEffect(function () {
+        updateVisibleTabs();
+    });
+    var updateVisibleTabs = function () {
+        if (renderAllTabs.current) {
             if (node.isEnableTabStrip() && node.getChildren().length > 0) {
-                var toolbarWidth = this.toolbarRef.current.getBoundingClientRect().width;
+                var toolbarWidth = toolbarRef.current.getBoundingClientRect().width;
                 var lastChild = node.getChildren()[node.getChildren().length - 1];
                 if (lastChild.getTabRect().getRight() > node.getRect().getRight() - toolbarWidth) {
-                    var modifiedChildren = TabSet.getModifiedNodeList(node.getChildren(), this.props.node.getSelected());
+                    var modifiedChildren = getModifiedNodeList(node.getChildren(), node.getSelected());
                     for (var i = 0; i < modifiedChildren.length; i++) {
                         var child = modifiedChildren[i];
                         if (child.getTabRect().getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
-                            this.hideTabsAfter = Math.max(0, i - 1);
-                            this.showOverflow = node.getChildren().length > 1;
+                            hideTabsAfter.current = Math.max(0, i - 1);
+                            showOverflow.current = node.getChildren().length > 1;
                             if (i === 0) {
-                                this.showToolbar = false;
+                                showToolbar.current = false;
                                 if (child.getTabRect().getRight() > node.getRect().getRight() - 20) {
-                                    this.showOverflow = false;
+                                    showOverflow.current = false;
                                 }
                             }
-                            this.renderAllTabs = false;
-                            this.forceUpdate(); // re-render to hide some tabs
+                            renderAllTabs.current = false;
+                            setForceUpdateCount(forceUpdateCount + 1);
                             return;
                         }
                     }
@@ -33664,108 +33414,140 @@ var TabSet = /** @class */ (function (_super) {
             }
         }
         else {
-            this.renderAllTabs = true;
+            renderAllTabs.current = true;
         }
     };
-    TabSet.prototype.render = function () {
-        if (this.renderAllTabs) {
-            this.hideTabsAfter = MAX_TABS;
-            this.showOverflow = false;
-            this.showToolbar = true;
-        }
-        var cm = this.props.layout.getClassName;
-        var node = this.props.node;
-        var selectedTabNode = this.props.node.getSelectedNode();
-        var style = node._styleWithPosition();
-        if (this.props.node.isMaximized()) {
-            style.zIndex = 100;
-        }
-        var tabs = [];
-        var hiddenTabs = [];
-        if (node.isEnableTabStrip()) {
-            for (var i = 0; i < node.getChildren().length; i++) {
-                var isSelected = this.props.node.getSelected() === i;
-                var showTab = this.hideTabsAfter >= i;
-                var child = node.getChildren()[i];
-                if (this.hideTabsAfter === i && this.props.node.getSelected() > this.hideTabsAfter) {
-                    hiddenTabs.push({ name: child.getName(), node: child, index: i });
-                    child = node.getChildren()[this.props.node.getSelected()];
-                    isSelected = true;
-                }
-                else if (!showTab && !isSelected) {
-                    hiddenTabs.push({ name: child.getName(), node: child, index: i });
-                }
-                if (showTab) {
-                    tabs.push(React.createElement(TabButton_1.TabButton, { layout: this.props.layout, node: child, key: child.getId(), selected: isSelected, show: showTab, height: node.getTabStripHeight(), iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, closeIcon: this.props.closeIcon }));
-                }
-            }
-        }
-        // tabs.forEach(c => console.log(c.key));
-        var buttons = [];
-        // allow customization of header contents and buttons
-        var renderState = { headerContent: node.getName(), buttons: buttons };
-        this.props.layout.customizeTabSet(this.props.node, renderState);
-        var headerContent = renderState.headerContent;
-        buttons = renderState.buttons;
-        var toolbar;
-        if (this.showToolbar === true) {
-            if (selectedTabNode !== undefined && this.props.layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-                var floatTitle = this.props.layout.i18nName(__1.I18nLabel.Float_Tab);
-                buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: this.onFloatTab }));
-            }
-            if (this.props.node.isEnableMaximize()) {
-                var minTitle = this.props.layout.i18nName(__1.I18nLabel.Restore);
-                var maxTitle = this.props.layout.i18nName(__1.I18nLabel.Maximize);
-                buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: this.onMaximizeToggle }));
-            }
-            toolbar = React.createElement("div", { key: "toolbar", ref: this.toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: this.onInterceptMouseDown }, buttons);
-        }
-        if (this.showOverflow === true && hiddenTabs.length > 0) {
-            tabs.push(React.createElement("button", { key: "overflowbutton", ref: this.overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), onTouchStart: this.onInterceptMouseDown, onClick: this.onOverflowClick.bind(this, hiddenTabs), onMouseDown: this.onInterceptMouseDown }, hiddenTabs.length));
-        }
-        var showHeader = node.getName() !== undefined;
-        var header;
-        var tabStrip;
-        var tabStripClasses = cm("flexlayout__tabset_header_outer");
-        if (this.props.node.getClassNameTabStrip() !== undefined) {
-            tabStripClasses += " " + this.props.node.getClassNameTabStrip();
-        }
-        if (node.isActive() && !showHeader) {
-            tabStripClasses += " " + cm("flexlayout__tabset-selected");
-        }
-        if (node.isMaximized() && !showHeader) {
-            tabStripClasses += " " + cm("flexlayout__tabset-maximized");
-        }
-        if (showHeader) {
-            var tabHeaderClasses = cm("flexlayout__tabset_header");
-            if (node.isActive()) {
-                tabHeaderClasses += " " + cm("flexlayout__tabset-selected");
-            }
-            if (node.isMaximized()) {
-                tabHeaderClasses += " " + cm("flexlayout__tabset-maximized");
-            }
-            if (this.props.node.getClassNameHeader() !== undefined) {
-                tabHeaderClasses += " " + this.props.node.getClassNameHeader();
-            }
-            header = React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown },
-                headerContent,
-                toolbar);
-            tabStrip = React.createElement("div", { className: tabStripClasses, style: { height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" } },
-                React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs));
+    var onOverflowClick = function () {
+        // console.log("hidden tabs: " + hiddenTabs);
+        var element = overflowbuttonRef.current;
+        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+    };
+    var onOverflowItemSelect = function (item) {
+        layout.doAction(Actions_1.default.selectTab(item.node.getId()));
+    };
+    var onMouseDown = function (event) {
+        var name = node.getName();
+        if (name === undefined) {
+            name = "";
         }
         else {
-            tabStrip = React.createElement("div", { className: tabStripClasses, style: { top: "0px", height: node.getTabStripHeight() + "px" }, onMouseDown: this.onMouseDown, onTouchStart: this.onMouseDown },
-                React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs),
-                toolbar);
+            name = ": " + name;
         }
-        return React.createElement("div", { style: style, className: cm("flexlayout__tabset") },
-            header,
-            tabStrip);
+        layout.doAction(Actions_1.default.setActiveTabset(node.getId()));
+        var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tabset, name);
+        layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
     };
-    return TabSet;
-}(React.Component));
-exports.TabSet = TabSet;
-// export default TabSet;
+    var onInterceptMouseDown = function (event) {
+        event.stopPropagation();
+    };
+    var onMaximizeToggle = function () {
+        if (node.isEnableMaximize()) {
+            layout.maximize(node);
+        }
+    };
+    var onFloatTab = function () {
+        if (selectedTabNode !== undefined) {
+            layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
+        }
+    };
+    var onDoubleClick = function (event) {
+        if (node.isEnableMaximize()) {
+            layout.maximize(node);
+        }
+    };
+    if (renderAllTabs.current) {
+        hideTabsAfter.current = MAX_TABS;
+        showOverflow.current = false;
+        showToolbar.current = true;
+    }
+    var cm = layout.getClassName;
+    var selectedTabNode = node.getSelectedNode();
+    var style = node._styleWithPosition();
+    if (node.isMaximized()) {
+        style.zIndex = 100;
+    }
+    var tabs = [];
+    var hiddenTabs = [];
+    if (node.isEnableTabStrip()) {
+        for (var i = 0; i < node.getChildren().length; i++) {
+            var isSelected = node.getSelected() === i;
+            var showTab = hideTabsAfter.current >= i;
+            var child = node.getChildren()[i];
+            if (hideTabsAfter.current === i && node.getSelected() > hideTabsAfter.current) {
+                hiddenTabs.push({ name: child.getName(), node: child, index: i });
+                child = node.getChildren()[node.getSelected()];
+                isSelected = true;
+            }
+            else if (!showTab && !isSelected) {
+                hiddenTabs.push({ name: child.getName(), node: child, index: i });
+            }
+            if (showTab) {
+                tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, key: child.getId(), selected: isSelected, show: showTab, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, closeIcon: closeIcon }));
+            }
+        }
+    }
+    // tabs.forEach(c => console.log(c.key));
+    var buttons = [];
+    // allow customization of header contents and buttons
+    var renderState = { headerContent: node.getName(), buttons: buttons };
+    layout.customizeTabSet(node, renderState);
+    var headerContent = renderState.headerContent;
+    buttons = renderState.buttons;
+    var toolbar;
+    if (showToolbar.current === true) {
+        if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+            var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
+            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button-float"), onClick: onFloatTab }));
+        }
+        if (node.isEnableMaximize()) {
+            var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
+            var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
+            buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle }));
+        }
+        toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: onInterceptMouseDown }, buttons);
+    }
+    if (showOverflow.current === true && hiddenTabs.length > 0) {
+        tabs.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), onTouchStart: onInterceptMouseDown, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown }, hiddenTabs.length));
+    }
+    var showHeader = node.getName() !== undefined;
+    var header;
+    var tabStrip;
+    var tabStripClasses = cm("flexlayout__tabset_header_outer");
+    if (node.getClassNameTabStrip() !== undefined) {
+        tabStripClasses += " " + node.getClassNameTabStrip();
+    }
+    if (node.isActive() && !showHeader) {
+        tabStripClasses += " " + cm("flexlayout__tabset-selected");
+    }
+    if (node.isMaximized() && !showHeader) {
+        tabStripClasses += " " + cm("flexlayout__tabset-maximized");
+    }
+    if (showHeader) {
+        var tabHeaderClasses = cm("flexlayout__tabset_header");
+        if (node.isActive()) {
+            tabHeaderClasses += " " + cm("flexlayout__tabset-selected");
+        }
+        if (node.isMaximized()) {
+            tabHeaderClasses += " " + cm("flexlayout__tabset-maximized");
+        }
+        if (node.getClassNameHeader() !== undefined) {
+            tabHeaderClasses += " " + node.getClassNameHeader();
+        }
+        header = React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+            headerContent,
+            toolbar);
+        tabStrip = React.createElement("div", { className: tabStripClasses, style: { height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px" } },
+            React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs));
+    }
+    else {
+        tabStrip = React.createElement("div", { className: tabStripClasses, style: { top: "0px", height: node.getTabStripHeight() + "px" }, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+            React.createElement("div", { className: cm("flexlayout__tabset_header_inner") }, tabs),
+            toolbar);
+    }
+    return React.createElement("div", { style: style, className: cm("flexlayout__tabset") },
+        header,
+        tabStrip);
+};
 
 
 /***/ })
