@@ -1,6 +1,9 @@
 import * as React from "react";
 import TabNode from "../model/TabNode";
 import {ILayoutCallbacks} from "./Layout";
+import {ErrorBoundary} from "./ErrorBoundary";
+import {I18nLabel} from "../I18nLabel";
+import {Fragment} from "react";
 
 /** @hidden @internal */
 export interface IFloatingWindowTabProps {
@@ -17,7 +20,11 @@ export const FloatingWindowTab = (props: IFloatingWindowTabProps) => {
 
     return (
         <div className={cm("flexlayout__floating_window_tab")}>
-            {child}
+            <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
+                <Fragment>
+                    {child}
+                </Fragment>
+            </ErrorBoundary>
         </div>
     );
 };

@@ -7,4 +7,5 @@ export enum I18nLabel {
     Floating_Window_Message= "This panel is shown in a floating window",
     Floating_Window_Show_Window="Show window",
     Floating_Window_Dock_Window="Dock window",
+    Error_rendering_component="Error rendering component",
   }

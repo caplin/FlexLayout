@@ -301,6 +301,7 @@ class SimpleTable extends React.Component<{ fields: any, data: any, onClick: any
     }
 
     render() {
+        // if (Math.random()>0.8) throw Error("oppps I crashed");
         var headercells = this.props.fields.map(function (field:any) {
             return <th key={field}>{field}</th>;
         });

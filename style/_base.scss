@@ -448,6 +448,16 @@
     }
   }
 
+  &__error_boundary_container {
+    @include absoluteFill;
+    display: flex;
+    justify-content: center;
+  }
+  &__error_boundary_content {
+    display: flex;
+    align-items: center;
+  }
+
 }
 
 

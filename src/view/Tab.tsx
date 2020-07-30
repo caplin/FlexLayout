@@ -1,9 +1,12 @@
 import * as React from "react";
+import {Fragment} from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import {JSMap} from "../Types";
 import {ILayoutCallbacks} from "./Layout";
+import {ErrorBoundary} from "./ErrorBoundary";
+import {I18nLabel} from "../I18nLabel";
 
 /** @hidden @internal */
 export interface ITabProps {
@@ -54,6 +57,11 @@ export const Tab = (props: ITabProps) => {
     return <div className={cm("flexlayout__tab")}
                 onMouseDown={onMouseDown}
                 onTouchStart={onMouseDown}
-                style={style}>{child}
+                style={style}>
+        <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
+            <Fragment>
+                {child}
+            </Fragment>
+        </ErrorBoundary>
     </div>;
 };
