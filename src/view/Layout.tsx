@@ -84,8 +84,8 @@ export interface ILayoutCallbacks {
 // not work on any version if IE or the original Edge browser
 // Assume any recent browser not IE or original Edge will work
 // @ts-ignore
-const isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
-const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+const isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
+const isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
 const defaultSupportsPopout: boolean = !isIEorEdge && !isMobile;
 
 /**
