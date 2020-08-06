@@ -340,6 +340,7 @@ var SimpleTable = /** @class */ (function (_super) {
     };
     SimpleTable.prototype.render = function () {
         var _this = this;
+        // if (Math.random()>0.8) throw Error("oppps I crashed");
         var headercells = this.props.fields.map(function (field) {
             return React.createElement("th", { key: field }, field);
         });
@@ -29458,6 +29459,7 @@ var I18nLabel;
     I18nLabel["Floating_Window_Message"] = "This panel is shown in a floating window";
     I18nLabel["Floating_Window_Show_Window"] = "Show window";
     I18nLabel["Floating_Window_Dock_Window"] = "Dock window";
+    I18nLabel["Error_rendering_component"] = "Error rendering component";
 })(I18nLabel = exports.I18nLabel || (exports.I18nLabel = {}));
 
 
@@ -32320,6 +32322,59 @@ exports.BorderTabSet = function (props) {
 
 /***/ }),
 
+/***/ "./src/view/ErrorBoundary.tsx":
+/*!************************************!*\
+  !*** ./src/view/ErrorBoundary.tsx ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ErrorBoundary = void 0;
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ErrorBoundary = /** @class */ (function (_super) {
+    __extends(ErrorBoundary, _super);
+    function ErrorBoundary(props) {
+        var _this = _super.call(this, props) || this;
+        _this.state = { hasError: false };
+        return _this;
+    }
+    ErrorBoundary.getDerivedStateFromError = function (error) {
+        return { hasError: true };
+    };
+    ErrorBoundary.prototype.componentDidCatch = function (error, errorInfo) {
+        console.debug(error);
+        console.debug(errorInfo);
+    };
+    ErrorBoundary.prototype.render = function () {
+        if (this.state.hasError) {
+            return (React.createElement("div", { className: "flexlayout__error_boundary_container" },
+                React.createElement("div", { className: "flexlayout__error_boundary_content" }, this.props.message)));
+        }
+        return this.props.children;
+    };
+    return ErrorBoundary;
+}(React.Component));
+exports.ErrorBoundary = ErrorBoundary;
+
+
+/***/ }),
+
 /***/ "./src/view/FloatingWindow.tsx":
 /*!*************************************!*\
   !*** ./src/view/FloatingWindow.tsx ***!
@@ -32431,12 +32486,17 @@ function copyStyles(doc) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FloatingWindowTab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
+var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /** @hidden @internal */
 exports.FloatingWindowTab = function (props) {
     var layout = props.layout, node = props.node, factory = props.factory;
     var cm = layout.getClassName;
     var child = factory(node);
-    return (React.createElement("div", { className: cm("flexlayout__floating_window_tab") }, child));
+    return (React.createElement("div", { className: cm("flexlayout__floating_window_tab") },
+        React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
+            React.createElement(react_1.Fragment, null, child))));
 };
 
 
@@ -32485,8 +32545,8 @@ var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloa
 // not work on any version if IE or the original Edge browser
 // Assume any recent browser not IE or original Edge will work
 // @ts-ignore
-var isIEorEdge = document.documentMode || /Edge\//.test(navigator.userAgent);
-var isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+var isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
+var isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
 var defaultSupportsPopout = !isIEorEdge && !isMobile;
 /**
  * A React component that hosts a multi-tabbed layout
@@ -33104,8 +33164,11 @@ exports.Splitter = function (props) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Tab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
+var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 /** @hidden @internal */
 exports.Tab = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node, factory = props.factory;
@@ -33137,7 +33200,9 @@ exports.Tab = function (props) {
     if (renderComponent) {
         child = factory(node);
     }
-    return React.createElement("div", { className: cm("flexlayout__tab"), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style }, child);
+    return React.createElement("div", { className: cm("flexlayout__tab"), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
+        React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
+            React.createElement(react_1.Fragment, null, child)));
 };
 
 

@@ -382,5 +382,18 @@
 .flexlayout__tab_floating_inner div a {
   color: royalblue;
 }
+.flexlayout__error_boundary_container {
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+}
+.flexlayout__error_boundary_content {
+  display: flex;
+  align-items: center;
+}
 
 /*# sourceMappingURL=light.css.map */
