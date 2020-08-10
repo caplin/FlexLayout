@@ -546,7 +546,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.dragStart(
             undefined,
             dragText,
-            TabNode._fromJson(json, this.model!),
+            TabNode._fromJson(json, this.model!, false),
             true,
             undefined,
             undefined
@@ -638,7 +638,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.dragStart(
             event,
             this.dragDivText,
-            TabNode._fromJson(this.newTabJson, this.model!),
+            TabNode._fromJson(this.newTabJson, this.model!, false),
             true,
             undefined,
             undefined

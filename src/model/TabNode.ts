@@ -13,8 +13,8 @@ class TabNode extends Node implements IDraggable {
   static readonly TYPE = "tab";
 
   /** @hidden @internal */
-  static _fromJson(json: any, model: Model) {
-    const newLayoutNode = new TabNode(model, json);
+  static _fromJson(json: any, model: Model, addToModel:boolean=true) {
+    const newLayoutNode = new TabNode(model, json, addToModel);
     return newLayoutNode;
   }
   /** @hidden @internal */
@@ -50,13 +50,15 @@ class TabNode extends Node implements IDraggable {
     private _window?: Window;
 
   /** @hidden @internal */
-  constructor(model: Model, json: any) {
+  constructor(model: Model, json: any, addToModel: boolean=true) {
     super(model);
 
     this._extra = {};  // extra data added to node not saved in json
 
     TabNode._attributeDefinitions.fromJson(json, this._attributes);
-    model._addNode(this);
+    if (addToModel === true) {
+      model._addNode(this);
+    }
   }
 
   getWindow() {

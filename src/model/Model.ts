@@ -194,7 +194,7 @@ class Model {
     switch (action.type) {
       case Actions.ADD_NODE:
         {
-          const newNode = new TabNode(this, action.data.json);
+          const newNode = new TabNode(this, action.data.json, true);
           const toNode = this._idMap[action.data.toNode] as (Node & IDraggable);
           if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
             toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index);
