@@ -460,7 +460,7 @@ adjusting the layout easier on a small device.
 for example:
 
 ```
-model.doAction(Actions.addNode({type:"tab", component:"grid", name:"a grid", id:"5"}, "1", DropLocation.CENTER, 0));
+model.doAction(Actions.addNode({type:"tab", component:"grid", name:"a grid", id:"5"}, "1", DockLocation.CENTER, 0));
 ```
 This would add a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
 Note: you can get the id of a node using the method node.getId(), if an id wasn't assigned when the node was created then one will be created for you of the form #<next available id> (e.g. #1, #2 ...).
