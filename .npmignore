@@ -4,7 +4,6 @@ bundles/
 examples/
 node_modules/
 spec/
-src/
 typedoc/
 package-lock.json
 todo.txt
