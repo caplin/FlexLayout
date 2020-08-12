@@ -9,20 +9,28 @@ export function showPopup(triggerElement: Element,
 
     const triggerRect = triggerElement.getBoundingClientRect();
     const currentDocument = triggerElement.ownerDocument;
-
-    const docRect = currentDocument.body.getBoundingClientRect();
+    const currentWindow = currentDocument.defaultView;
+    let windowWidth, windowHeight;
+    if (currentWindow) {
+      windowWidth = currentWindow.innerWidth;
+      windowHeight = currentWindow.innerHeight;
+    } else {
+      const docRect = currentDocument.body.getBoundingClientRect();
+      windowWidth = docRect.right;
+      windowHeight = docRect.bottom;
+    }
 
     const elm = currentDocument.createElement("div");
     elm.className = classNameMapper("flexlayout__popup_menu_container");
-    if (triggerRect.left < docRect.width / 2) {
+    if (triggerRect.left < windowWidth / 2) {
         elm.style.left = (triggerRect.left) + "px";
     } else {
-        elm.style.right = (docRect.right - triggerRect.right) + "px";
+        elm.style.right = (windowWidth - triggerRect.right) + "px";
     }
-    if (triggerRect.top < docRect.height / 2) {
+    if (triggerRect.top < windowHeight / 2) {
         elm.style.top = (triggerRect.top) + "px";
     } else {
-        elm.style.bottom = (docRect.bottom - triggerRect.bottom) + "px";
+        elm.style.bottom = (windowHeight - triggerRect.bottom) + "px";
     }
     currentDocument.body.appendChild(elm);
 
