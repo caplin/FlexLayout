@@ -3,7 +3,7 @@ import {I18nLabel} from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import Rect from "../Rect";
-import {ILayoutCallbacks} from "./Layout";
+import {IIcons, ILayoutCallbacks} from "./Layout";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -13,12 +13,12 @@ export interface IBorderButtonProps {
     border: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    closeIcon?: React.ReactNode;
+    icons?: IIcons;
 }
 
 /** @hidden @internal */
 export const BorderButton = (props: IBorderButtonProps) => {
-    const {layout, node, selected, border, iconFactory, titleFactory, closeIcon} = props;
+    const {layout, node, selected, border, iconFactory, titleFactory, icons} = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
@@ -90,7 +90,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
                            onMouseDown={onCloseMouseDown}
                            onClick={onClose}
                            onTouchStart={onCloseMouseDown}
-        >{closeIcon}</div>;
+        >{icons?.close}</div>;
     }
 
     return <div ref={selfRef}

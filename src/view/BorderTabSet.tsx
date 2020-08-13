@@ -3,7 +3,7 @@ import DockLocation from "../DockLocation";
 import Border from "../model/BorderNode";
 import TabNode from "../model/TabNode";
 import {BorderButton} from "./BorderButton";
-import {ILayoutCallbacks} from "./Layout";
+import {IIcons, ILayoutCallbacks} from "./Layout";
 import {showPopup} from "../PopupMenu";
 import Actions from "../model/Actions";
 import {getModifiedNodeList} from "./TabSet";
@@ -15,14 +15,14 @@ export interface IBorderTabSetProps {
     layout: ILayoutCallbacks;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    closeIcon?: React.ReactNode;
+    icons?: IIcons;
 }
 
 const MAX_TABS: number = 999;
 
 /** @hidden @internal */
 export const BorderTabSet = (props: IBorderTabSetProps) => {
-    const {border, layout, iconFactory, titleFactory, closeIcon} = props;
+    const {border, layout, iconFactory, titleFactory, icons} = props;
 
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -151,7 +151,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                                     selected={isSelected}
                                     iconFactory={iconFactory}
                                     titleFactory={titleFactory}
-                                    closeIcon={closeIcon}/>);
+                                    icons={icons}/>);
         }
     };
 

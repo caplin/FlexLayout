@@ -4,7 +4,7 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
-import {ILayoutCallbacks} from "./Layout";
+import {IIcons, ILayoutCallbacks} from "./Layout";
 
 /** @hidden @internal */
 export interface ITabButtonProps {
@@ -15,12 +15,12 @@ export interface ITabButtonProps {
     height: number;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    closeIcon?: React.ReactNode;
+    icons?: IIcons;
 }
 
 /** @hidden @internal */
 export const TabButton = (props: ITabButtonProps) => {
-    const {layout, node, show, selected, height, iconFactory, titleFactory, closeIcon} = props;
+    const {layout, node, show, selected, height, iconFactory, titleFactory, icons} = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
@@ -142,7 +142,7 @@ export const TabButton = (props: ITabButtonProps) => {
                            onMouseDown={onCloseMouseDown}
                            onClick={onClose}
                            onTouchStart={onCloseMouseDown}
-        >{closeIcon}</div>;
+        >{icons?.close}</div>;
     }
 
     return <div ref={selfRef}
