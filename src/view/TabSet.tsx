@@ -4,7 +4,7 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import {showPopup} from "../PopupMenu";
-import {ILayoutCallbacks} from "./Layout";
+import {IIcons, ILayoutCallbacks} from "./Layout";
 import {TabButton} from "./TabButton";
 
 /** @hidden @internal */
@@ -13,7 +13,7 @@ export interface ITabSetProps {
     node: TabSetNode;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    closeIcon?: React.ReactNode;
+    icons?: IIcons;
 }
 
 const MAX_TABS: number = 999;
@@ -45,7 +45,7 @@ export function getModifiedNodeList(nodes: TabNode[], selectedIndex: number): Ta
 
 /** @hidden @internal */
 export const TabSet = (props: ITabSetProps) => {
-    const {node, layout, iconFactory, titleFactory, closeIcon} = props;
+    const {node, layout, iconFactory, titleFactory, icons} = props;
 
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -180,7 +180,7 @@ export const TabSet = (props: ITabSetProps) => {
                                      height={node.getTabStripHeight()}
                                      iconFactory={iconFactory}
                                      titleFactory={titleFactory}
-                                     closeIcon={closeIcon}/>);
+                                     icons={icons}/>);
             }
         }
     }
@@ -201,7 +201,8 @@ export const TabSet = (props: ITabSetProps) => {
             buttons.push(<button key="float"
                                  title={floatTitle}
                                  className={cm("flexlayout__tab_toolbar_button-float")}
-                                 onClick={onFloatTab}/>);
+                                 onClick={onFloatTab}
+            >{icons?.popout}</button>);
         }
         if (node.isEnableMaximize()) {
             const minTitle = layout.i18nName(I18nLabel.Restore);
@@ -209,7 +210,8 @@ export const TabSet = (props: ITabSetProps) => {
             buttons.push(<button key="max"
                                  title={node.isMaximized() ? minTitle : maxTitle}
                                  className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
-                                 onClick={onMaximizeToggle}/>);
+                                 onClick={onMaximizeToggle}
+            >{node.isMaximized() ? icons?.restore : icons?.maximize}</button>);
         }
 
         toolbar = <div key="toolbar" ref={toolbarRef} className={cm("flexlayout__tab_toolbar")}
@@ -224,7 +226,7 @@ export const TabSet = (props: ITabSetProps) => {
                           onTouchStart={onInterceptMouseDown}
                           onClick={onOverflowClick}
                           onMouseDown={onInterceptMouseDown}
-        >{hiddenTabs.length}</button>);
+        >{icons?.more}{hiddenTabs.length}</button>);
     }
 
     const showHeader = node.getName() !== undefined;

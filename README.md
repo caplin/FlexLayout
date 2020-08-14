@@ -72,7 +72,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | factory         | required          | a factory function for creating React components |
 | iconFactory     | optional          | a factory function for creating icon components for tab bar buttons |
 | titleFactory    | optional          | a factory function for creating title components for tab bar buttons |
-| closeIcon       | optional          | a icon to use in place of the default close icon |
+| icons           | optional          | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
 | onAction        | optional          | function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning `undefined` from the function will halt the action, otherwise return the action to continue |
 | onRenderTab     | optional          | function called when rendering a tab, allows leading (icon) and content sections to be customized |
 | onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |

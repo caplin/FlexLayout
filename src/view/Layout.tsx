@@ -29,6 +29,7 @@ export interface ILayoutProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     closeIcon?: React.ReactNode;
+    icons?: IIcons;
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
         node: TabNode,
@@ -46,6 +47,14 @@ export interface ILayoutProps {
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
+}
+
+export interface IIcons {
+    close?: React.ReactNode;
+    popout?: React.ReactNode;
+    maximize?: React.ReactNode;
+    restore?: React.ReactNode;
+    more?: React.ReactNode;
 }
 
 /** @hidden @internal */
@@ -144,6 +153,8 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     private supportsPopout: boolean;
     /** @hidden @internal */
     private popoutURL: string;
+    /** @hidden @internal */
+    private icons?: IIcons;
     private firstRender: boolean;
 
     constructor(props: ILayoutProps) {
@@ -156,6 +167,10 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.selfRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
+        // For backwards compatibility, prop closeIcon sets prop icons.close:
+        this.icons = props.closeIcon ?
+            Object.assign({close: props.closeIcon}, props.icons) :
+            props.icons;
         this.firstRender = true;
     }
 
@@ -354,7 +369,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
                         layout={this}
                         iconFactory={this.props.iconFactory}
                         titleFactory={this.props.titleFactory}
-                        closeIcon={this.props.closeIcon}
+                        icons={this.icons}
                     />
                 );
                 const drawChildren = border._getDrawChildren();
@@ -431,7 +446,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
                         node={child}
                         iconFactory={this.props.iconFactory}
                         titleFactory={this.props.titleFactory}
-                        closeIcon={this.props.closeIcon}
+                        icons={this.icons}
                     />
                 );
                 this.renderChildren(
