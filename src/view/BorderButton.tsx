@@ -77,20 +77,24 @@ export const BorderButton = (props: IBorderButtonProps) => {
         leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
     }
 
+    let buttons: any[] = [];
+
     // allow customization of leading contents (icon) and contents
-    const renderState = {leading: leadingContent, content: titleContent};
+    const renderState = {leading: leadingContent, content: titleContent, buttons};
     layout.customizeTab(node, renderState);
 
     const content = <div className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
     const leading = <div className={cm("flexlayout__border_button_leading")}>{renderState.leading}</div>;
 
-    let closeButton;
     if (node.isEnableClose()) {
-        closeButton = <div className={cm("flexlayout__border_button_trailing")}
-                           onMouseDown={onCloseMouseDown}
-                           onClick={onClose}
-                           onTouchStart={onCloseMouseDown}
-        >{icons?.close}</div>;
+        const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
+        buttons.push(<div key="close"
+                          title={closeTitle}
+                          className={cm("flexlayout__border_button_trailing")}
+                          onMouseDown={onCloseMouseDown}
+                          onClick={onClose}
+                          onTouchStart={onCloseMouseDown}
+        >{icons?.close}</div>);
     }
 
     return <div ref={selfRef}
@@ -100,6 +104,6 @@ export const BorderButton = (props: IBorderButtonProps) => {
                 onTouchStart={onMouseDown}>
         {leading}
         {content}
-        {closeButton}
+        {buttons}
     </div>;
 };
