@@ -222,7 +222,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     updateRect = () => {
         this.domRect = this.selfRef.current!.getBoundingClientRect();
         const rect = new Rect(0, 0, this.domRect.width, this.domRect.height);
-        if (!rect.equals(this.rect)) {
+        if (!rect.equals(this.rect) && rect.width !== 0 && rect.height !== 0) {
             this.rect = rect;
             this.forceUpdate();
         }
@@ -244,6 +244,10 @@ export class Layout extends React.Component<ILayoutProps, any>  {
 
     /** @hidden @internal */
     getDomRect() {
+        if (this.domRect.width === 0 ) { // needed since tabbutton needs this before layout.componentDidUpdate()
+            this.domRect = this.selfRef.current!.getBoundingClientRect();
+        }
+
         return this.domRect;
     }
 

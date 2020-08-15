@@ -1,3 +1,8 @@
+0.4.6
+Added icons prop to allow default icons to be replaced.
+Added tabLocation attribute to tabsets to allow top and bottom tab placement.
+Modified css, default font is now 14px.
+
 0.4.5
 Fixed use of global objects for use when serverside rendering
 Added error boundary around tab contents to prevent tab rendering exception crashing the app

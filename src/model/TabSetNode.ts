@@ -65,6 +65,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
     attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
+    attributeDefinitions.addInherited("tabLocation", "tabSetTabLocation");
     return attributeDefinitions;
   }
 
@@ -161,6 +162,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return this._getAttr("tabStripHeight") as number;
   }
 
+  getTabLocation() {
+    return this._getAttr("tabLocation") as string;
+  }
+
   /** @hidden @internal */
   _setWeight(weight: number) {
     this._attributes.weight = weight;
@@ -231,14 +236,23 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     const showHeader = (this.getName() !== undefined);
     let y = 0;
+    let h = 0;
     if (showHeader) {
       y += this.getHeaderHeight();
+      h += this.getHeaderHeight();
     }
     if (this.isEnableTabStrip()) {
-      this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this.getTabStripHeight());
-      y += this.getTabStripHeight();
+      if (this.getTabLocation() === "top") {
+        this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this.getTabStripHeight());
+      } else {
+        this._tabHeaderRect = new Rect(rect.x, rect.y + rect.height - this.getTabStripHeight(), rect.width, this.getTabStripHeight());
+      }
+      h += this.getTabStripHeight();
+      if (this.getTabLocation() === "top") {
+        y += this.getTabStripHeight();
+      }
     }
-    this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - y);
+    this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - h);
 
     this._children.forEach((child, i) => {
       child._layout(this._contentRect!);

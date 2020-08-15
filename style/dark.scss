@@ -10,8 +10,8 @@ $color_6: scale_color($color_base, $lightness:30%);
 $color_drag1: #cfe8ff;
 $color_drag2: #b7d1b5;
 
-$font-size: 12px;
-$font-size-overflow: 10px;
-$font-family: Arial, sans-serif;
+$font-size: 14px;
+$font-size-overflow: 12px;
+$font-family: 'Roboto', Arial, sans-serif;
 
 @import "_base";
