@@ -115,8 +115,10 @@ export const TabButton = (props: ITabButtonProps) => {
         leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
     }
 
+    let buttons: any[] = [];
+
     // allow customization of leading contents (icon) and contents
-    const renderState = {leading: leadingContent, content: titleContent};
+    const renderState = {leading: leadingContent, content: titleContent, buttons};
     layout.customizeTab(node, renderState);
 
     let content = <div ref={contentRef} className={cm("flexlayout__tab_button_content")}>{renderState.content}</div>;
@@ -136,13 +138,15 @@ export const TabButton = (props: ITabButtonProps) => {
         />;
     }
 
-    let closeButton;
     if (node.isEnableClose()) {
-        closeButton = <div className={cm("flexlayout__tab_button_trailing")}
-                           onMouseDown={onCloseMouseDown}
-                           onClick={onClose}
-                           onTouchStart={onCloseMouseDown}
-        >{icons?.close}</div>;
+        const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
+        buttons.push(<div key="close"
+                          title={closeTitle}
+                          className={cm("flexlayout__tab_button_trailing")}
+                          onMouseDown={onCloseMouseDown}
+                          onClick={onClose}
+                          onTouchStart={onCloseMouseDown}
+        >{icons?.close}</div>);
     }
 
     return <div ref={selfRef}
@@ -155,6 +159,6 @@ export const TabButton = (props: ITabButtonProps) => {
                 onTouchStart={onMouseDown}>
         {leading}
         {content}
-        {closeButton}
+        {buttons}
     </div>;
 };
