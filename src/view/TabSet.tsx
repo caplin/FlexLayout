@@ -237,6 +237,8 @@ export const TabSet = (props: ITabSetProps) => {
     if (node.getClassNameTabStrip() !== undefined) {
         tabStripClasses += " " + node.getClassNameTabStrip();
     }
+    tabStripClasses += " flexlayout__tabset_header_outer_"+ node.getTabLocation();
+
     if (node.isActive() && !showHeader) {
         tabStripClasses += " " + cm("flexlayout__tabset-selected");
     }
@@ -264,17 +266,31 @@ export const TabSet = (props: ITabSetProps) => {
             {headerContent}
             {toolbar}
         </div>;
+        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight() + "px"};
+        if (node.getTabLocation() === "top") {
+            tabStripStyle["top"] = node.getHeaderHeight() + "px";
+        } else {  
+            tabStripStyle["bottom"] = "0px";
+        }
+
         tabStrip = <div className={tabStripClasses}
-                        style={{height: node.getTabStripHeight() + "px", top: node.getHeaderHeight() + "px"}}>
-            <div className={cm("flexlayout__tabset_header_inner")}>
+                        style={tabStripStyle}>
+            <div className={cm("flexlayout__tabset_header_inner_" + node.getTabLocation())}>
                 {tabs}
             </div>
         </div>;
     } else {
-        tabStrip = <div className={tabStripClasses} style={{top: "0px", height: node.getTabStripHeight() + "px"}}
+        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight() + "px"};
+        if (node.getTabLocation() === "top") {
+            tabStripStyle["top"] = "0px";
+        } else {
+            tabStripStyle["bottom"] = "0px";
+        }
+        tabStrip = <div className={tabStripClasses} 
+                        style={tabStripStyle}
                         onMouseDown={onMouseDown}
                         onTouchStart={onMouseDown}>
-            <div className={cm("flexlayout__tabset_header_inner")}>
+            <div className={cm("flexlayout__tabset_header_inner_" + node.getTabLocation())}>
                 {tabs}
             </div>
             {toolbar}

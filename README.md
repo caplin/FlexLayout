@@ -334,6 +334,8 @@ Attributes allowed in the 'global' element
 | borderBarSize | 25 | |
 | borderEnableDrop | true | |
 | borderClassName | null | |
+| tabSetTabLocation | top | show tabs in location top or bottom |
+
 
 ## Row Attributes
 
@@ -403,6 +405,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | enableTabStrip | *inherited* | |
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | |
+| tabLocation | top | show tabs in location top or bottom |
 
 ## Border Attributes
 

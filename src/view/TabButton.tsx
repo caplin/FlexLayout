@@ -20,7 +20,7 @@ export interface ITabButtonProps {
 
 /** @hidden @internal */
 export const TabButton = (props: ITabButtonProps) => {
-    const {layout, node, show, selected, height, iconFactory, titleFactory, icons} = props;
+    const {layout, node, show, selected, iconFactory, titleFactory, icons} = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
@@ -96,12 +96,18 @@ export const TabButton = (props: ITabButtonProps) => {
     };
 
     const cm = layout.getClassName;
-    let classNames = cm("flexlayout__tab_button");
+    const parentNode = node.getParent() as TabSetNode;
+
+    let baseClassName = "flexlayout__tab_button";
+    let classNames = cm(baseClassName);
+    if (parentNode.getTabLocation() !== "top") {
+        classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
+    }
 
     if (selected) {
-        classNames += " " + cm("flexlayout__tab_button--selected");
+        classNames += " " + cm(baseClassName + "--selected");
     } else {
-        classNames += " " + cm("flexlayout__tab_button--unselected");
+        classNames += " " + cm(baseClassName + "--unselected");
     }
 
     if (node.getClassName() !== undefined) {
@@ -151,8 +157,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     return <div ref={selfRef}
                 style={{
-                    visibility: show ? "visible" : "hidden",
-                    height: height
+                    visibility: show ? "visible" : "hidden"
                 }}
                 className={classNames}
                 onMouseDown={onMouseDown}
