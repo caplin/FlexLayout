@@ -169,8 +169,8 @@
 .flexlayout__tab_button_trailing {
   display: inline-block;
   margin-left: 8px;
-  width: 8px;
-  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
 }
 .flexlayout__tab_button:hover .flexlayout__tab_button_trailing, .flexlayout__tab_button--selected .flexlayout__tab_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
@@ -316,8 +316,8 @@
   display: inline-block;
   margin-left: 8px;
   margin-top: 3px;
-  width: 8px;
-  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
 }
 .flexlayout__border_button:hover .flexlayout__border_button_trailing, .flexlayout__border_button--selected .flexlayout__border_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
