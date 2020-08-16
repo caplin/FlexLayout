@@ -15,7 +15,9 @@
 				"component": "sub",
 				"config": {
 					"model": {
-						"global": {},
+						"global": {
+							"tabSetTabLocation":"bottom"
+						},
 						"layout": {
 							"type": "row",
 							"weight": 100,
