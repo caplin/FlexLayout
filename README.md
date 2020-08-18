@@ -328,6 +328,7 @@ Attributes allowed in the 'global' element
 | tabSetEnableDrag | true | |
 | tabSetEnableDivide | true | |
 | tabSetEnableMaximize | true | |
+| tabSetAutoSelectTab | true | whether to select new/moved tabs in tabset |
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
@@ -335,6 +336,7 @@ Attributes allowed in the 'global' element
 | tabSetTabStripHeight | 20 | |
 | borderBarSize | 25 | |
 | borderEnableDrop | true | |
+| borderAutoSelectTab | false | whether to select new/moved tabs in border |
 | borderClassName | null | |
 | tabSetTabLocation | top | show tabs in location top or bottom |
 
@@ -402,6 +404,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | enableDrag | *inherited* | |
 | enableDivide | *inherited* | |
 | enableMaximize | *inherited* | |
+| autoSelectTab | *inherited* | whether to select new/moved tabs in tabset |
 | classNameTabStrip | *inherited* | |
 | classNameHeader | *inherited* | |
 | enableTabStrip | *inherited* | |
@@ -426,6 +429,7 @@ Inherited defaults will take their value from the associated global attributes (
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | |
 | enableDrop | *inherited* | |
+| autoSelectTab | *inherited* | whether to select new/moved tabs in border |
 | className | *inherited* | |
 
 
@@ -451,8 +455,8 @@ adjusting the layout easier on a small device.
 
 | Action Creator | Description  |
 | ------------- | -----|
-|	Actions.addNode(newNodeJson, toNodeId, location, index, doNotSelect?) | add a new tab node to the given tabset node, and select it unless doNotSelect is true |
-|	Actions.moveNode(fromNodeId, toNodeId, location, index, doNotSelect?) | move a tab node from its current location to the new node and location, and select it unless doNotSelect is true |
+|	Actions.addNode(newNodeJson, toNodeId, location, index, select?) | add a new tab node to the given tabset node; `select` specifies whether to select new tab, defaulting to `autoSelectTab` attribute |
+|	Actions.moveNode(fromNodeId, toNodeId, location, index, select?) | move a tab node from its current location to the new node and location; `select` specifies whether to select tab, defaulting to new tabset's `autoSelectTab` attribute |
 |	Actions.deleteTab(tabNodeId) | delete the given tab |
 |	Actions.selectTab(tabNodeId) | select the given tab |
 |	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |

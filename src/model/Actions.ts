@@ -26,16 +26,16 @@ class Actions {
    * @param toNodeId the new tab node will be added to the tabset with this node id
    * @param location the location where the new tab will be added, one of the DockLocation enum values.
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
-   * @param doNotSelect if true, skip the default behavior of selecting the new tab
-   * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *, doNotSelect?: boolean}}
+   * @param select (optional) whether to select the new tab, overriding autoSelectTab
+   * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *, select?: boolean}}
    */
-  static addNode(json: any, toNodeId: string, location: DockLocation, index: number, doNotSelect?: boolean): Action {
+  static addNode(json: any, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
     return new Action(Actions.ADD_NODE, {
       json,
       toNode: toNodeId,
       location: location.getName(),
       index,
-      doNotSelect
+      select
     });
   }
 
@@ -45,16 +45,16 @@ class Actions {
    * @param toNodeId the id of the node to receive the moved node
    * @param location the location where the moved node will be added, one of the DockLocation enum values.
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
-   * @param doNotSelect if true, skip the default behavior of selecting the new tab
+   * @param select (optional) whether to select the moved tab(s) in new tabset, overriding autoSelectTab
    * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
    */
-  static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number, doNotSelect?: boolean): Action {
+  static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
     return new Action(Actions.MOVE_NODE, {
       fromNode: fromNodeId,
       toNode: toNodeId,
       location: location.getName(),
       index,
-      doNotSelect
+      select
     });
   }
 
