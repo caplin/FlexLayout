@@ -144,7 +144,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     private edgeTopDiv?: HTMLDivElement;
     /** @hidden @internal */
-    private fnNewNodeDropped?: () => void;
+    private fnNewNodeDropped?: (nodeId: string) => void;
     /** @hidden @internal */
     private currentDocument?: HTMLDocument;
     /** @hidden @internal */
@@ -769,17 +769,18 @@ export class Layout extends React.Component<ILayoutProps, any>  {
 
         if (this.dropInfo) {
             if (this.newTabJson !== undefined) {
+                const nodeId = this.dropInfo.node.getId();
                 this.doAction(
                     Actions.addNode(
                         this.newTabJson,
-                        this.dropInfo.node.getId(),
+                        nodeId,
                         this.dropInfo.location,
                         this.dropInfo.index
                     )
                 );
 
                 if (this.fnNewNodeDropped != null) {
-                    this.fnNewNodeDropped();
+                    this.fnNewNodeDropped(nodeId);
                     this.fnNewNodeDropped = undefined;
                 }
                 this.newTabJson = undefined;
