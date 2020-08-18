@@ -155,12 +155,13 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   getHeaderHeight() {
-    return this._getAttr("headerHeight") as number;
+    const fontSize = this._model._getFontSize();
+    return fontSize ? fontSize + 12 : this._getAttr("headerHeight") as number;
   }
 
   getTabStripHeight() {
     const fontSize = this._model._getFontSize();
-    return fontSize ? fontSize+12 : this._getAttr("tabStripHeight") as number;
+    return fontSize ? fontSize + 12 : this._getAttr("tabStripHeight") as number;
   }
 
   getTabLocation() {
