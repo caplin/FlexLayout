@@ -144,7 +144,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     private edgeTopDiv?: HTMLDivElement;
     /** @hidden @internal */
-    private fnNewNodeDropped?: (nodeId: string) => void;
+    private fnNewNodeDropped?: (nodeId?: string) => void;
     /** @hidden @internal */
     private currentDocument?: HTMLDocument;
     /** @hidden @internal */
