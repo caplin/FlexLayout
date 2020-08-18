@@ -271,7 +271,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number, doNotSelect: boolean) {
     const dockLocation = location;
 
     if (this === dragNode) { // tabset drop into itself
@@ -322,7 +322,9 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
       if (dragNode.getType() === TabNode.TYPE) {
         this._addChild(dragNode, insertPos);
-        this._setSelected(insertPos);
+        if (!doNotSelect) {
+          this._setSelected(insertPos);
+        }
         // console.log("added child at : " + insertPos);
       }
       else {

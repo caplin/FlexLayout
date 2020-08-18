@@ -451,8 +451,8 @@ adjusting the layout easier on a small device.
 
 | Action Creator | Description  |
 | ------------- | -----|
-|	Actions.addNode(newNodeJson, toNodeId, location, index) | add a new tab node to the given tabset node  |
-|	Actions.moveNode(fromNodeId, toNodeId, location, index) | move a tab node from its current location to the new node and location |
+|	Actions.addNode(newNodeJson, toNodeId, location, index, doNotSelect?) | add a new tab node to the given tabset node, and select it unless doNotSelect is true |
+|	Actions.moveNode(fromNodeId, toNodeId, location, index, doNotSelect?) | move a tab node from its current location to the new node and location, and select it unless doNotSelect is true |
 |	Actions.deleteTab(tabNodeId) | delete the given tab |
 |	Actions.selectTab(tabNodeId) | select the given tab |
 |	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |

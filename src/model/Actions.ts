@@ -26,10 +26,17 @@ class Actions {
    * @param toNodeId the new tab node will be added to the tabset with this node id
    * @param location the location where the new tab will be added, one of the DockLocation enum values.
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
-   * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *}}
+   * @param doNotSelect if true, skip the default behavior of selecting the new tab
+   * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *, doNotSelect?: boolean}}
    */
-  static addNode(json: any, toNodeId: string, location: DockLocation, index: number): Action {
-    return new Action(Actions.ADD_NODE, { json, toNode: toNodeId, location: location.getName(), index });
+  static addNode(json: any, toNodeId: string, location: DockLocation, index: number, doNotSelect?: boolean): Action {
+    return new Action(Actions.ADD_NODE, {
+      json,
+      toNode: toNodeId,
+      location: location.getName(),
+      index,
+      doNotSelect
+    });
   }
 
   /**
@@ -38,14 +45,16 @@ class Actions {
    * @param toNodeId the id of the node to receive the moved node
    * @param location the location where the moved node will be added, one of the DockLocation enum values.
    * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
+   * @param doNotSelect if true, skip the default behavior of selecting the new tab
    * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
    */
-  static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number): Action {
+  static moveNode(fromNodeId: string, toNodeId: string, location: DockLocation, index: number, doNotSelect?: boolean): Action {
     return new Action(Actions.MOVE_NODE, {
       fromNode: fromNodeId,
       toNode: toNodeId,
       location: location.getName(),
-      index
+      index,
+      doNotSelect
     });
   }
 

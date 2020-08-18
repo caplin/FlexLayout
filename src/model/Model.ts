@@ -209,7 +209,7 @@ class Model {
           const newNode = new TabNode(this, action.data.json, true);
           const toNode = this._idMap[action.data.toNode] as (Node & IDraggable);
           if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
-            toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index);
+            toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index, action.data.doNotSelect || false);
           }
           break;
         }
@@ -219,7 +219,7 @@ class Model {
           if (fromNode instanceof TabNode || fromNode instanceof TabSetNode) {
             const toNode = this._idMap[action.data.toNode] as (Node & IDropTarget);
             if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
-              toNode.drop(fromNode, DockLocation.getByName(action.data.location), action.data.index);
+              toNode.drop(fromNode, DockLocation.getByName(action.data.location), action.data.index, action.data.doNotSelect || false);
             }
           }
           break;

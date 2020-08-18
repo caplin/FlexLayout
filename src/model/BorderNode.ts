@@ -296,7 +296,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number, doNotSelect: boolean): void {
     let fromIndex = 0;
     const parent: Node | undefined = dragNode.getParent();
     if (parent !== undefined) {
@@ -337,7 +337,7 @@ class BorderNode extends Node implements IDropTarget {
       this._addChild(dragNode, insertPos);
     }
 
-    if (this.getSelected() !== -1) { // already open
+    if (!doNotSelect) {
       this._setSelected(insertPos);
     }
 
