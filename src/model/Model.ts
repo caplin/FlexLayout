@@ -68,13 +68,13 @@ class Model {
     attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute.STRING);
     attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute.STRING);
     attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute.BOOLEAN);
-    attributeDefinitions.add("tabSetHeaderHeight", 23).setType(Attribute.INT).setFrom(0);
-    attributeDefinitions.add("tabSetTabStripHeight", 23 ).setType(Attribute.INT).setFrom(0);
+    attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute.INT).setFrom(0);
+    attributeDefinitions.add("tabSetTabStripHeight", 0 ).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
     attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
     attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute.STRING);
 
-    attributeDefinitions.add("borderBarSize", 26);
+    attributeDefinitions.add("borderBarSize", 0).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("borderClassName", undefined).setType(Attribute.STRING);
     return attributeDefinitions;
