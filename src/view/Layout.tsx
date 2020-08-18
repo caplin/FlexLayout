@@ -26,6 +26,8 @@ import {TabFloating} from "./TabFloating";
 export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
+    fontSize?: number;
+    fontFamily?: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     closeIcon?: React.ReactNode;
@@ -87,6 +89,7 @@ export interface ILayoutCallbacks {
             buttons: React.ReactNode[];
         }
     ): void;
+    styleFont : (style: JSMap<string>) => JSMap<string>;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -172,6 +175,17 @@ export class Layout extends React.Component<ILayoutProps, any>  {
             Object.assign({close: props.closeIcon}, props.icons) :
             props.icons;
         this.firstRender = true;
+    }
+
+    styleFont(style: JSMap<string>, percent: number = 100) : JSMap<string> {
+        if (this.props.fontSize) {
+            const size = Math.max(8, Math.floor(this.props.fontSize * percent/100));
+            style.fontSize = size + "px";
+        }
+        if (this.props.fontFamily) {
+            style.fontFamily = this.props.fontFamily;
+        }
+        return style;
     }
 
     /** @hidden @internal */
@@ -288,6 +302,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
+        this.model!._setFontSize(this.props.fontSize);
         this.centerRect = this.model!._layout(this.rect);
 
         this.renderBorder(

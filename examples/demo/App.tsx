@@ -6,13 +6,13 @@ import {Node, TabSetNode, TabNode, DropInfo, BorderNode, Actions, Action} from "
 
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize:number }> {
 
     loadingLayoutName?: string;
 
     constructor(props:any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, maximized: false };
+        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize:14 };
 
         // save layout when unloading page
         window.onbeforeunload = (event:Event)=> {
@@ -200,6 +200,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         this.forceUpdate();
     }
 
+    onSizeChange = (event:React.FormEvent) => {
+        var target = event.target as HTMLSelectElement;
+        this.setState({fontSize: parseInt(target.value)});
+    }
+
     render() {
         var onRenderTab = function (node:TabNode, renderValues:any) {
             //renderValues.content += " *";
@@ -214,6 +219,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model !== null) {
             contents = <FlexLayout.Layout
                 ref="layout"
+                fontSize={this.state.fontSize}
+                // fontFamily="Courier New"
                 model={this.state.model}
                 factory={this.factory}
                 onAction={this.onAction}
@@ -262,6 +269,19 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 <select style={{ float: "right", marginLeft:5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
+                </select>
+                <select style={{ float: "right", marginLeft:5 }} 
+                onChange={this.onSizeChange}
+                defaultValue="14">
+                    <option value="8">Size 8</option>
+                    <option value="10">Size 10</option>
+                    <option value="12">Size 12</option>
+                    <option value="14">Size 14</option>
+                    <option value="16">Size 16</option>
+                    <option value="18">Size 18</option>
+                    <option value="20">Size 20</option>
+                    <option value="25">Size 25</option>
+                    <option value="30">Size 30</option>
                 </select>
             </div>
             <div className="contents">

@@ -45,12 +45,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 const lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
 
                 const isTabVisible = (i: number, child: TabNode, childEnd: number, borderEnd: number, toolbarSize: number) => {
-                    if (childEnd > borderEnd - (20 + toolbarSize)) {
+                    if (childEnd > borderEnd - (25 + toolbarSize)) {
                         hideTabsAfter.current = Math.max(0, i - 1);
                         showOverflow.current = node.getChildren().length > 1;
                         if (i === 0) {
                             showToolbar.current = false;
-                            if (childEnd > borderEnd - 20) {
+                            if (childEnd > borderEnd - 25) {
                                 showOverflow.current = false;
                             }
                         }
@@ -127,7 +127,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const cm = layout.getClassName;
 
-    const style = border.getTabHeaderRect()!.styleWithPosition({});
+    let style = border.getTabHeaderRect()!.styleWithPosition({});
     const tabs = [];
     const hiddenTabs: { name: string, node: TabNode, index: number }[] = [];
 
@@ -207,10 +207,19 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         tabs.push(overflowButton);
     }
 
+    style = layout.styleFont(style);
+
+    let innerStyle = {};
+    if (border.getLocation() === DockLocation.LEFT) {
+        innerStyle = {right: border.getBorderBarSize()-1}
+    } else if (border.getLocation() === DockLocation.RIGHT) {
+        innerStyle = {left: border.getBorderBarSize()-1}
+    }
+
     return <div
         style={style}
         className={borderClasses}>
-        <div className={cm("flexlayout__border_inner_" + border.getLocation().getName())}>
+        <div style={innerStyle} className={cm("flexlayout__border_inner_" + border.getLocation().getName())}>
             {tabs}
         </div>
         {toolbar}

@@ -74,12 +74,12 @@ export const TabSet = (props: ITabSetProps) => {
 
                     for (let i = 0; i < modifiedChildren.length; i++) {
                         const child = modifiedChildren[i] as TabNode;
-                        if (child.getTabRect()!.getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
+                        if (child.getTabRect()!.getRight() > node.getRect().getRight() - (25 + toolbarWidth)) {
                             hideTabsAfter.current = Math.max(0, i - 1);
                             showOverflow.current = node.getChildren().length > 1;
                             if (i === 0) {
                                 showToolbar.current = false;
-                                if (child.getTabRect()!.getRight() > node.getRect().getRight() - 20) {
+                                if (child.getTabRect()!.getRight() > node.getRect().getRight() - 25) {
                                     showOverflow.current = false;
                                 }
                             }
@@ -149,7 +149,7 @@ export const TabSet = (props: ITabSetProps) => {
     const cm = layout.getClassName;
 
     const selectedTabNode: TabNode = node.getSelectedNode() as TabNode;
-    const style = node._styleWithPosition();
+    let style = node._styleWithPosition();
 
     if (node.isMaximized()) {
         style.zIndex = 100;
@@ -296,6 +296,7 @@ export const TabSet = (props: ITabSetProps) => {
             {toolbar}
         </div>;
     }
+    style = layout.styleFont(style);
 
     return <div style={style} className={cm("flexlayout__tabset")}>
         {header}

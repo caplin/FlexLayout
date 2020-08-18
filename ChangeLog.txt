@@ -1,3 +1,9 @@
+0.4.7
+Added fontSize and fontFamily optional properties, the layout will adjust the
+tabset/border sizes as needed (this saves having to adjust the tabSetTabStripHeight etc).
+Added fontSize dropdown to demo.
+Modified css for above and to remove some fixed sizes.
+
 0.4.6
 Added icons prop to allow default icons to be replaced.
 Added tabLocation attribute to tabsets to allow top and bottom tab placement.

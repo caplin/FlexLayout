@@ -100,6 +100,8 @@ class Model {
   private _activeTabSet?: TabSetNode;
   /** @hidden @internal */
   private _borderRects: { inner: Rect, outer: Rect } = { inner: Rect.empty(), outer: Rect.empty() };
+  /** @hidden @internal */
+  private _fontSize?: number | undefined;
 
   /**
    * 'private' constructor. Use the static method Model.fromJson(json) to create a model
@@ -118,6 +120,15 @@ class Model {
     this._changeListener = listener;
   }
 
+  /** @hidden @internal */
+  _setFontSize(fontSize?: number) {
+    this._fontSize = fontSize;
+  }
+
+  /** @hidden @internal */
+  _getFontSize() {
+    return this._fontSize;
+  }
 
   /**
    * Get the currently active tabset node

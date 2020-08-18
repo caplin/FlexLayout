@@ -79,6 +79,8 @@
     overflow: hidden;
     background-color: $color_1;
     box-sizing: border-box;
+    font-size: $font-size;
+    font-family: $font-family;
 
     &_header {
       position: absolute;
@@ -91,8 +93,6 @@
       padding: 3px 3px 3px 5px;
       box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
       box-sizing: border-box;
-      font-size: $font-size;
-      font-family: $font-family;
 
       &_outer {
         background-color: $color_1;
@@ -156,8 +156,6 @@
       box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
       border-top-left-radius: 3px;
       border-top-right-radius: 3px;
-      font-size: $font-size;
-      font-family: $font-family;
 
       &--selected, &:hover {
         background-color: $color_3;
@@ -211,8 +209,7 @@
         padding-left: 12px;
         border: none;
         color: $color_text;
-        font-size: $font-size-overflow;
-        font-family: $font-family;
+        font-size: inherit;
         background: transparent url("../images/more.png") no-repeat left;
       }
     }
@@ -224,12 +221,10 @@
     top: 0;
     bottom: 0;
     right: 0;
-    font-size: $font-size;
-    font-family: $font-family;
 
     @mixin toolbar_button {
-      width: 20px;
-      height: 20px;
+      min-width: 20px;
+      min-height: 20px;
       border: none;
       outline-width: 0;
     }
@@ -279,6 +274,8 @@
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
+      font-size: $font-size;
+      font-family: $font-family;
     }
 
     &_top {
@@ -312,13 +309,11 @@
 
     &_inner_bottom, &_inner_top {
       @include borderInner;
-
     }
 
     &_inner_left {
       @include borderInner;
       position: absolute;
-      right: 25px;
       transform-origin: top right;
       transform: rotate(-90deg);
     }
@@ -326,24 +321,21 @@
     &_inner_right {
       @include borderInner;
       position: absolute;
-      left: 25px;
       transform-origin: top left;
       transform: rotate(90deg);
     }
   }
 
   &__border_button {
-    display: inline-block;
+    display: flex;
+    align-items: center;
     cursor: pointer;
-    padding: 2px 8px 3px 8px;
+    padding: 2px 8px 2px 8px;
     margin: 2px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border-radius: 3px;
-    vertical-align: top;
     box-sizing: border-box;
     white-space: nowrap;
-    font-size: $font-size;
-    font-family: $font-family;
     background-color: $color_3;
 
     &--selected, &:hover {
@@ -366,7 +358,6 @@
     &_trailing {
       display: inline-block;
       margin-left: 8px;
-      margin-top: 3px;
       min-width: 8px;
       min-height: 8px;
     }
@@ -382,8 +373,7 @@
       color: $color_text;
       padding-left: 12px;
       border: none;
-      font-size: $font-size-overflow;
-      font-family: $font-family;
+      font-size: inherit;
       background: transparent url("../images/more.png") no-repeat left;
     }
   }

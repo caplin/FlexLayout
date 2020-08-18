@@ -92,7 +92,8 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   getBorderBarSize() {
-    return this._getAttr("barSize") as number;
+    const fontSize = this._model._getFontSize();
+    return fontSize ? fontSize+12 : this._getAttr("barSize") as number;
   }
 
   getSize() {
