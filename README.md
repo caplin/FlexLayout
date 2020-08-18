@@ -331,9 +331,9 @@ Attributes allowed in the 'global' element
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
-| tabSetHeaderHeight | 0 | if fontSize prop defined then calculated from this otherwise defaults to 23 |
-| tabSetTabStripHeight | 0 | if fontSize prop defined then calculated from this otherwise defaults to 23|
-| borderBarSize | 0 | if fontSize prop defined then calculated from this otherwise defaults to 26 |
+| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 23 |
+| tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 23|
+| borderBarSize | 0 | Size of the border bars in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 26 |
 | borderEnableDrop | true | |
 | borderClassName | null | |
 | tabSetTabLocation | top | show tabs in location top or bottom |
