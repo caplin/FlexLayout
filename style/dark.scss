@@ -1,16 +1,16 @@
-$color_text: white;
-$color_background: black;
-$color_base: black;
-$color_1: scale_color($color_base, $lightness:7%);
-$color_2: scale_color($color_base, $lightness:10%);
-$color_3: scale_color($color_base, $lightness:15%);
-$color_4: scale_color($color_base, $lightness:20%);
-$color_5: scale_color($color_base, $lightness:25%);
-$color_6: scale_color($color_base, $lightness:30%);
-$color_drag1: #cfe8ff;
-$color_drag2: #b7d1b5;
+$color_text: white !default;
+$color_background: black !default;
+$color_base: black !default;
+$color_1: scale_color($color_base, $lightness:7%) !default;
+$color_2: scale_color($color_base, $lightness:10%) !default;
+$color_3: scale_color($color_base, $lightness:15%) !default;
+$color_4: scale_color($color_base, $lightness:20%) !default;
+$color_5: scale_color($color_base, $lightness:25%) !default;
+$color_6: scale_color($color_base, $lightness:30%) !default;
+$color_drag1: #cfe8ff !default;
+$color_drag2: #b7d1b5 !default;
 
-$font-size: 14px;
-$font-family: 'Roboto', Arial, sans-serif;
+$font-size: 14px !default;
+$font-family: Roboto, Arial, sans-serif !default;
 
 @import "_base";
