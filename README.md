@@ -70,8 +70,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | --------------- |:-----------------:| ----------------- |
 | model           | required          | the layout model  |
 | factory         | required          | a factory function for creating React components |
-| fontSize        | optional          | the tab font size (will also adjust the tabset/border size) overrides value in css |
-| fontFamily      | optional          | the tab font family, overrides value in css |
+| font        | optional          | the tab font (changing the font size will also adjust the tabset/border size) overrides value in css. Example: font={{size:12, style:"italic"}}|
 | iconFactory     | optional          | a factory function for creating icon components for tab bar buttons |
 | titleFactory    | optional          | a factory function for creating title components for tab bar buttons |
 | icons           | optional          | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |

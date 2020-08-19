@@ -219,10 +219,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model !== null) {
             contents = <FlexLayout.Layout
                 ref="layout"
-                fontSize={this.state.fontSize}
-                // fontFamily="Courier New"
                 model={this.state.model}
                 factory={this.factory}
+                font={{size:this.state.fontSize}}
                 onAction={this.onAction}
                 titleFactory={this.titleFactory}
                 iconFactory={this.iconFactory}

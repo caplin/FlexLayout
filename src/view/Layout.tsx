@@ -26,7 +26,12 @@ import {TabFloating} from "./TabFloating";
 export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
-    fontSize?: number;
+    font?: {
+        size?: number,
+        family?: string,
+        style?: string,
+        weight?: string
+    };
     fontFamily?: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
@@ -178,12 +183,20 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     }
 
     styleFont(style: JSMap<string>, percent: number = 100) : JSMap<string> {
-        if (this.props.fontSize) {
-            const size = Math.max(8, Math.floor(this.props.fontSize * percent/100));
-            style.fontSize = size + "px";
-        }
-        if (this.props.fontFamily) {
-            style.fontFamily = this.props.fontFamily;
+        if (this.props.font) {
+            if (this.props.font.size) {
+                const size = Math.max(8, Math.floor(this.props.font.size * percent/100));
+                style.fontSize = size + "px";
+            }
+            if (this.props.font.family) {
+                style.fontFamily = this.props.font.family;
+            }
+            if (this.props.font.style) {
+                style.fontStyle = this.props.font.style;
+            }
+            if (this.props.font.weight) {
+                style.fontWeight = this.props.font.weight;
+            }
         }
         return style;
     }
@@ -302,7 +315,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
-        this.model!._setFontSize(this.props.fontSize);
+        this.model!._setFontSize(this.props.font!.size);
         this.centerRect = this.model!._layout(this.rect);
 
         this.renderBorder(
