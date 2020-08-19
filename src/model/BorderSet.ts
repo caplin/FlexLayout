@@ -63,14 +63,14 @@ class BorderSet {
         border._setAdjustedSize(border.getSize());
         const visible = border.getSelected() !== -1;
         if (border.getLocation().getOrientation() === Orientation.HORZ) {
-          sumWidth += border.getBorderBarSize(fontSize) + this._model.getSplitterSize();
+          sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
           if (visible) {
             sumWidth += border.getSize();
             adjustableWidth += border.getSize();
           }
         }
         else {
-          sumHeight += border.getBorderBarSize(fontSize) + this._model.getSplitterSize();
+          sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
           if (visible) {
             sumHeight += border.getSize();
             adjustableHeight += border.getSize();

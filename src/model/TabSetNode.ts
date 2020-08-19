@@ -73,6 +73,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   private _contentRect?: Rect;
   /** @hidden @internal */
   private _tabHeaderRect?: Rect;
+  /** @hidden @internal */
+  private calculatedTabStripHeight: number;
+  /** @hidden @internal */
+  private calculatedHeaderHeight: number;
 
   /** @hidden @internal */
   constructor(model: Model, json: any) {
@@ -80,6 +84,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     TabSetNode._attributeDefinitions.fromJson(json, this._attributes);
     model._addNode(this);
+    this.calculatedTabStripHeight = 0;
+    this.calculatedHeaderHeight = 0;
   }
 
   getName() {
@@ -158,22 +164,30 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return fontSize + Math.floor(Math.min(12, Math.max(8, fontSize*2/3)));
   }
 
-  getHeaderHeight(fontSize: number) {
+  calcHeaderHeight(fontSize: number) {
     const headerHeight = this._getAttr("headerHeight") as number;
     if (headerHeight !== 0) { // its defined
-      return headerHeight;
+      this.calculatedHeaderHeight = headerHeight;
     } else {
-      return this.heightFromFontSize(fontSize);
+      this.calculatedHeaderHeight = this.heightFromFontSize(fontSize);
     }
   }
 
-  getTabStripHeight(fontSize: number) {
+  calcTabStripHeight(fontSize: number) {
     const tabStripHeight = this._getAttr("tabStripHeight") as number;
     if (tabStripHeight !== 0) { // its defined
-      return tabStripHeight;
+      this.calculatedTabStripHeight = tabStripHeight;
     } else {
-      return this.heightFromFontSize(fontSize);
+      this.calculatedTabStripHeight = this.heightFromFontSize(fontSize);
     }
+  }
+
+  getHeaderHeight() {
+    return this.calculatedHeaderHeight;
+  }
+
+  getTabStripHeight() {
+    return this.calculatedTabStripHeight
   }
 
   getTabLocation() {
@@ -239,7 +253,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
   /** @hidden @internal */
   _layout(rect: Rect, fontSize: number) {
-    const tabStripHeight = this.getTabStripHeight(fontSize);
+    this.calcHeaderHeight(fontSize);
+    this.calcTabStripHeight(fontSize);
+
+    const tabStripHeight = this.getTabStripHeight();
 
     if (this.isMaximized()) {
       rect = (this._model.getRoot() as Node).getRect();
@@ -253,8 +270,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     let y = 0;
     let h = 0;
     if (showHeader) {
-      y += this.getHeaderHeight(fontSize);
-      h += this.getHeaderHeight(fontSize);
+      y += this.getHeaderHeight();
+      h += this.getHeaderHeight();
     }
     if (this.isEnableTabStrip()) {
       if (this.getTabLocation() === "top") {

@@ -100,7 +100,6 @@ export interface ILayoutCallbacks {
         }
     ): void;
     styleFont : (style: JSMap<string>) => JSMap<string>;
-    getFontSize: () => number;
 }
 
 
@@ -206,10 +205,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
             }
         }
         return style;
-    }
-
-    getFontSize() {
-        return this.state.calculatedFontSize;
     }
 
     /** @hidden @internal */

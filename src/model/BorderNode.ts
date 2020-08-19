@@ -59,6 +59,8 @@ class BorderNode extends Node implements IDropTarget {
   private _drawChildren: Node[];
   /** @hidden @internal */
   private _adjustedSize: number = 0;
+  /** @hidden @internal */
+  private _calculatedBorderBarSize: number = 0;
 
   /** @hidden @internal */
   constructor(location: DockLocation, json: any, model: Model) {
@@ -95,13 +97,17 @@ class BorderNode extends Node implements IDropTarget {
     return fontSize + 12;
   }
 
-  getBorderBarSize(fontSize: number) {
+  calcBorderBarSize(fontSize: number) {
     const barSize = this._getAttr("barSize") as number;
     if (barSize !== 0) { // its defined
-      return barSize;
+      this._calculatedBorderBarSize = barSize;
     } else {
-      return this.heightFromFontSize(fontSize);
+      this._calculatedBorderBarSize = this.heightFromFontSize(fontSize);
     }
+  }
+
+  getBorderBarSize() {
+    return this._calculatedBorderBarSize;
   }
 
   getSize() {
@@ -163,7 +169,8 @@ class BorderNode extends Node implements IDropTarget {
 
   /** @hidden @internal */
   _layoutBorderOuter(outer: Rect, fontSize: number) {
-    const split1 = this._location.split(outer, this.getBorderBarSize(fontSize)); // split border outer
+    this.calcBorderBarSize(fontSize);
+    const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
     this._tabHeaderRect = split1.start;
     return split1.end;
   }
