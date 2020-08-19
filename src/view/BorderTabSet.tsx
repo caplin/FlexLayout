@@ -211,9 +211,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     let innerStyle = {};
     if (border.getLocation() === DockLocation.LEFT) {
-        innerStyle = {right: border.getBorderBarSize()-1}
+        innerStyle = {right: border.getBorderBarSize(layout.getFontSize())-1}
     } else if (border.getLocation() === DockLocation.RIGHT) {
-        innerStyle = {left: border.getBorderBarSize()-1}
+        innerStyle = {left: border.getBorderBarSize(layout.getFontSize())-1}
     }
 
     return <div

@@ -56,6 +56,11 @@ export interface ILayoutProps {
     popoutURL?: string | undefined;
 }
 
+export interface ILayoutState {
+    rect: Rect;
+    calculatedFontSize: number;
+}
+
 export interface IIcons {
     close?: React.ReactNode;
     popout?: React.ReactNode;
@@ -95,7 +100,9 @@ export interface ILayoutCallbacks {
         }
     ): void;
     styleFont : (style: JSMap<string>) => JSMap<string>;
+    getFontSize: () => number;
 }
+
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
@@ -108,18 +115,16 @@ const defaultSupportsPopout: boolean = !isIEorEdge && !isMobile;
 /**
  * A React component that hosts a multi-tabbed layout
  */
-export class Layout extends React.Component<ILayoutProps, any>  {
+export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
 
     /** @hidden @internal */
     private selfRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
-    private fontSizerRef: React.RefObject<HTMLDivElement>;
+    private fontSizeRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
     private domRect?: any;
     /** @hidden @internal */
-    private model?: Model;
-    /** @hidden @internal */
-    private rect: Rect;
+    private previousModel?: Model;   
     /** @hidden @internal */
     private centerRect?: Rect;
 
@@ -166,17 +171,14 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     private icons?: IIcons;
     private firstRender: boolean;
-    private calculatedFontSize : number = 14;
 
     constructor(props: ILayoutProps) {
         super(props);
-        this.model = this.props.model;
-        this.rect = new Rect(0, 0, 0, 0);
         this.domRect = {x: 0, y: 0, width: 0, height: 0};
-        this.model._setChangeListener(this.onModelChange);
+        this.props.model._setChangeListener(this.onModelChange);
         this.tabIds = [];
         this.selfRef = React.createRef<HTMLDivElement>();
-        this.fontSizerRef = React.createRef<HTMLDivElement>();
+        this.fontSizeRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         // For backwards compatibility, prop closeIcon sets prop icons.close:
@@ -184,6 +186,8 @@ export class Layout extends React.Component<ILayoutProps, any>  {
             Object.assign({close: props.closeIcon}, props.icons) :
             props.icons;
         this.firstRender = true;
+
+        this.state = {rect: new Rect(0, 0, 0, 0), calculatedFontSize:14};
     }
 
     styleFont(style: JSMap<string>) : JSMap<string> {
@@ -204,11 +208,15 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         return style;
     }
 
+    getFontSize() {
+        return this.state.calculatedFontSize;
+    }
+
     /** @hidden @internal */
     onModelChange = () => {
         this.forceUpdate();
         if (this.props.onModelChange) {
-            this.props.onModelChange(this.model!);
+            this.props.onModelChange(this.props.model);
         }
     };
 
@@ -217,10 +225,10 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         if (this.props.onAction !== undefined) {
             const outcome = this.props.onAction(action);
             if (outcome !== undefined) {
-                this.model!.doAction(outcome);
+                this.props.model.doAction(outcome);
             }
         } else {
-            this.model!.doAction(action);
+            this.props.model.doAction(action);
         }
     }
 
@@ -239,13 +247,12 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     componentDidUpdate() {
         this.updateRect();
         this.updateFontSize()
-        if (this.model !== this.props.model) {
-            if (this.model !== undefined) {
-                this.model._setChangeListener(undefined); // stop listening to old model
+        if (this.props.model !== this.previousModel) {
+            if (this.previousModel !== undefined) {
+                this.previousModel._setChangeListener(undefined); // stop listening to old model
             }
-            this.model = this.props.model;
-            this.model._setChangeListener(this.onModelChange);
-            this.forceUpdate();
+            this.props.model._setChangeListener(this.onModelChange);
+            this.previousModel = this.props.model;
         }
         // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
     }
@@ -254,23 +261,21 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     updateRect = () => {
         this.domRect = this.selfRef.current!.getBoundingClientRect();
         const rect = new Rect(0, 0, this.domRect.width, this.domRect.height);
-        if (!rect.equals(this.rect) && rect.width !== 0 && rect.height !== 0) {
-            this.rect = rect;
-            this.forceUpdate();
+        if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+            this.setState({rect})
         }
     };
 
     /** @hidden @internal */
     updateFontSize = () => {
-        if (this.fontSizerRef.current) {
-            const computedStyles = getComputedStyle(this.fontSizerRef.current);
+        if (this.fontSizeRef.current) {
+            const computedStyles = getComputedStyle(this.fontSizeRef.current);
             const fontSizeStr = computedStyles.fontSize;
             if (fontSizeStr && fontSizeStr.indexOf("px") !== -1) {
                 try {
                     const fontSize = parseInt(fontSizeStr);
-                    if (fontSize !== this.calculatedFontSize) {
-                        this.calculatedFontSize = fontSize;
-                        this.forceUpdate();
+                    if (fontSize !== this.state.calculatedFontSize) {
+                        this.setState({calculatedFontSize: fontSize});
                     }
                 } catch (e) {
                     console.debug(e);                    
@@ -332,7 +337,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
             return (
                 <div ref={this.selfRef} 
                      className={this.getClassName("flexlayout__layout")}>
-                     <div ref={this.fontSizerRef} style={fontStyle} className={fontClassName}></div>
+                     <div ref={this.fontSizeRef} style={fontStyle} className={fontClassName}></div>
                 </div>
             );
         }
@@ -343,23 +348,17 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
-        if (this.calculatedFontSize) {
-            this.model!._setFontSize(this.calculatedFontSize);
-        } else {
-            this.model!._setFontSize(undefined);
-        }
-
-        this.centerRect = this.model!._layout(this.rect);
+        this.centerRect = this.props.model._layout(this.state.rect, this.state.calculatedFontSize);
 
         this.renderBorder(
-            this.model!.getBorderSet(),
+            this.props.model.getBorderSet(),
             borderComponents,
             tabComponents,
             floatingWindows,
             splitterComponents
         );
         this.renderChildren(
-            this.model!.getRoot(),
+            this.props.model.getRoot(),
             tabSetComponents,
             tabComponents,
             floatingWindows,
@@ -399,7 +398,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
                 {borderComponents}
                 {splitterComponents}
                 {floatingWindows}
-                <div ref={this.fontSizerRef} style={fontStyle} className={fontClassName}></div>
+                <div ref={this.fontSizeRef} style={fontStyle} className={fontClassName}></div>
             </div>
         );
     }
@@ -408,14 +407,14 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     onCloseWindow = (id: string) => {
         this.doAction(Actions.unFloatTab(id));
         try {
-            (this.model!.getNodeById(id) as TabNode)._setWindow(undefined);
+            (this.props.model.getNodeById(id) as TabNode)._setWindow(undefined);
         } catch (e) { // catch incase it was a model change
         }
     };
 
     /** @hidden @internal */
     onSetWindow = (id: string, window: Window) => {
-        (this.model!.getNodeById(id) as TabNode)._setWindow(window);
+        (this.props.model.getNodeById(id) as TabNode)._setWindow(window);
     };
 
     /** @hidden @internal */
@@ -596,7 +595,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
      * @param json the json for the new tab node
      */
     addTabToTabSet(tabsetId: string, json: any) {
-        const tabsetNode = this.model!.getNodeById(tabsetId);
+        const tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
             this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
         }
@@ -607,7 +606,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
      * @param json the json for the new tab node
      */
     addTabToActiveTabSet(json: any) {
-        const tabsetNode = this.model!.getActiveTabset();
+        const tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
             this.doAction(
                 Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1)
@@ -627,7 +626,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.dragStart(
             undefined,
             dragText,
-            TabNode._fromJson(json, this.model!, false),
+            TabNode._fromJson(json, this.props.model, false),
             true,
             undefined,
             undefined
@@ -666,7 +665,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         );
 
         const r = new Rect(10, 10, 150, 50);
-        r.centerInRect(this.rect);
+        r.centerInRect(this.state.rect);
         this.dragDiv.style.left = r.x + "px";
         this.dragDiv.style.top = r.y + "px";
 
@@ -719,7 +718,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.dragStart(
             event,
             this.dragDivText,
-            TabNode._fromJson(this.newTabJson, this.model!, false),
+            TabNode._fromJson(this.newTabJson, this.props.model, false),
             true,
             undefined,
             undefined
@@ -735,7 +734,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         onClick?: (event: Event) => void,
         onDoubleClick?: (event: Event) => void
     ) => {
-        if (this.model!.getMaximizedTabset() !== undefined || !allowDrag) {
+        if (this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
             DragDrop.instance.startDrag(
                 event,
                 undefined,
@@ -794,7 +793,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     onDragMove = (event: React.MouseEvent<Element>) => {
         if (this.firstMove === false) {
-            const speed = this.model!._getAttribute("tabDragSpeed") as number;
+            const speed = this.props.model._getAttribute("tabDragSpeed") as number;
             this.outlineDiv!.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
         }
         this.firstMove = false;
@@ -808,7 +807,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
             pos.x - this.dragDiv!.getBoundingClientRect().width / 2 + "px";
         this.dragDiv!.style.top = pos.y + 5 + "px";
 
-        const dropInfo = this.model!._findDropTargetNode(
+        const dropInfo = this.props.model._findDropTargetNode(
             this.dragNode!,
             pos.x,
             pos.y
@@ -860,7 +859,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
 
     /** @hidden @internal */
     showEdges(rootdiv: HTMLElement) {
-        if (this.model!.isEnableEdgeDock()) {
+        if (this.props.model.isEnableEdgeDock()) {
             const domRect = rootdiv.getBoundingClientRect();
             const r = this.centerRect!;
             const size = 100;
@@ -913,7 +912,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
 
     /** @hidden @internal */
     hideEdges(rootdiv: HTMLElement) {
-        if (this.model!.isEnableEdgeDock()) {
+        if (this.props.model.isEnableEdgeDock()) {
             try {
                 rootdiv.removeChild(this.edgeTopDiv!);
                 rootdiv.removeChild(this.edgeLeftDiv!);

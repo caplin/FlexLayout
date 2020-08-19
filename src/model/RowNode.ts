@@ -80,8 +80,8 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
-    super._layout(rect);
+  _layout(rect: Rect, fontSize: number) {
+    super._layout(rect, fontSize);
 
     const pixelSize = this._rect._getSize(this.getOrientation());
 
@@ -162,10 +162,10 @@ class RowNode extends Node implements IDropTarget {
     let p = 0;
     for (const child of drawChildren) {
       if (this.getOrientation() === Orientation.HORZ) {
-        child._layout(new Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height));
+        child._layout(new Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height), fontSize);
       }
       else {
-        child._layout(new Rect(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()));
+        child._layout(new Rect(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()), fontSize);
       }
       p += child._getTempSize();
     }

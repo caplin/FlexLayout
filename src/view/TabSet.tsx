@@ -177,7 +177,7 @@ export const TabSet = (props: ITabSetProps) => {
                                      key={child.getId()}
                                      selected={isSelected}
                                      show={showTab}
-                                     height={node.getTabStripHeight()}
+                                     height={node.getTabStripHeight(layout.getFontSize())}
                                      iconFactory={iconFactory}
                                      titleFactory={titleFactory}
                                      icons={icons}/>);
@@ -260,15 +260,15 @@ export const TabSet = (props: ITabSetProps) => {
         }
 
         header = <div className={tabHeaderClasses}
-                      style={{height: node.getHeaderHeight() + "px"}}
+                      style={{height: node.getHeaderHeight(layout.getFontSize()) + "px"}}
                       onMouseDown={onMouseDown}
                       onTouchStart={onMouseDown}>
             {headerContent}
             {toolbar}
         </div>;
-        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight() + "px"};
+        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight(layout.getFontSize()) + "px"};
         if (node.getTabLocation() === "top") {
-            tabStripStyle["top"] = node.getHeaderHeight() + "px";
+            tabStripStyle["top"] = node.getHeaderHeight(layout.getFontSize()) + "px";
         } else {  
             tabStripStyle["bottom"] = "0px";
         }
@@ -280,7 +280,7 @@ export const TabSet = (props: ITabSetProps) => {
             </div>
         </div>;
     } else {
-        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight() + "px"};
+        const tabStripStyle: {[key:string]: string} = {height: node.getTabStripHeight(layout.getFontSize()) + "px"};
         if (node.getTabLocation() === "top") {
             tabStripStyle["top"] = "0px";
         } else {

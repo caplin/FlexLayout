@@ -158,31 +158,21 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return fontSize + Math.floor(Math.min(12, Math.max(8, fontSize*2/3)));
   }
 
-  getHeaderHeight() {
+  getHeaderHeight(fontSize: number) {
     const headerHeight = this._getAttr("headerHeight") as number;
     if (headerHeight !== 0) { // its defined
       return headerHeight;
     } else {
-      const fontSize = this._model._getFontSize();
-      if (fontSize) {
-        return this.heightFromFontSize(fontSize);
-      } else {
-        return 23; // the default
-      }
+      return this.heightFromFontSize(fontSize);
     }
   }
 
-  getTabStripHeight() {
+  getTabStripHeight(fontSize: number) {
     const tabStripHeight = this._getAttr("tabStripHeight") as number;
     if (tabStripHeight !== 0) { // its defined
       return tabStripHeight;
     } else {
-      const fontSize = this._model._getFontSize();
-      if (fontSize) {
-        return this.heightFromFontSize(fontSize);
-      } else {
-        return 23; // the default
-      }
+      return this.heightFromFontSize(fontSize);
     }
   }
 
@@ -248,8 +238,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
-    const tabStripHeight = this.getTabStripHeight();
+  _layout(rect: Rect, fontSize: number) {
+    const tabStripHeight = this.getTabStripHeight(fontSize);
 
     if (this.isMaximized()) {
       rect = (this._model.getRoot() as Node).getRect();
@@ -263,8 +253,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     let y = 0;
     let h = 0;
     if (showHeader) {
-      y += this.getHeaderHeight();
-      h += this.getHeaderHeight();
+      y += this.getHeaderHeight(fontSize);
+      h += this.getHeaderHeight(fontSize);
     }
     if (this.isEnableTabStrip()) {
       if (this.getTabLocation() === "top") {
@@ -280,7 +270,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - h);
 
     this._children.forEach((child, i) => {
-      child._layout(this._contentRect!);
+      child._layout(this._contentRect!, fontSize);
       child._setVisible(i === this.getSelected());
     });
   }

@@ -70,7 +70,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | --------------- |:-----------------:| ----------------- |
 | model           | required          | the layout model  |
 | factory         | required          | a factory function for creating React components |
-| font        | optional          | the tab font (changing the font size will also adjust the tabset/border size) overrides value in css. Example: font={{size:"12px", style:"italic"}}|
+| font        | optional          | the tab font (overrides value in css). Example: font={{size:"12px", style:"italic"}}|
 | iconFactory     | optional          | a factory function for creating icon components for tab bar buttons |
 | titleFactory    | optional          | a factory function for creating title components for tab bar buttons |
 | icons           | optional          | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
@@ -330,9 +330,10 @@ Attributes allowed in the 'global' element
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
-| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 23 |
-| tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 23|
-| borderBarSize | 0 | Size of the border bars in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 26 |
+| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 then the 
+value will be calculated from the current fontSize |
+| tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 then the value will be calculated from the current fontSize |
+| borderBarSize | 0 | Size of the border bars in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderEnableDrop | true | |
 | borderClassName | null | |
 | tabSetTabLocation | top | show tabs in location top or bottom |

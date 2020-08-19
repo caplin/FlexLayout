@@ -172,7 +172,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
+  _layout(rect: Rect, fontSize: number) {
     this._rect = rect;
   }
 

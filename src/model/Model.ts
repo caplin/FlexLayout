@@ -16,7 +16,6 @@ import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 
-
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -100,8 +99,6 @@ class Model {
   private _activeTabSet?: TabSetNode;
   /** @hidden @internal */
   private _borderRects: { inner: Rect, outer: Rect } = { inner: Rect.empty(), outer: Rect.empty() };
-  /** @hidden @internal */
-  private _fontSize?: number | undefined;
 
   /**
    * 'private' constructor. Use the static method Model.fromJson(json) to create a model
@@ -118,16 +115,6 @@ class Model {
   /** @hidden @internal */
   _setChangeListener(listener: (() => void) | undefined) {
     this._changeListener = listener;
-  }
-
-  /** @hidden @internal */
-  _setFontSize(fontSize?: number) {
-    this._fontSize = fontSize;
-  }
-
-  /** @hidden @internal */
-  _getFontSize() {
-    return this._fontSize;
   }
 
   /**
@@ -405,12 +392,12 @@ class Model {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
+  _layout(rect: Rect, fontSize: number) {
     // let start = Date.now();
-    this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect });
+    this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, fontSize);
     rect = this._borderRects.inner.removeInsets(this._getAttribute("marginInsets"));
 
-    (this._root as RowNode)._layout(rect);
+    (this._root as RowNode)._layout(rect, fontSize);
     return rect;
     // console.log("layout time: " + (Date.now() - start));
   }

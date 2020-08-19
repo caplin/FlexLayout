@@ -1,6 +1,6 @@
 0.4.7
-Added font property, if the font size is specified the layout will adjust the 
-tabset/border sizes as needed (this saves having to adjust the tabSetTabStripHeight etc).
+Added font property.
+Tabs now auto adjust to the current font.
 Added fontSize dropdown to demo.
 Modified css for above and to remove some fixed sizes.
 

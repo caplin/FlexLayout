@@ -95,17 +95,12 @@ class BorderNode extends Node implements IDropTarget {
     return fontSize + 12;
   }
 
-  getBorderBarSize() {
+  getBorderBarSize(fontSize: number) {
     const barSize = this._getAttr("barSize") as number;
     if (barSize !== 0) { // its defined
       return barSize;
     } else {
-      const fontSize = this._model._getFontSize();
-      if (fontSize) {
-        return this.heightFromFontSize(fontSize);
-      } else {
-        return 26; // the default
-      }
+      return this.heightFromFontSize(fontSize);
     }
   }
 
@@ -167,14 +162,14 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  _layoutBorderOuter(outer: Rect) {
-    const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
+  _layoutBorderOuter(outer: Rect, fontSize: number) {
+    const split1 = this._location.split(outer, this.getBorderBarSize(fontSize)); // split border outer
     this._tabHeaderRect = split1.start;
     return split1.end;
   }
 
   /** @hidden @internal */
-  _layoutBorderInner(inner: Rect) {
+  _layoutBorderInner(inner: Rect, fontSize: number) {
     this._drawChildren = [];
     const location = this._location;
 
@@ -186,7 +181,7 @@ class BorderNode extends Node implements IDropTarget {
     this._contentRect = split2.end;
 
     this._children.forEach((child, i) => {
-      child._layout(this._contentRect!);
+      child._layout(this._contentRect!, fontSize);
       child._setVisible(i === this.getSelected());
       this._drawChildren.push(child);
     });

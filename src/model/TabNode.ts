@@ -146,7 +146,7 @@ class TabNode extends Node implements IDraggable {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect) {
+  _layout(rect: Rect, fontSize: number) {
     if (!rect.equals(this._rect)) {
       this._fireEvent("resize", { rect });
     }
