@@ -27,7 +27,7 @@ export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
     font?: {
-        size?: number,
+        size?: string,
         family?: string,
         style?: string,
         weight?: string
@@ -113,6 +113,8 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     private selfRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
+    private fontSizerRef: React.RefObject<HTMLDivElement>;
+    /** @hidden @internal */
     private domRect?: any;
     /** @hidden @internal */
     private model?: Model;
@@ -164,6 +166,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     private icons?: IIcons;
     private firstRender: boolean;
+    private calculatedFontSize : number = 14;
 
     constructor(props: ILayoutProps) {
         super(props);
@@ -173,6 +176,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.model._setChangeListener(this.onModelChange);
         this.tabIds = [];
         this.selfRef = React.createRef<HTMLDivElement>();
+        this.fontSizerRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         // For backwards compatibility, prop closeIcon sets prop icons.close:
@@ -182,11 +186,10 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         this.firstRender = true;
     }
 
-    styleFont(style: JSMap<string>, percent: number = 100) : JSMap<string> {
+    styleFont(style: JSMap<string>) : JSMap<string> {
         if (this.props.font) {
             if (this.props.font.size) {
-                const size = Math.max(8, Math.floor(this.props.font.size * percent/100));
-                style.fontSize = size + "px";
+                style.fontSize = this.props.font.size;
             }
             if (this.props.font.family) {
                 style.fontFamily = this.props.font.family;
@@ -224,6 +227,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     componentDidMount() {
         this.updateRect();
+        this.updateFontSize()
 
         // need to re-render if size changes
         this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
@@ -234,6 +238,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
     /** @hidden @internal */
     componentDidUpdate() {
         this.updateRect();
+        this.updateFontSize()
         if (this.model !== this.props.model) {
             if (this.model !== undefined) {
                 this.model._setChangeListener(undefined); // stop listening to old model
@@ -253,6 +258,25 @@ export class Layout extends React.Component<ILayoutProps, any>  {
             this.rect = rect;
             this.forceUpdate();
         }
+    };
+
+    /** @hidden @internal */
+    updateFontSize = () => {
+        if (this.fontSizerRef.current) {
+            const computedStyles = getComputedStyle(this.fontSizerRef.current);
+            const fontSizeStr = computedStyles.fontSize;
+            if (fontSizeStr && fontSizeStr.indexOf("px") !== -1) {
+                try {
+                    const fontSize = parseInt(fontSizeStr);
+                    if (fontSize !== this.calculatedFontSize) {
+                        this.calculatedFontSize = fontSize;
+                        this.forceUpdate();
+                    }
+                } catch (e) {
+                    console.debug(e);                    
+                }
+            }
+        } 
     };
 
     /** @hidden @internal */
@@ -300,12 +324,16 @@ export class Layout extends React.Component<ILayoutProps, any>  {
 
     /** @hidden @internal */
     render() {
+        const fontStyle = this.styleFont({visibility: "hidden"});
+        const fontClassName = this.getClassName("flexlayout__tabset");
         // first render will be used to find the size (via selfRef)
         if (this.firstRender) {
             this.firstRender = false;
             return (
-                <div ref={this.selfRef}
-                     className={this.getClassName("flexlayout__layout")}/>
+                <div ref={this.selfRef} 
+                     className={this.getClassName("flexlayout__layout")}>
+                     <div ref={this.fontSizerRef} style={fontStyle} className={fontClassName}></div>
+                </div>
             );
         }
         // this.start = Date.now();
@@ -315,11 +343,12 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
-        if (this.props.font && this.props.font.size) {
-            this.model!._setFontSize(this.props.font.size);
+        if (this.calculatedFontSize) {
+            this.model!._setFontSize(this.calculatedFontSize);
         } else {
             this.model!._setFontSize(undefined);
         }
+
         this.centerRect = this.model!._layout(this.rect);
 
         this.renderBorder(
@@ -370,6 +399,7 @@ export class Layout extends React.Component<ILayoutProps, any>  {
                 {borderComponents}
                 {splitterComponents}
                 {floatingWindows}
+                <div ref={this.fontSizerRef} style={fontStyle} className={fontClassName}></div>
             </div>
         );
     }
