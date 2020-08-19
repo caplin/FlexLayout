@@ -315,7 +315,11 @@ export class Layout extends React.Component<ILayoutProps, any>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
-        this.model!._setFontSize(this.props.font!.size);
+        if (this.props.font && this.props.font.size) {
+            this.model!._setFontSize(this.props.font.size);
+        } else {
+            this.model!._setFontSize(undefined);
+        }
         this.centerRect = this.model!._layout(this.rect);
 
         this.renderBorder(
