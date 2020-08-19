@@ -6,13 +6,13 @@ import {Node, TabSetNode, TabNode, DropInfo, BorderNode, Actions, Action} from "
 
 var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize:number }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize:string }> {
 
     loadingLayoutName?: string;
 
     constructor(props:any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize:14 };
+        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize: "14px" };
 
         // save layout when unloading page
         window.onbeforeunload = (event:Event)=> {
@@ -202,7 +202,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onSizeChange = (event:React.FormEvent) => {
         var target = event.target as HTMLSelectElement;
-        this.setState({fontSize: parseInt(target.value)});
+        this.setState({fontSize: target.value});
     }
 
     render() {
@@ -271,16 +271,21 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <select style={{ float: "right", marginLeft:5 }} 
                 onChange={this.onSizeChange}
-                defaultValue="14">
-                    <option value="8">Size 8</option>
-                    <option value="10">Size 10</option>
-                    <option value="12">Size 12</option>
-                    <option value="14">Size 14</option>
-                    <option value="16">Size 16</option>
-                    <option value="18">Size 18</option>
-                    <option value="20">Size 20</option>
-                    <option value="25">Size 25</option>
-                    <option value="30">Size 30</option>
+                defaultValue="14px">
+                    <option value="8px">Size 8px</option>
+                    <option value="10px">Size 10px</option>
+                    <option value="12px">Size 12px</option>
+                    <option value="14px">Size 14px</option>
+                    <option value="16px">Size 16px</option>
+                    <option value="18px">Size 18px</option>
+                    <option value="20px">Size 20px</option>
+                    <option value="25px">Size 25px</option>
+                    <option value="30px">Size 30px</option>
+                    <option value="xx-small">Size xx-small</option>
+                    <option value="x-small">Size x-small</option>
+                    <option value="small">Size small</option>
+                    <option value="medium">Size medium</option>
+                    <option value="large">Size large</option>
                 </select>
             </div>
             <div className="contents">
