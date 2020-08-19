@@ -96,9 +96,22 @@ class BorderNode extends Node implements IDropTarget {
     return this._getAttributeAsStringOrUndefined("className");
   }
 
+  heightFromFontSize(fontSize: number) {
+    return fontSize + 12;
+  }
+
   getBorderBarSize() {
-    const fontSize = this._model._getFontSize();
-    return fontSize ? fontSize+12 : this._getAttr("barSize") as number;
+    const barSize = this._getAttr("barSize") as number;
+    if (barSize !== 0) { // its defined
+      return barSize;
+    } else {
+      const fontSize = this._model._getFontSize();
+      if (fontSize) {
+        return this.heightFromFontSize(fontSize);
+      } else {
+        return 26; // the default
+      }
+    }
   }
 
   getSize() {
