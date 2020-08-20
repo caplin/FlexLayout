@@ -3,7 +3,7 @@ import Orientation from "../Orientation";
 import Rect from "../Rect";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
-import Model from "./Model";
+import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 
 class BorderSet {
@@ -45,7 +45,7 @@ class BorderSet {
   }
 
   /** @hidden @internal */
-  _layoutBorder(outerInnerRects: { inner: Rect, outer: Rect }, fontSize:number) {
+  _layoutBorder(outerInnerRects: { inner: Rect, outer: Rect }, metrics : ILayoutMetrics) {
 
     const rect = outerInnerRects.outer;
     const height = rect.height;
@@ -105,13 +105,13 @@ class BorderSet {
     }
 
     showingBorders.forEach((border) => {
-      outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, fontSize);
+      outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
     });
 
     outerInnerRects.inner = outerInnerRects.outer;
 
     showingBorders.forEach((border) => {
-      outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, fontSize);
+      outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, metrics);
     });
     return outerInnerRects;
   }

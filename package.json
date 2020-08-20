@@ -1,6 +1,6 @@
 {
   "name": "flexlayout-react",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "A multi-tab docking layout manager",
   "main": "lib/index.js",
   "types": "./declarations/index.d.ts",
@@ -23,10 +23,10 @@
     "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
     "build:commonjs": "tsc -p tsconfig2.json",
     "build:umd": "webpack --config webpack_build.config.js",
-    "build:umd:min": "webpack -p --config webpack_build_min.config.js",
+    "build:umd:min": "webpack --minimize --config webpack_build_min.config.js",
     "test": "jasmine",
     "lint": "tslint -c tslint.json 'src/**/*.ts*' ",
-    "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\"  --readme none ",
+    "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\" --stripInternal --disableSources --excludePrivate --excludeProtected --readme none ",
     "css": "sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
   },
   "author": "Caplin Systems Ltd",

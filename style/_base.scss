@@ -82,7 +82,7 @@
     font-size: $font-size;
     font-family: $font-family;
 
-    &_header {
+    &_header { // tabset header bar
       position: absolute;
       display: flex;
       align-items: center;
@@ -90,11 +90,11 @@
       right: 0;
       background-color: $color_1;
       color: $color_text;
-      padding: 3px 3px 3px 5px;
+      padding: 3px 3px 3px 5px; 
       box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
       box-sizing: border-box;
 
-      &_outer {
+      &_outer { // tabset tabbar outer
         background-color: $color_1;
         position: absolute;
         left: 0;
@@ -107,8 +107,8 @@
         border-top: 1px solid $color_4;
       }
 
-      &_inner_top {
-        border-top: 2px solid transparent;
+      &_inner_top { // tabset tabbar inner
+        border-top: 2px solid transparent; // if you change this, update the _sizer above
         box-sizing: border-box;
         display:flex;
         position: absolute;
@@ -117,8 +117,9 @@
         bottom: 0;
         width: 10000px;
       }
+
       &_inner_bottom {
-        border-bottom: 2px solid transparent;
+        border-bottom: 2px solid transparent; // if you change this, update the _sizer above
         box-sizing: border-box;
         display:flex;
         position: absolute;
@@ -150,8 +151,8 @@
       display: inline-flex;
       align-items: center;
       box-sizing: border-box;
-      padding: 2px 8px;
-      margin: 0px 2px 0px 2px;
+      padding: 3px 8px; // if you change top or bottom update the tabset_sizer above
+      margin: 0px 2px;
       cursor: pointer;
       box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
       border-top-left-radius: 3px;
@@ -162,17 +163,15 @@
         color: $color_text;
       }
 
-      &--unselected {
+      &--unselected { 
         color: gray;
       }
 
       &_bottom {
-        margin: 0px 2px 0px 2px;
-        box-shadow: inset -2px -2px 1px rgba(0, 0, 0, 0.1);
         border-top-left-radius: 0px;
         border-top-right-radius: 0px;
-        border-bottom-left-radius: 5px;
-        border-bottom-right-radius: 5px;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
       }        
 
       &_leading {
@@ -330,7 +329,7 @@
     display: flex;
     align-items: center;
     cursor: pointer;
-    padding: 2px 8px 2px 8px;
+    padding: 3px 8px;
     margin: 2px;
     box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border-radius: 3px;
@@ -471,6 +470,31 @@
   &__error_boundary_content {
     display: flex;
     align-items: center;
+  }
+
+  // These classes are used to measure the sizes for tab header bar, tab bar and border bars,
+  // only the height is used, the padding should match the vertical spacing (padding & margins) 
+  // that have been used in the above classes
+
+  &__tabset_sizer { 
+    padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border 
+    padding-bottom: 3px; // tab_button has 3 padding bottom
+    font-size: $font-size;
+    font-family: $font-family;
+  }
+
+  &__tabset_header_sizer { 
+    padding-top: 3px;  
+    padding-bottom: 3px; 
+    font-size: $font-size;
+    font-family: $font-family;
+  }
+
+  &__border_sizer { 
+    padding-top: 6px; 
+    padding-bottom: 5px; 
+    font-size: $font-size;
+    font-family: $font-family;
   }
 
 }

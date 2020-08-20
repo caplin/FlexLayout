@@ -32,6 +32,7 @@
 						"type": "tab",
 						"name": "grid1",
 						"component": "grid",
+						"id": "custom-tab",
 						"config": {}
 					}]
 				}]

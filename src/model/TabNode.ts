@@ -4,7 +4,7 @@ import Rect from "../Rect";
 import { JSMap } from "../Types";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
-import Model from "./Model";
+import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import TabSetNode from "./TabSetNode";
 
@@ -146,7 +146,7 @@ class TabNode extends Node implements IDraggable {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect, fontSize: number) {
+  _layout(rect: Rect, metrics: ILayoutMetrics) {
     if (!rect.equals(this._rect)) {
       this._fireEvent("resize", { rect });
     }
@@ -176,9 +176,10 @@ class TabNode extends Node implements IDraggable {
     return TabNode._attributeDefinitions;
   }
 
-    _setWindow(window: Window | undefined) {
-      this._window = window;
-    }
+  /** @hidden @internal */
+  _setWindow(window: Window | undefined) {
+    this._window = window;
+  }
 }
 
 export default TabNode;

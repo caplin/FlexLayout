@@ -12,7 +12,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     constructor(props:any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize: "14px" };
+        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize: "medium" };
 
         // save layout when unloading page
         window.onbeforeunload = (event:Event)=> {
@@ -117,8 +117,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     onTableClick = (node:Node, event:Event) => {
-        console.log("tab: \n" + node._toAttributeString());
-        console.log("tabset: \n" + node.getParent()!._toAttributeString());
+        // console.log("tab: \n" + node._toAttributeString());
+        // console.log("tabset: \n" + node.getParent()!._toAttributeString());
     }
 
     onAction = (action: Action) => {
@@ -271,7 +271,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <select style={{ float: "right", marginLeft:5 }} 
                 onChange={this.onSizeChange}
-                defaultValue="14px">
+                defaultValue="medium">
+                    <option value="xx-small">Size xx-small</option>
+                    <option value="x-small">Size x-small</option>
+                    <option value="small">Size small</option>
+                    <option value="medium">Size medium</option>
+                    <option value="large">Size large</option>
                     <option value="8px">Size 8px</option>
                     <option value="10px">Size 10px</option>
                     <option value="12px">Size 12px</option>
@@ -281,11 +286,16 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="20px">Size 20px</option>
                     <option value="25px">Size 25px</option>
                     <option value="30px">Size 30px</option>
-                    <option value="xx-small">Size xx-small</option>
-                    <option value="x-small">Size x-small</option>
-                    <option value="small">Size small</option>
-                    <option value="medium">Size medium</option>
-                    <option value="large">Size large</option>
+                    <option value="70%">Size 70%</option>
+                    <option value="80%">Size 80%</option>
+                    <option value="90%">Size 90%</option>
+                    <option value="100%">Size 100%</option>
+                    <option value="120%">Size 120%</option>
+                    <option value="140%">Size 140%</option>
+                    <option value="160%">Size 160%</option>
+                    <option value="180%">Size 180%</option>
+                    <option value="200%">Size 200%</option>
+
                 </select>
             </div>
             <div className="contents">

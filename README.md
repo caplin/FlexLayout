@@ -331,8 +331,7 @@ Attributes allowed in the 'global' element
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
-| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 then the 
-value will be calculated from the current fontSize |
+| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderBarSize | 0 | Size of the border bars in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderEnableDrop | true | |

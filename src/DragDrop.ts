@@ -1,5 +1,6 @@
 import Rect from "./Rect";
 
+/** @hidden @internal */
 const canUseDOM = !!(
     (typeof window !== "undefined" &&
     window.document &&

@@ -4,8 +4,8 @@ html,body
     margin: 0;
     padding: 0;
     overflow:hidden;
-    font-size: 14px;
-    font-family: 'Roboto', Arial, sans-serif;
+    font-size: medium;
+    font-family: Roboto, Arial, sans-serif;
 }
 
 #container  {

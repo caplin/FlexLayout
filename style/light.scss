@@ -10,7 +10,7 @@ $color_6: scale_color($color_base, $lightness:-30%) !default;
 $color_drag1: red !default;
 $color_drag2: green !default;
 
-$font-size: 14px !default;
+$font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
 
 @import "_base";

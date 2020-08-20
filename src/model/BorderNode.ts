@@ -6,7 +6,7 @@ import Orientation from "../Orientation";
 import Rect from "../Rect";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
-import Model from "./Model";
+import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import SplitterNode from "./SplitterNode";
 import TabNode from "./TabNode";
@@ -106,16 +106,13 @@ class BorderNode extends Node implements IDropTarget {
     return this._getAttributeAsStringOrUndefined("className");
   }
 
-  heightFromFontSize(fontSize: number) {
-    return fontSize + 12;
-  }
-
-  calcBorderBarSize(fontSize: number) {
+  /** @hidden @internal */
+  calcBorderBarSize(metrics: ILayoutMetrics) {
     const barSize = this._getAttr("barSize") as number;
     if (barSize !== 0) { // its defined
       this._calculatedBorderBarSize = barSize;
     } else {
-      this._calculatedBorderBarSize = this.heightFromFontSize(fontSize);
+      this._calculatedBorderBarSize = metrics.borderBarSize;
     }
   }
 
@@ -181,15 +178,15 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  _layoutBorderOuter(outer: Rect, fontSize: number) {
-    this.calcBorderBarSize(fontSize);
+  _layoutBorderOuter(outer: Rect, metrics: ILayoutMetrics) {
+    this.calcBorderBarSize(metrics);
     const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
     this._tabHeaderRect = split1.start;
     return split1.end;
   }
 
   /** @hidden @internal */
-  _layoutBorderInner(inner: Rect, fontSize: number) {
+  _layoutBorderInner(inner: Rect, metrics: ILayoutMetrics) {
     this._drawChildren = [];
     const location = this._location;
 
@@ -201,7 +198,7 @@ class BorderNode extends Node implements IDropTarget {
     this._contentRect = split2.end;
 
     this._children.forEach((child, i) => {
-      child._layout(this._contentRect!, fontSize);
+      child._layout(this._contentRect!, metrics);
       child._setVisible(i === this.getSelected());
       this._drawChildren.push(child);
     });

@@ -1,8 +1,10 @@
 0.4.7
 Added font property.
+Font now defaults to medium.
 Tabs now auto adjust to the current font.
 Added fontSize dropdown to demo.
-Modified css for above and to remove some fixed sizes.
+Modified css for above fontSize changes and to remove some fixed sizes.
+New attributes to control auto selection of tabs.
 
 0.4.6
 Added icons prop to allow default icons to be replaced.

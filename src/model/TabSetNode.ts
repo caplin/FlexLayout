@@ -7,7 +7,7 @@ import Rect from "../Rect";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
-import Model from "./Model";
+import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import RowNode from "./RowNode";
 import TabNode from "./TabNode";
@@ -75,9 +75,9 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   /** @hidden @internal */
   private _tabHeaderRect?: Rect;
   /** @hidden @internal */
-  private calculatedTabStripHeight: number;
+  private calculatedTabBarHeight: number;
   /** @hidden @internal */
-  private calculatedHeaderHeight: number;
+  private calculatedHeaderBarHeight: number;
 
   /** @hidden @internal */
   constructor(model: Model, json: any) {
@@ -85,8 +85,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     TabSetNode._attributeDefinitions.fromJson(json, this._attributes);
     model._addNode(this);
-    this.calculatedTabStripHeight = 0;
-    this.calculatedHeaderHeight = 0;
+    this.calculatedTabBarHeight = 0;
+    this.calculatedHeaderBarHeight = 0;
   }
 
   getName() {
@@ -165,34 +165,32 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return this._getAttributeAsStringOrUndefined("classNameHeader");
   }
 
-  heightFromFontSize(fontSize: number) {
-    return fontSize + Math.floor(Math.min(12, Math.max(8, fontSize*2/3)));
-  }
-
-  calcHeaderHeight(fontSize: number) {
-    const headerHeight = this._getAttr("headerHeight") as number;
-    if (headerHeight !== 0) { // its defined
-      this.calculatedHeaderHeight = headerHeight;
+  /** @hidden @internal */
+  calculateHeaderBarHeight(metrics: ILayoutMetrics) {
+    const headerBarHeight = this._getAttr("headerHeight") as number;
+    if (headerBarHeight !== 0) { // its defined
+      this.calculatedHeaderBarHeight = headerBarHeight;
     } else {
-      this.calculatedHeaderHeight = this.heightFromFontSize(fontSize);
+      this.calculatedHeaderBarHeight = metrics.headerBarSize;
     }
   }
 
-  calcTabStripHeight(fontSize: number) {
-    const tabStripHeight = this._getAttr("tabStripHeight") as number;
-    if (tabStripHeight !== 0) { // its defined
-      this.calculatedTabStripHeight = tabStripHeight;
+  /** @hidden @internal */
+  calculateTabBarHeight(metrics: ILayoutMetrics) {
+    const tabBarHeight = this._getAttr("tabStripHeight") as number;
+    if (tabBarHeight !== 0) { // its defined
+      this.calculatedTabBarHeight = tabBarHeight;
     } else {
-      this.calculatedTabStripHeight = this.heightFromFontSize(fontSize);
+      this.calculatedTabBarHeight = metrics.tabBarSize;
     }
   }
 
   getHeaderHeight() {
-    return this.calculatedHeaderHeight;
+    return this.calculatedHeaderBarHeight;
   }
 
   getTabStripHeight() {
-    return this.calculatedTabStripHeight
+    return this.calculatedTabBarHeight
   }
 
   getTabLocation() {
@@ -257,11 +255,9 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect, fontSize: number) {
-    this.calcHeaderHeight(fontSize);
-    this.calcTabStripHeight(fontSize);
-
-    const tabStripHeight = this.getTabStripHeight();
+  _layout(rect: Rect, metrics: ILayoutMetrics) {
+    this.calculateHeaderBarHeight(metrics);
+    this.calculateTabBarHeight(metrics);
 
     if (this.isMaximized()) {
       rect = (this._model.getRoot() as Node).getRect();
@@ -275,24 +271,24 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     let y = 0;
     let h = 0;
     if (showHeader) {
-      y += this.getHeaderHeight();
-      h += this.getHeaderHeight();
+      y += this.calculatedHeaderBarHeight;
+      h += this.calculatedHeaderBarHeight;
     }
     if (this.isEnableTabStrip()) {
       if (this.getTabLocation() === "top") {
-        this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, tabStripHeight);
+        this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this.calculatedTabBarHeight);
       } else {
-        this._tabHeaderRect = new Rect(rect.x, rect.y + rect.height - tabStripHeight, rect.width, tabStripHeight);
+        this._tabHeaderRect = new Rect(rect.x, rect.y + rect.height - this.calculatedTabBarHeight, rect.width, this.calculatedTabBarHeight);
       }
-      h += tabStripHeight;
+      h += this.calculatedTabBarHeight;
       if (this.getTabLocation() === "top") {
-        y += tabStripHeight;
+        y += this.calculatedTabBarHeight;
       }
     }
     this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - h);
 
     this._children.forEach((child, i) => {
-      child._layout(this._contentRect!, fontSize);
+      child._layout(this._contentRect!, metrics);
       child._setVisible(i === this.getSelected());
     });
   }

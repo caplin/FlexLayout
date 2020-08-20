@@ -16,6 +16,13 @@ import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 
+/** @hidden @internal */
+export interface ILayoutMetrics {
+  headerBarSize: number,
+  tabBarSize: number,
+  borderBarSize: number
+}
+
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -396,12 +403,12 @@ class Model {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect, fontSize: number) {
+  _layout(rect: Rect, metrics: ILayoutMetrics) {
     // let start = Date.now();
-    this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, fontSize);
+    this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, metrics);
     rect = this._borderRects.inner.removeInsets(this._getAttribute("marginInsets"));
 
-    (this._root as RowNode)._layout(rect, fontSize);
+    (this._root as RowNode)._layout(rect, metrics);
     return rect;
     // console.log("layout time: " + (Date.now() - start));
   }

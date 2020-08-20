@@ -70,6 +70,7 @@ export const FloatingWindow  = (props : React.PropsWithChildren<IFloatingWindowP
     }
 };
 
+/** @hidden @internal */
 function copyStyles(doc: Document) : Promise<boolean[]> {
     const head = doc.head;
     const promises : Promise<boolean>[] = [];

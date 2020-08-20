@@ -58,14 +58,14 @@
   overflow: hidden;
   padding: 10px;
   word-wrap: break-word;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset {
   overflow: hidden;
   background-color: #f7f7f7;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset_header {
@@ -128,8 +128,8 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  padding: 2px 8px;
-  margin: 0px 2px 0px 2px;
+  padding: 3px 8px;
+  margin: 0px 2px;
   cursor: pointer;
   box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 3px;
@@ -143,12 +143,10 @@
   color: gray;
 }
 .flexlayout__tab_button_bottom {
-  margin: 0px 2px 0px 2px;
-  box-shadow: inset -2px -2px 1px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 .flexlayout__tab_button_leading {
   display: inline-block;
@@ -210,7 +208,7 @@
   background: transparent url("../images/popout.png") no-repeat center;
 }
 .flexlayout__popup_menu {
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__popup_menu_item {
@@ -233,7 +231,7 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
   border-bottom: 1px solid #d9d9d9;
   align-items: center;
@@ -243,7 +241,7 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
   border-top: 1px solid #d9d9d9;
   align-items: center;
@@ -253,7 +251,7 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
   border-right: 1px solid #d9d9d9;
   align-content: center;
@@ -263,7 +261,7 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  font-size: 14px;
+  font-size: medium;
   font-family: Roboto, Arial, sans-serif;
   border-left: 1px solid #d9d9d9;
   align-content: center;
@@ -290,7 +288,7 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  padding: 2px 8px 2px 8px;
+  padding: 3px 8px;
   margin: 2px;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
   border-radius: 3px;
@@ -418,6 +416,24 @@
 .flexlayout__error_boundary_content {
   display: flex;
   align-items: center;
+}
+.flexlayout__tabset_sizer {
+  padding-top: 5px;
+  padding-bottom: 3px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
+}
+.flexlayout__tabset_header_sizer {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
+}
+.flexlayout__border_sizer {
+  padding-top: 6px;
+  padding-bottom: 5px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
 }
 
 /*# sourceMappingURL=light.css.map */

@@ -5,7 +5,7 @@ import Orientation from "../Orientation";
 import Rect from "../Rect";
 import { JSMap } from "../Types";
 import IDraggable from "./IDraggable";
-import Model from "./Model";
+import Model, { ILayoutMetrics } from "./Model";
 
 abstract class Node {
 
@@ -172,7 +172,7 @@ abstract class Node {
   }
 
   /** @hidden @internal */
-  _layout(rect: Rect, fontSize: number) {
+  _layout(rect: Rect, metrics : ILayoutMetrics) {
     this._rect = rect;
   }
 

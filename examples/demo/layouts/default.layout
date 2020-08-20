@@ -17,9 +17,8 @@
 					},
 					{
 						"type": "tab",
-						"name": "Custom Tab",
-						"component": "grid",
-						"id": "custom-tab"
+						"name": "Global",
+						"component": "grid"
 					}
 				]
 			},

@@ -1,13 +1,16 @@
 import * as React from "react";
 import {ErrorInfo} from "react";
 
+/** @hidden @internal */
 export interface IErrorBoundaryProps {
     message: string;
 }
+/** @hidden @internal */
 export interface IErrorBoundaryState {
     hasError: boolean;
 }
 
+/** @hidden @internal */
 export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState>  {
     constructor(props : IErrorBoundaryProps) {
         super(props);

@@ -3,6 +3,8 @@ module.exports = {
 		flexlayout: "./src/index.ts"
 	},
 
+	mode: "development",
+
 	output: {
 		path: __dirname,
 		library: "FlexLayout",

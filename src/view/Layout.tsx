@@ -7,7 +7,7 @@ import Actions from "../model/Actions";
 import BorderNode from "../model/BorderNode";
 import BorderSet from "../model/BorderSet";
 import IDraggable from "../model/IDraggable";
-import Model from "../model/Model";
+import Model, { ILayoutMetrics } from "../model/Model";
 import Node from "../model/Node";
 import RowNode from "../model/RowNode";
 import SplitterNode from "../model/SplitterNode";
@@ -59,7 +59,9 @@ export interface ILayoutProps {
 /** @hidden @internal */
 export interface ILayoutState {
     rect: Rect;
-    calculatedFontSize: number;
+    calculatedHeaderBarSize: number;
+    calculatedTabBarSize: number;
+    calculatedBorderBarSize: number;
 }
 
 export interface IIcons {
@@ -104,6 +106,7 @@ export interface ILayoutCallbacks {
 }
 
 
+
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
 // Assume any recent browser not IE or original Edge will work
@@ -123,7 +126,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     /** @hidden @internal */
     private selfRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
-    private fontSizeRef: React.RefObject<HTMLDivElement>;
+    private findHeaderBarSizeRef: React.RefObject<HTMLDivElement>;
+    /** @hidden @internal */
+    private findTabBarSizeRef: React.RefObject<HTMLDivElement>;
+    /** @hidden @internal */
+    private findBorderBarSizeRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
     private domRect?: any;
     /** @hidden @internal */
@@ -181,7 +188,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
         this.props.model._setChangeListener(this.onModelChange);
         this.tabIds = [];
         this.selfRef = React.createRef<HTMLDivElement>();
-        this.fontSizeRef = React.createRef<HTMLDivElement>();
+        this.findHeaderBarSizeRef = React.createRef<HTMLDivElement>();
+        this.findTabBarSizeRef = React.createRef<HTMLDivElement>();
+        this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         // For backwards compatibility, prop closeIcon sets prop icons.close:
@@ -190,10 +199,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
             props.icons;
         this.firstRender = true;
 
-        this.state = {rect: new Rect(0, 0, 0, 0), calculatedFontSize:14};
+        this.state = {rect: new Rect(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30};
     }
 
-    styleFont(style: JSMap<string>) : JSMap<string> {
+  /** @hidden @internal */
+  styleFont(style: JSMap<string>) : JSMap<string> {
         if (this.props.font) {
             if (this.props.font.size) {
                 style.fontSize = this.props.font.size;
@@ -234,7 +244,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     /** @hidden @internal */
     componentDidMount() {
         this.updateRect();
-        this.updateFontSize()
+        this.updateLayoutMetrics()
 
         // need to re-render if size changes
         this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
@@ -245,7 +255,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     /** @hidden @internal */
     componentDidUpdate() {
         this.updateRect();
-        this.updateFontSize()
+        this.updateLayoutMetrics()
         if (this.props.model !== this.previousModel) {
             if (this.previousModel !== undefined) {
                 this.previousModel._setChangeListener(undefined); // stop listening to old model
@@ -266,19 +276,23 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     };
 
     /** @hidden @internal */
-    updateFontSize = () => {
-        if (this.fontSizeRef.current) {
-            const computedStyles = getComputedStyle(this.fontSizeRef.current);
-            const fontSizeStr = computedStyles.fontSize;
-            if (fontSizeStr && fontSizeStr.indexOf("px") !== -1) {
-                try {
-                    const fontSize = parseInt(fontSizeStr);
-                    if (fontSize !== this.state.calculatedFontSize) {
-                        this.setState({calculatedFontSize: fontSize});
-                    }
-                } catch (e) {
-                    console.debug(e);                    
-                }
+    updateLayoutMetrics = () => {
+        if (this.findHeaderBarSizeRef.current) {
+            const headerBarSize = this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
+            if (headerBarSize !== this.state.calculatedHeaderBarSize) {
+                this.setState({calculatedHeaderBarSize: headerBarSize});
+            }
+        } 
+        if (this.findTabBarSizeRef.current) {
+            const tabBarSize = this.findTabBarSizeRef.current.getBoundingClientRect().height;
+            if (tabBarSize !== this.state.calculatedTabBarSize) {
+                this.setState({calculatedTabBarSize: tabBarSize});
+            }
+        } 
+        if (this.findBorderBarSizeRef.current) {
+            const borderBarSize = this.findBorderBarSizeRef.current.getBoundingClientRect().height;
+            if (borderBarSize !== this.state.calculatedBorderBarSize) {
+                this.setState({calculatedBorderBarSize: borderBarSize});
             }
         } 
     };
@@ -328,15 +342,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
 
     /** @hidden @internal */
     render() {
-        const fontStyle = this.styleFont({visibility: "hidden"});
-        const fontClassName = this.getClassName("flexlayout__tabset");
         // first render will be used to find the size (via selfRef)
         if (this.firstRender) {
             this.firstRender = false;
             return (
                 <div ref={this.selfRef} 
                      className={this.getClassName("flexlayout__layout")}>
-                     <div ref={this.fontSizeRef} style={fontStyle} className={fontClassName}></div>
+                         {this.metricsElements()}
                 </div>
             );
         }
@@ -347,7 +359,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
         const tabComponents: JSMap<React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
-        this.centerRect = this.props.model._layout(this.state.rect, this.state.calculatedFontSize);
+        const metrics: ILayoutMetrics = {
+            headerBarSize: this.state.calculatedHeaderBarSize,
+            tabBarSize: this.state.calculatedTabBarSize,
+            borderBarSize: this.state.calculatedBorderBarSize
+        };
+
+        this.centerRect = this.props.model._layout(this.state.rect, metrics);
 
         this.renderBorder(
             this.props.model.getBorderSet(),
@@ -397,8 +415,20 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
                 {borderComponents}
                 {splitterComponents}
                 {floatingWindows}
-                <div ref={this.fontSizeRef} style={fontStyle} className={fontClassName}></div>
+                {this.metricsElements()}
             </div>
+        );
+    }
+
+    /** @hidden @internal */
+    metricsElements() { // used to measure the tab and border tab sizes
+        const fontStyle = this.styleFont({visibility: "hidden"});
+        return (
+            <React.Fragment>
+                <div key="findHeaderBarSize" ref={this.findHeaderBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__tabset_header_sizer")}>FindHeaderBarSize</div>
+                <div key="findTabBarSize" ref={this.findTabBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__tabset_sizer")}>FindTabBarSize</div>
+                <div key="findBorderBarSize" ref={this.findBorderBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__border_sizer")}>FindBorderBarSize</div>
+            </React.Fragment>
         );
     }
 

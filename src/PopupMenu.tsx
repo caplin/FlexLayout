@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import TabNode from "./model/TabNode";
 
+/** @hidden @internal */
 export function showPopup(triggerElement: Element,
                           items: { index: number, node: TabNode, name: string }[],
                           onSelect: (item: { index: number, node: TabNode, name: string }) => void,
