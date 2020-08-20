@@ -56,6 +56,7 @@ export interface ILayoutProps {
     popoutURL?: string | undefined;
 }
 
+/** @hidden @internal */
 export interface ILayoutState {
     rect: Rect;
     calculatedFontSize: number;
@@ -106,9 +107,12 @@ export interface ILayoutCallbacks {
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
 // Assume any recent browser not IE or original Edge will work
+/** @hidden @internal */
 // @ts-ignore
 const isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
+/** @hidden @internal */
 const isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
+/** @hidden @internal */
 const defaultSupportsPopout: boolean = !isIEorEdge && !isMobile;
 
 /**

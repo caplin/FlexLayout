@@ -16,6 +16,7 @@ export interface ITabSetProps {
     icons?: IIcons;
 }
 
+/** @hidden @internal */
 const MAX_TABS: number = 999;
 
 /*
