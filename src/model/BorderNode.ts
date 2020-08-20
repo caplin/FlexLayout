@@ -46,6 +46,8 @@ class BorderNode extends Node implements IDropTarget {
     attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.INT).setFrom(0);
     attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING);
+    attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute.BOOLEAN);
     return attributeDefinitions;
   }
 
@@ -87,6 +89,17 @@ class BorderNode extends Node implements IDropTarget {
 
   isEnableDrop() {
     return this._getAttr("enableDrop") as boolean;
+  }
+
+  isAutoSelectTab(whenOpen?: boolean) {
+    if (whenOpen == null) {
+      whenOpen = (this.getSelected() !== -1);
+    }
+    if (whenOpen) {
+      return this._getAttr("autoSelectTabWhenOpen") as boolean;
+    } else {
+      return this._getAttr("autoSelectTabWhenClosed") as boolean;
+    }
   }
 
   getClassName() {
@@ -311,7 +324,7 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number): void {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number, select?: boolean): void {
     let fromIndex = 0;
     const parent: Node | undefined = dragNode.getParent();
     if (parent !== undefined) {
@@ -352,7 +365,7 @@ class BorderNode extends Node implements IDropTarget {
       this._addChild(dragNode, insertPos);
     }
 
-    if (this.getSelected() !== -1) { // already open
+    if (select || (select !== false && this.isAutoSelectTab())) {
       this._setSelected(insertPos);
     }
 

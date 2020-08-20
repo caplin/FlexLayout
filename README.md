@@ -327,6 +327,7 @@ Attributes allowed in the 'global' element
 | tabSetEnableDrag | true | |
 | tabSetEnableDivide | true | |
 | tabSetEnableMaximize | true | |
+| tabSetAutoSelectTab | true | whether to select new/moved tabs in tabset |
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
@@ -335,6 +336,8 @@ value will be calculated from the current fontSize |
 | tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderBarSize | 0 | Size of the border bars in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderEnableDrop | true | |
+| borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
+| borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
 | borderClassName | null | |
 | tabSetTabLocation | top | show tabs in location top or bottom |
 
@@ -402,6 +405,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | enableDrag | *inherited* | |
 | enableDivide | *inherited* | |
 | enableMaximize | *inherited* | |
+| autoSelectTab | *inherited* | whether to select new/moved tabs in tabset |
 | classNameTabStrip | *inherited* | |
 | classNameHeader | *inherited* | |
 | enableTabStrip | *inherited* | |
@@ -426,6 +430,8 @@ Inherited defaults will take their value from the associated global attributes (
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | |
 | enableDrop | *inherited* | |
+| autoSelectTabWhenOpen | *inherited* | whether to select new/moved tabs in border when the border is already open |
+| autoSelectTabWhenClosed | *inherited* | whether to select new/moved tabs in border when the border is currently closed |
 | className | *inherited* | |
 
 
@@ -451,8 +457,8 @@ adjusting the layout easier on a small device.
 
 | Action Creator | Description  |
 | ------------- | -----|
-|	Actions.addNode(newNodeJson, toNodeId, location, index) | add a new tab node to the given tabset node  |
-|	Actions.moveNode(fromNodeId, toNodeId, location, index) | move a tab node from its current location to the new node and location |
+|	Actions.addNode(newNodeJson, toNodeId, location, index, select?) | add a new tab node to the given tabset node; `select` specifies whether to select new tab, defaulting to `autoSelectTab` attribute |
+|	Actions.moveNode(fromNodeId, toNodeId, location, index, select?) | move a tab node from its current location to the new node and location; `select` specifies whether to select tab, defaulting to new tabset's `autoSelectTab` attribute |
 |	Actions.deleteTab(tabNodeId) | delete the given tab |
 |	Actions.selectTab(tabNodeId) | select the given tab |
 |	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |

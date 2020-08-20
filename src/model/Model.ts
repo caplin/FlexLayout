@@ -64,6 +64,7 @@ class Model {
     attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("tabSetAutoSelectTab", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute.STRING);
     attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute.STRING);
     attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute.BOOLEAN);
@@ -73,8 +74,11 @@ class Model {
     attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
     attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute.STRING);
 
+    // border
     attributeDefinitions.add("borderBarSize", 0).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("borderClassName", undefined).setType(Attribute.STRING);
     return attributeDefinitions;
   }
@@ -196,7 +200,7 @@ class Model {
           const newNode = new TabNode(this, action.data.json, true);
           const toNode = this._idMap[action.data.toNode] as (Node & IDraggable);
           if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
-            toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index);
+            toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index, action.data.select);
           }
           break;
         }
@@ -206,7 +210,7 @@ class Model {
           if (fromNode instanceof TabNode || fromNode instanceof TabSetNode) {
             const toNode = this._idMap[action.data.toNode] as (Node & IDropTarget);
             if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
-              toNode.drop(fromNode, DockLocation.getByName(action.data.location), action.data.index);
+              toNode.drop(fromNode, DockLocation.getByName(action.data.location), action.data.index, action.data.select);
             }
           }
           break;
