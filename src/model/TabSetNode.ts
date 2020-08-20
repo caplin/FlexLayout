@@ -66,6 +66,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
     attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
     attributeDefinitions.addInherited("tabLocation", "tabSetTabLocation");
+    attributeDefinitions.addInherited("autoSelectTab", "tabSetAutoSelectTab").setType(Attribute.BOOLEAN);
     return attributeDefinitions;
   }
 
@@ -150,6 +151,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
   isEnableTabStrip() {
     return this._getAttr("enableTabStrip") as boolean;
+  }
+
+  isAutoSelectTab() {
+    return this._getAttr("autoSelectTab") as boolean;
   }
 
   getClassNameTabStrip() {
@@ -300,7 +305,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
   }
 
   /** @hidden @internal */
-  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number) {
+  drop(dragNode: (Node & IDraggable), location: DockLocation, index: number, select?: boolean) {
     const dockLocation = location;
 
     if (this === dragNode) { // tabset drop into itself
@@ -351,7 +356,9 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
 
       if (dragNode.getType() === TabNode.TYPE) {
         this._addChild(dragNode, insertPos);
-        this._setSelected(insertPos);
+        if (select || (select !== false && this.isAutoSelectTab())) {
+          this._setSelected(insertPos);
+        }
         // console.log("added child at : " + insertPos);
       }
       else {
