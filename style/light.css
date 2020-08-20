@@ -59,14 +59,14 @@
   padding: 10px;
   word-wrap: break-word;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset {
   overflow: hidden;
   background-color: #f7f7f7;
   box-sizing: border-box;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset_header {
   position: absolute;
@@ -211,7 +211,7 @@
 }
 .flexlayout__popup_menu {
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__popup_menu_item {
   padding: 2px 10px 2px 10px;
@@ -234,7 +234,7 @@
   overflow: hidden;
   display: flex;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
   border-bottom: 1px solid #d9d9d9;
   align-items: center;
 }
@@ -244,7 +244,7 @@
   overflow: hidden;
   display: flex;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
   border-top: 1px solid #d9d9d9;
   align-items: center;
 }
@@ -254,7 +254,7 @@
   overflow: hidden;
   display: flex;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
   border-right: 1px solid #d9d9d9;
   align-content: center;
 }
@@ -264,7 +264,7 @@
   overflow: hidden;
   display: flex;
   font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Roboto, Arial, sans-serif;
   border-left: 1px solid #d9d9d9;
   align-content: center;
 }

@@ -46,7 +46,8 @@ class BorderNode extends Node implements IDropTarget {
     attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.INT).setFrom(0);
     attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING);
-    attributeDefinitions.addInherited("autoSelectTab", "borderAutoSelectTab").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute.BOOLEAN);
     return attributeDefinitions;
   }
 
@@ -88,8 +89,15 @@ class BorderNode extends Node implements IDropTarget {
     return this._getAttr("enableDrop") as boolean;
   }
 
-  isAutoSelectTab() {
-    return this._getAttr("autoSelectTab") as boolean;
+  isAutoSelectTab(whenOpen?: boolean) {
+    if (whenOpen == null) {
+      whenOpen = (this.getSelected() !== -1);
+    }
+    if (whenOpen) {
+      return this._getAttr("autoSelectTabWhenOpen") as boolean;
+    } else {
+      return this._getAttr("autoSelectTabWhenClosed") as boolean;
+    }
   }
 
   getClassName() {

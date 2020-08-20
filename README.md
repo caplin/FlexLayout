@@ -336,7 +336,8 @@ Attributes allowed in the 'global' element
 | tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 23|
 | borderBarSize | 0 | Size of the border bars in pixels, if left as 0 and fontSize prop exists then calculated from fontSize, otherwise defaults to 26 |
 | borderEnableDrop | true | |
-| borderAutoSelectTab | false | whether to select new/moved tabs in border |
+| borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
+| borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
 | borderClassName | null | |
 | tabSetTabLocation | top | show tabs in location top or bottom |
 
@@ -429,7 +430,8 @@ Inherited defaults will take their value from the associated global attributes (
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | |
 | enableDrop | *inherited* | |
-| autoSelectTab | *inherited* | whether to select new/moved tabs in border |
+| autoSelectTabWhenOpen | *inherited* | whether to select new/moved tabs in border when the border is already open |
+| autoSelectTabWhenClosed | *inherited* | whether to select new/moved tabs in border when the border is currently closed |
 | className | *inherited* | |
 
 

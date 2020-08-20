@@ -78,7 +78,8 @@ class Model {
     // border
     attributeDefinitions.add("borderBarSize", 0).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
-    attributeDefinitions.add("borderAutoSelectTab", false).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("borderClassName", undefined).setType(Attribute.STRING);
     return attributeDefinitions;
   }
