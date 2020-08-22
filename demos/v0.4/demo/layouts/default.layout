@@ -17,9 +17,8 @@
 					},
 					{
 						"type": "tab",
-						"name": "Custom Tab",
-						"component": "grid",
-						"id": "custom-tab"
+						"name": "Global",
+						"component": "grid"
 					}
 				]
 			},
@@ -37,6 +36,24 @@
 		]
 	},
 	"borders": [
+		{
+		    "type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Activity Blotter",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Execution Blotter",
+					"component": "grid"
+				}
+			]
+		},
 		 {
 		    "type": "border",
 		 	"location": "left",
@@ -57,24 +74,6 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Options",
-					"component": "grid"
-				}
-			]
-		},
-		{
-		    "type": "border",
-			"location": "bottom",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Activity Blotter",
-					"component": "grid"
-				},
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Execution Blotter",
 					"component": "grid"
 				}
 			]

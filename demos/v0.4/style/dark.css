@@ -58,13 +58,15 @@
   overflow: hidden;
   padding: 10px;
   word-wrap: break-word;
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset {
   overflow: hidden;
   background-color: #121212;
   box-sizing: border-box;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__tabset_header {
   position: absolute;
@@ -77,8 +79,6 @@
   padding: 3px 3px 3px 5px;
   box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
   box-sizing: border-box;
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
 }
 .flexlayout__tabset_header_outer {
   background-color: #121212;
@@ -128,14 +128,12 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  padding: 2px 8px;
-  margin: 0px 2px 0px 2px;
+  padding: 3px 8px;
+  margin: 0px 2px;
   cursor: pointer;
   box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
 }
 .flexlayout__tab_button--selected, .flexlayout__tab_button:hover {
   background-color: #262626;
@@ -145,12 +143,10 @@
   color: gray;
 }
 .flexlayout__tab_button_bottom {
-  margin: 0px 2px 0px 2px;
-  box-shadow: inset -2px -2px 1px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 .flexlayout__tab_button_leading {
   display: inline-block;
@@ -169,8 +165,8 @@
 .flexlayout__tab_button_trailing {
   display: inline-block;
   margin-left: 8px;
-  width: 8px;
-  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
 }
 .flexlayout__tab_button:hover .flexlayout__tab_button_trailing, .flexlayout__tab_button--selected .flexlayout__tab_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
@@ -179,8 +175,7 @@
   padding-left: 12px;
   border: none;
   color: white;
-  font-size: 12px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-size: inherit;
   background: transparent url("../images/more.png") no-repeat left;
 }
 .flexlayout__tab_toolbar {
@@ -190,33 +185,31 @@
   top: 0;
   bottom: 0;
   right: 0;
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
 }
 .flexlayout__tab_toolbar_button-min {
-  width: 20px;
-  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   border: none;
   outline-width: 0;
   background: transparent url("../images/maximize.png") no-repeat center;
 }
 .flexlayout__tab_toolbar_button-max {
-  width: 20px;
-  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   border: none;
   outline-width: 0;
   background: transparent url("../images/restore.png") no-repeat center;
 }
 .flexlayout__tab_toolbar_button-float {
-  width: 20px;
-  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   border: none;
   outline-width: 0;
   background: transparent url("../images/popout.png") no-repeat center;
 }
 .flexlayout__popup_menu {
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
 }
 .flexlayout__popup_menu_item {
   padding: 2px 10px 2px 10px;
@@ -238,6 +231,8 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
   border-bottom: 1px solid #262626;
   align-items: center;
 }
@@ -246,6 +241,8 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
   border-top: 1px solid #262626;
   align-items: center;
 }
@@ -254,6 +251,8 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
   border-right: 1px solid #262626;
   align-content: center;
 }
@@ -262,6 +261,8 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
   border-left: 1px solid #262626;
   align-content: center;
 }
@@ -273,7 +274,6 @@
   white-space: nowrap;
   display: flex;
   position: absolute;
-  right: 25px;
   transform-origin: top right;
   transform: rotate(-90deg);
 }
@@ -281,22 +281,19 @@
   white-space: nowrap;
   display: flex;
   position: absolute;
-  left: 25px;
   transform-origin: top left;
   transform: rotate(90deg);
 }
 .flexlayout__border_button {
-  display: inline-block;
+  display: flex;
+  align-items: center;
   cursor: pointer;
-  padding: 2px 8px 3px 8px;
+  padding: 3px 8px;
   margin: 2px;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
   border-radius: 3px;
-  vertical-align: top;
   box-sizing: border-box;
   white-space: nowrap;
-  font-size: 14px;
-  font-family: "Roboto", Arial, sans-serif;
   background-color: #262626;
 }
 .flexlayout__border_button--selected, .flexlayout__border_button:hover {
@@ -315,9 +312,8 @@
 .flexlayout__border_button_trailing {
   display: inline-block;
   margin-left: 8px;
-  margin-top: 3px;
-  width: 8px;
-  height: 8px;
+  min-width: 8px;
+  min-height: 8px;
 }
 .flexlayout__border_button:hover .flexlayout__border_button_trailing, .flexlayout__border_button--selected .flexlayout__border_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
@@ -326,8 +322,7 @@
   color: white;
   padding-left: 12px;
   border: none;
-  font-size: 12px;
-  font-family: "Roboto", Arial, sans-serif;
+  font-size: inherit;
   background: transparent url("../images/more.png") no-repeat left;
 }
 .flexlayout__border_toolbar_left {
@@ -421,6 +416,24 @@
 .flexlayout__error_boundary_content {
   display: flex;
   align-items: center;
+}
+.flexlayout__tabset_sizer {
+  padding-top: 5px;
+  padding-bottom: 3px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
+}
+.flexlayout__tabset_header_sizer {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
+}
+.flexlayout__border_sizer {
+  padding-top: 6px;
+  padding-bottom: 5px;
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
 }
 
 /*# sourceMappingURL=dark.css.map */

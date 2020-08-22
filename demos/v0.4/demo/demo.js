@@ -172,8 +172,8 @@ var App = /** @class */ (function (_super) {
             _this.setState({ adding: false });
         };
         _this.onTableClick = function (node, event) {
-            console.log("tab: \n" + node._toAttributeString());
-            console.log("tabset: \n" + node.getParent()._toAttributeString());
+            // console.log("tab: \n" + node._toAttributeString());
+            // console.log("tabset: \n" + node.getParent()!._toAttributeString());
         };
         _this.onAction = function (action) {
             if (action.type === index_1.Actions.MAXIMIZE_TOGGLE) {
@@ -244,7 +244,11 @@ var App = /** @class */ (function (_super) {
             page_stylesheet.setAttribute("href", target.value + ".css");
             _this.forceUpdate();
         };
-        _this.state = { layoutFile: null, model: null, adding: false, maximized: false };
+        _this.onSizeChange = function (event) {
+            var target = event.target;
+            _this.setState({ fontSize: target.value });
+        };
+        _this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize: "medium" };
         // save layout when unloading page
         window.onbeforeunload = function (event) {
             _this.save();
@@ -285,7 +289,7 @@ var App = /** @class */ (function (_super) {
         };
         var contents = "loading ...";
         if (this.state.model !== null) {
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet });
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet });
         }
         return React.createElement("div", { className: "app" },
             React.createElement("div", { className: "toolbar" },
@@ -304,7 +308,31 @@ var App = /** @class */ (function (_super) {
                 React.createElement("button", { style: { float: "right", marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
                 React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
-                    React.createElement("option", { value: "dark" }, "Dark"))),
+                    React.createElement("option", { value: "dark" }, "Dark")),
+                React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
+                    React.createElement("option", { value: "xx-small" }, "Size xx-small"),
+                    React.createElement("option", { value: "x-small" }, "Size x-small"),
+                    React.createElement("option", { value: "small" }, "Size small"),
+                    React.createElement("option", { value: "medium" }, "Size medium"),
+                    React.createElement("option", { value: "large" }, "Size large"),
+                    React.createElement("option", { value: "8px" }, "Size 8px"),
+                    React.createElement("option", { value: "10px" }, "Size 10px"),
+                    React.createElement("option", { value: "12px" }, "Size 12px"),
+                    React.createElement("option", { value: "14px" }, "Size 14px"),
+                    React.createElement("option", { value: "16px" }, "Size 16px"),
+                    React.createElement("option", { value: "18px" }, "Size 18px"),
+                    React.createElement("option", { value: "20px" }, "Size 20px"),
+                    React.createElement("option", { value: "25px" }, "Size 25px"),
+                    React.createElement("option", { value: "30px" }, "Size 30px"),
+                    React.createElement("option", { value: "70%" }, "Size 70%"),
+                    React.createElement("option", { value: "80%" }, "Size 80%"),
+                    React.createElement("option", { value: "90%" }, "Size 90%"),
+                    React.createElement("option", { value: "100%" }, "Size 100%"),
+                    React.createElement("option", { value: "120%" }, "Size 120%"),
+                    React.createElement("option", { value: "140%" }, "Size 140%"),
+                    React.createElement("option", { value: "160%" }, "Size 160%"),
+                    React.createElement("option", { value: "180%" }, "Size 180%"),
+                    React.createElement("option", { value: "200%" }, "Size 200%"))),
             React.createElement("div", { className: "contents" }, contents));
     };
     App.prototype.makeFakeData = function () {
@@ -30673,6 +30701,7 @@ exports.default = DockLocation;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
+/** @hidden @internal */
 var canUseDOM = !!((typeof window !== "undefined" &&
     window.document &&
     window.document.createElement));
@@ -30989,6 +31018,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.showPopup = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+/** @hidden @internal */
 function showPopup(triggerElement, items, onSelect, classNameMapper) {
     var triggerRect = triggerElement.getBoundingClientRect();
     var currentDocument = triggerElement.ownerDocument;
@@ -31257,10 +31287,17 @@ var Actions = /** @class */ (function () {
      * @param toNodeId the new tab node will be added to the tabset with this node id
      * @param location the location where the new tab will be added, one of the DockLocation enum values.
      * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
-     * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *}}
+     * @param select (optional) whether to select the new tab, overriding autoSelectTab
+     * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *, select?: boolean}}
      */
-    Actions.addNode = function (json, toNodeId, location, index) {
-        return new Action_1.default(Actions.ADD_NODE, { json: json, toNode: toNodeId, location: location.getName(), index: index });
+    Actions.addNode = function (json, toNodeId, location, index, select) {
+        return new Action_1.default(Actions.ADD_NODE, {
+            json: json,
+            toNode: toNodeId,
+            location: location.getName(),
+            index: index,
+            select: select
+        });
     };
     /**
      * Moves a node (tab or tabset) from one location to another
@@ -31268,14 +31305,16 @@ var Actions = /** @class */ (function () {
      * @param toNodeId the id of the node to receive the moved node
      * @param location the location where the moved node will be added, one of the DockLocation enum values.
      * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
+     * @param select (optional) whether to select the moved tab(s) in new tabset, overriding autoSelectTab
      * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
      */
-    Actions.moveNode = function (fromNodeId, toNodeId, location, index) {
+    Actions.moveNode = function (fromNodeId, toNodeId, location, index, select) {
         return new Action_1.default(Actions.MOVE_NODE, {
             fromNode: fromNodeId,
             toNode: toNodeId,
             location: location.getName(),
-            index: index
+            index: index,
+            select: select
         });
     };
     /**
@@ -31423,6 +31462,8 @@ var BorderNode = /** @class */ (function (_super) {
         var _this = _super.call(this, model) || this;
         /** @hidden @internal */
         _this._adjustedSize = 0;
+        /** @hidden @internal */
+        _this._calculatedBorderBarSize = 0;
         _this._location = location;
         _this._drawChildren = [];
         _this._attributes.id = "border_" + location.getName();
@@ -31453,6 +31494,8 @@ var BorderNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute_1.default.INT).setFrom(0);
         attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute_1.default.STRING);
+        attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute_1.default.BOOLEAN);
         return attributeDefinitions;
     };
     BorderNode.prototype.getLocation = function () {
@@ -31467,11 +31510,32 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype.isEnableDrop = function () {
         return this._getAttr("enableDrop");
     };
+    BorderNode.prototype.isAutoSelectTab = function (whenOpen) {
+        if (whenOpen == null) {
+            whenOpen = (this.getSelected() !== -1);
+        }
+        if (whenOpen) {
+            return this._getAttr("autoSelectTabWhenOpen");
+        }
+        else {
+            return this._getAttr("autoSelectTabWhenClosed");
+        }
+    };
     BorderNode.prototype.getClassName = function () {
         return this._getAttributeAsStringOrUndefined("className");
     };
+    /** @hidden @internal */
+    BorderNode.prototype.calcBorderBarSize = function (metrics) {
+        var barSize = this._getAttr("barSize");
+        if (barSize !== 0) { // its defined
+            this._calculatedBorderBarSize = barSize;
+        }
+        else {
+            this._calculatedBorderBarSize = metrics.borderBarSize;
+        }
+    };
     BorderNode.prototype.getBorderBarSize = function () {
-        return this._getAttr("barSize");
+        return this._calculatedBorderBarSize;
     };
     BorderNode.prototype.getSize = function () {
         return this._attributes.size;
@@ -31519,13 +31583,14 @@ var BorderNode = /** @class */ (function (_super) {
         return this._adjustedSize;
     };
     /** @hidden @internal */
-    BorderNode.prototype._layoutBorderOuter = function (outer) {
+    BorderNode.prototype._layoutBorderOuter = function (outer, metrics) {
+        this.calcBorderBarSize(metrics);
         var split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
         this._tabHeaderRect = split1.start;
         return split1.end;
     };
     /** @hidden @internal */
-    BorderNode.prototype._layoutBorderInner = function (inner) {
+    BorderNode.prototype._layoutBorderInner = function (inner, metrics) {
         var _this = this;
         this._drawChildren = [];
         var location = this._location;
@@ -31533,7 +31598,7 @@ var BorderNode = /** @class */ (function (_super) {
         var split2 = location.reflect().split(split1.start, this._model.getSplitterSize()); // split contents into content and splitter
         this._contentRect = split2.end;
         this._children.forEach(function (child, i) {
-            child._layout(_this._contentRect);
+            child._layout(_this._contentRect, metrics);
             child._setVisible(i === _this.getSelected());
             _this._drawChildren.push(child);
         });
@@ -31650,7 +31715,7 @@ var BorderNode = /** @class */ (function (_super) {
         return dropInfo;
     };
     /** @hidden @internal */
-    BorderNode.prototype.drop = function (dragNode, location, index) {
+    BorderNode.prototype.drop = function (dragNode, location, index, select) {
         var fromIndex = 0;
         var parent = dragNode.getParent();
         if (parent !== undefined) {
@@ -31690,7 +31755,7 @@ var BorderNode = /** @class */ (function (_super) {
         if (dragNode.getType() === TabNode_1.default.TYPE) {
             this._addChild(dragNode, insertPos);
         }
-        if (this.getSelected() !== -1) { // already open
+        if (select || (select !== false && this.isAutoSelectTab())) {
             this._setSelected(insertPos);
         }
         this._model._tidy();
@@ -31791,7 +31856,7 @@ var BorderSet = /** @class */ (function () {
         return this._borders.map(function (borderNode) { return borderNode._toJson(); });
     };
     /** @hidden @internal */
-    BorderSet.prototype._layoutBorder = function (outerInnerRects) {
+    BorderSet.prototype._layoutBorder = function (outerInnerRects, metrics) {
         var rect = outerInnerRects.outer;
         var height = rect.height;
         var width = rect.width;
@@ -31847,11 +31912,11 @@ var BorderSet = /** @class */ (function () {
             j = (j + 1) % showingBorders.length;
         }
         showingBorders.forEach(function (border) {
-            outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer);
+            outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
         });
         outerInnerRects.inner = outerInnerRects.outer;
         showingBorders.forEach(function (border) {
-            outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner);
+            outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, metrics);
         });
         return outerInnerRects;
     };
@@ -31949,16 +32014,20 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("tabSetAutoSelectTab", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabSetHeaderHeight", 26).setType(Attribute_1.default.INT).setFrom(0);
-        attributeDefinitions.add("tabSetTabStripHeight", 24).setType(Attribute_1.default.INT).setFrom(0);
+        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute_1.default.INT).setFrom(0);
+        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute_1.default.INT).setFrom(0);
         attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
         attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
         attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("borderBarSize", 26);
+        // border
+        attributeDefinitions.add("borderBarSize", 0).setType(Attribute_1.default.INT).setFrom(0);
         attributeDefinitions.add("borderEnableDrop", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("borderClassName", undefined).setType(Attribute_1.default.STRING);
         return attributeDefinitions;
     };
@@ -32037,7 +32106,7 @@ var Model = /** @class */ (function () {
                     var newNode = new TabNode_1.default(this, action.data.json, true);
                     var toNode = this._idMap[action.data.toNode];
                     if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default || toNode instanceof RowNode_1.default) {
-                        toNode.drop(newNode, DockLocation_1.default.getByName(action.data.location), action.data.index);
+                        toNode.drop(newNode, DockLocation_1.default.getByName(action.data.location), action.data.index, action.data.select);
                     }
                     break;
                 }
@@ -32047,7 +32116,7 @@ var Model = /** @class */ (function () {
                     if (fromNode instanceof TabNode_1.default || fromNode instanceof TabSetNode_1.default) {
                         var toNode = this._idMap[action.data.toNode];
                         if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default || toNode instanceof RowNode_1.default) {
-                            toNode.drop(fromNode, DockLocation_1.default.getByName(action.data.location), action.data.index);
+                            toNode.drop(fromNode, DockLocation_1.default.getByName(action.data.location), action.data.index, action.data.select);
                         }
                     }
                     break;
@@ -32218,11 +32287,11 @@ var Model = /** @class */ (function () {
         }
     };
     /** @hidden @internal */
-    Model.prototype._layout = function (rect) {
+    Model.prototype._layout = function (rect, metrics) {
         // let start = Date.now();
-        this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect });
+        this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, metrics);
         rect = this._borderRects.inner.removeInsets(this._getAttribute("marginInsets"));
-        this._root._layout(rect);
+        this._root._layout(rect, metrics);
         return rect;
         // console.log("layout time: " + (Date.now() - start));
     };
@@ -32412,7 +32481,7 @@ var Node = /** @class */ (function () {
         return this._fixed;
     };
     /** @hidden @internal */
-    Node.prototype._layout = function (rect) {
+    Node.prototype._layout = function (rect, metrics) {
         this._rect = rect;
     };
     /** @hidden @internal */
@@ -32616,8 +32685,8 @@ var RowNode = /** @class */ (function (_super) {
         this._attributes.weight = weight;
     };
     /** @hidden @internal */
-    RowNode.prototype._layout = function (rect) {
-        _super.prototype._layout.call(this, rect);
+    RowNode.prototype._layout = function (rect, metrics) {
+        _super.prototype._layout.call(this, rect, metrics);
         var pixelSize = this._rect._getSize(this.getOrientation());
         var totalWeight = 0;
         var fixedPixels = 0;
@@ -32694,10 +32763,10 @@ var RowNode = /** @class */ (function (_super) {
         for (var _c = 0, drawChildren_4 = drawChildren; _c < drawChildren_4.length; _c++) {
             var child = drawChildren_4[_c];
             if (this.getOrientation() === Orientation_1.default.HORZ) {
-                child._layout(new Rect_1.default(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height));
+                child._layout(new Rect_1.default(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height), metrics);
             }
             else {
-                child._layout(new Rect_1.default(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()));
+                child._layout(new Rect_1.default(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()), metrics);
             }
             p += child._getTempSize();
         }
@@ -33165,7 +33234,7 @@ var TabNode = /** @class */ (function (_super) {
         this._attributes.floating = float;
     };
     /** @hidden @internal */
-    TabNode.prototype._layout = function (rect) {
+    TabNode.prototype._layout = function (rect, metrics) {
         if (!rect.equals(this._rect)) {
             this._fireEvent("resize", { rect: rect });
         }
@@ -33190,6 +33259,7 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype._getAttributeDefinitions = function () {
         return TabNode._attributeDefinitions;
     };
+    /** @hidden @internal */
     TabNode.prototype._setWindow = function (window) {
         this._window = window;
     };
@@ -33243,6 +33313,8 @@ var TabSetNode = /** @class */ (function (_super) {
         var _this = _super.call(this, model) || this;
         TabSetNode._attributeDefinitions.fromJson(json, _this._attributes);
         model._addNode(_this);
+        _this.calculatedTabBarHeight = 0;
+        _this.calculatedHeaderBarHeight = 0;
         return _this;
     }
     /** @hidden @internal */
@@ -33285,6 +33357,7 @@ var TabSetNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
         attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
         attributeDefinitions.addInherited("tabLocation", "tabSetTabLocation");
+        attributeDefinitions.addInherited("autoSelectTab", "tabSetAutoSelectTab").setType(Attribute_1.default.BOOLEAN);
         return attributeDefinitions;
     };
     TabSetNode.prototype.getName = function () {
@@ -33337,17 +33410,40 @@ var TabSetNode = /** @class */ (function (_super) {
     TabSetNode.prototype.isEnableTabStrip = function () {
         return this._getAttr("enableTabStrip");
     };
+    TabSetNode.prototype.isAutoSelectTab = function () {
+        return this._getAttr("autoSelectTab");
+    };
     TabSetNode.prototype.getClassNameTabStrip = function () {
         return this._getAttributeAsStringOrUndefined("classNameTabStrip");
     };
     TabSetNode.prototype.getClassNameHeader = function () {
         return this._getAttributeAsStringOrUndefined("classNameHeader");
     };
+    /** @hidden @internal */
+    TabSetNode.prototype.calculateHeaderBarHeight = function (metrics) {
+        var headerBarHeight = this._getAttr("headerHeight");
+        if (headerBarHeight !== 0) { // its defined
+            this.calculatedHeaderBarHeight = headerBarHeight;
+        }
+        else {
+            this.calculatedHeaderBarHeight = metrics.headerBarSize;
+        }
+    };
+    /** @hidden @internal */
+    TabSetNode.prototype.calculateTabBarHeight = function (metrics) {
+        var tabBarHeight = this._getAttr("tabStripHeight");
+        if (tabBarHeight !== 0) { // its defined
+            this.calculatedTabBarHeight = tabBarHeight;
+        }
+        else {
+            this.calculatedTabBarHeight = metrics.tabBarSize;
+        }
+    };
     TabSetNode.prototype.getHeaderHeight = function () {
-        return this._getAttr("headerHeight");
+        return this.calculatedHeaderBarHeight;
     };
     TabSetNode.prototype.getTabStripHeight = function () {
-        return this._getAttr("tabStripHeight");
+        return this.calculatedTabBarHeight;
     };
     TabSetNode.prototype.getTabLocation = function () {
         return this._getAttr("tabLocation");
@@ -33404,8 +33500,10 @@ var TabSetNode = /** @class */ (function (_super) {
         return dropInfo;
     };
     /** @hidden @internal */
-    TabSetNode.prototype._layout = function (rect) {
+    TabSetNode.prototype._layout = function (rect, metrics) {
         var _this = this;
+        this.calculateHeaderBarHeight(metrics);
+        this.calculateTabBarHeight(metrics);
         if (this.isMaximized()) {
             rect = this._model.getRoot().getRect();
         }
@@ -33416,24 +33514,24 @@ var TabSetNode = /** @class */ (function (_super) {
         var y = 0;
         var h = 0;
         if (showHeader) {
-            y += this.getHeaderHeight();
-            h += this.getHeaderHeight();
+            y += this.calculatedHeaderBarHeight;
+            h += this.calculatedHeaderBarHeight;
         }
         if (this.isEnableTabStrip()) {
             if (this.getTabLocation() === "top") {
-                this._tabHeaderRect = new Rect_1.default(rect.x, rect.y + y, rect.width, this.getTabStripHeight());
+                this._tabHeaderRect = new Rect_1.default(rect.x, rect.y + y, rect.width, this.calculatedTabBarHeight);
             }
             else {
-                this._tabHeaderRect = new Rect_1.default(rect.x, rect.y + rect.height - this.getTabStripHeight(), rect.width, this.getTabStripHeight());
+                this._tabHeaderRect = new Rect_1.default(rect.x, rect.y + rect.height - this.calculatedTabBarHeight, rect.width, this.calculatedTabBarHeight);
             }
-            h += this.getTabStripHeight();
+            h += this.calculatedTabBarHeight;
             if (this.getTabLocation() === "top") {
-                y += this.getTabStripHeight();
+                y += this.calculatedTabBarHeight;
             }
         }
         this._contentRect = new Rect_1.default(rect.x, rect.y + y, rect.width, rect.height - h);
         this._children.forEach(function (child, i) {
-            child._layout(_this._contentRect);
+            child._layout(_this._contentRect, metrics);
             child._setVisible(i === _this.getSelected());
         });
     };
@@ -33444,7 +33542,7 @@ var TabSetNode = /** @class */ (function (_super) {
         this._setSelected(Math.max(0, this.getSelected() - 1));
     };
     /** @hidden @internal */
-    TabSetNode.prototype.drop = function (dragNode, location, index) {
+    TabSetNode.prototype.drop = function (dragNode, location, index, select) {
         var _this = this;
         var dockLocation = location;
         if (this === dragNode) { // tabset drop into itself
@@ -33490,7 +33588,9 @@ var TabSetNode = /** @class */ (function (_super) {
             }
             if (dragNode.getType() === TabNode_1.default.TYPE) {
                 this._addChild(dragNode, insertPos_1);
-                this._setSelected(insertPos_1);
+                if (select || (select !== false && this.isAutoSelectTab())) {
+                    this._setSelected(insertPos_1);
+                }
                 // console.log("added child at : " + insertPos);
             }
             else {
@@ -33674,6 +33774,7 @@ var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx")
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/** @hidden @internal */
 var MAX_TABS = 999;
 /** @hidden @internal */
 exports.BorderTabSet = function (props) {
@@ -33694,12 +33795,12 @@ exports.BorderTabSet = function (props) {
             if (node_1.getChildren().length > 0) {
                 var lastChild = node_1.getChildren()[node_1.getChildren().length - 1];
                 var isTabVisible = function (i, child, childEnd, borderEnd, toolbarSize) {
-                    if (childEnd > borderEnd - (20 + toolbarSize)) {
+                    if (childEnd > borderEnd - (25 + toolbarSize)) {
                         hideTabsAfter.current = Math.max(0, i - 1);
                         showOverflow.current = node_1.getChildren().length > 1;
                         if (i === 0) {
                             showToolbar.current = false;
-                            if (childEnd > borderEnd - 20) {
+                            if (childEnd > borderEnd - 25) {
                                 showOverflow.current = false;
                             }
                         }
@@ -33820,8 +33921,20 @@ exports.BorderTabSet = function (props) {
         var overflowButton = (React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__border_button_overflow_" + border.getLocation().getName()), onTouchStart: onInterceptMouseDown, onClick: function () { return onOverflowClick(); }, onMouseDown: onInterceptMouseDown }, hiddenTabs.length));
         tabs.push(overflowButton);
     }
+    style = layout.styleFont(style);
+    var innerStyle = {};
+    var borderHeight = border.getBorderBarSize() - 1;
+    if (border.getLocation() === DockLocation_1.default.LEFT) {
+        innerStyle = { right: borderHeight, height: borderHeight };
+    }
+    else if (border.getLocation() === DockLocation_1.default.RIGHT) {
+        innerStyle = { left: borderHeight, height: borderHeight };
+    }
+    else {
+        innerStyle = { height: borderHeight };
+    }
     return React.createElement("div", { style: style, className: borderClasses },
-        React.createElement("div", { className: cm("flexlayout__border_inner_" + border.getLocation().getName()) }, tabs),
+        React.createElement("div", { style: innerStyle, className: cm("flexlayout__border_inner_" + border.getLocation().getName()) }, tabs),
         toolbar);
 };
 
@@ -33853,6 +33966,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ErrorBoundary = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/** @hidden @internal */
 var ErrorBoundary = /** @class */ (function (_super) {
     __extends(ErrorBoundary, _super);
     function ErrorBoundary(props) {
@@ -33947,6 +34061,7 @@ exports.FloatingWindow = function (props) {
         return null;
     }
 };
+/** @hidden @internal */
 function copyStyles(doc) {
     var head = doc.head;
     var promises = [];
@@ -34050,9 +34165,12 @@ var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloa
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
 // Assume any recent browser not IE or original Edge will work
+/** @hidden @internal */
 // @ts-ignore
 var isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
+/** @hidden @internal */
 var isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
+/** @hidden @internal */
 var defaultSupportsPopout = !isIEorEdge && !isMobile;
 /**
  * A React component that hosts a multi-tabbed layout
@@ -34069,16 +34187,36 @@ var Layout = /** @class */ (function (_super) {
         _this.onModelChange = function () {
             _this.forceUpdate();
             if (_this.props.onModelChange) {
-                _this.props.onModelChange(_this.model);
+                _this.props.onModelChange(_this.props.model);
             }
         };
         /** @hidden @internal */
         _this.updateRect = function () {
             _this.domRect = _this.selfRef.current.getBoundingClientRect();
             var rect = new Rect_1.default(0, 0, _this.domRect.width, _this.domRect.height);
-            if (!rect.equals(_this.rect) && rect.width !== 0 && rect.height !== 0) {
-                _this.rect = rect;
-                _this.forceUpdate();
+            if (!rect.equals(_this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+                _this.setState({ rect: rect });
+            }
+        };
+        /** @hidden @internal */
+        _this.updateLayoutMetrics = function () {
+            if (_this.findHeaderBarSizeRef.current) {
+                var headerBarSize = _this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
+                if (headerBarSize !== _this.state.calculatedHeaderBarSize) {
+                    _this.setState({ calculatedHeaderBarSize: headerBarSize });
+                }
+            }
+            if (_this.findTabBarSizeRef.current) {
+                var tabBarSize = _this.findTabBarSizeRef.current.getBoundingClientRect().height;
+                if (tabBarSize !== _this.state.calculatedTabBarSize) {
+                    _this.setState({ calculatedTabBarSize: tabBarSize });
+                }
+            }
+            if (_this.findBorderBarSizeRef.current) {
+                var borderBarSize = _this.findBorderBarSizeRef.current.getBoundingClientRect().height;
+                if (borderBarSize !== _this.state.calculatedBorderBarSize) {
+                    _this.setState({ calculatedBorderBarSize: borderBarSize });
+                }
             }
         };
         /** @hidden @internal */
@@ -34094,14 +34232,14 @@ var Layout = /** @class */ (function (_super) {
         _this.onCloseWindow = function (id) {
             _this.doAction(Actions_1.default.unFloatTab(id));
             try {
-                _this.model.getNodeById(id)._setWindow(undefined);
+                _this.props.model.getNodeById(id)._setWindow(undefined);
             }
             catch (e) { // catch incase it was a model change
             }
         };
         /** @hidden @internal */
         _this.onSetWindow = function (id, window) {
-            _this.model.getNodeById(id)._setWindow(window);
+            _this.props.model.getNodeById(id)._setWindow(window);
         };
         /** @hidden @internal */
         _this.onCancelAdd = function () {
@@ -34142,11 +34280,11 @@ var Layout = /** @class */ (function (_super) {
         /** @hidden @internal */
         _this.onDragDivMouseDown = function (event) {
             event.preventDefault();
-            _this.dragStart(event, _this.dragDivText, TabNode_1.default._fromJson(_this.newTabJson, _this.model, false), true, undefined, undefined);
+            _this.dragStart(event, _this.dragDivText, TabNode_1.default._fromJson(_this.newTabJson, _this.props.model, false), true, undefined, undefined);
         };
         /** @hidden @internal */
         _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
-            if (_this.model.getMaximizedTabset() !== undefined || !allowDrag) {
+            if (_this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
                 DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument);
             }
             else {
@@ -34181,7 +34319,7 @@ var Layout = /** @class */ (function (_super) {
         /** @hidden @internal */
         _this.onDragMove = function (event) {
             if (_this.firstMove === false) {
-                var speed = _this.model._getAttribute("tabDragSpeed");
+                var speed = _this.props.model._getAttribute("tabDragSpeed");
                 _this.outlineDiv.style.transition = "top " + speed + "s, left " + speed + "s, width " + speed + "s, height " + speed + "s";
             }
             _this.firstMove = false;
@@ -34193,7 +34331,7 @@ var Layout = /** @class */ (function (_super) {
             _this.dragDiv.style.left =
                 pos.x - _this.dragDiv.getBoundingClientRect().width / 2 + "px";
             _this.dragDiv.style.top = pos.y + 5 + "px";
-            var dropInfo = _this.model._findDropTargetNode(_this.dragNode, pos.x, pos.y);
+            var dropInfo = _this.props.model._findDropTargetNode(_this.dragNode, pos.x, pos.y);
             if (dropInfo) {
                 _this.dropInfo = dropInfo;
                 _this.outlineDiv.className = _this.getClassName(dropInfo.className);
@@ -34222,12 +34360,13 @@ var Layout = /** @class */ (function (_super) {
                 }
             }
         };
-        _this.model = _this.props.model;
-        _this.rect = new Rect_1.default(0, 0, 0, 0);
         _this.domRect = { x: 0, y: 0, width: 0, height: 0 };
-        _this.model._setChangeListener(_this.onModelChange);
+        _this.props.model._setChangeListener(_this.onModelChange);
         _this.tabIds = [];
         _this.selfRef = React.createRef();
+        _this.findHeaderBarSizeRef = React.createRef();
+        _this.findTabBarSizeRef = React.createRef();
+        _this.findBorderBarSizeRef = React.createRef();
         _this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         _this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         // For backwards compatibility, prop closeIcon sets prop icons.close:
@@ -34235,23 +34374,43 @@ var Layout = /** @class */ (function (_super) {
             Object.assign({ close: props.closeIcon }, props.icons) :
             props.icons;
         _this.firstRender = true;
+        _this.state = { rect: new Rect_1.default(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30 };
         return _this;
     }
+    /** @hidden @internal */
+    Layout.prototype.styleFont = function (style) {
+        if (this.props.font) {
+            if (this.props.font.size) {
+                style.fontSize = this.props.font.size;
+            }
+            if (this.props.font.family) {
+                style.fontFamily = this.props.font.family;
+            }
+            if (this.props.font.style) {
+                style.fontStyle = this.props.font.style;
+            }
+            if (this.props.font.weight) {
+                style.fontWeight = this.props.font.weight;
+            }
+        }
+        return style;
+    };
     /** @hidden @internal */
     Layout.prototype.doAction = function (action) {
         if (this.props.onAction !== undefined) {
             var outcome = this.props.onAction(action);
             if (outcome !== undefined) {
-                this.model.doAction(outcome);
+                this.props.model.doAction(outcome);
             }
         }
         else {
-            this.model.doAction(action);
+            this.props.model.doAction(action);
         }
     };
     /** @hidden @internal */
     Layout.prototype.componentDidMount = function () {
         this.updateRect();
+        this.updateLayoutMetrics();
         // need to re-render if size changes
         this.currentDocument = this.selfRef.current.ownerDocument;
         this.currentWindow = this.currentDocument.defaultView;
@@ -34260,13 +34419,13 @@ var Layout = /** @class */ (function (_super) {
     /** @hidden @internal */
     Layout.prototype.componentDidUpdate = function () {
         this.updateRect();
-        if (this.model !== this.props.model) {
-            if (this.model !== undefined) {
-                this.model._setChangeListener(undefined); // stop listening to old model
+        this.updateLayoutMetrics();
+        if (this.props.model !== this.previousModel) {
+            if (this.previousModel !== undefined) {
+                this.previousModel._setChangeListener(undefined); // stop listening to old model
             }
-            this.model = this.props.model;
-            this.model._setChangeListener(this.onModelChange);
-            this.forceUpdate();
+            this.props.model._setChangeListener(this.onModelChange);
+            this.previousModel = this.props.model;
         }
         // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
     };
@@ -34303,7 +34462,7 @@ var Layout = /** @class */ (function (_super) {
         // first render will be used to find the size (via selfRef)
         if (this.firstRender) {
             this.firstRender = false;
-            return (React.createElement("div", { ref: this.selfRef, className: this.getClassName("flexlayout__layout") }));
+            return (React.createElement("div", { ref: this.selfRef, className: this.getClassName("flexlayout__layout") }, this.metricsElements()));
         }
         // this.start = Date.now();
         var borderComponents = [];
@@ -34311,9 +34470,14 @@ var Layout = /** @class */ (function (_super) {
         var floatingWindows = [];
         var tabComponents = {};
         var splitterComponents = [];
-        this.centerRect = this.model._layout(this.rect);
-        this.renderBorder(this.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
-        this.renderChildren(this.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
+        var metrics = {
+            headerBarSize: this.state.calculatedHeaderBarSize,
+            tabBarSize: this.state.calculatedTabBarSize,
+            borderBarSize: this.state.calculatedBorderBarSize
+        };
+        this.centerRect = this.props.model._layout(this.state.rect, metrics);
+        this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
+        this.renderChildren(this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
         var nextTopIds = [];
         var nextTopIdsMap = {};
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
@@ -34338,7 +34502,16 @@ var Layout = /** @class */ (function (_super) {
             }),
             borderComponents,
             splitterComponents,
-            floatingWindows));
+            floatingWindows,
+            this.metricsElements()));
+    };
+    /** @hidden @internal */
+    Layout.prototype.metricsElements = function () {
+        var fontStyle = this.styleFont({ visibility: "hidden" });
+        return (React.createElement(React.Fragment, null,
+            React.createElement("div", { key: "findHeaderBarSize", ref: this.findHeaderBarSizeRef, style: fontStyle, className: this.getClassName("flexlayout__tabset_header_sizer") }, "FindHeaderBarSize"),
+            React.createElement("div", { key: "findTabBarSize", ref: this.findTabBarSizeRef, style: fontStyle, className: this.getClassName("flexlayout__tabset_sizer") }, "FindTabBarSize"),
+            React.createElement("div", { key: "findBorderBarSize", ref: this.findBorderBarSizeRef, style: fontStyle, className: this.getClassName("flexlayout__border_sizer") }, "FindBorderBarSize")));
     };
     /** @hidden @internal */
     Layout.prototype.renderBorder = function (borderSet, borderComponents, tabComponents, floatingWindows, splitterComponents) {
@@ -34419,7 +34592,7 @@ var Layout = /** @class */ (function (_super) {
      * @param json the json for the new tab node
      */
     Layout.prototype.addTabToTabSet = function (tabsetId, json) {
-        var tabsetNode = this.model.getNodeById(tabsetId);
+        var tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
             this.doAction(Actions_1.default.addNode(json, tabsetId, DockLocation_1.default.CENTER, -1));
         }
@@ -34429,7 +34602,7 @@ var Layout = /** @class */ (function (_super) {
      * @param json the json for the new tab node
      */
     Layout.prototype.addTabToActiveTabSet = function (json) {
-        var tabsetNode = this.model.getActiveTabset();
+        var tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
             this.doAction(Actions_1.default.addNode(json, tabsetNode.getId(), DockLocation_1.default.CENTER, -1));
         }
@@ -34443,7 +34616,7 @@ var Layout = /** @class */ (function (_super) {
     Layout.prototype.addTabWithDragAndDrop = function (dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
-        this.dragStart(undefined, dragText, TabNode_1.default._fromJson(json, this.model, false), true, undefined, undefined);
+        this.dragStart(undefined, dragText, TabNode_1.default._fromJson(json, this.props.model, false), true, undefined, undefined);
     };
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
@@ -34464,7 +34637,7 @@ var Layout = /** @class */ (function (_super) {
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown);
         var r = new Rect_1.default(10, 10, 150, 50);
-        r.centerInRect(this.rect);
+        r.centerInRect(this.state.rect);
         this.dragDiv.style.left = r.x + "px";
         this.dragDiv.style.top = r.y + "px";
         var rootdiv = this.selfRef.current;
@@ -34472,7 +34645,7 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.showEdges = function (rootdiv) {
-        if (this.model.isEnableEdgeDock()) {
+        if (this.props.model.isEnableEdgeDock()) {
             var domRect = rootdiv.getBoundingClientRect();
             var r = this.centerRect;
             var size = 100;
@@ -34519,7 +34692,7 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.hideEdges = function (rootdiv) {
-        if (this.model.isEnableEdgeDock()) {
+        if (this.props.model.isEnableEdgeDock()) {
             try {
                 rootdiv.removeChild(this.edgeTopDiv);
                 rootdiv.removeChild(this.edgeLeftDiv);
@@ -34931,6 +35104,7 @@ var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
 var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
+/** @hidden @internal */
 var MAX_TABS = 999;
 /*
     Since selected tab is always shown, move it to first position when
@@ -34979,12 +35153,12 @@ exports.TabSet = function (props) {
                     var modifiedChildren = getModifiedNodeList(node.getChildren(), node.getSelected());
                     for (var i = 0; i < modifiedChildren.length; i++) {
                         var child = modifiedChildren[i];
-                        if (child.getTabRect().getRight() > node.getRect().getRight() - (20 + toolbarWidth)) {
+                        if (child.getTabRect().getRight() > node.getRect().getRight() - (25 + toolbarWidth)) {
                             hideTabsAfter.current = Math.max(0, i - 1);
                             showOverflow.current = node.getChildren().length > 1;
                             if (i === 0) {
                                 showToolbar.current = false;
-                                if (child.getTabRect().getRight() > node.getRect().getRight() - 20) {
+                                if (child.getTabRect().getRight() > node.getRect().getRight() - 25) {
                                     showOverflow.current = false;
                                 }
                             }
@@ -35144,6 +35318,7 @@ exports.TabSet = function (props) {
             React.createElement("div", { className: cm("flexlayout__tabset_header_inner_" + node.getTabLocation()) }, tabs),
             toolbar);
     }
+    style = layout.styleFont(style);
     return React.createElement("div", { style: style, className: cm("flexlayout__tabset") },
         header,
         tabStrip);
