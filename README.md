@@ -338,6 +338,10 @@ Attributes allowed in the 'global' element
 | borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
 | borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
 | borderClassName | null | |
+| borderSize | 200 | |
+| borderMinSize | 0 | |
+| tabSetMinHeight | 0 | |
+| tabSetMinWidth | 0 | |
 | tabSetTabLocation | top | show tabs in location top or bottom |
 
 
@@ -410,7 +414,9 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | enableTabStrip | *inherited* | |
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | |
-| tabLocation | top | show tabs in location top or bottom |
+| tabLocation | *inherited* | show tabs in location top or bottom |
+| minHeight | *inherited* | |
+| minWidth | *inherited* | |
 
 ## Border Attributes
 
@@ -422,7 +428,8 @@ Inherited defaults will take their value from the associated global attributes (
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | border | |
-| size | 200 | size of the tab body when selected |
+| size | *inherited* | size of the tab body when selected |
+| minSize | *inherited* |  |
 | selected | -1 | -1 is the unselected value|
 | id | auto generated | border_ + border name e.g. border_left |
 | show | true | show/hide this border |

@@ -20,10 +20,38 @@ class SplitterNode extends Node {
     return this._model.getSplitterSize();
   }
 
+    /** @hidden @internal */
+    getMinWidth() {
+    if (this.getOrientation() === Orientation.VERT) {
+      return this._model.getSplitterSize();
+    } else {
+      return 0;
+    }
+  }
+
   /** @hidden @internal */
   getHeight() {
     return this._model.getSplitterSize();
   }
+
+    /** @hidden @internal */
+    getMinHeight() {
+    if (this.getOrientation() === Orientation.HORZ) {
+      return this._model.getSplitterSize();
+    } else {
+      return 0;
+    }
+  }
+
+    /** @hidden @internal */
+    getMinSize(orientation: Orientation) {
+      if (orientation === Orientation.HORZ) {
+        return this.getMinWidth();
+      } else {
+        return this.getMinHeight();
+      }
+    }
+  
 
   /** @hidden @internal */
   getWeight(): number {

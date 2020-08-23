@@ -32,7 +32,7 @@ export const Splitter = (props: ISplitterProps) => {
             layout.getCurrentDocument()
         );
         const parentNode = node.getParent() as RowNode;
-        pBounds.current = parentNode._getSplitterBounds(node);
+        pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
         outlineDiv.current.style.position = "absolute";

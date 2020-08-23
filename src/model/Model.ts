@@ -80,8 +80,12 @@ class Model {
     attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
     attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
     attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute.STRING);
+    attributeDefinitions.add("tabSetMinWidth", 0).setType(Attribute.NUMBER);
+    attributeDefinitions.add("tabSetMinHeight", 0).setType(Attribute.NUMBER);
 
     // border
+    attributeDefinitions.add("borderSize", 200).setType(Attribute.INT).setFrom(0);
+    attributeDefinitions.add("borderMinSize", 0).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("borderBarSize", 0).setType(Attribute.INT).setFrom(0);
     attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute.BOOLEAN);
@@ -408,9 +412,10 @@ class Model {
     this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, metrics);
     rect = this._borderRects.inner.removeInsets(this._getAttribute("marginInsets"));
 
+    this._root?.calcMinSize();
     (this._root as RowNode)._layout(rect, metrics);
-    return rect;
     // console.log("layout time: " + (Date.now() - start));
+    return rect;
   }
 
   /** @hidden @internal */

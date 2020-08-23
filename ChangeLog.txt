@@ -1,3 +1,6 @@
+0.4.8
+Added minimum size attributes to tabset and border.
+
 0.4.7
 Added font property.
 Font now defaults to medium.

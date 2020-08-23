@@ -62,6 +62,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     attributeDefinitions.addInherited("enableTabStrip", "tabSetEnableTabStrip");
     attributeDefinitions.addInherited("borderInsets", "tabSetBorderInsets");
     attributeDefinitions.addInherited("marginInsets", "tabSetMarginInsets");
+    attributeDefinitions.addInherited("minWidth", "tabSetMinWidth");
+    attributeDefinitions.addInherited("minHeight", "tabSetMinHeight");
 
     attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
     attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
@@ -117,9 +119,27 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return this._getAttributeAsNumberOrUndefined("width");
   }
 
+  getMinWidth() {
+    return this._getAttr("minWidth") as number;
+  }
+
   getHeight() {
     return this._getAttributeAsNumberOrUndefined("height");
   }
+
+  getMinHeight() {
+    return this._getAttr("minHeight") as number;
+  }
+
+  /** @hidden @internal */
+  getMinSize(orientation: Orientation) {
+    if (orientation === Orientation.HORZ) {
+      return this.getMinWidth();
+    } else {
+      return this.getMinHeight();
+    }
+  }
+  
 
   isMaximized() {
     return this._model.getMaximizedTabset() === this;
@@ -447,5 +467,6 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     return prefSize;
   }
 }
+
 
 export default TabSetNode;

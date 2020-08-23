@@ -39,7 +39,6 @@ class BorderNode extends Node implements IDropTarget {
     const attributeDefinitions = new AttributeDefinitions();
     attributeDefinitions.add("type", BorderNode.TYPE, true);
 
-    attributeDefinitions.add("size", 200);
     attributeDefinitions.add("selected", -1);
     attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);
 
@@ -48,6 +47,8 @@ class BorderNode extends Node implements IDropTarget {
     attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING);
     attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("size", "borderSize").setType(Attribute.NUMBER);
+    attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute.NUMBER);
     return attributeDefinitions;
   }
 
@@ -121,7 +122,11 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   getSize() {
-    return this._attributes.size as number;
+    return this._getAttr("size") as number;
+  }
+
+  getMinSize() {
+    return this._getAttr("minSize") as number;
   }
 
   getSelected(): number {
@@ -379,22 +384,23 @@ class BorderNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  _getSplitterBounds(splitter: SplitterNode) {
+  _getSplitterBounds(splitter: SplitterNode, useMinSize: boolean = false) {
     const pBounds = [0, 0];
+    const minSize = useMinSize? this.getMinSize() : 0;
     const outerRect = this._model._getOuterInnerRects().outer;
     const innerRect = this._model._getOuterInnerRects().inner;
     if (this._location === DockLocation.TOP) {
-      pBounds[0] = outerRect.y;
+      pBounds[0] = outerRect.y + minSize;
       pBounds[1] = innerRect.getBottom() - splitter.getHeight();
     } else if (this._location === DockLocation.LEFT) {
-      pBounds[0] = outerRect.x;
+      pBounds[0] = outerRect.x + minSize;
       pBounds[1] = innerRect.getRight() - splitter.getWidth();
     } else if (this._location === DockLocation.BOTTOM) {
       pBounds[0] = innerRect.y;
-      pBounds[1] = outerRect.getBottom() - splitter.getHeight();
+      pBounds[1] = outerRect.getBottom() - splitter.getHeight() - minSize;
     } else if (this._location === DockLocation.RIGHT) {
       pBounds[0] = innerRect.x;
-      pBounds[1] = outerRect.getRight() - splitter.getWidth();
+      pBounds[1] = outerRect.getRight() - splitter.getWidth() - minSize;
     }
     return pBounds;
   }

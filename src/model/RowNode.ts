@@ -50,7 +50,9 @@ class RowNode extends Node implements IDropTarget {
     return attributeDefinitions;
   }
   /** @hidden @internal */
-  private _drawChildren: Node[];
+  private _drawChildren: (TabSetNode | RowNode | SplitterNode)[];
+  private minHeight: number;
+  private minWidth: number;
 
   /** @hidden @internal */
   constructor(model: Model, json: any) {
@@ -58,6 +60,8 @@ class RowNode extends Node implements IDropTarget {
 
     this._dirty = true;
     this._drawChildren = [];
+    this.minHeight = 0;
+    this.minWidth = 0;
     RowNode._attributeDefinitions.fromJson(json, this._attributes);
     model._addNode(this);
   }
@@ -116,7 +120,6 @@ class RowNode extends Node implements IDropTarget {
       resizePreferred = true;
       totalWeight += totalPrefWeight;
     }
-
     // assign actual pixel sizes
     let totalSizeGiven = 0;
     let variableSize = 0;
@@ -133,7 +136,9 @@ class RowNode extends Node implements IDropTarget {
             child._setTempSize(0);
           }
           else {
-            child._setTempSize(Math.floor(availablePixels * (child.getWeight() / totalWeight)));
+            const minSize = child.getMinSize(this.getOrientation());
+            const size = Math.floor(availablePixels * (child.getWeight() / totalWeight));
+            child._setTempSize(Math.max(minSize, size));
           }
           variableSize += child._getTempSize();
         }
@@ -156,6 +161,34 @@ class RowNode extends Node implements IDropTarget {
           }
         }
       }
+
+      // decrease size using nodes not at there minimum
+      while (totalSizeGiven > pixelSize) {
+        let changed = false;
+        for (const child of drawChildren) {
+          const minSize = child.getMinSize(this.getOrientation());
+          const size = child._getTempSize();
+          if (size > minSize && totalSizeGiven > pixelSize) {
+            child._setTempSize(child._getTempSize() - 1);
+            totalSizeGiven--;
+            changed = true;
+          }
+        }
+        if (!changed) { // all children are at min values
+          break;
+        }
+      }
+
+      // if still too big then simply reduce all nodes until fits
+      while (totalSizeGiven > pixelSize) {
+        for (const child of drawChildren) {
+          const size = child._getTempSize();
+          if (size > 0 && totalSizeGiven > pixelSize) {
+            child._setTempSize(child._getTempSize() - 1);
+            totalSizeGiven--;
+          }
+        }
+      }
     }
 
     // layout children
@@ -174,17 +207,23 @@ class RowNode extends Node implements IDropTarget {
   }
 
   /** @hidden @internal */
-  _getSplitterBounds(splitterNode: SplitterNode) {
+  _getSplitterBounds(splitterNode: SplitterNode, useMinSize: boolean = false) {
     const pBounds = [0, 0];
     const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
     const p = drawChildren.indexOf(splitterNode);
+    const node1 = drawChildren[p - 1];
+    const node2 = drawChildren[p + 1];
     if (this.getOrientation() === Orientation.HORZ) {
-      pBounds[0] = drawChildren[p - 1].getRect().x;
-      pBounds[1] = drawChildren[p + 1].getRect().getRight() - splitterNode.getWidth();
+      const minSize1 = useMinSize ? node1.getMinWidth(): 0;
+      const minSize2 = useMinSize ? node2.getMinWidth(): 0;
+      pBounds[0] = node1.getRect().x + minSize1;
+      pBounds[1] = node2.getRect().getRight() - splitterNode.getWidth() - minSize2;
     }
     else {
-      pBounds[0] = drawChildren[p - 1].getRect().y;
-      pBounds[1] = drawChildren[p + 1].getRect().getBottom() - splitterNode.getHeight();
+      const minSize1 = useMinSize ? node1.getMinHeight(): 0;
+      const minSize2 = useMinSize ? node2.getMinHeight(): 0;
+      pBounds[0] = node1.getRect().y + minSize1;
+      pBounds[1] = node2.getRect().getBottom() - splitterNode.getHeight() - minSize2;
     }
     return pBounds;
   }
@@ -233,6 +272,54 @@ class RowNode extends Node implements IDropTarget {
 
     return this._drawChildren;
   }
+
+  /** @hidden @internal */
+  getMinSize(orientation: Orientation) {
+    if (orientation === Orientation.HORZ) {
+      return this.getMinWidth();
+    } else {
+      return this.getMinHeight();
+    }
+  }
+
+
+  /** @hidden @internal */
+  getMinWidth() {
+    return this.minWidth;
+  }
+
+
+  /** @hidden @internal */
+  getMinHeight() {
+    return this.minHeight;
+  }
+
+/** @hidden @internal */
+calcMinSize() {
+  this.minHeight = 0;
+  this.minWidth = 0;
+  let first = true;
+  this._children.forEach(child => {
+    const c = child as (RowNode | TabSetNode);
+    if (c instanceof RowNode) {
+      c.calcMinSize();
+    }
+    if (this.getOrientation() === Orientation.VERT) {
+      this.minHeight += c.getMinHeight();
+      if (!first) {
+        this.minHeight += this._model.getSplitterSize();
+      }
+      this.minWidth = Math.max(this.minWidth, c.getMinWidth());
+    } else {
+      this.minWidth += c.getMinWidth();
+      if (!first) {
+        this.minWidth += this._model.getSplitterSize();
+      }
+      this.minHeight = Math.max(this.minHeight, c.getMinHeight());
+    }
+    first =false;
+  });
+}
 
   /** @hidden @internal */
   _tidy() {
