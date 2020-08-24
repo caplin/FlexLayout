@@ -152,12 +152,15 @@ class RowNode extends Node implements IDropTarget {
 
     // adjust sizes to exactly fit
     if (variableSize > 0) {
+      
       while (totalSizeGiven < pixelSize) {
         for (const child of drawChildren) {
-          const prefSize = child._getPrefSize(this.getOrientation());
-          if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
-            child._setTempSize(child._getTempSize() + 1);
-            totalSizeGiven++;
+          if (!(child instanceof SplitterNode)) {
+            const prefSize = child._getPrefSize(this.getOrientation());
+            if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
+              child._setTempSize(child._getTempSize() + 1);
+              totalSizeGiven++;
+            }
           }
         }
       }
@@ -166,12 +169,14 @@ class RowNode extends Node implements IDropTarget {
       while (totalSizeGiven > pixelSize) {
         let changed = false;
         for (const child of drawChildren) {
-          const minSize = child.getMinSize(this.getOrientation());
-          const size = child._getTempSize();
-          if (size > minSize && totalSizeGiven > pixelSize) {
-            child._setTempSize(child._getTempSize() - 1);
-            totalSizeGiven--;
-            changed = true;
+          if (!(child instanceof SplitterNode)) {
+            const minSize = child.getMinSize(this.getOrientation());
+            const size = child._getTempSize();
+            if (size > minSize && totalSizeGiven > pixelSize) {
+              child._setTempSize(child._getTempSize() - 1);
+              totalSizeGiven--;
+              changed = true;
+            }
           }
         }
         if (!changed) { // all children are at min values
@@ -181,12 +186,19 @@ class RowNode extends Node implements IDropTarget {
 
       // if still too big then simply reduce all nodes until fits
       while (totalSizeGiven > pixelSize) {
+        let changed = false;
         for (const child of drawChildren) {
-          const size = child._getTempSize();
-          if (size > 0 && totalSizeGiven > pixelSize) {
-            child._setTempSize(child._getTempSize() - 1);
-            totalSizeGiven--;
+          if (!(child instanceof SplitterNode)) {
+            const size = child._getTempSize();
+            if (size > 0 && totalSizeGiven > pixelSize) {
+              child._setTempSize(child._getTempSize() - 1);
+              totalSizeGiven--;
+              changed = true;
+            }
           }
+        }
+        if (!changed) { // all children are at 0 values
+          break;
         }
       }
     }
