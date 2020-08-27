@@ -166,7 +166,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         }
     }
 
-    let borderClasses = cm("flexlayout__border_" + border.getLocation().getName());
+    let borderClasses = 
+        cm("flexlayout__border") + " " + 
+        cm("flexlayout__border_" + border.getLocation().getName());
     if (border.getClassName() !== undefined) {
         borderClasses += " " + border.getClassName();
     }
@@ -186,14 +188,19 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 const floatTitle = layout.i18nName(I18nLabel.Float_Tab);
                 buttons.push(<button key="float"
                                      title={floatTitle}
-                                     className={cm("flexlayout__tab_toolbar_button-float")}
+                                     className={
+                                         cm("flexlayout__border_toolbar_button") + " " + 
+                                         cm("flexlayout__border_toolbar_button-float")
+                                        }
                                      onClick={onFloatTab}/>);
             }
         }
         toolbar = <div
             key="toolbar"
             ref={toolbarRef}
-            className={cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
+            className={
+                cm("flexlayout__border_toolbar") + " " + 
+                cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
             {buttons}
         </div>;
     }
@@ -223,7 +230,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     return <div
         style={style}
         className={borderClasses}>
-        <div style={innerStyle} className={cm("flexlayout__border_inner_" + border.getLocation().getName())}>
+        <div style={innerStyle} className={
+            cm("flexlayout__border_inner") + " " +
+            cm("flexlayout__border_inner_" + border.getLocation().getName())}>
             {tabs}
         </div>
         {toolbar}

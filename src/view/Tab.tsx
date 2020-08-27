@@ -7,6 +7,7 @@ import {JSMap} from "../Types";
 import {ILayoutCallbacks} from "./Layout";
 import {ErrorBoundary} from "./ErrorBoundary";
 import {I18nLabel} from "../I18nLabel";
+import { BorderNode } from "..";
 
 /** @hidden @internal */
 export interface ITabProps {
@@ -40,7 +41,7 @@ export const Tab = (props: ITabProps) => {
 
     const cm = layout.getClassName;
 
-    const parentNode = node.getParent() as TabSetNode;
+    const parentNode = node.getParent() as (TabSetNode | BorderNode);
     const style: JSMap<any> = node._styleWithPosition({
         display: selected ? "block" : "none"
     });
@@ -54,7 +55,13 @@ export const Tab = (props: ITabProps) => {
         child = factory(node);
     }
 
-    return <div className={cm("flexlayout__tab")}
+    let className = cm("flexlayout__tab");
+    if (parentNode instanceof BorderNode) {
+        className += " " + cm("flexlayout__tab_border");
+        className += " " + cm("flexlayout__tab_border_" + parentNode.getLocation().getName());
+    }
+
+    return <div className={className}
                 onMouseDown={onMouseDown}
                 onTouchStart={onMouseDown}
                 style={style}>

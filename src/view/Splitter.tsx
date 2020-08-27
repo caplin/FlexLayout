@@ -20,6 +20,7 @@ export const Splitter = (props: ISplitterProps) => {
 
     const pBounds = React.useRef<number[]>([]);
     const outlineDiv = React.useRef<HTMLDivElement | undefined>(undefined);
+    const parentNode = node.getParent() as (RowNode | BorderNode);
 
     const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         DragDrop.instance.startDrag(event,
@@ -31,7 +32,6 @@ export const Splitter = (props: ISplitterProps) => {
             undefined,
             layout.getCurrentDocument()
         );
-        const parentNode = node.getParent() as RowNode;
         pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
@@ -68,7 +68,6 @@ export const Splitter = (props: ISplitterProps) => {
     };
 
     const onDragEnd = () => {
-        const parentNode = node.getParent() as RowNode;
         let value = 0;
         if (outlineDiv) {
             if (node.getOrientation() === Orientation.HORZ) {
@@ -111,10 +110,14 @@ export const Splitter = (props: ISplitterProps) => {
             cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
         }
     );
+    let className = cm("flexlayout__splitter");
+    if (parentNode instanceof BorderNode) {
+        className += " " + cm("flexlayout__splitter_border");
+    }
 
     return <div
         style={style}
         onTouchStart={onMouseDown}
         onMouseDown={onMouseDown}
-        className={cm("flexlayout__splitter")}/>;
+        className={className}/>;
 };

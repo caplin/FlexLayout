@@ -221,26 +221,23 @@
     bottom: 0;
     right: 0;
 
-    @mixin toolbar_button {
+    &_button {
       min-width: 20px;
       min-height: 20px;
       border: none;
       outline-width: 0;
-    }
 
-    &_button-min {
-      @include toolbar_button;
-      background: transparent url("../images/maximize.png") no-repeat center;
-    }
+      &-min {
+        background: transparent url("../images/maximize.png") no-repeat center;
+      }
 
-    &_button-max {
-      @include toolbar_button;
-      background: transparent url("../images/restore.png") no-repeat center;
-    }
+      &-max {
+        background: transparent url("../images/restore.png") no-repeat center;
+      }
 
-    &_button-float {
-      @include toolbar_button;
-      background: transparent url("../images/popout.png") no-repeat center;
+      &-float {
+        background: transparent url("../images/popout.png") no-repeat center;
+      }
     }
   }
 
@@ -268,60 +265,48 @@
   }
 
   &__border {
-    @mixin borderCommon {
       background-color: $color_2;
       box-sizing: border-box;
       overflow: hidden;
       display: flex;
       font-size: $font-size;
       font-family: $font-family;
-    }
 
     &_top {
-      @include borderCommon;
       border-bottom: 1px solid $color_3;
       align-items: center;
     }
 
     &_bottom {
-      @include borderCommon;
       border-top: 1px solid $color_3;
       align-items: center;
     }
 
     &_left {
-      @include borderCommon;
       border-right: 1px solid $color_3;
       align-content: center;
     }
 
     &_right {
-      @include borderCommon;
       border-left: 1px solid $color_3;
       align-content: center;
     }
 
-    @mixin borderInner {
+    &_inner {
       white-space: nowrap;
       display: flex;
-    }
 
-    &_inner_bottom, &_inner_top {
-      @include borderInner;
-    }
+      &_left {
+        position: absolute;
+        transform-origin: top right;
+        transform: rotate(-90deg);
+      }
 
-    &_inner_left {
-      @include borderInner;
-      position: absolute;
-      transform-origin: top right;
-      transform: rotate(-90deg);
-    }
-
-    &_inner_right {
-      @include borderInner;
-      position: absolute;
-      transform-origin: top left;
-      transform: rotate(90deg);
+      &_right {
+        position: absolute;
+        transform-origin: top left;
+        transform: rotate(90deg);
+      }
     }
   }
 
@@ -378,14 +363,11 @@
   }
 
   &__border_toolbar {
-    @mixin toolbar {
       position: absolute;
       display: flex;
       align-items: center;
-    }
 
     &_left {
-      @include toolbar;
       flex-direction: column;
       bottom: 0;
       left: 0;
@@ -393,7 +375,6 @@
     }
 
     &_right {
-      @include toolbar;
       flex-direction: column;
       bottom: 0;
       left: 0;
@@ -401,18 +382,28 @@
     }
 
     &_top {
-      @include toolbar;
       top: 0;
       bottom: 0;
       right: 0;
     }
 
     &_bottom {
-      @include toolbar;
       top: 0;
       bottom: 0;
       right: 0;
     }
+
+    &_button {
+      min-width: 20px;
+      min-height: 20px;
+      border: none;
+      outline-width: 0;
+
+      &-float {
+        background: transparent url("../images/popout.png") no-repeat center;
+      }
+    }
+
   }
 
   &__floating_window {

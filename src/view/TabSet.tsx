@@ -201,7 +201,10 @@ export const TabSet = (props: ITabSetProps) => {
             const floatTitle = layout.i18nName(I18nLabel.Float_Tab);
             buttons.push(<button key="float"
                                  title={floatTitle}
-                                 className={cm("flexlayout__tab_toolbar_button-float")}
+                                 className={
+                                    cm("flexlayout__tab_toolbar_button") + " " + 
+                                    cm("flexlayout__tab_toolbar_button-float")
+                                }
                                  onClick={onFloatTab}
             >{icons?.popout}</button>);
         }
@@ -210,7 +213,10 @@ export const TabSet = (props: ITabSetProps) => {
             const maxTitle = layout.i18nName(I18nLabel.Maximize);
             buttons.push(<button key="max"
                                  title={node.isMaximized() ? minTitle : maxTitle}
-                                 className={cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
+                                 className={
+                                    cm("flexlayout__tab_toolbar_button") + " " + 
+                                    cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))
+                                }
                                  onClick={onMaximizeToggle}
             >{node.isMaximized() ? icons?.restore : icons?.maximize}</button>);
         }
