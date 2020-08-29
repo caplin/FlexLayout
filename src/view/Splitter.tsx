@@ -110,7 +110,10 @@ export const Splitter = (props: ISplitterProps) => {
             cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
         }
     );
-    let className = cm("flexlayout__splitter");
+    let className = 
+        cm("flexlayout__splitter") + " " + 
+        cm("flexlayout__splitter_" + node.getOrientation().getName());
+    
     if (parentNode instanceof BorderNode) {
         className += " " + cm("flexlayout__splitter_border");
     }

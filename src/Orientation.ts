@@ -20,6 +20,10 @@ class Orientation {
         this._name = name;
     }
 
+    getName() {
+        return this._name;
+    }
+
     toString() {
         return this._name;
     }
