@@ -341,25 +341,23 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
     // for the tabset/border being removed from set the selected index
-    if (dragParent !== undefined) {
-      if (dragParent.getType() === TabSetNode.TYPE) {
-        dragParent._setSelected(0);
-      }
-      else if (dragParent.getType() === BorderNode.TYPE) {
-        if (dragParent.getSelected() !== -1) {
-          if (fromIndex === dragParent.getSelected() && dragParent.getChildren().length > 0) {
-            dragParent._setSelected(0);
-          }
-          else if (fromIndex < dragParent.getSelected()) {
-            dragParent._setSelected(dragParent.getSelected() - 1);
-          }
-          else if (fromIndex > dragParent.getSelected()) {
-            // leave selected index as is
-          }
-          else {
-            dragParent._setSelected(-1);
-          }
+    if (dragParent !== undefined && dragParent.getSelected() !== -1) {
+      if (fromIndex === dragParent.getSelected() && dragParent.getChildren().length > 0) {
+        if (fromIndex >= dragParent.getChildren().length) {
+          // removed last tab; select new last tab
+          dragParent._setSelected(dragParent.getChildren().length - 1);
+        } else {
+          // leave selected index as is, selecting next tab after this one
         }
+      }
+      else if (fromIndex < dragParent.getSelected()) {
+        dragParent._setSelected(dragParent.getSelected() - 1);
+      }
+      else if (fromIndex > dragParent.getSelected()) {
+        // leave selected index as is
+      }
+      else {
+        dragParent._setSelected(-1);
       }
     }
 
