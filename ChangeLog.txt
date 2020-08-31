@@ -1,3 +1,6 @@
+0.4.9
+Keep selected tab in tabset/border when another tab is moved out.
+
 0.4.8
 Minimum size attributes on tabset and border.
 Extra css classes on elements for border and splitter styling.
