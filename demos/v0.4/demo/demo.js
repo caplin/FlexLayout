@@ -30249,33 +30249,35 @@ var BorderNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     BorderNode.prototype.drop = function (dragNode, location, index, select) {
         var fromIndex = 0;
-        var parent = dragNode.getParent();
-        if (parent !== undefined) {
-            fromIndex = parent._removeChild(dragNode);
+        var dragParent = dragNode.getParent();
+        if (dragParent !== undefined) {
+            fromIndex = dragParent._removeChild(dragNode);
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode.getType() === TabNode_1.default.TYPE && parent === this && fromIndex < index && index > 0) {
+        if (dragNode.getType() === TabNode_1.default.TYPE && dragParent === this && fromIndex < index && index > 0) {
             index--;
         }
         // for the tabset/border being removed from set the selected index
-        if (parent !== undefined) {
-            if (parent instanceof TabSetNode_1.default) {
-                parent._setSelected(0);
-            }
-            else if (parent instanceof BorderNode) {
-                if (parent.getSelected() !== -1) {
-                    if (fromIndex === parent.getSelected() && parent._children.length > 0) {
-                        parent._setSelected(0);
-                    }
-                    else if (fromIndex < parent.getSelected()) {
-                        parent._setSelected(parent.getSelected() - 1);
-                    }
-                    else if (fromIndex > parent.getSelected()) {
-                        // leave selected index as is
+        if (dragParent !== undefined && (dragParent.getType() === TabSetNode_1.default.TYPE || dragParent.getType() === BorderNode.TYPE)) {
+            var selectedIndex = dragParent.getSelected();
+            if (selectedIndex !== -1) {
+                if (fromIndex === selectedIndex && dragParent.getChildren().length > 0) {
+                    if (fromIndex >= dragParent.getChildren().length) {
+                        // removed last tab; select new last tab
+                        dragParent._setSelected(dragParent.getChildren().length - 1);
                     }
                     else {
-                        parent._setSelected(-1);
+                        // leave selected index as is, selecting next tab after this one
                     }
+                }
+                else if (fromIndex < selectedIndex) {
+                    dragParent._setSelected(selectedIndex - 1);
+                }
+                else if (fromIndex > selectedIndex) {
+                    // leave selected index as is
+                }
+                else {
+                    dragParent._setSelected(-1);
                 }
             }
         }
@@ -32239,24 +32241,26 @@ var TabSetNode = /** @class */ (function (_super) {
             index--;
         }
         // for the tabset/border being removed from set the selected index
-        if (dragParent !== undefined) {
-            if (dragParent.getType() === TabSetNode.TYPE) {
-                dragParent._setSelected(0);
-            }
-            else if (dragParent.getType() === BorderNode_1.default.TYPE) {
-                if (dragParent.getSelected() !== -1) {
-                    if (fromIndex === dragParent.getSelected() && dragParent.getChildren().length > 0) {
-                        dragParent._setSelected(0);
-                    }
-                    else if (fromIndex < dragParent.getSelected()) {
-                        dragParent._setSelected(dragParent.getSelected() - 1);
-                    }
-                    else if (fromIndex > dragParent.getSelected()) {
-                        // leave selected index as is
+        if (dragParent !== undefined && (dragParent.getType() === TabSetNode.TYPE || dragParent.getType() === BorderNode_1.default.TYPE)) {
+            var selectedIndex = dragParent.getSelected();
+            if (selectedIndex !== -1) {
+                if (fromIndex === selectedIndex && dragParent.getChildren().length > 0) {
+                    if (fromIndex >= dragParent.getChildren().length) {
+                        // removed last tab; select new last tab
+                        dragParent._setSelected(dragParent.getChildren().length - 1);
                     }
                     else {
-                        dragParent._setSelected(-1);
+                        // leave selected index as is, selecting next tab after this one
                     }
+                }
+                else if (fromIndex < selectedIndex) {
+                    dragParent._setSelected(selectedIndex - 1);
+                }
+                else if (fromIndex > selectedIndex) {
+                    // leave selected index as is
+                }
+                else {
+                    dragParent._setSelected(-1);
                 }
             }
         }
