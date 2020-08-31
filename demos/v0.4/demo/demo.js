@@ -29982,7 +29982,7 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var SplitterNode_1 = __webpack_require__(/*! ./SplitterNode */ "./src/model/SplitterNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
-var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 var BorderNode = /** @class */ (function (_super) {
     __extends(BorderNode, _super);
     /** @hidden @internal */
@@ -30147,24 +30147,9 @@ var BorderNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     BorderNode.prototype._remove = function (node) {
+        var removedIndex = this._removeChild(node);
         if (this.getSelected() !== -1) {
-            var selectedNode = this._children[this.getSelected()];
-            if (node === selectedNode) {
-                this._setSelected(-1);
-                this._removeChild(node);
-            }
-            else {
-                this._removeChild(node);
-                for (var i = 0; i < this._children.length; i++) {
-                    if (this._children[i] === selectedNode) {
-                        this._setSelected(i);
-                        break;
-                    }
-                }
-            }
-        }
-        else {
-            this._removeChild(node);
+            Utils_1.adjustSelectedIndex(this, removedIndex);
         }
     };
     /** @hidden @internal */
@@ -30252,34 +30237,11 @@ var BorderNode = /** @class */ (function (_super) {
         var dragParent = dragNode.getParent();
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
+            Utils_1.adjustSelectedIndex(dragParent, fromIndex);
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.default.TYPE && dragParent === this && fromIndex < index && index > 0) {
             index--;
-        }
-        // for the tabset/border being removed from set the selected index
-        if (dragParent !== undefined && (dragParent.getType() === TabSetNode_1.default.TYPE || dragParent.getType() === BorderNode.TYPE)) {
-            var selectedIndex = dragParent.getSelected();
-            if (selectedIndex !== -1) {
-                if (fromIndex === selectedIndex && dragParent.getChildren().length > 0) {
-                    if (fromIndex >= dragParent.getChildren().length) {
-                        // removed last tab; select new last tab
-                        dragParent._setSelected(dragParent.getChildren().length - 1);
-                    }
-                    else {
-                        // leave selected index as is, selecting next tab after this one
-                    }
-                }
-                else if (fromIndex < selectedIndex) {
-                    dragParent._setSelected(selectedIndex - 1);
-                }
-                else if (fromIndex > selectedIndex) {
-                    // leave selected index as is
-                }
-                else {
-                    dragParent._setSelected(-1);
-                }
-            }
         }
         // simple_bundled dock to existing tabset
         var insertPos = index;
@@ -31967,10 +31929,10 @@ var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocat
 var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 var TabSetNode = /** @class */ (function (_super) {
     __extends(TabSetNode, _super);
     /** @hidden @internal */
@@ -32219,9 +32181,9 @@ var TabSetNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     TabSetNode.prototype._remove = function (node) {
-        this._removeChild(node);
+        var removedIndex = this._removeChild(node);
         this._model._tidy();
-        this._setSelected(Math.max(0, this.getSelected() - 1));
+        Utils_1.adjustSelectedIndex(this, removedIndex);
     };
     /** @hidden @internal */
     TabSetNode.prototype.drop = function (dragNode, location, index, select) {
@@ -32234,35 +32196,11 @@ var TabSetNode = /** @class */ (function (_super) {
         var fromIndex = 0;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
+            Utils_1.adjustSelectedIndex(dragParent, fromIndex);
         }
-        // console.log("removed child: " + fromIndex);
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.default.TYPE && dragParent === this && fromIndex < index && index > 0) {
             index--;
-        }
-        // for the tabset/border being removed from set the selected index
-        if (dragParent !== undefined && (dragParent.getType() === TabSetNode.TYPE || dragParent.getType() === BorderNode_1.default.TYPE)) {
-            var selectedIndex = dragParent.getSelected();
-            if (selectedIndex !== -1) {
-                if (fromIndex === selectedIndex && dragParent.getChildren().length > 0) {
-                    if (fromIndex >= dragParent.getChildren().length) {
-                        // removed last tab; select new last tab
-                        dragParent._setSelected(dragParent.getChildren().length - 1);
-                    }
-                    else {
-                        // leave selected index as is, selecting next tab after this one
-                    }
-                }
-                else if (fromIndex < selectedIndex) {
-                    dragParent._setSelected(selectedIndex - 1);
-                }
-                else if (fromIndex > selectedIndex) {
-                    // leave selected index as is
-                }
-                else {
-                    dragParent._setSelected(-1);
-                }
-            }
         }
         // simple_bundled dock to existing tabset
         if (dockLocation === DockLocation_1.default.CENTER) {
@@ -32359,6 +32297,52 @@ var TabSetNode = /** @class */ (function (_super) {
     return TabSetNode;
 }(Node_1.default));
 exports.default = TabSetNode;
+
+
+/***/ }),
+
+/***/ "./src/model/Utils.ts":
+/*!****************************!*\
+  !*** ./src/model/Utils.ts ***!
+  \****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adjustSelectedIndex = void 0;
+var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
+var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+/** @hidden @internal */
+function adjustSelectedIndex(parent, removedIndex) {
+    // for the tabset/border being removed from set the selected index
+    if (parent !== undefined && (parent.getType() === TabSetNode_1.default.TYPE || parent.getType() === BorderNode_1.default.TYPE)) {
+        var selectedIndex = parent.getSelected();
+        if (selectedIndex !== -1) {
+            if (removedIndex === selectedIndex && parent.getChildren().length > 0) {
+                if (removedIndex >= parent.getChildren().length) {
+                    // removed last tab; select new last tab
+                    parent._setSelected(parent.getChildren().length - 1);
+                }
+                else {
+                    // leave selected index as is, selecting next tab after this one
+                }
+            }
+            else if (removedIndex < selectedIndex) {
+                parent._setSelected(selectedIndex - 1);
+            }
+            else if (removedIndex > selectedIndex) {
+                // leave selected index as is
+            }
+            else {
+                parent._setSelected(-1);
+            }
+        }
+    }
+}
+exports.adjustSelectedIndex = adjustSelectedIndex;
+;
 
 
 /***/ }),
