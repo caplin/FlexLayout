@@ -11,6 +11,7 @@ import Node from "./Node";
 import SplitterNode from "./SplitterNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
+import { adjustSelectedIndex } from "./Utils";
 
 class BorderNode extends Node implements IDropTarget {
   static readonly TYPE = "border";
@@ -222,22 +223,9 @@ class BorderNode extends Node implements IDropTarget {
 
   /** @hidden @internal */
   _remove(node: TabNode) {
+    const removedIndex = this._removeChild(node);
     if (this.getSelected() !== -1) {
-      const selectedNode = this._children[this.getSelected()];
-      if (node === selectedNode) {
-        this._setSelected(-1);
-        this._removeChild(node);
-      } else {
-        this._removeChild(node);
-        for (let i = 0; i < this._children.length; i++) {
-          if (this._children[i] === selectedNode) {
-            this._setSelected(i);
-            break;
-          }
-        }
-      }
-    } else {
-      this._removeChild(node);
+      adjustSelectedIndex(this, removedIndex);
     }
   }
 
@@ -331,35 +319,12 @@ class BorderNode extends Node implements IDropTarget {
     const dragParent = dragNode.getParent() as (BorderNode | TabSetNode);
     if (dragParent !== undefined) {
       fromIndex = dragParent._removeChild(dragNode);
+      adjustSelectedIndex(dragParent, fromIndex);
     }
 
     // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
     if (dragNode.getType() === TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
       index--;
-    }
-
-    // for the tabset/border being removed from set the selected index
-    if (dragParent !== undefined && (dragParent.getType() === TabSetNode.TYPE || dragParent.getType() === BorderNode.TYPE)) {
-      const selectedIndex = (dragParent as (TabSetNode | BorderNode)).getSelected();
-      if (selectedIndex !== -1) {
-        if (fromIndex === selectedIndex && dragParent.getChildren().length > 0) {
-          if (fromIndex >= dragParent.getChildren().length) {
-            // removed last tab; select new last tab
-            dragParent._setSelected(dragParent.getChildren().length - 1);
-          } else {
-            // leave selected index as is, selecting next tab after this one
-          }
-        }
-        else if (fromIndex < selectedIndex) {
-          dragParent._setSelected(selectedIndex - 1);
-        }
-        else if (fromIndex > selectedIndex) {
-          // leave selected index as is
-        }
-        else {
-          dragParent._setSelected(-1);
-        }
-      }
     }
 
     // simple_bundled dock to existing tabset
