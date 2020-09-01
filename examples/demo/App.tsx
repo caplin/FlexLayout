@@ -9,6 +9,7 @@ var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
 class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize:string }> {
 
     loadingLayoutName?: string;
+    nextGridIndex: number = 1;
 
     constructor(props:any) {
         super(props);
@@ -82,7 +83,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                 component: "grid",
-                name: "a new grid"
+                name: "grid " + this.nextGridIndex++
             }, this.onAdded);
             this.setState({ adding: true });
         }
@@ -92,7 +93,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabToActiveTabSet({
                 component: "grid",
-                name: "a new grid"
+                name: "grid " + this.nextGridIndex++
             });
         }
     }
@@ -102,7 +103,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
-                name: "a new grid"
+                name: "grid " + this.nextGridIndex++
             }, this.onAdded);
             this.setState({ adding: true });
         }
