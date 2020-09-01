@@ -206,6 +206,8 @@ export const TabSet = (props: ITabSetProps) => {
                                     cm("flexlayout__tab_toolbar_button-float")
                                 }
                                  onClick={onFloatTab}
+                                 onMouseDown={onInterceptMouseDown}
+                                 onTouchStart={onInterceptMouseDown}
             >{icons?.popout}</button>);
         }
         if (node.isEnableMaximize()) {
@@ -218,6 +220,8 @@ export const TabSet = (props: ITabSetProps) => {
                                     cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))
                                 }
                                  onClick={onMaximizeToggle}
+                                 onMouseDown={onInterceptMouseDown}
+                                 onTouchStart={onInterceptMouseDown}
             >{node.isMaximized() ? icons?.restore : icons?.maximize}</button>);
         }
 
@@ -230,9 +234,9 @@ export const TabSet = (props: ITabSetProps) => {
     if (showOverflow.current === true && hiddenTabs.length > 0) {
         tabs.push(<button key="overflowbutton" ref={overflowbuttonRef}
                           className={cm("flexlayout__tab_button_overflow")}
-                          onTouchStart={onInterceptMouseDown}
                           onClick={onOverflowClick}
                           onMouseDown={onInterceptMouseDown}
+                          onTouchStart={onInterceptMouseDown}
         >{icons?.more}{hiddenTabs.length}</button>);
     }
 
