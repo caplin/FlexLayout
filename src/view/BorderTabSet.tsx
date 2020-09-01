@@ -192,7 +192,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                                          cm("flexlayout__border_toolbar_button") + " " + 
                                          cm("flexlayout__border_toolbar_button-float")
                                         }
-                                     onClick={onFloatTab}/>);
+                                     onClick={onFloatTab}
+                                     onMouseDown={onInterceptMouseDown}
+                                     onTouchStart={onInterceptMouseDown}
+                             />);
             }
         }
         toolbar = <div
@@ -208,9 +211,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     if (showOverflow.current === true && hiddenTabs.length > 0) {
         const overflowButton = (<button key="overflowbutton" ref={overflowbuttonRef}
                                         className={cm("flexlayout__border_button_overflow_" + border.getLocation().getName())}
-                                        onTouchStart={onInterceptMouseDown}
                                         onClick={() => onOverflowClick()}
                                         onMouseDown={onInterceptMouseDown}
+                                        onTouchStart={onInterceptMouseDown}
         >{hiddenTabs.length}</button>);
         tabs.push(overflowButton);
     }
