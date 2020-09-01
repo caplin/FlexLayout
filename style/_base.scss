@@ -18,6 +18,9 @@
     &:hover {
       background-color: $color_4;
     }
+    &_border {
+      z-index: 10;
+    }
 
     &_drag {
       border-radius: 5px;
@@ -90,43 +93,46 @@
       right: 0;
       background-color: $color_1;
       color: $color_text;
-      padding: 3px 3px 3px 5px; 
+      padding: 3px 3px 3px 5px;
       box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
       box-sizing: border-box;
 
+      &_content {
+        flex-grow: 1;
+      }
+    }
+
+    &_tabbar {
       &_outer { // tabset tabbar outer
+        box-sizing: border-box;
         background-color: $color_1;
         position: absolute;
         left: 0;
         right: 0;
         overflow: hidden;
+        display: flex;
       }
 
       &_outer_bottom {
-        box-sizing: border-box;
         border-top: 1px solid $color_4;
       }
 
-      &_inner_top { // tabset tabbar inner
-        border-top: 2px solid transparent; // if you change this, update the _sizer above
+      &_inner { // tabset tabbar inner
+        position: relative;
         box-sizing: border-box;
         display:flex;
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 10000px;
-      }
+        flex-grow: 1;
+        overflow: hidden;
 
-      &_inner_bottom {
-        border-bottom: 2px solid transparent; // if you change this, update the _sizer above
-        box-sizing: border-box;
-        display:flex;
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 10000px;
+        &_tab_container {
+          display:flex;
+          box-sizing: border-box;
+          border-top: 2px solid transparent; // if you change this, update the _sizer above
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 10000px;
+        }
       }
     }
 
@@ -163,7 +169,7 @@
         color: $color_text;
       }
 
-      &--unselected { 
+      &--unselected {
         color: gray;
       }
 
@@ -172,7 +178,7 @@
         border-top-right-radius: 0px;
         border-bottom-left-radius: 3px;
         border-bottom-right-radius: 3px;
-      }        
+      }
 
       &_leading {
         display: inline-block;
@@ -205,21 +211,18 @@
       }
 
       &_overflow {
+        margin-left:10px;
         padding-left: 12px;
         border: none;
-        color: $color_text;
+        color: gray;
         font-size: inherit;
-        background: transparent url("../images/more.png") no-repeat left;
+        background: transparent url("../images/more2.png") no-repeat left;
       }
     }
 
   &__tab_toolbar {
-    position: absolute;
     display: flex;
     align-items: center;
-    top: 0;
-    bottom: 0;
-    right: 0;
 
     &_button {
       min-width: 20px;
@@ -285,27 +288,40 @@
     &_left {
       border-right: 1px solid $color_3;
       align-content: center;
+      flex-direction:column;
     }
 
     &_right {
       border-left: 1px solid $color_3;
       align-content: center;
+      flex-direction:column;
     }
 
     &_inner {
-      white-space: nowrap;
-      display: flex;
+      position: relative;
+      box-sizing: border-box;
+      display:flex;
+      overflow:hidden;
+      flex-grow: 1;
 
-      &_left {
+      &_tab_container {
+        white-space: nowrap;
+        display:flex;
+        box-sizing: border-box;
         position: absolute;
-        transform-origin: top right;
-        transform: rotate(-90deg);
-      }
+        top: 0;
+        bottom: 0;
+        width: 10000px;
 
-      &_right {
-        position: absolute;
-        transform-origin: top left;
-        transform: rotate(90deg);
+        &_right {
+          transform-origin: top left;
+          transform: rotate(90deg);
+        }
+        &_left {
+          flex-direction: row-reverse;
+          transform-origin: top right;
+          transform: rotate(-90deg);
+        }
       }
     }
   }
@@ -354,43 +370,30 @@
     &_overflow_bottom,
     &_overflow_right,
     &_overflow_left {
-      color: $color_text;
+      color: gray;
       padding-left: 12px;
       border: none;
       font-size: inherit;
-      background: transparent url("../images/more.png") no-repeat left;
+      background: transparent url("../images/more2.png") no-repeat left;
     }
   }
 
   &__border_toolbar {
-      position: absolute;
       display: flex;
       align-items: center;
 
     &_left {
       flex-direction: column;
-      bottom: 0;
-      left: 0;
-      right: 0;
     }
 
     &_right {
       flex-direction: column;
-      bottom: 0;
-      left: 0;
-      right: 0;
     }
 
     &_top {
-      top: 0;
-      bottom: 0;
-      right: 0;
     }
 
     &_bottom {
-      top: 0;
-      bottom: 0;
-      right: 0;
     }
 
     &_button {
@@ -403,7 +406,6 @@
         background: transparent url("../images/popout.png") no-repeat center;
       }
     }
-
   }
 
   &__floating_window {
@@ -464,26 +466,26 @@
   }
 
   // These classes are used to measure the sizes for tab header bar, tab bar and border bars,
-  // only the height is used, the padding should match the vertical spacing (padding & margins) 
+  // only the height is used, the padding should match the vertical spacing (padding & margins)
   // that have been used in the above classes
 
-  &__tabset_sizer { 
-    padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border 
+  &__tabset_sizer {
+    padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border
     padding-bottom: 3px; // tab_button has 3 padding bottom
     font-size: $font-size;
     font-family: $font-family;
   }
 
-  &__tabset_header_sizer { 
-    padding-top: 3px;  
-    padding-bottom: 3px; 
+  &__tabset_header_sizer {
+    padding-top: 3px;
+    padding-bottom: 3px;
     font-size: $font-size;
     font-family: $font-family;
   }
 
-  &__border_sizer { 
-    padding-top: 6px; 
-    padding-bottom: 5px; 
+  &__border_sizer {
+    padding-top: 6px;
+    padding-bottom: 5px;
     font-size: $font-size;
     font-family: $font-family;
   }

@@ -132,8 +132,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     /** @hidden @internal */
     private findBorderBarSizeRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
-    private domRect?: any;
-    /** @hidden @internal */
     private previousModel?: Model;   
     /** @hidden @internal */
     private centerRect?: Rect;
@@ -184,7 +182,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
 
     constructor(props: ILayoutProps) {
         super(props);
-        this.domRect = {x: 0, y: 0, width: 0, height: 0};
         this.props.model._setChangeListener(this.onModelChange);
         this.tabIds = [];
         this.selfRef = React.createRef<HTMLDivElement>();
@@ -268,8 +265,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
 
     /** @hidden @internal */
     updateRect = () => {
-        this.domRect = this.selfRef.current!.getBoundingClientRect();
-        const rect = new Rect(0, 0, this.domRect.width, this.domRect.height);
+        const domRect = this.getDomRect();
+        const rect = new Rect(0, 0, domRect.width, domRect.height);
         if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
             this.setState({rect})
         }
@@ -313,11 +310,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
 
     /** @hidden @internal */
     getDomRect() {
-        if (this.domRect.width === 0 ) { // needed since tabbutton needs this before layout.componentDidUpdate()
-            this.domRect = this.selfRef.current!.getBoundingClientRect();
-        }
-
-        return this.domRect;
+        return this.selfRef.current!.getBoundingClientRect();
     }
 
     /** @hidden @internal */

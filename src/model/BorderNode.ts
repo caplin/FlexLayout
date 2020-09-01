@@ -85,6 +85,10 @@ class BorderNode extends Node implements IDropTarget {
     return this._tabHeaderRect;
   }
 
+  getRect() {
+    return this._tabHeaderRect!;
+  }
+
   getContentRect() {
     return this._contentRect;
   }

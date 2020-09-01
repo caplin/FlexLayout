@@ -2,42 +2,36 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import TabNode from "./model/TabNode";
 
+
 /** @hidden @internal */
-export function showPopup(triggerElement: Element,
+export function showPopup(layoutDiv: HTMLDivElement,
+                            triggerElement: Element,
                           items: { index: number, node: TabNode, name: string }[],
                           onSelect: (item: { index: number, node: TabNode, name: string }) => void,
                           classNameMapper: (defaultClassName: string) => string) {
 
-    const triggerRect = triggerElement.getBoundingClientRect();
     const currentDocument = triggerElement.ownerDocument;
-    const currentWindow = currentDocument.defaultView;
-    let windowWidth, windowHeight;
-    if (currentWindow) {
-      windowWidth = currentWindow.innerWidth;
-      windowHeight = currentWindow.innerHeight;
-    } else {
-      const docRect = currentDocument.body.getBoundingClientRect();
-      windowWidth = docRect.right;
-      windowHeight = docRect.bottom;
-    }
+    const triggerRect = triggerElement.getBoundingClientRect();
+    const layoutRect = layoutDiv.getBoundingClientRect();                    
 
     const elm = currentDocument.createElement("div");
     elm.className = classNameMapper("flexlayout__popup_menu_container");
-    if (triggerRect.left < windowWidth / 2) {
-        elm.style.left = (triggerRect.left) + "px";
+    if (triggerRect.left < layoutRect.left + layoutRect.width / 2) {
+        elm.style.left =  (triggerRect.left - layoutRect.left) + "px";
     } else {
-        elm.style.right = (windowWidth - triggerRect.right) + "px";
+        elm.style.right = (layoutRect.right - triggerRect.right) + "px";
     }
-    if (triggerRect.top < windowHeight / 2) {
-        elm.style.top = (triggerRect.top) + "px";
+
+    if (triggerRect.top < layoutRect.top + layoutRect.height / 2) {
+        elm.style.top = (triggerRect.top - layoutRect.top) + "px";
     } else {
-        elm.style.bottom = (windowHeight - triggerRect.bottom) + "px";
+        elm.style.bottom = (layoutRect.bottom - triggerRect.bottom) + "px";
     }
-    currentDocument.body.appendChild(elm);
+    layoutDiv.appendChild(elm);
 
     const onHide = () => {
         ReactDOM.unmountComponentAtNode(elm);
-        currentDocument.body.removeChild(elm);
+        layoutDiv.removeChild(elm);
     };
 
     ReactDOM.render(<PopupMenu currentDocument={currentDocument} onSelect={onSelect} onHide={onHide} items={items}

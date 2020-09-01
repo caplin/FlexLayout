@@ -71,7 +71,7 @@ class DragDrop {
                 currentDocument = window.document;
             }
             this._document = currentDocument;
-            const glassRect = new Rect(0, 0, currentDocument!.documentElement.clientWidth, currentDocument!.documentElement.clientHeight);
+            const glassRect = new Rect(0, 0, currentDocument!.documentElement.scrollWidth, currentDocument!.documentElement.scrollHeight);
             glassRect.positionElement(this._glass!);
             currentDocument!.body.appendChild(this._glass!);
             this._glass!.tabIndex = -1;

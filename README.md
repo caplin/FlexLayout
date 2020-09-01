@@ -21,7 +21,7 @@ Features:
 *	tabset dragging (move all the tabs in a tabset in one operation)
 *	dock to tabset or edge of frame
 *	maximize tabset (double click tabset header or use icon)
-*	tab overflow (show menu when tabs overflow)
+*	tab overflow (show menu when tabs overflow, scroll tabs using mouse wheel)
 *   border tabsets
 *   popout tabs into new browser windows (only enabled in latest browsers)
 *	submodels, allow layouts inside layouts
