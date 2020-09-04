@@ -119,6 +119,7 @@ var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
         var _this = _super.call(this, props) || this;
+        _this.nextGridIndex = 1;
         _this.load = function (jsonText) {
             var json = JSON.parse(jsonText);
             var model = FlexLayout.Model.fromJson(json);
@@ -143,7 +144,7 @@ var App = /** @class */ (function (_super) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                     component: "grid",
-                    name: "a new grid"
+                    name: "grid " + _this.nextGridIndex++
                 }, _this.onAdded);
                 _this.setState({ adding: true });
             }
@@ -152,7 +153,7 @@ var App = /** @class */ (function (_super) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabToActiveTabSet({
                     component: "grid",
-                    name: "a new grid"
+                    name: "grid " + _this.nextGridIndex++
                 });
             }
         };
@@ -160,7 +161,7 @@ var App = /** @class */ (function (_super) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                     component: "grid",
-                    name: "a new grid"
+                    name: "grid " + _this.nextGridIndex++
                 }, _this.onAdded);
                 _this.setState({ adding: true });
             }
@@ -29265,7 +29266,7 @@ var DragDrop = /** @class */ (function () {
                 currentDocument = window.document;
             }
             this._document = currentDocument;
-            var glassRect = new Rect_1.default(0, 0, currentDocument.documentElement.clientWidth, currentDocument.documentElement.clientHeight);
+            var glassRect = new Rect_1.default(0, 0, currentDocument.documentElement.scrollWidth, currentDocument.documentElement.scrollHeight);
             glassRect.positionElement(this._glass);
             currentDocument.body.appendChild(this._glass);
             this._glass.tabIndex = -1;
@@ -29483,9 +29484,10 @@ var I18nLabel;
     I18nLabel["Close_Tab"] = "Close";
     I18nLabel["Move_Tab"] = "Move: ";
     I18nLabel["Move_Tabset"] = "Move tabset";
-    I18nLabel["Maximize"] = "Maximize";
-    I18nLabel["Restore"] = "Restore";
-    I18nLabel["Float_Tab"] = "Show in floating window";
+    I18nLabel["Maximize"] = "Maximize tabset";
+    I18nLabel["Restore"] = "Restore tabset";
+    I18nLabel["Float_Tab"] = "Show selected tab in floating window";
+    I18nLabel["Overflow_Menu_Tooltip"] = "Hidden tabs";
     I18nLabel["Floating_Window_Message"] = "This panel is shown in a floating window";
     I18nLabel["Floating_Window_Show_Window"] = "Show window";
     I18nLabel["Floating_Window_Dock_Window"] = "Dock window";
@@ -29547,38 +29549,28 @@ exports.showPopup = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 /** @hidden @internal */
-function showPopup(triggerElement, items, onSelect, classNameMapper) {
-    var triggerRect = triggerElement.getBoundingClientRect();
+function showPopup(layoutDiv, triggerElement, items, onSelect, classNameMapper) {
     var currentDocument = triggerElement.ownerDocument;
-    var currentWindow = currentDocument.defaultView;
-    var windowWidth, windowHeight;
-    if (currentWindow) {
-        windowWidth = currentWindow.innerWidth;
-        windowHeight = currentWindow.innerHeight;
-    }
-    else {
-        var docRect = currentDocument.body.getBoundingClientRect();
-        windowWidth = docRect.right;
-        windowHeight = docRect.bottom;
-    }
+    var triggerRect = triggerElement.getBoundingClientRect();
+    var layoutRect = layoutDiv.getBoundingClientRect();
     var elm = currentDocument.createElement("div");
     elm.className = classNameMapper("flexlayout__popup_menu_container");
-    if (triggerRect.left < windowWidth / 2) {
-        elm.style.left = (triggerRect.left) + "px";
+    if (triggerRect.left < layoutRect.left + layoutRect.width / 2) {
+        elm.style.left = (triggerRect.left - layoutRect.left) + "px";
     }
     else {
-        elm.style.right = (windowWidth - triggerRect.right) + "px";
+        elm.style.right = (layoutRect.right - triggerRect.right) + "px";
     }
-    if (triggerRect.top < windowHeight / 2) {
-        elm.style.top = (triggerRect.top) + "px";
+    if (triggerRect.top < layoutRect.top + layoutRect.height / 2) {
+        elm.style.top = (triggerRect.top - layoutRect.top) + "px";
     }
     else {
-        elm.style.bottom = (windowHeight - triggerRect.bottom) + "px";
+        elm.style.bottom = (layoutRect.bottom - triggerRect.bottom) + "px";
     }
-    currentDocument.body.appendChild(elm);
+    layoutDiv.appendChild(elm);
     var onHide = function () {
         ReactDOM.unmountComponentAtNode(elm);
-        currentDocument.body.removeChild(elm);
+        layoutDiv.removeChild(elm);
     };
     ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper }), elm);
 }
@@ -30031,6 +30023,9 @@ var BorderNode = /** @class */ (function (_super) {
         return this._location;
     };
     BorderNode.prototype.getTabHeaderRect = function () {
+        return this._tabHeaderRect;
+    };
+    BorderNode.prototype.getRect = function () {
         return this._tabHeaderRect;
     };
     BorderNode.prototype.getContentRect = function () {
@@ -32440,88 +32435,25 @@ var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocat
 var BorderButton_1 = __webpack_require__(/*! ./BorderButton */ "./src/view/BorderButton.tsx");
 var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-/** @hidden @internal */
-var MAX_TABS = 999;
+var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
+var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 /** @hidden @internal */
 exports.BorderTabSet = function (props) {
     var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
-    var hideTabsAfter = React.useRef(MAX_TABS);
-    var showOverflow = React.useRef(false);
-    var showToolbar = React.useRef(true);
-    var renderAllTabs = React.useRef(true);
-    var _a = React.useState(0), forceUpdateCount = _a[0], setForceUpdateCount = _a[1];
-    React.useLayoutEffect(function () {
-        updateVisibleTabs();
-    });
-    var updateVisibleTabs = function () {
-        if (renderAllTabs.current) {
-            var node_1 = border;
-            if (node_1.getChildren().length > 0) {
-                var lastChild = node_1.getChildren()[node_1.getChildren().length - 1];
-                var isTabVisible = function (i, child, childEnd, borderEnd, toolbarSize) {
-                    if (childEnd > borderEnd - (25 + toolbarSize)) {
-                        hideTabsAfter.current = Math.max(0, i - 1);
-                        showOverflow.current = node_1.getChildren().length > 1;
-                        if (i === 0) {
-                            showToolbar.current = false;
-                            if (childEnd > borderEnd - 25) {
-                                showOverflow.current = false;
-                            }
-                        }
-                        renderAllTabs.current = false;
-                        setForceUpdateCount(forceUpdateCount + 1);
-                        return false;
-                    }
-                    return true;
-                };
-                if (node_1.getLocation() === DockLocation_1.default.TOP
-                    || node_1.getLocation() === DockLocation_1.default.BOTTOM) {
-                    var toolbarSize = toolbarRef.current.getBoundingClientRect().width;
-                    var borderEnd = node_1.getTabHeaderRect().getRight();
-                    if (lastChild.getTabRect().getRight() > borderEnd - toolbarSize) {
-                        var modifiedChildren = TabSet_1.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
-                        for (var i = 0; i < modifiedChildren.length; i++) {
-                            var childTabNode = modifiedChildren[i];
-                            var childEnd = childTabNode.getTabRect().getRight();
-                            if (!isTabVisible(i, childTabNode, childEnd, borderEnd, toolbarSize)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-                else {
-                    var toolbarSize = toolbarRef.current.getBoundingClientRect().height;
-                    var borderEnd = node_1.getTabHeaderRect().getBottom();
-                    if (lastChild.getTabRect().getBottom() > borderEnd - toolbarSize) {
-                        var modifiedChildren = TabSet_1.getModifiedNodeList(node_1.getChildren(), node_1.getSelected());
-                        for (var i = 0; i < modifiedChildren.length; i++) {
-                            var childTabNode = modifiedChildren[i];
-                            var childEnd = childTabNode.getTabRect().getBottom();
-                            if (!isTabVisible(i, childTabNode, childEnd, borderEnd, toolbarSize)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            renderAllTabs.current = true;
-        }
-    };
+    var _a = TabOverflowHook_1.useTabOverflow(border, Orientation_1.default.flip(border.getOrientation()), toolbarRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
     var onInterceptMouseDown = function (event) {
         event.stopPropagation();
     };
     var onOverflowClick = function () {
         var element = overflowbuttonRef.current;
-        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        PopupMenu_1.showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
     var onOverflowItemSelect = function (item) {
         layout.doAction(Actions_1.default.selectTab(item.node.getId()));
+        userControlledLeft.current = false;
     };
     var onFloatTab = function () {
         var selectedTabNode = border.getChildren()[border.getSelected()];
@@ -32529,40 +32461,16 @@ exports.BorderTabSet = function (props) {
             layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
         }
     };
-    if (renderAllTabs.current) {
-        hideTabsAfter.current = MAX_TABS;
-        showOverflow.current = false;
-        showToolbar.current = true;
-    }
     var cm = layout.getClassName;
     var style = border.getTabHeaderRect().styleWithPosition({});
     var tabs = [];
-    var hiddenTabs = [];
     var layoutTab = function (i) {
         var isSelected = border.getSelected() === i;
-        var showTab = hideTabsAfter.current >= i;
         var child = border.getChildren()[i];
-        if (hideTabsAfter.current === i && border.getSelected() > hideTabsAfter.current) {
-            hiddenTabs.push({ name: child.getName(), node: child, index: i });
-            child = border.getChildren()[border.getSelected()];
-            isSelected = true;
-        }
-        else if (!showTab && !isSelected) {
-            hiddenTabs.push({ name: child.getName(), node: child, index: i });
-        }
-        if (showTab) {
-            tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
-        }
+        tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
     };
-    if (border.getLocation() !== DockLocation_1.default.LEFT) {
-        for (var i = 0; i < border.getChildren().length; i++) {
-            layoutTab(i);
-        }
-    }
-    else {
-        for (var i = border.getChildren().length - 1; i >= 0; i--) {
-            layoutTab(i);
-        }
+    for (var i = 0; i < border.getChildren().length; i++) {
+        layoutTab(i);
     }
     var borderClasses = cm("flexlayout__border") + " " +
         cm("flexlayout__border_" + border.getLocation().getName());
@@ -32575,38 +32483,40 @@ exports.BorderTabSet = function (props) {
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
     var toolbar;
-    if (showToolbar.current === true) {
-        var selectedIndex = border.getSelected();
-        if (selectedIndex !== -1) {
-            var selectedTabNode = border.getChildren()[selectedIndex];
-            if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-                var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-                buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__border_toolbar_button") + " " +
-                        cm("flexlayout__border_toolbar_button-float"), onClick: onFloatTab }));
-            }
+    if (hiddenTabs.length > 0) {
+        var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
+        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
+            icons.more,
+            hiddenTabs.length));
+    }
+    var selectedIndex = border.getSelected();
+    if (selectedIndex !== -1) {
+        var selectedTabNode = border.getChildren()[selectedIndex];
+        if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+            var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
+            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__border_toolbar_button") + " " +
+                    cm("flexlayout__border_toolbar_button-float"), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }));
         }
-        toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__border_toolbar") + " " +
-                cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
     }
-    if (showOverflow.current === true && hiddenTabs.length > 0) {
-        var overflowButton = (React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__border_button_overflow_" + border.getLocation().getName()), onTouchStart: onInterceptMouseDown, onClick: function () { return onOverflowClick(); }, onMouseDown: onInterceptMouseDown }, hiddenTabs.length));
-        tabs.push(overflowButton);
-    }
+    toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__border_toolbar") + " " +
+            cm("flexlayout__border_toolbar_" + border.getLocation().getName()) }, buttons);
     style = layout.styleFont(style);
     var innerStyle = {};
     var borderHeight = border.getBorderBarSize() - 1;
     if (border.getLocation() === DockLocation_1.default.LEFT) {
-        innerStyle = { right: borderHeight, height: borderHeight };
+        innerStyle = { right: borderHeight, height: borderHeight, top: position };
     }
     else if (border.getLocation() === DockLocation_1.default.RIGHT) {
-        innerStyle = { left: borderHeight, height: borderHeight };
+        innerStyle = { left: borderHeight, height: borderHeight, top: position };
     }
     else {
-        innerStyle = { height: borderHeight };
+        innerStyle = { height: borderHeight, left: position };
     }
-    return React.createElement("div", { style: style, className: borderClasses },
-        React.createElement("div", { style: innerStyle, className: cm("flexlayout__border_inner") + " " +
-                cm("flexlayout__border_inner_" + border.getLocation().getName()) }, tabs),
+    return React.createElement("div", { ref: selfRef, style: style, className: borderClasses, onWheel: onMouseWheel },
+        React.createElement("div", { style: { height: borderHeight }, className: cm("flexlayout__border_inner") + " " +
+                cm("flexlayout__border_inner_" + border.getLocation().getName()) },
+            React.createElement("div", { style: innerStyle, className: cm("flexlayout__border_inner_tab_container") + " " +
+                    cm("flexlayout__border_inner_tab_container_" + border.getLocation().getName()) }, tabs)),
         toolbar);
 };
 
@@ -32864,8 +32774,8 @@ var Layout = /** @class */ (function (_super) {
         };
         /** @hidden @internal */
         _this.updateRect = function () {
-            _this.domRect = _this.selfRef.current.getBoundingClientRect();
-            var rect = new Rect_1.default(0, 0, _this.domRect.width, _this.domRect.height);
+            var domRect = _this.getDomRect();
+            var rect = new Rect_1.default(0, 0, domRect.width, domRect.height);
             if (!rect.equals(_this.state.rect) && rect.width !== 0 && rect.height !== 0) {
                 _this.setState({ rect: rect });
             }
@@ -33032,7 +32942,6 @@ var Layout = /** @class */ (function (_super) {
                 }
             }
         };
-        _this.domRect = { x: 0, y: 0, width: 0, height: 0 };
         _this.props.model._setChangeListener(_this.onModelChange);
         _this.tabIds = [];
         _this.selfRef = React.createRef();
@@ -33107,10 +33016,7 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.getDomRect = function () {
-        if (this.domRect.width === 0) { // needed since tabbutton needs this before layout.componentDidUpdate()
-            this.domRect = this.selfRef.current.getBoundingClientRect();
-        }
-        return this.domRect;
+        return this.selfRef.current.getBoundingClientRect();
     };
     /** @hidden @internal */
     Layout.prototype.getRootDiv = function () {
@@ -33763,6 +33669,143 @@ exports.TabFloating = function (props) {
 
 /***/ }),
 
+/***/ "./src/view/TabOverflowHook.tsx":
+/*!**************************************!*\
+  !*** ./src/view/TabOverflowHook.tsx ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.useTabOverflow = void 0;
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/** @hidden @internal */
+exports.useTabOverflow = function (node, orientation, toolbarRef) {
+    var firstRender = React.useRef(true);
+    var lastRect = React.useRef(new Rect_1.default(0, 0, 0, 0));
+    var selfRef = React.useRef(null);
+    var _a = React.useState(0), position = _a[0], setPosition = _a[1];
+    var userControlledLeft = React.useRef(false);
+    var _b = React.useState([]), hiddenTabs = _b[0], setHiddenTabs = _b[1];
+    // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
+    React.useLayoutEffect(function () {
+        userControlledLeft.current = false;
+    }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
+    React.useLayoutEffect(function () {
+        updateVisibleTabs();
+    });
+    React.useEffect(function () {
+        selfRef.current.addEventListener('wheel', onWheel);
+        return function () {
+            selfRef.current.removeEventListener('wheel', onWheel);
+        };
+    }, []);
+    // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
+    var onWheel = function (event) {
+        event.preventDefault();
+    };
+    var getNear = function (rect) {
+        if (orientation === Orientation_1.default.HORZ) {
+            return rect.x;
+        }
+        else {
+            return rect.y;
+        }
+    };
+    var getFar = function (rect) {
+        if (orientation === Orientation_1.default.HORZ) {
+            return rect.getRight();
+        }
+        else {
+            return rect.getBottom();
+        }
+    };
+    var getSize = function (rect) {
+        if (orientation === Orientation_1.default.HORZ) {
+            return rect.width;
+        }
+        else {
+            return rect.height;
+        }
+    };
+    var updateVisibleTabs = function () {
+        var tabMargin = 2;
+        var nodeRect = (node instanceof TabSetNode_1.default) ? node.getRect() : node.getTabHeaderRect();
+        var lastChild = node.getChildren()[node.getChildren().length - 1];
+        if (firstRender.current === true ||
+            nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
+            nodeRect.height !== lastRect.current.height) {
+            lastRect.current = nodeRect;
+            var enabled = node instanceof TabSetNode_1.default ? node.isEnableTabStrip() === true : true;
+            var endPos = getFar(nodeRect) - getSize(toolbarRef.current.getBoundingClientRect());
+            if (enabled && node.getChildren().length > 0) {
+                if (hiddenTabs.length === 0 && position === 0 && (getFar(lastChild.getTabRect()) + tabMargin) < endPos) {
+                    return; // nothing to do all tabs are shown in available space
+                }
+                endPos -= (hiddenTabs.length > 0 ? 10 : 45); // will need hidden tabs
+                var shiftPos = 0;
+                var selectedTab = node.getSelectedNode();
+                if (selectedTab && !userControlledLeft.current) {
+                    var selectedRect = selectedTab.getTabRect();
+                    var selectedStart = getNear(selectedRect) - tabMargin;
+                    var selectedEnd = getFar(selectedRect) + tabMargin;
+                    if (selectedEnd > endPos ||
+                        selectedStart < getNear(nodeRect)) {
+                        if (selectedStart < getNear(nodeRect)) {
+                            shiftPos = getNear(nodeRect) - selectedStart;
+                        }
+                        // use second if statement to prevent tab moving back then forwards if not enough space for single tab
+                        if (selectedEnd + shiftPos > endPos) {
+                            shiftPos = endPos - selectedEnd;
+                        }
+                    }
+                }
+                var extraSpace = Math.max(0, endPos - (getFar(lastChild.getTabRect()) + tabMargin + shiftPos));
+                var newPosition = Math.min(0, position + shiftPos + extraSpace);
+                // find hidden tabs
+                var diff = newPosition - position;
+                var hidden = [];
+                for (var i = 0; i < node.getChildren().length; i++) {
+                    var child = node.getChildren()[i];
+                    if ((getNear(child.getTabRect()) + diff) < getNear(nodeRect) ||
+                        (getFar(child.getTabRect()) + diff) > endPos) {
+                        hidden.push({ name: child.getName(), node: child, index: i });
+                    }
+                }
+                firstRender.current = false; // need to do a second render
+                setHiddenTabs(hidden);
+                setPosition(newPosition);
+            }
+        }
+        else {
+            firstRender.current = true;
+        }
+    };
+    var onMouseWheel = function (event) {
+        var delta = 0;
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+            delta = event.deltaX;
+        }
+        else {
+            delta = event.deltaY;
+        }
+        delta = Math.max(-100, delta);
+        delta = Math.min(100, delta);
+        setPosition(position + delta);
+        userControlledLeft.current = true;
+        event.stopPropagation();
+    };
+    return { selfRef: selfRef, position: position, userControlledLeft: userControlledLeft, hiddenTabs: hiddenTabs, onMouseWheel: onMouseWheel };
+};
+
+
+/***/ }),
+
 /***/ "./src/view/TabSet.tsx":
 /*!*****************************!*\
   !*** ./src/view/TabSet.tsx ***!
@@ -33772,97 +33815,28 @@ exports.TabFloating = function (props) {
 
 "use strict";
 
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TabSet = exports.getModifiedNodeList = void 0;
+exports.TabSet = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
 var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
-/** @hidden @internal */
-var MAX_TABS = 999;
-/*
-    Since selected tab is always shown, move it to first position when
-    determining the number for tabs that can be shown
- */
-/** @hidden @internal */
-function getModifiedNodeList(nodes, selectedIndex) {
-    var modifiedChildren = __spreadArrays(nodes);
-    if (selectedIndex !== -1 && selectedIndex !== 0) {
-        var selected = nodes[selectedIndex];
-        var selectedRect = selected.getTabRect();
-        // move selected node to first position
-        modifiedChildren.splice(selectedIndex, 1);
-        modifiedChildren.unshift(selected);
-        selected.getTabRect().x = nodes[0].getTabRect().x;
-        selected.getTabRect().y = nodes[0].getTabRect().y; // for vertical border
-        // adjust x,y of tabs 1-selectedindex to account for insersion of selected at 0
-        for (var i = 1; i <= selectedIndex; i++) {
-            var child = modifiedChildren[i];
-            child.getTabRect().x += selectedRect.width;
-            child.getTabRect().y += selectedRect.height; // for vertical border
-        }
-    }
-    return modifiedChildren;
-}
-exports.getModifiedNodeList = getModifiedNodeList;
+var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
+var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 /** @hidden @internal */
 exports.TabSet = function (props) {
     var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
-    var hideTabsAfter = React.useRef(MAX_TABS);
-    var showOverflow = React.useRef(false);
-    var showToolbar = React.useRef(true);
-    var renderAllTabs = React.useRef(true);
-    var _a = React.useState(0), forceUpdateCount = _a[0], setForceUpdateCount = _a[1];
-    React.useLayoutEffect(function () {
-        updateVisibleTabs();
-    });
-    var updateVisibleTabs = function () {
-        if (renderAllTabs.current) {
-            if (node.isEnableTabStrip() && node.getChildren().length > 0) {
-                var toolbarWidth = toolbarRef.current.getBoundingClientRect().width;
-                var lastChild = node.getChildren()[node.getChildren().length - 1];
-                if (lastChild.getTabRect().getRight() > node.getRect().getRight() - toolbarWidth) {
-                    var modifiedChildren = getModifiedNodeList(node.getChildren(), node.getSelected());
-                    for (var i = 0; i < modifiedChildren.length; i++) {
-                        var child = modifiedChildren[i];
-                        if (child.getTabRect().getRight() > node.getRect().getRight() - (25 + toolbarWidth)) {
-                            hideTabsAfter.current = Math.max(0, i - 1);
-                            showOverflow.current = node.getChildren().length > 1;
-                            if (i === 0) {
-                                showToolbar.current = false;
-                                if (child.getTabRect().getRight() > node.getRect().getRight() - 25) {
-                                    showOverflow.current = false;
-                                }
-                            }
-                            renderAllTabs.current = false;
-                            setForceUpdateCount(forceUpdateCount + 1);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        else {
-            renderAllTabs.current = true;
-        }
-    };
+    var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.default.HORZ, toolbarRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
     var onOverflowClick = function () {
-        // console.log("hidden tabs: " + hiddenTabs);
         var element = overflowbuttonRef.current;
-        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        PopupMenu_1.showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
     var onOverflowItemSelect = function (item) {
         layout.doAction(Actions_1.default.selectTab(item.node.getId()));
+        userControlledLeft.current = false;
     };
     var onMouseDown = function (event) {
         var name = node.getName();
@@ -33894,11 +33868,7 @@ exports.TabSet = function (props) {
             layout.maximize(node);
         }
     };
-    if (renderAllTabs.current) {
-        hideTabsAfter.current = MAX_TABS;
-        showOverflow.current = false;
-        showToolbar.current = true;
-    }
+    // Start Render
     var cm = layout.getClassName;
     var selectedTabNode = node.getSelectedNode();
     var style = node._styleWithPosition();
@@ -33906,26 +33876,13 @@ exports.TabSet = function (props) {
         style.zIndex = 100;
     }
     var tabs = [];
-    var hiddenTabs = [];
     if (node.isEnableTabStrip()) {
         for (var i = 0; i < node.getChildren().length; i++) {
-            var isSelected = node.getSelected() === i;
-            var showTab = hideTabsAfter.current >= i;
             var child = node.getChildren()[i];
-            if (hideTabsAfter.current === i && node.getSelected() > hideTabsAfter.current) {
-                hiddenTabs.push({ name: child.getName(), node: child, index: i });
-                child = node.getChildren()[node.getSelected()];
-                isSelected = true;
-            }
-            else if (!showTab && !isSelected) {
-                hiddenTabs.push({ name: child.getName(), node: child, index: i });
-            }
-            if (showTab) {
-                tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, key: child.getId(), selected: isSelected, show: showTab, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
-            }
+            var isSelected = node.getSelected() === i;
+            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, key: child.getId(), selected: isSelected, show: true, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         }
     }
-    // tabs.forEach(c => console.log(c.key));
     var buttons = [];
     // allow customization of header contents and buttons
     var renderState = { headerContent: node.getName(), buttons: buttons };
@@ -33933,33 +33890,32 @@ exports.TabSet = function (props) {
     var headerContent = renderState.headerContent;
     buttons = renderState.buttons;
     var toolbar;
-    if (showToolbar.current === true) {
-        if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-            var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
-                    cm("flexlayout__tab_toolbar_button-float"), onClick: onFloatTab }, icons === null || icons === void 0 ? void 0 : icons.popout));
-        }
-        if (node.isEnableMaximize()) {
-            var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
-            var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
-            buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
-                    cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
-        }
-        toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: onInterceptMouseDown }, buttons);
-    }
-    if (showOverflow.current === true && hiddenTabs.length > 0) {
-        tabs.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), onTouchStart: onInterceptMouseDown, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
+    if (hiddenTabs.length > 0) {
+        var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
+        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
             icons.more,
             hiddenTabs.length));
     }
+    if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
+        var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
+        buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
+                cm("flexlayout__tab_toolbar_button-float"), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.popout));
+    }
+    if (node.isEnableMaximize()) {
+        var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
+        var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
+        buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
+                cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
+    }
+    toolbar = React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm("flexlayout__tab_toolbar"), onMouseDown: onInterceptMouseDown }, buttons);
     var showHeader = node.getName() !== undefined;
     var header;
     var tabStrip;
-    var tabStripClasses = cm("flexlayout__tabset_header_outer");
+    var tabStripClasses = cm("flexlayout__tabset_tabbar_outer");
     if (node.getClassNameTabStrip() !== undefined) {
         tabStripClasses += " " + node.getClassNameTabStrip();
     }
-    tabStripClasses += " flexlayout__tabset_header_outer_" + node.getTabLocation();
+    tabStripClasses += " flexlayout__tabset_tabbar_outer_" + node.getTabLocation();
     if (node.isActive() && !showHeader) {
         tabStripClasses += " " + cm("flexlayout__tabset-selected");
     }
@@ -33978,7 +33934,7 @@ exports.TabSet = function (props) {
             tabHeaderClasses += " " + node.getClassNameHeader();
         }
         header = React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            headerContent,
+            React.createElement("div", { className: cm("flexlayout__tabset_header_content") }, headerContent),
             toolbar);
         var tabStripStyle = { height: node.getTabStripHeight() + "px" };
         if (node.getTabLocation() === "top") {
@@ -33987,8 +33943,11 @@ exports.TabSet = function (props) {
         else {
             tabStripStyle["bottom"] = "0px";
         }
-        tabStrip = React.createElement("div", { className: tabStripClasses, style: tabStripStyle },
-            React.createElement("div", { className: cm("flexlayout__tabset_header_inner_" + node.getTabLocation()) }, tabs));
+        tabStrip = React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+            React.createElement("div", { className: cm("flexlayout__tabset_tabbar_inner") + " " +
+                    cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation()) },
+                React.createElement("div", { style: { left: position }, className: cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
+                        cm("flexlayout__tabset_tabbar_inner__tab_container" + node.getTabLocation()) }, tabs)));
     }
     else {
         var tabStripStyle = { height: node.getTabStripHeight() + "px" };
@@ -33999,13 +33958,16 @@ exports.TabSet = function (props) {
             tabStripStyle["bottom"] = "0px";
         }
         tabStrip = React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            React.createElement("div", { className: cm("flexlayout__tabset_header_inner_" + node.getTabLocation()) }, tabs),
+            React.createElement("div", { className: cm("flexlayout__tabset_tabbar_inner") + " " +
+                    cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation()) },
+                React.createElement("div", { style: { left: position }, className: cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
+                        cm("flexlayout__tabset_tabbar_inner_tab_container" + node.getTabLocation()) }, tabs)),
             toolbar);
     }
     style = layout.styleFont(style);
-    return React.createElement("div", { style: style, className: cm("flexlayout__tabset") },
+    return (React.createElement("div", { ref: selfRef, style: style, className: cm("flexlayout__tabset"), onWheel: onMouseWheel },
         header,
-        tabStrip);
+        tabStrip));
 };
 
 
