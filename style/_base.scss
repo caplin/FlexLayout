@@ -127,11 +127,17 @@
         &_tab_container {
           display:flex;
           box-sizing: border-box;
-          border-top: 2px solid transparent; // if you change this, update the _sizer above
           position: absolute;
           top: 0;
           bottom: 0;
           width: 10000px;
+
+          &_top {
+            border-top: 2px solid transparent; // if you change this, update the _sizer above
+          }
+          &_bottom {
+            border-bottom: 2px solid transparent;
+          }
         }
       }
     }

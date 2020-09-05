@@ -210,7 +210,7 @@ export const TabSet = (props: ITabSetProps) => {
                     style={{ left: position }}
                     className={
                         cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
-                        cm("flexlayout__tabset_tabbar_inner__tab_container" + node.getTabLocation())}
+                        cm("flexlayout__tabset_tabbar_inner__tab_container_" + node.getTabLocation())}
                 >
                     {tabs}
                 </div>
@@ -236,7 +236,7 @@ export const TabSet = (props: ITabSetProps) => {
                     style={{ left: position }}
                     className={
                         cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
-                        cm("flexlayout__tabset_tabbar_inner_tab_container" + node.getTabLocation())}
+                        cm("flexlayout__tabset_tabbar_inner_tab_container_" + node.getTabLocation())}
                 >
                     {tabs}
                 </div>

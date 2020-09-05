@@ -108,11 +108,16 @@
 .flexlayout__tabset_tabbar_inner_tab_container {
   display: flex;
   box-sizing: border-box;
-  border-top: 2px solid transparent;
   position: absolute;
   top: 0;
   bottom: 0;
   width: 10000px;
+}
+.flexlayout__tabset_tabbar_inner_tab_container_top {
+  border-top: 2px solid transparent;
+}
+.flexlayout__tabset_tabbar_inner_tab_container_bottom {
+  border-bottom: 2px solid transparent;
 }
 .flexlayout__tabset-selected {
   background-image: linear-gradient(white, #cccccc);
