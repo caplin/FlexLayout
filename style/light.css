@@ -224,6 +224,8 @@
   border-radius: 3px;
   position: absolute;
   z-index: 1000;
+  max-height: 50%;
+  overflow: auto;
 }
 .flexlayout__border {
   background-color: #e6e6e6;

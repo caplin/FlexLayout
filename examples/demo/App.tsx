@@ -4,7 +4,7 @@ import * as FlexLayout from "../../src/index";
 import Utils from "./Utils";
 import {Node, TabSetNode, TabNode, DropInfo, BorderNode, Actions, Action} from "../../src/index";
 
-var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
+var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
 class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize:string }> {
 
@@ -83,7 +83,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                 component: "grid",
-                name: "grid " + this.nextGridIndex++
+                name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
             this.setState({ adding: true });
         }
@@ -93,7 +93,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabToActiveTabSet({
                 component: "grid",
-                name: "grid " + this.nextGridIndex++
+                name: "Grid " + this.nextGridIndex++
             });
         }
     }
@@ -103,7 +103,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                 component: "grid",
-                name: "grid " + this.nextGridIndex++
+                name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
             this.setState({ adding: true });
         }
@@ -311,8 +311,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         for (var i = 0; i < r; i++) {
             var rec: { [key: string]: any; } = {};
             rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            rec.ISIN = rec.Name + this.randomString(7, "1234567890");
-            for (var j = 2; j < fields.length; j++) {
+            for (var j = 1; j < fields.length; j++) {
                 rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
             }
             data.push(rec);
