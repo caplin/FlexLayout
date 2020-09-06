@@ -1,6 +1,6 @@
 # FlexLayout
 
-FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be resized and moved.
+FlexLayout is a layout manager that arranges React components in multiple tab sets, tabs can be resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.5/demo1.png?raw=true "FlexLayout Demo Screenshot")
 
@@ -75,7 +75,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | titleFactory    | optional          | a factory function for creating title components for tab bar buttons |
 | icons           | optional          | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
 | onAction        | optional          | function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning `undefined` from the function will halt the action, otherwise return the action to continue |
-| onRenderTab     | optional          | function called when rendering a tab, allows leading (icon), content sections, and buttons to be customized |
+| onRenderTab     | optional          | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
 | onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |
 | onModelChange   | optional          | function called when model has changed |
 | classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
@@ -300,7 +300,7 @@ following method on one of the elements rendered in the popout (for example a re
     const currentWindow = currentDocument.defaultView!;
 ```
 
-In the above code selfRef is a React ref to the toplevel element being rendered.
+In the above code selfRef is a React ref to the toplevel element in the tab being rendered.
 
 Note: some libraries already support popout windows by allowing you to specify the document to use, 
 for example see the getDocument() callback in agGrid at https://www.ag-grid.com/javascript-grid-callbacks/
@@ -315,6 +315,7 @@ Attributes allowed in the 'global' element
 | splitterSize | 8 | |
 | enableEdgeDock | true | |
 | tabEnableClose | true | |
+| tabCloseType | 1 | see values in ICloseType |
 | tabEnableDrag | true | |
 | tabEnableRename | true | |
 | tabEnableFloat | false | enable popouts in all tabs (in popout capable browser) |
@@ -372,6 +373,7 @@ Inherited defaults will take their value from the associated global attributes (
 | config | null | a place to hold json config for the hosted component |
 | id | auto generated | |
 | enableClose | *inherited* | |
+| closeType | *inherited* | |
 | enableDrag | *inherited* | |
 | enableRename | *inherited* | |
 | enableFloat | *inherited* | enable popout (in popout capable browser) |
@@ -466,13 +468,16 @@ adjusting the layout easier on a small device.
 |	Actions.addNode(newNodeJson, toNodeId, location, index, select?) | add a new tab node to the given tabset node; `select` specifies whether to select new tab, defaulting to `autoSelectTab` attribute |
 |	Actions.moveNode(fromNodeId, toNodeId, location, index, select?) | move a tab node from its current location to the new node and location; `select` specifies whether to select tab, defaulting to new tabset's `autoSelectTab` attribute |
 |	Actions.deleteTab(tabNodeId) | delete the given tab |
+|	Actions.renameTab(tabNodeId, newName) | rename the given tab |
 |	Actions.selectTab(tabNodeId) | select the given tab |
 |	Actions.setActiveTabset(tabsetNodeId) | set the tabset as the active tabset |
 |	Actions.adjustSplit(splitterNodeId, value) | adjust the size of the given splitter |
+|	Actions.adjustBorderSplit(borderNodeId, pos) | updates the size of the given border node |
 |	Actions.maximizeToggle(tabsetNodeId) | toggles whether the given tabset node is maximized |
 |	Actions.updateModelAttributes(attributes) | updates the global attributes |
 |	Actions.updateNodeAttributes(nodeId, attributes) | updates the attributes of the given node |
-|	Actions.adjustBorderSplit(borderNodeId, pos) | updates the size of the given border node |
+|	Actions.floatTab(nodeId) | popout the tab into a floating browser window |
+|	Actions.unFloatTab(nodeId) | restore a popped out tab to the main layout |
 
 for example:
 

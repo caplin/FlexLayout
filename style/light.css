@@ -9,8 +9,10 @@
 .flexlayout__splitter {
   background-color: #e6e6e6;
 }
-.flexlayout__splitter:hover {
-  background-color: #cccccc;
+@media (hover: hover) {
+  .flexlayout__splitter:hover {
+    background-color: #cccccc;
+  }
 }
 .flexlayout__splitter_border {
   z-index: 10;
@@ -23,11 +25,11 @@
 .flexlayout__outline_rect {
   position: absolute;
   cursor: move;
+  box-sizing: border-box;
   border: 2px solid red;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   z-index: 1000;
-  box-sizing: border-box;
 }
 .flexlayout__outline_rect_edge {
   cursor: move;
@@ -95,8 +97,11 @@
   overflow: hidden;
   display: flex;
 }
+.flexlayout__tabset_tabbar_outer_top {
+  border-bottom: 1px solid #d9d9d9;
+}
 .flexlayout__tabset_tabbar_outer_bottom {
-  border-top: 1px solid #cccccc;
+  border-top: 1px solid #d9d9d9;
 }
 .flexlayout__tabset_tabbar_inner {
   position: relative;
@@ -140,19 +145,25 @@
   margin: 0px 2px;
   cursor: pointer;
   box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
 }
-.flexlayout__tab_button--selected, .flexlayout__tab_button:hover {
+.flexlayout__tab_button--selected {
   background-color: #d9d9d9;
   color: black;
+}
+@media (hover: hover) {
+  .flexlayout__tab_button:hover {
+    background-color: #d9d9d9;
+    color: black;
+  }
 }
 .flexlayout__tab_button--unselected {
   color: gray;
 }
+.flexlayout__tab_button_top {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
 .flexlayout__tab_button_bottom {
-  border-top-left-radius: 0px;
-  border-top-right-radius: 0px;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
 }
@@ -176,7 +187,18 @@
   min-width: 8px;
   min-height: 8px;
 }
-.flexlayout__tab_button:hover .flexlayout__tab_button_trailing, .flexlayout__tab_button--selected .flexlayout__tab_button_trailing {
+@media (pointer: coarse) {
+  .flexlayout__tab_button_trailing {
+    min-width: 20px;
+    min-height: 20px;
+  }
+}
+@media (hover: hover) {
+  .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
+    background: transparent url("../images/close.png") no-repeat center;
+  }
+}
+.flexlayout__tab_button--selected .flexlayout__tab_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
 }
 .flexlayout__tab_button_overflow {
@@ -195,7 +217,7 @@
   min-width: 20px;
   min-height: 20px;
   border: none;
-  outline-width: 0;
+  outline: none;
 }
 .flexlayout__tab_toolbar_button-min {
   background: transparent url("../images/maximize.png") no-repeat center;
@@ -206,28 +228,29 @@
 .flexlayout__tab_toolbar_button-float {
   background: transparent url("../images/popout.png") no-repeat center;
 }
-.flexlayout__popup_menu {
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
-}
-.flexlayout__popup_menu_item {
-  padding: 2px 10px 2px 10px;
-  white-space: nowrap;
-}
-.flexlayout__popup_menu_item:hover {
-  background-color: #b3b3b3;
-}
-.flexlayout__popup_menu_container {
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-  border: 1px solid #b3b3b3;
-  color: black;
-  background: white;
-  border-radius: 3px;
-  position: absolute;
-  z-index: 1000;
-  max-height: 50%;
-  min-width: 100px;
+.flexlayout__tab_floating {
   overflow: auto;
+  position: absolute;
+  box-sizing: border-box;
+  color: black;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flexlayout__tab_floating_inner {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.flexlayout__tab_floating_inner div {
+  margin-bottom: 5px;
+  text-align: center;
+}
+.flexlayout__tab_floating_inner div a {
+  color: royalblue;
 }
 .flexlayout__border {
   background-color: #e6e6e6;
@@ -292,9 +315,15 @@
   white-space: nowrap;
   background-color: #d9d9d9;
 }
-.flexlayout__border_button--selected, .flexlayout__border_button:hover {
+.flexlayout__border_button--selected {
   background-color: #d9d9d9;
   color: black;
+}
+@media (hover: hover) {
+  .flexlayout__border_button:hover {
+    background-color: #d9d9d9;
+    color: black;
+  }
 }
 .flexlayout__border_button--unselected {
   color: gray;
@@ -311,7 +340,18 @@
   min-width: 8px;
   min-height: 8px;
 }
-.flexlayout__border_button:hover .flexlayout__border_button_trailing, .flexlayout__border_button--selected .flexlayout__border_button_trailing {
+@media (pointer: coarse) {
+  .flexlayout__border_button_trailing {
+    min-width: 20px;
+    min-height: 20px;
+  }
+}
+@media (hover: hover) {
+  .flexlayout__border_button:hover .flexlayout__border_button_trailing {
+    background: transparent url("../images/close.png") no-repeat center;
+  }
+}
+.flexlayout__border_button--selected .flexlayout__border_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
 }
 .flexlayout__border_toolbar {
@@ -328,7 +368,7 @@
   min-width: 20px;
   min-height: 20px;
   border: none;
-  outline-width: 0;
+  outline: none;
 }
 .flexlayout__border_toolbar_button-float {
   background: transparent url("../images/popout.png") no-repeat center;
@@ -346,6 +386,31 @@
 .flexlayout__border_toolbar_button_overflow_right, .flexlayout__border_toolbar_button_overflow_left {
   padding-right: 0px;
   margin-top: 5px;
+}
+.flexlayout__popup_menu {
+  font-size: medium;
+  font-family: Roboto, Arial, sans-serif;
+}
+.flexlayout__popup_menu_item {
+  padding: 2px 10px 2px 10px;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .flexlayout__popup_menu_item:hover {
+    background-color: #b3b3b3;
+  }
+}
+.flexlayout__popup_menu_container {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  border: 1px solid #b3b3b3;
+  color: black;
+  background: white;
+  border-radius: 3px;
+  position: absolute;
+  z-index: 1000;
+  max-height: 50%;
+  min-width: 100px;
+  overflow: auto;
 }
 .flexlayout__floating_window _body {
   height: 100%;
@@ -367,30 +432,6 @@
   box-sizing: border-box;
   background-color: white;
   color: black;
-}
-.flexlayout__tab_floating {
-  overflow: auto;
-  position: absolute;
-  box-sizing: border-box;
-  color: black;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.flexlayout__tab_floating_inner {
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.flexlayout__tab_floating_inner div {
-  margin-bottom: 5px;
-  text-align: center;
-}
-.flexlayout__tab_floating_inner div a {
-  color: royalblue;
 }
 .flexlayout__error_boundary_container {
   left: 0;

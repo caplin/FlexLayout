@@ -1,12 +1,12 @@
 import * as React from "react";
-import {Fragment} from "react";
+import { Fragment } from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import {JSMap} from "../Types";
-import {ILayoutCallbacks} from "./Layout";
-import {ErrorBoundary} from "./ErrorBoundary";
-import {I18nLabel} from "../I18nLabel";
+import { JSMap } from "../Types";
+import { ILayoutCallbacks } from "./Layout";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { I18nLabel } from "../I18nLabel";
 import { BorderNode } from "..";
 
 /** @hidden @internal */
@@ -19,7 +19,7 @@ export interface ITabProps {
 
 /** @hidden @internal */
 export const Tab = (props: ITabProps) => {
-    const {layout, selected, node, factory} = props;
+    const { layout, selected, node, factory } = props;
     const [renderComponent, setRenderComponent] = React.useState<boolean>(!props.node.isEnableRenderOnDemand() || props.selected);
 
     React.useLayoutEffect(() => {
@@ -46,8 +46,10 @@ export const Tab = (props: ITabProps) => {
         display: selected ? "block" : "none"
     });
 
-    if (parentNode.isMaximized()) {
-        style.zIndex = 100;
+    if (parentNode instanceof TabSetNode) {
+        if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
+            style.display = "none";
+        }
     }
 
     let child;
@@ -62,9 +64,9 @@ export const Tab = (props: ITabProps) => {
     }
 
     return <div className={className}
-                onMouseDown={onMouseDown}
-                onTouchStart={onMouseDown}
-                style={style}>
+        onMouseDown={onMouseDown}
+        onTouchStart={onMouseDown}
+        style={style}>
         <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
             <Fragment>
                 {child}

@@ -3,18 +3,18 @@ html,body
     height: 100%;
     margin: 0;
     padding: 0;
+    overflow:hidden;
     font-size: medium;
     font-family: Roboto, Arial, sans-serif; 
 }
 
 #container  {
-    height:100%;
-    width:100%;
-    border: 10px solid white;
-    box-sizing: border-box;
-    position:relative;
+    left:10px;
+    top:10px;
+    right:10px;
+    bottom:10px;
+    position:absolute;
     display:flex;
-    display:-webkit-flex;
     overflow:hidden;
     background-color: white;
 }
@@ -32,20 +32,18 @@ html,body
     display:flex;
     flex-direction: column;
     flex-grow:1;
-    display:-webkit-flex;
-    -webkit-flex-direction: column;
-    -webkit-flex-grow:1;
 }
 
 .toolbar
 {
     margin:2px;
+    display: flex;
+    align-items:center;
 }
 
 .contents
 {
     flex-grow:1;
-    -webkit-flex-grow:1;
     left:0;
     top:0;
     right:0;

@@ -40,14 +40,10 @@ export const TabFloating = (props: ITabFloatingProps) => {
 
     const cm = layout.getClassName;
 
-    const parentNode = node.getParent() as TabSetNode;
     const style: JSMap<any> = node._styleWithPosition({
         display: selected ? "flex" : "none"
     });
 
-    if (parentNode.isMaximized()) {
-        style.zIndex = 100;
-    }
     const message = layout.i18nName(I18nLabel.Floating_Window_Message);
     const showMessage = layout.i18nName(I18nLabel.Floating_Window_Show_Window);
     const dockMessage = layout.i18nName(I18nLabel.Floating_Window_Dock_Window);

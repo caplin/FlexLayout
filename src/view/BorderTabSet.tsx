@@ -37,7 +37,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
 
-    const onOverflowItemSelect = (item: { name: string, node: TabNode, index: number }) => {
+    const onOverflowItemSelect = (item: { node: TabNode, index: number }) => {
         layout.doAction(Actions.selectTab(item.node.getId()));
         userControlledLeft.current = false;
     };

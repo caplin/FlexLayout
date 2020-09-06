@@ -32,7 +32,7 @@ export const TabSet = (props: ITabSetProps) => {
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
 
-    const onOverflowItemSelect = (item: { name: string, node: TabNode, index: number }) => {
+    const onOverflowItemSelect = (item: { node: TabNode, index: number }) => {
         layout.doAction(Actions.selectTab(item.node.getId()));
         userControlledLeft.current = false;
     };
@@ -53,8 +53,23 @@ export const TabSet = (props: ITabSetProps) => {
         event.stopPropagation();
     };
 
-    const onMaximizeToggle = () => {
+    const canMaximize = () => {
         if (node.isEnableMaximize()) {
+            // always allow maximize toggle if already maximized
+            if (node.getModel().getMaximizedTabset() === node) {
+                return true;
+            }
+            // only one tabset, so disable
+            if (node.getParent() === node.getModel().getRoot() && node.getModel().getRoot().getChildren().length===1) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    const onMaximizeToggle = () => {
+        if (canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -66,7 +81,7 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onDoubleClick = (event: Event) => {
-        if (node.isEnableMaximize()) {
+        if (canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -77,8 +92,8 @@ export const TabSet = (props: ITabSetProps) => {
     const selectedTabNode: TabNode = node.getSelectedNode() as TabNode;
     let style = node._styleWithPosition();
 
-    if (node.isMaximized()) {
-        style.zIndex = 100;
+    if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
+        style.display = "none";
     }
 
     const tabs = [];
@@ -131,7 +146,7 @@ export const TabSet = (props: ITabSetProps) => {
             onTouchStart={onInterceptMouseDown}
         >{icons?.popout}</button>);
     }
-    if (node.isEnableMaximize()) {
+    if (canMaximize()) {
         const minTitle = layout.i18nName(I18nLabel.Restore);
         const maxTitle = layout.i18nName(I18nLabel.Maximize);
         buttons.push(<button key="max"

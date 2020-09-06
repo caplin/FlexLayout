@@ -116,6 +116,10 @@ export const Splitter = (props: ISplitterProps) => {
     
     if (parentNode instanceof BorderNode) {
         className += " " + cm("flexlayout__splitter_border");
+    } else {
+        if (node.getModel().getMaximizedTabset() !== undefined ) {
+            style.display = "none";
+        }
     }
 
     return <div

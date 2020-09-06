@@ -4,6 +4,7 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import Rect from "../Rect";
 import {IIcons, ILayoutCallbacks} from "./Layout";
+import {ICloseType} from "../model/ICloseType";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -37,8 +38,26 @@ export const BorderButton = (props: IBorderButtonProps) => {
         layout.doAction(Actions.selectTab(node.getId()));
     };
 
+    const isClosable = () => {
+        const closeType = node.getCloseType();
+        if (selected || closeType === ICloseType.Always) { 
+            return true;
+        }
+        if (closeType === ICloseType.Visible) { 
+            // not selected but x should be visible due to hover
+            if (window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+                return true;
+            }
+        }
+        return false;
+    }        
+
     const onClose = (event: React.MouseEvent<HTMLDivElement>) => {
-        layout.doAction(Actions.deleteTab(node.getId()));
+        if (isClosable()) {
+            layout.doAction(Actions.deleteTab(node.getId()));
+        } else {
+            onClick();
+        }
     };
 
     const onCloseMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
@@ -77,11 +96,13 @@ export const BorderButton = (props: IBorderButtonProps) => {
         leadingContent = <img src={node.getIcon()} alt="leadingContent"/>;
     }
 
+    let name = node.getName();
     let buttons: any[] = [];
 
     // allow customization of leading contents (icon) and contents
-    const renderState = {leading: leadingContent, content: titleContent, buttons};
+    const renderState = {leading: leadingContent, content: titleContent, name, buttons};
     layout.customizeTab(node, renderState);
+    node._setRenderedName(renderState.name);
 
     const content = <div className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
     const leading = <div className={cm("flexlayout__border_button_leading")}>{renderState.leading}</div>;

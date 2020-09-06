@@ -40,7 +40,12 @@ export interface ILayoutProps {
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
         node: TabNode,
-        renderValues: { leading: React.ReactNode; content: React.ReactNode }
+        renderValues: { 
+            leading: React.ReactNode; 
+            content: React.ReactNode;
+            name: string;
+            buttons: React.ReactNode[];
+         }
     ) => void;
     onRenderTabSet?: (
         tabSetNode: TabSetNode | BorderNode,
@@ -93,7 +98,12 @@ export interface ILayoutCallbacks {
     ):  void;
     customizeTab(
         tabNode: TabNode,
-        renderValues: { leading: React.ReactNode; content: React.ReactNode }
+        renderValues: { 
+            leading: React.ReactNode; 
+            content: React.ReactNode;
+            name : string;
+            buttons: React.ReactNode[];
+        }
     ): void;
     customizeTabSet(
         tabSetNode: TabSetNode | BorderNode,
@@ -109,14 +119,14 @@ export interface ILayoutCallbacks {
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
-// Assume any recent browser not IE or original Edge will work
+// Assume any recent desktop browser not IE or original Edge will work
 /** @hidden @internal */
 // @ts-ignore
 const isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
 /** @hidden @internal */
-const isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
+const isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 /** @hidden @internal */
-const defaultSupportsPopout: boolean = !isIEorEdge && !isMobile;
+const defaultSupportsPopout: boolean = isDesktop && !isIEorEdge;
 
 /**
  * A React component that hosts a multi-tabbed layout
@@ -345,6 +355,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
                 </div>
             );
         }
+        
+        this.props.model._setPointerFine(window && window.matchMedia && window.matchMedia("(pointer: fine)").matches)
         // this.start = Date.now();
         const borderComponents: React.ReactNode[] = [];
         const tabSetComponents: React.ReactNode[] = [];
@@ -953,7 +965,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState>  {
     /** @hidden @internal */
     customizeTab(
         tabNode: TabNode,
-        renderValues: { leading: React.ReactNode; content: React.ReactNode }
+        renderValues: { 
+            leading: React.ReactNode; 
+            content: React.ReactNode;
+            name: string;
+            buttons: React.ReactNode[];
+        }
     ) {
         if (this.props.onRenderTab) {
             this.props.onRenderTab(tabNode, renderValues);

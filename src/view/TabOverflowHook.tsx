@@ -13,7 +13,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
 
     const [position, setPosition] = React.useState<number>(0);
     const userControlledLeft = React.useRef<boolean>(false);
-    const [hiddenTabs, setHiddenTabs] = React.useState<{ name: string, node: TabNode, index: number }[]>([]);
+    const [hiddenTabs, setHiddenTabs] = React.useState<{ node: TabNode, index: number }[]>([]);
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useLayoutEffect(() => {
@@ -103,12 +103,12 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
 
                 // find hidden tabs
                 const diff = newPosition - position;
-                const hidden: { name: string, node: TabNode, index: number }[] = [];
+                const hidden: { node: TabNode, index: number }[] = [];
                 for (let i = 0; i < node.getChildren().length; i++) {
                     const child = node.getChildren()[i] as TabNode;
                     if ((getNear(child.getTabRect()!) + diff) < getNear(nodeRect!) ||
                         (getFar(child.getTabRect()!) + diff) > endPos) {
-                        hidden.push({ name: child.getName()!, node: child, index: i });
+                        hidden.push({ node: child, index: i });
                     }
                 }
 

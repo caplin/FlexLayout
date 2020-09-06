@@ -5,8 +5,8 @@ import TabNode from "./model/TabNode";
 /** @hidden @internal */
 export function showPopup(layoutDiv: HTMLDivElement,
     triggerElement: Element,
-    items: { index: number, node: TabNode, name: string }[],
-    onSelect: (item: { index: number, node: TabNode, name: string }) => void,
+    items: { index: number, node: TabNode }[],
+    onSelect: (item: { index: number, node: TabNode}) => void,
     classNameMapper: (defaultClassName: string) => string) {
 
     const currentDocument = triggerElement.ownerDocument;
@@ -52,10 +52,10 @@ export function showPopup(layoutDiv: HTMLDivElement,
 
 /** @hidden @internal */
 interface IPopupMenuProps {
-    items: { index: number, node: TabNode, name: string }[];
+    items: { index: number, node: TabNode }[];
     currentDocument: Document;
     onHide: () => void;
-    onSelect: (item: { index: number, node: TabNode, name: string }) => void;
+    onSelect: (item: { index: number, node: TabNode }) => void;
     classNameMapper: (defaultClassName: string) => string;
 }
 
@@ -63,7 +63,7 @@ interface IPopupMenuProps {
 const PopupMenu = (props: IPopupMenuProps) => {
     const { items, onHide, onSelect, classNameMapper } = props;
 
-    const onItemClick = (item: { index: number, node: TabNode, name: string }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const onItemClick = (item: { index: number, node: TabNode }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         onSelect(item);
         onHide();
         event.stopPropagation();
@@ -71,7 +71,7 @@ const PopupMenu = (props: IPopupMenuProps) => {
 
     const itemElements = items.map(item => <div key={item.index}
         className={classNameMapper("flexlayout__popup_menu_item")}
-        onClick={(event) => onItemClick(item, event)}>{item.name}</div>);
+        onClick={(event) => onItemClick(item, event)}>{item.node._getRenderedName()}</div>);
 
     return <div className={classNameMapper("flexlayout__popup_menu")}>
         {itemElements}

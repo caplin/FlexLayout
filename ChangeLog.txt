@@ -1,3 +1,13 @@
+0.5.2
+Fixed issues caused by double touch/mouse events in IOS
+Prevented IOS scroll during drag in demo app.
+Added extra option to onRenderTab to allow name of item in overflow menu to be set.
+New closeType option for tabs
+The maximized tabset now sets others to display:none rather than use z-index
+Disable maximize if only one tabset
+Splitters will now default to 8 on desktop and 12 on mobile (so they can be tapped more easily)
+Close element is enlarged on mobile 
+
 0.5.1
 Various small fixes
 

@@ -33,6 +33,7 @@ class TabNode extends Node implements IDraggable {
     attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
 
     attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
+    attributeDefinitions.addInherited("closeType", "tabCloseType").setType(Attribute.INT);
     attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
     attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
@@ -44,6 +45,8 @@ class TabNode extends Node implements IDraggable {
 
   /** @hidden @internal */
   private _tabRect?: Rect;
+  /** @hidden @internal */
+  private _renderedName?: string;
   /** @hidden @internal */
   private _extra: JSMap<any>;
     /** @hidden @internal */
@@ -72,6 +75,16 @@ class TabNode extends Node implements IDraggable {
   /** @hidden @internal */
   _setTabRect(rect: Rect) {
     this._tabRect = rect;
+  }
+
+  /** @hidden @internal */
+  _setRenderedName(name: string) {
+    this._renderedName = name;
+  }
+
+  /** @hidden @internal */
+  _getRenderedName() {
+    return this._renderedName;
   }
 
   getName() {
@@ -112,6 +125,10 @@ class TabNode extends Node implements IDraggable {
 
   isEnableClose() {
     return this._getAttr("enableClose") as boolean;
+  }
+
+  getCloseType() {
+    return this._getAttr("closeType") as number;
   }
 
   isEnableFloat() {

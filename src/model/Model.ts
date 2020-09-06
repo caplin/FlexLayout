@@ -51,12 +51,13 @@ class Model {
   private static _createAttributeDefinitions(): AttributeDefinitions {
     const attributeDefinitions = new AttributeDefinitions();
     // splitter
-    attributeDefinitions.add("splitterSize", 8).setType(Attribute.INT).setFrom(1);
+    attributeDefinitions.add("splitterSize", -1).setType(Attribute.INT);
     attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
 
     // tab
     attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
+    attributeDefinitions.add("tabCloseType", 1).setType(Attribute.INT);
     attributeDefinitions.add("tabEnableFloat", false).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
     attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
@@ -114,6 +115,8 @@ class Model {
   private _activeTabSet?: TabSetNode;
   /** @hidden @internal */
   private _borderRects: { inner: Rect, outer: Rect } = { inner: Rect.empty(), outer: Rect.empty() };
+  /** @hidden @internal */
+  private _pointerFine: boolean;
 
   /**
    * 'private' constructor. Use the static method Model.fromJson(json) to create a model
@@ -125,6 +128,7 @@ class Model {
     this._idMap = {};
     this._nextId = 0;
     this._borders = new BorderSet(this);
+    this._pointerFine = true;
   }
 
   /** @hidden @internal */
@@ -179,6 +183,16 @@ class Model {
   /** @hidden @internal */
   _getOuterInnerRects() {
     return this._borderRects;
+  }
+
+  /** @hidden @internal */
+  _getPointerFine() {
+    return this._pointerFine;
+  }
+
+  /** @hidden @internal */
+  _setPointerFine(pointerFine: boolean) {
+    this._pointerFine = pointerFine;
   }
 
   /**
@@ -387,7 +401,11 @@ class Model {
   }
 
   getSplitterSize() {
-    return this._attributes.splitterSize as number;
+    let splitterSize = this._attributes.splitterSize as number;
+    if (splitterSize === -1) { // use defaults
+      splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
+    }
+    return splitterSize;
   }
 
   isEnableEdgeDock() {
