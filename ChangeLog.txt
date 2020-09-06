@@ -1,7 +1,12 @@
+0.5.1
+Various small fixes
+
 0.5.0
 Overflowing tabs now scroll to keep the selected tab in view, 
 they can also be manually scrolled using the mouse wheel.
 Now works on scrolling page.
+NOTE: several css classes with names starting with flexlayout__tabset_header... have
+been renamed to flexlayout__tabset_tabbar...
 
 0.4.9
 Keep selected tab in tabset/border when another tab is moved out.
