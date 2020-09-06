@@ -141,6 +141,8 @@ var App = /** @class */ (function (_super) {
             alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
         };
         _this.onAddDragMouseDown = function (event) {
+            event.preventDefault();
+            event.stopPropagation();
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                     component: "grid",
