@@ -2,17 +2,16 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import TabNode from "./model/TabNode";
 
-
 /** @hidden @internal */
 export function showPopup(layoutDiv: HTMLDivElement,
-                            triggerElement: Element,
-                          items: { index: number, node: TabNode, name: string }[],
-                          onSelect: (item: { index: number, node: TabNode, name: string }) => void,
-                          classNameMapper: (defaultClassName: string) => string) {
+    triggerElement: Element,
+    items: { index: number, node: TabNode, name: string }[],
+    onSelect: (item: { index: number, node: TabNode, name: string }) => void,
+    classNameMapper: (defaultClassName: string) => string) {
 
     const currentDocument = triggerElement.ownerDocument;
     const triggerRect = triggerElement.getBoundingClientRect();
-    const layoutRect = layoutDiv.getBoundingClientRect();                    
+    const layoutRect = layoutDiv.getBoundingClientRect();
 
     const elm = currentDocument.createElement("div");
     elm.className = classNameMapper("flexlayout__popup_menu_container");
@@ -30,12 +29,25 @@ export function showPopup(layoutDiv: HTMLDivElement,
     layoutDiv.appendChild(elm);
 
     const onHide = () => {
-        ReactDOM.unmountComponentAtNode(elm);
         layoutDiv.removeChild(elm);
+        ReactDOM.unmountComponentAtNode(elm);
+        elm.removeEventListener("mouseup", onElementMouseUp);
+        currentDocument.removeEventListener("mouseup", onDocMouseUp);
     };
 
+    const onElementMouseUp = (event: Event) => {
+        event.stopPropagation();
+    };
+
+    const onDocMouseUp = (event: Event) => {
+        onHide();
+    };
+
+    elm.addEventListener("mouseup", onElementMouseUp);
+    currentDocument.addEventListener("mouseup", onDocMouseUp);
+
     ReactDOM.render(<PopupMenu currentDocument={currentDocument} onSelect={onSelect} onHide={onHide} items={items}
-                               classNameMapper={classNameMapper}/>, elm);
+                               classNameMapper={classNameMapper} />, elm);
 }
 
 /** @hidden @internal */
@@ -49,38 +61,17 @@ interface IPopupMenuProps {
 
 /** @hidden @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
-    const {currentDocument, items, onHide, onSelect, classNameMapper} = props;
-    const hidden = React.useRef<boolean>(false);
-
-    React.useEffect(() => {
-        currentDocument.addEventListener("mouseup", onDocMouseUp);
-        return () => {
-            currentDocument.removeEventListener("mouseup", onDocMouseUp);
-        };
-    }, []);
-
-    const onDocMouseUp = (event: Event) => {
-        setTimeout(() => {
-            hide();
-        }, 0);
-    };
-
-    const hide = () => {
-        if (!hidden.current) {
-            onHide();
-            hidden.current = true;
-        }
-    };
+    const { items, onHide, onSelect, classNameMapper } = props;
 
     const onItemClick = (item: { index: number, node: TabNode, name: string }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         onSelect(item);
-        hide();
+        onHide();
         event.stopPropagation();
     };
 
     const itemElements = items.map(item => <div key={item.index}
-                                                className={classNameMapper("flexlayout__popup_menu_item")}
-                                                onClick={(event) => onItemClick(item, event)}>{item.name}</div>);
+        className={classNameMapper("flexlayout__popup_menu_item")}
+        onClick={(event) => onItemClick(item, event)}>{item.name}</div>);
 
     return <div className={classNameMapper("flexlayout__popup_menu")}>
         {itemElements}
