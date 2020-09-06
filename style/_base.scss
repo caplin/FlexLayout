@@ -374,16 +374,6 @@
     &--selected &_trailing {
       background: transparent url("../images/close.png") no-repeat center;
     }
-    &_overflow_top,
-    &_overflow_bottom,
-    &_overflow_right,
-    &_overflow_left {
-      color: gray;
-      padding-left: 12px;
-      border: none;
-      font-size: inherit;
-      background: transparent url("../images/more2.png") no-repeat left;
-    }
   }
 
   &__border_toolbar {
@@ -413,6 +403,26 @@
       &-float {
         background: transparent url("../images/popout.png") no-repeat center;
       }
+
+      &_overflow {
+        border: none;
+        padding-left: 12px;
+        color: gray;
+        font-size: inherit;
+        background: transparent url("../images/more2.png") no-repeat left;
+      }
+
+      &_overflow_top,
+      &_overflow_bottom {
+        margin-left:10px ;
+      }
+
+      &_overflow_right,
+      &_overflow_left {
+        padding-right: 0px;
+        margin-top:5px;
+      }
+  
     }
   }
 

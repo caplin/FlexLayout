@@ -312,13 +312,6 @@
 .flexlayout__border_button:hover .flexlayout__border_button_trailing, .flexlayout__border_button--selected .flexlayout__border_button_trailing {
   background: transparent url("../images/close.png") no-repeat center;
 }
-.flexlayout__border_button_overflow_top, .flexlayout__border_button_overflow_bottom, .flexlayout__border_button_overflow_right, .flexlayout__border_button_overflow_left {
-  color: gray;
-  padding-left: 12px;
-  border: none;
-  font-size: inherit;
-  background: transparent url("../images/more2.png") no-repeat left;
-}
 .flexlayout__border_toolbar {
   display: flex;
   align-items: center;
@@ -337,6 +330,20 @@
 }
 .flexlayout__border_toolbar_button-float {
   background: transparent url("../images/popout.png") no-repeat center;
+}
+.flexlayout__border_toolbar_button_overflow {
+  border: none;
+  padding-left: 12px;
+  color: gray;
+  font-size: inherit;
+  background: transparent url("../images/more2.png") no-repeat left;
+}
+.flexlayout__border_toolbar_button_overflow_top, .flexlayout__border_toolbar_button_overflow_bottom {
+  margin-left: 10px;
+}
+.flexlayout__border_toolbar_button_overflow_right, .flexlayout__border_toolbar_button_overflow_left {
+  padding-right: 0px;
+  margin-top: 5px;
 }
 .flexlayout__floating_window _body {
   height: 100%;

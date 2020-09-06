@@ -90,7 +90,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
         buttons.push(<button key="overflowbutton" ref={overflowbuttonRef}
-            className={cm("flexlayout__tab_button_overflow")}
+            className={cm("flexlayout__border_toolbar_button_overflow") + " " + 
+                        cm("flexlayout__border_toolbar_button_overflow_" + border.getLocation().getName())}
             title={overflowTitle}
             onClick={onOverflowClick}
             onMouseDown={onInterceptMouseDown}

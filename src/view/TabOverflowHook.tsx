@@ -24,7 +24,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         updateVisibleTabs();
     });
 
-    React.useEffect(()=> {
+    React.useEffect(() => {
         selfRef.current!.addEventListener('wheel', onWheel);
         return () => {
             selfRef.current!.removeEventListener('wheel', onWheel);
@@ -32,7 +32,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
     }, []);
 
     // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
-    const onWheel = (event:Event) => {
+    const onWheel = (event: Event) => {
         event.preventDefault();
     };
 
@@ -77,7 +77,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
                     return; // nothing to do all tabs are shown in available space
                 }
 
-                endPos -= (hiddenTabs.length > 0 ? 10 : 45); // will need hidden tabs
+                endPos -= (hiddenTabs.length > 0 ? (orientation === Orientation.HORZ) ? 10 : 0 : 45); // will need hidden tabs
 
                 let shiftPos = 0;
 
@@ -111,7 +111,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
                         hidden.push({ name: child.getName()!, node: child, index: i });
                     }
                 }
-                
+
                 firstRender.current = false; // need to do a second render
                 setHiddenTabs(hidden);
                 setPosition(newPosition);
