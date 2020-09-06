@@ -79,13 +79,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         alert("Error loading json config file: " + this.loadingLayoutName + "\n" + reason);
     }
 
-    onAddClick = (event:React.MouseEvent) => {
+    onAddDragMouseDown = (event:React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                 component: "grid",
                 name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
-            this.setState({ adding: true });
+            // this.setState({ adding: true });
         }
     }
 
@@ -262,9 +262,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="trader">Trader</option>
                 </select>
                 <button onClick={this.onReloadFromFile} style={{marginLeft:5}}>reload from file</button>
-                <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabWithDragAndDrop" onClick={this.onAddClick}>Add Drag</button>
                 <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
                 <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5}} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                <button disabled={this.state.adding || this.state.maximized} style={{ float: "right", marginLeft:5, border: "none", outline: "none"}} title="Add using Layout.addTabWithDragAndDrop" onMouseDown={this.onAddDragMouseDown}>Add Drag</button>
                 <button style={{ float: "right", marginLeft:5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
                 <select style={{ float: "right", marginLeft:5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
