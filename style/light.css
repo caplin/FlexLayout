@@ -212,6 +212,7 @@
 }
 .flexlayout__popup_menu_item {
   padding: 2px 10px 2px 10px;
+  white-space: nowrap;
 }
 .flexlayout__popup_menu_item:hover {
   background-color: #b3b3b3;
@@ -225,6 +226,7 @@
   position: absolute;
   z-index: 1000;
   max-height: 50%;
+  min-width: 100px;
   overflow: auto;
 }
 .flexlayout__border {

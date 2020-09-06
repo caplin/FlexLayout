@@ -256,6 +256,7 @@
 
     &_item {
       padding: 2px 10px 2px 10px;
+      white-space: nowrap;
     }
 
     &_item:hover {
@@ -271,6 +272,7 @@
       position: absolute;
       z-index: 1000;
       max-height: 50%;
+      min-width: 100px;
       overflow: auto;
     }
   }
