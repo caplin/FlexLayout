@@ -128,8 +128,9 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         } else {
             delta = event.deltaY;
         }
-        delta = Math.max(-100, delta);
-        delta = Math.min(100, delta);
+        if (event.deltaMode === 1) { // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+            delta *= 40;
+        }
         setPosition(position + delta);
         userControlledLeft.current = true;
         event.stopPropagation();
