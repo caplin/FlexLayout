@@ -114,7 +114,7 @@ var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/in
 var FlexLayout = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
 var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
-var fields = ["Name", "ISIN", "Bid", "Ask", "Last", "Yield"];
+var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
@@ -140,20 +140,20 @@ var App = /** @class */ (function (_super) {
         _this.error = function (reason) {
             alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
         };
-        _this.onAddClick = function (event) {
+        _this.onAddDragMouseDown = function (event) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                     component: "grid",
-                    name: "grid " + _this.nextGridIndex++
+                    name: "Grid " + _this.nextGridIndex++
                 }, _this.onAdded);
-                _this.setState({ adding: true });
+                // this.setState({ adding: true });
             }
         };
         _this.onAddActiveClick = function (event) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabToActiveTabSet({
                     component: "grid",
-                    name: "grid " + _this.nextGridIndex++
+                    name: "Grid " + _this.nextGridIndex++
                 });
             }
         };
@@ -161,7 +161,7 @@ var App = /** @class */ (function (_super) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
                     component: "grid",
-                    name: "grid " + _this.nextGridIndex++
+                    name: "Grid " + _this.nextGridIndex++
                 }, _this.onAdded);
                 _this.setState({ adding: true });
             }
@@ -303,9 +303,9 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "preferred" }, "Using Preferred size"),
                     React.createElement("option", { value: "trader" }, "Trader")),
                 React.createElement("button", { onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "reload from file"),
-                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDrop", onClick: this.onAddClick }, "Add Drag"),
                 React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect"),
                 React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
                 React.createElement("button", { style: { float: "right", marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
                 React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
@@ -342,8 +342,7 @@ var App = /** @class */ (function (_super) {
         for (var i = 0; i < r; i++) {
             var rec = {};
             rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            rec.ISIN = rec.Name + this.randomString(7, "1234567890");
-            for (var j = 2; j < fields.length; j++) {
+            for (var j = 1; j < fields.length; j++) {
                 rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
             }
             data.push(rec);
@@ -29569,36 +29568,28 @@ function showPopup(layoutDiv, triggerElement, items, onSelect, classNameMapper) 
     }
     layoutDiv.appendChild(elm);
     var onHide = function () {
-        ReactDOM.unmountComponentAtNode(elm);
         layoutDiv.removeChild(elm);
+        ReactDOM.unmountComponentAtNode(elm);
+        elm.removeEventListener("mouseup", onElementMouseUp);
+        currentDocument.removeEventListener("mouseup", onDocMouseUp);
     };
+    var onElementMouseUp = function (event) {
+        event.stopPropagation();
+    };
+    var onDocMouseUp = function (event) {
+        onHide();
+    };
+    elm.addEventListener("mouseup", onElementMouseUp);
+    currentDocument.addEventListener("mouseup", onDocMouseUp);
     ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper }), elm);
 }
 exports.showPopup = showPopup;
 /** @hidden @internal */
 var PopupMenu = function (props) {
-    var currentDocument = props.currentDocument, items = props.items, onHide = props.onHide, onSelect = props.onSelect, classNameMapper = props.classNameMapper;
-    var hidden = React.useRef(false);
-    React.useEffect(function () {
-        currentDocument.addEventListener("mouseup", onDocMouseUp);
-        return function () {
-            currentDocument.removeEventListener("mouseup", onDocMouseUp);
-        };
-    }, []);
-    var onDocMouseUp = function (event) {
-        setTimeout(function () {
-            hide();
-        }, 0);
-    };
-    var hide = function () {
-        if (!hidden.current) {
-            onHide();
-            hidden.current = true;
-        }
-    };
+    var items = props.items, onHide = props.onHide, onSelect = props.onSelect, classNameMapper = props.classNameMapper;
     var onItemClick = function (item, event) {
         onSelect(item);
-        hide();
+        onHide();
         event.stopPropagation();
     };
     var itemElements = items.map(function (item) { return React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); } }, item.name); });
@@ -32485,7 +32476,8 @@ exports.BorderTabSet = function (props) {
     var toolbar;
     if (hiddenTabs.length > 0) {
         var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
-        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__tab_button_overflow"), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
+        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm("flexlayout__border_toolbar_button_overflow") + " " +
+                cm("flexlayout__border_toolbar_button_overflow_" + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
             icons.more,
             hiddenTabs.length));
     }
@@ -33747,7 +33739,7 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
                 if (hiddenTabs.length === 0 && position === 0 && (getFar(lastChild.getTabRect()) + tabMargin) < endPos) {
                     return; // nothing to do all tabs are shown in available space
                 }
-                endPos -= (hiddenTabs.length > 0 ? 10 : 45); // will need hidden tabs
+                endPos -= (hiddenTabs.length > 0 ? (orientation === Orientation_1.default.HORZ) ? 10 : 0 : 45); // will need hidden tabs
                 var shiftPos = 0;
                 var selectedTab = node.getSelectedNode();
                 if (selectedTab && !userControlledLeft.current) {
@@ -33794,8 +33786,9 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
         else {
             delta = event.deltaY;
         }
-        delta = Math.max(-100, delta);
-        delta = Math.min(100, delta);
+        if (event.deltaMode === 1) { // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+            delta *= 40;
+        }
         setPosition(position + delta);
         userControlledLeft.current = true;
         event.stopPropagation();
@@ -33947,7 +33940,7 @@ exports.TabSet = function (props) {
             React.createElement("div", { className: cm("flexlayout__tabset_tabbar_inner") + " " +
                     cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation()) },
                 React.createElement("div", { style: { left: position }, className: cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
-                        cm("flexlayout__tabset_tabbar_inner__tab_container" + node.getTabLocation()) }, tabs)));
+                        cm("flexlayout__tabset_tabbar_inner_tab_container_" + node.getTabLocation()) }, tabs)));
     }
     else {
         var tabStripStyle = { height: node.getTabStripHeight() + "px" };
@@ -33961,7 +33954,7 @@ exports.TabSet = function (props) {
             React.createElement("div", { className: cm("flexlayout__tabset_tabbar_inner") + " " +
                     cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation()) },
                 React.createElement("div", { style: { left: position }, className: cm("flexlayout__tabset_tabbar_inner_tab_container") + " " +
-                        cm("flexlayout__tabset_tabbar_inner_tab_container" + node.getTabLocation()) }, tabs)),
+                        cm("flexlayout__tabset_tabbar_inner_tab_container_" + node.getTabLocation()) }, tabs)),
             toolbar);
     }
     style = layout.styleFont(style);
