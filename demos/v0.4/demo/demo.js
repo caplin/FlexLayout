@@ -29374,7 +29374,7 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._preventDefault = function (event) {
-        if (event.preventDefault && event.cancelable) {
+        if (event.preventDefault) {
             event.preventDefault();
         }
         return event;
