@@ -258,18 +258,8 @@ var App = /** @class */ (function (_super) {
         };
         return _this;
     }
-    App.prototype.preventDefault = function (e) {
-        e.preventDefault();
-    };
-    App.prototype.disableScroll = function () {
-        document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
-    };
-    App.prototype.enableScroll = function () {
-        document.body.removeEventListener('touchmove', this.preventDefault);
-    };
     App.prototype.componentDidMount = function () {
         this.loadLayout("default", false);
-        this.disableScroll(); // disable scrolling in ios
     };
     App.prototype.save = function () {
         var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
