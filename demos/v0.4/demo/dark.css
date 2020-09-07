@@ -40,6 +40,7 @@ html,body
 .toolbar
 {
     margin:2px;
+    display: flex;
 }
 
 .contents

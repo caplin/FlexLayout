@@ -141,7 +141,6 @@ var App = /** @class */ (function (_super) {
             alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
         };
         _this.onAddDragMouseDown = function (event) {
-            event.preventDefault();
             event.stopPropagation();
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
@@ -305,14 +304,8 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "preferred" }, "Using Preferred size"),
                     React.createElement("option", { value: "trader" }, "Trader")),
                 React.createElement("button", { onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "reload from file"),
-                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect"),
-                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
-                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { float: "right", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
-                React.createElement("button", { style: { float: "right", marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onThemeChange },
-                    React.createElement("option", { value: "light" }, "Light"),
-                    React.createElement("option", { value: "dark" }, "Dark")),
-                React.createElement("select", { style: { float: "right", marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
+                React.createElement("div", { style: { flexGrow: 1 } }),
+                React.createElement("select", { style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
                     React.createElement("option", { value: "xx-small" }, "Size xx-small"),
                     React.createElement("option", { value: "x-small" }, "Size x-small"),
                     React.createElement("option", { value: "small" }, "Size small"),
@@ -335,7 +328,14 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "140%" }, "Size 140%"),
                     React.createElement("option", { value: "160%" }, "Size 160%"),
                     React.createElement("option", { value: "180%" }, "Size 180%"),
-                    React.createElement("option", { value: "200%" }, "Size 200%"))),
+                    React.createElement("option", { value: "200%" }, "Size 200%")),
+                React.createElement("select", { style: { marginLeft: 5 }, onChange: this.onThemeChange },
+                    React.createElement("option", { value: "light" }, "Light"),
+                    React.createElement("option", { value: "dark" }, "Dark")),
+                React.createElement("button", { style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none", backgroundColor: "lightgray" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                React.createElement("button", { disabled: this.state.adding || this.state.maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
             React.createElement("div", { className: "contents" }, contents));
     };
     App.prototype.makeFakeData = function () {
@@ -29319,10 +29319,10 @@ var DragDrop = /** @class */ (function () {
         this._fDragCancel = fDragCancel;
         this._fClick = fClick;
         this._fDblClick = fDblClick;
-        this._document.addEventListener("mouseup", this._onMouseUp);
-        this._document.addEventListener("mousemove", this._onMouseMove);
-        this._document.addEventListener("touchend", this._onMouseUp);
-        this._document.addEventListener("touchmove", this._onMouseMove);
+        this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
+        this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
+        this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
+        this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
@@ -29369,7 +29369,7 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._preventDefault = function (event) {
-        if (event.preventDefault) {
+        if (event.preventDefault && event.cancelable) {
             event.preventDefault();
         }
         return event;
