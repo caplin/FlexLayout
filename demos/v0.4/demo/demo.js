@@ -29324,7 +29324,7 @@ var DragDrop = /** @class */ (function () {
         this._document.addEventListener("mousemove", this._onMouseMove);
         this._document.addEventListener("touchend", this._onMouseUp);
         this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
-        this._document.body.addEventListener("touchmove", this._preventDefault, { passive: false });
+        this._document.body.addEventListener("touchmove", this._preventDefault2, { passive: false });
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
@@ -29344,7 +29344,7 @@ var DragDrop = /** @class */ (function () {
             this._document.removeEventListener("mouseup", this._onMouseUp);
             this._document.removeEventListener("touchend", this._onMouseUp);
             this._document.removeEventListener("touchmove", this._onMouseMove);
-            this._document.body.removeEventListener("touchmove", this._preventDefault);
+            this._document.body.removeEventListener("touchmove", this._preventDefault2);
             this.hideGlass();
             this._fDragCancel(this._dragging);
             this._dragging = false;
@@ -29379,6 +29379,9 @@ var DragDrop = /** @class */ (function () {
         }
         return event;
     };
+    DragDrop.prototype._preventDefault2 = function (event) {
+        event.preventDefault();
+    };
     /** @hidden @internal */
     DragDrop.prototype._onMouseMove = function (event) {
         var posEvent = this._getLocationEvent(event);
@@ -29407,7 +29410,7 @@ var DragDrop = /** @class */ (function () {
         this._document.removeEventListener("mouseup", this._onMouseUp);
         this._document.removeEventListener("touchend", this._onMouseUp);
         this._document.removeEventListener("touchmove", this._onMouseMove);
-        this._document.body.removeEventListener("touchmove", this._preventDefault);
+        this._document.body.removeEventListener("touchmove", this._preventDefault2);
         if (!this._manualGlassManagement) {
             this.hideGlass();
         }
