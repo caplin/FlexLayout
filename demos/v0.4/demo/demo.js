@@ -142,6 +142,7 @@ var App = /** @class */ (function (_super) {
         };
         _this.onAddDragMouseDown = function (event) {
             event.stopPropagation();
+            event.preventDefault();
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
                     component: "grid",

@@ -13,7 +13,8 @@ html,body
     top:10px;
     right:10px;
     bottom:10px;
-    position:absolute;
+    position: fixed; /* to prevent scrolling on ios */
+    /* position:absolute; */
     display:flex;
     display:-webkit-flex;
     overflow:hidden;
@@ -42,6 +43,7 @@ html,body
 {
     margin:2px;
     display: flex;
+    align-items:center;
 }
 
 .contents
