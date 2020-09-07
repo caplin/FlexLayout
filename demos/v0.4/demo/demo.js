@@ -258,8 +258,18 @@ var App = /** @class */ (function (_super) {
         };
         return _this;
     }
+    App.prototype.preventDefault = function (e) {
+        e.preventDefault();
+    };
+    App.prototype.disableScroll = function () {
+        document.body.addEventListener('touchmove', this.preventDefault, { passive: false });
+    };
+    App.prototype.enableScroll = function () {
+        document.body.removeEventListener('touchmove', this.preventDefault);
+    };
     App.prototype.componentDidMount = function () {
         this.loadLayout("default", false);
+        this.disableScroll(); // disable scrolling in ios
     };
     App.prototype.save = function () {
         var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
@@ -29320,9 +29330,9 @@ var DragDrop = /** @class */ (function () {
         this._fDragCancel = fDragCancel;
         this._fClick = fClick;
         this._fDblClick = fDblClick;
-        this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
-        this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
-        this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
+        this._document.addEventListener("mouseup", this._onMouseUp);
+        this._document.addEventListener("mousemove", this._onMouseMove);
+        this._document.addEventListener("touchend", this._onMouseUp);
         this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
     };
     DragDrop.prototype.isDragging = function () {
@@ -29341,6 +29351,8 @@ var DragDrop = /** @class */ (function () {
         if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
             this._document.removeEventListener("mousemove", this._onMouseMove);
             this._document.removeEventListener("mouseup", this._onMouseUp);
+            this._document.removeEventListener("touchend", this._onMouseUp);
+            this._document.removeEventListener("touchmove", this._onMouseMove);
             this.hideGlass();
             this._fDragCancel(this._dragging);
             this._dragging = false;
