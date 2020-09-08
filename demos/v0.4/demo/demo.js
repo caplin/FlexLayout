@@ -29417,6 +29417,10 @@ var DragDrop = /** @class */ (function () {
         var posEvent = this._getLocationEvent(event);
         this._stopPropagation(event);
         this._preventDefault(event);
+        // prevent both mouse and touch events for same action (ios specific)
+        if (this._isDuplicateEvent(event)) {
+            return;
+        }
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
             this._dragging = true;
             if (this._fDragStart) {
@@ -29436,6 +29440,10 @@ var DragDrop = /** @class */ (function () {
         var posEvent = this._getLocationEventEnd(event);
         this._stopPropagation(event);
         this._preventDefault(event);
+        // prevent both mouse and touch events for same action (ios specific)
+        if (this._isDuplicateEvent(event)) {
+            return;
+        }
         this._active = false;
         this._document.removeEventListener("mousemove", this._onMouseMove);
         this._document.removeEventListener("mouseup", this._onMouseUp);
