@@ -258,8 +258,14 @@ var App = /** @class */ (function (_super) {
         };
         return _this;
     }
+    App.prototype.preventIOSScrollingWhenDragging = function (e) {
+        if (FlexLayout.DragDrop.instance.isActive()) {
+            e.preventDefault();
+        }
+    };
     App.prototype.componentDidMount = function () {
         this.loadLayout("default", false);
+        document.body.addEventListener('touchmove', this.preventIOSScrollingWhenDragging, { passive: false });
     };
     App.prototype.save = function () {
         var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
@@ -29246,6 +29252,8 @@ var DragDrop = /** @class */ (function () {
         this._glassShowing = false;
         /** @hidden @internal */
         this._dragging = false;
+        /** @hidden @internal */
+        this._active = false;
         if (canUseDOM) { // check for serverside rendering
             this._glass = document.createElement("div");
             this._glass.style.zIndex = "998";
@@ -29320,14 +29328,17 @@ var DragDrop = /** @class */ (function () {
         this._fDragCancel = fDragCancel;
         this._fClick = fClick;
         this._fDblClick = fDblClick;
+        this._active = true;
         this._document.addEventListener("mouseup", this._onMouseUp);
         this._document.addEventListener("mousemove", this._onMouseMove);
         this._document.addEventListener("touchend", this._onMouseUp);
         this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
-        this._document.body.addEventListener("touchmove", this._preventDefault2, { passive: false });
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
+    };
+    DragDrop.prototype.isActive = function () {
+        return this._active;
     };
     DragDrop.prototype.toString = function () {
         var rtn = "(DragDrop: " +
@@ -29344,7 +29355,6 @@ var DragDrop = /** @class */ (function () {
             this._document.removeEventListener("mouseup", this._onMouseUp);
             this._document.removeEventListener("touchend", this._onMouseUp);
             this._document.removeEventListener("touchmove", this._onMouseMove);
-            this._document.body.removeEventListener("touchmove", this._preventDefault2);
             this.hideGlass();
             this._fDragCancel(this._dragging);
             this._dragging = false;
@@ -29374,13 +29384,10 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._preventDefault = function (event) {
-        if (event.preventDefault) {
+        if (event.preventDefault && event.cancelable) {
             event.preventDefault();
         }
         return event;
-    };
-    DragDrop.prototype._preventDefault2 = function (event) {
-        event.preventDefault();
     };
     /** @hidden @internal */
     DragDrop.prototype._onMouseMove = function (event) {
@@ -29406,11 +29413,11 @@ var DragDrop = /** @class */ (function () {
         var posEvent = this._getLocationEventEnd(event);
         this._stopPropagation(event);
         this._preventDefault(event);
+        this._active = false;
         this._document.removeEventListener("mousemove", this._onMouseMove);
         this._document.removeEventListener("mouseup", this._onMouseUp);
         this._document.removeEventListener("touchend", this._onMouseUp);
         this._document.removeEventListener("touchmove", this._onMouseMove);
-        this._document.body.removeEventListener("touchmove", this._preventDefault2);
         if (!this._manualGlassManagement) {
             this.hideGlass();
         }
