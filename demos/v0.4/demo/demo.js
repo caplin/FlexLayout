@@ -29296,12 +29296,13 @@ var DragDrop = /** @class */ (function () {
         }
     };
     DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument) {
-        // prevent both mouse and touch events for same action (ios specific)
-        if (event && this._isDuplicateEvent(event)) {
-            this._preventDefault(event);
-            this._stopPropagation(event);
+        // prevent 'duplicate' mouse event if touch event has been processed within 500ms (fix for ios)
+        if (event && this._lastEvent &&
+            event.type.substr(0, 5) !== this._lastEvent.type.substr(0, 5) &&
+            (event.timeStamp - this._lastEvent.timeStamp) < 500) {
             return;
         }
+        this._lastEvent = event;
         if (currentDocument) {
             this._document = currentDocument;
         }
@@ -29339,22 +29340,6 @@ var DragDrop = /** @class */ (function () {
         this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
         this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
         this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
-    };
-    // only allow either all touch or all mouse events in 1 second window
-    DragDrop.prototype._isDuplicateEvent = function (event) {
-        if (event instanceof TouchEvent || event instanceof MouseEvent) {
-            if (this._previousEvent) {
-                var prevType = this._previousEvent instanceof TouchEvent ? "touch" : "mouse";
-                var currentType = event instanceof TouchEvent ? "touch" : "mouse";
-                if (event.timeStamp - this._previousEvent.timeStamp < 1000) {
-                    if (prevType !== currentType) {
-                        return true;
-                    }
-                }
-            }
-            this._previousEvent = event;
-        }
-        return false;
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
@@ -29414,13 +29399,10 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._onMouseMove = function (event) {
+        this._lastEvent = event;
         var posEvent = this._getLocationEvent(event);
         this._stopPropagation(event);
         this._preventDefault(event);
-        // prevent both mouse and touch events for same action (ios specific)
-        if (this._isDuplicateEvent(event)) {
-            return;
-        }
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
             this._dragging = true;
             if (this._fDragStart) {
@@ -29437,13 +29419,10 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._onMouseUp = function (event) {
+        this._lastEvent = event;
         var posEvent = this._getLocationEventEnd(event);
         this._stopPropagation(event);
         this._preventDefault(event);
-        // prevent both mouse and touch events for same action (ios specific)
-        if (this._isDuplicateEvent(event)) {
-            return;
-        }
         this._active = false;
         this._document.removeEventListener("mousemove", this._onMouseMove);
         this._document.removeEventListener("mouseup", this._onMouseUp);
