@@ -29253,14 +29253,12 @@ var DragDrop = /** @class */ (function () {
         /** @hidden @internal */
         this._dragging = false;
         /** @hidden @internal */
-        this._active = false;
+        this._active = false; // drag and drop is in progress, can be used on ios to prevent body scrolling (see demo)
         if (canUseDOM) { // check for serverside rendering
             this._glass = document.createElement("div");
             this._glass.style.zIndex = "998";
             this._glass.style.position = "absolute";
-            this._glass.style.backgroundColor = "white";
-            this._glass.style.opacity = ".00"; // may need to be .01 for IE???
-            this._glass.style.filter = "alpha(opacity=01)";
+            this._glass.style.backgroundColor = "transparent";
         }
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -29298,6 +29296,12 @@ var DragDrop = /** @class */ (function () {
         }
     };
     DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument) {
+        // prevent both mouse and touch events for same action (ios specific)
+        if (event && this._isDuplicateEvent(event)) {
+            this._preventDefault(event);
+            this._stopPropagation(event);
+            return;
+        }
         if (currentDocument) {
             this._document = currentDocument;
         }
@@ -29312,7 +29316,9 @@ var DragDrop = /** @class */ (function () {
         if (event) {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
-            this._glass.style.cursor = getComputedStyle(event.target).cursor;
+            if (!window.matchMedia || window.matchMedia("(pointer: fine)").matches) {
+                this._glass.style.cursor = getComputedStyle(event.target).cursor;
+            }
             this._stopPropagation(event);
             this._preventDefault(event);
         }
@@ -29329,10 +29335,26 @@ var DragDrop = /** @class */ (function () {
         this._fClick = fClick;
         this._fDblClick = fDblClick;
         this._active = true;
-        this._document.addEventListener("mouseup", this._onMouseUp);
-        this._document.addEventListener("mousemove", this._onMouseMove);
-        this._document.addEventListener("touchend", this._onMouseUp);
+        this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
+        this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
+        this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
         this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
+    };
+    // only allow either all touch or all mouse events in 1 second window
+    DragDrop.prototype._isDuplicateEvent = function (event) {
+        if (event instanceof TouchEvent || event instanceof MouseEvent) {
+            if (this._previousEvent) {
+                var prevType = this._previousEvent instanceof TouchEvent ? "touch" : "mouse";
+                var currentType = event instanceof TouchEvent ? "touch" : "mouse";
+                if (event.timeStamp - this._previousEvent.timeStamp < 1000) {
+                    if (prevType !== currentType) {
+                        return true;
+                    }
+                }
+            }
+            this._previousEvent = event;
+        }
+        return false;
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
@@ -29358,6 +29380,7 @@ var DragDrop = /** @class */ (function () {
             this.hideGlass();
             this._fDragCancel(this._dragging);
             this._dragging = false;
+            this._active = false;
         }
     };
     /** @hidden @internal */
