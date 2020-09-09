@@ -290,7 +290,9 @@ var App = /** @class */ (function (_super) {
     };
     App.prototype.render = function () {
         var onRenderTab = function (node, renderValues) {
-            //renderValues.content += " *";
+            // renderValues.content += " *";
+            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+            // renderValues.buttons.push(<img src="images/grey_ball.png"/>);
         };
         var onRenderTabSet = function (node, renderValues) {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
@@ -29296,9 +29298,10 @@ var DragDrop = /** @class */ (function () {
         }
     };
     DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument) {
-        // prevent 'duplicate' mouse event if touch event has been processed within 500ms (fix for ios)
+        // prevent 'duplicate' action (mouse event for same action as previous touch event (a fix for ios))
         if (event && this._lastEvent &&
-            event.type.substr(0, 5) !== this._lastEvent.type.substr(0, 5) &&
+            this._lastEvent.type.startsWith("touch") &&
+            event.type.startsWith("mouse") &&
             (event.timeStamp - this._lastEvent.timeStamp) < 500) {
             return;
         }
@@ -29620,7 +29623,7 @@ var PopupMenu = function (props) {
         onHide();
         event.stopPropagation();
     };
-    var itemElements = items.map(function (item) { return React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); } }, item.name); });
+    var itemElements = items.map(function (item) { return React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); } }, item.node._getRenderedName()); });
     return React.createElement("div", { className: classNameMapper("flexlayout__popup_menu") }, itemElements);
 };
 
@@ -31817,6 +31820,14 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype._setTabRect = function (rect) {
         this._tabRect = rect;
     };
+    /** @hidden @internal */
+    TabNode.prototype._setRenderedName = function (name) {
+        this._renderedName = name;
+    };
+    /** @hidden @internal */
+    TabNode.prototype._getRenderedName = function () {
+        return this._renderedName;
+    };
     TabNode.prototype.getName = function () {
         return this._getAttr("name");
     };
@@ -32419,10 +32430,12 @@ exports.BorderButton = function (props) {
     if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
         leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
     }
+    var name = node.getName();
     var buttons = [];
     // allow customization of leading contents (icon) and contents
-    var renderState = { leading: leadingContent, content: titleContent, buttons: buttons };
+    var renderState = { leading: leadingContent, content: titleContent, name: name, buttons: buttons };
     layout.customizeTab(node, renderState);
+    node._setRenderedName(renderState.name);
     var content = React.createElement("div", { className: cm("flexlayout__border_button_content") }, renderState.content);
     var leading = React.createElement("div", { className: cm("flexlayout__border_button_leading") }, renderState.leading);
     if (node.isEnableClose()) {
@@ -33588,9 +33601,7 @@ exports.TabButton = function (props) {
     var parentNode = node.getParent();
     var baseClassName = "flexlayout__tab_button";
     var classNames = cm(baseClassName);
-    if (parentNode.getTabLocation() !== "top") {
-        classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
-    }
+    classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
     if (selected) {
         classNames += " " + cm(baseClassName + "--selected");
     }
@@ -33605,10 +33616,12 @@ exports.TabButton = function (props) {
     if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
         leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
     }
+    var name = node.getName();
     var buttons = [];
     // allow customization of leading contents (icon) and contents
-    var renderState = { leading: leadingContent, content: titleContent, buttons: buttons };
+    var renderState = { leading: leadingContent, content: titleContent, name: name, buttons: buttons };
     layout.customizeTab(node, renderState);
+    node._setRenderedName(renderState.name);
     var content = React.createElement("div", { ref: contentRef, className: cm("flexlayout__tab_button_content") }, renderState.content);
     var leading = React.createElement("div", { className: cm("flexlayout__tab_button_leading") }, renderState.leading);
     if (editing) {
@@ -33794,7 +33807,7 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
                     var child = node.getChildren()[i];
                     if ((getNear(child.getTabRect()) + diff) < getNear(nodeRect) ||
                         (getFar(child.getTabRect()) + diff) > endPos) {
-                        hidden.push({ name: child.getName(), node: child, index: i });
+                        hidden.push({ node: child, index: i });
                     }
                 }
                 firstRender.current = false; // need to do a second render
