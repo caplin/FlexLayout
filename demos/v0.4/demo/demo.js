@@ -32399,7 +32399,9 @@ exports.BorderButton = function (props) {
         layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
     var onClose = function (event) {
-        layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+            layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        }
     };
     var onCloseMouseDown = function (event) {
         event.stopPropagation();
@@ -33565,7 +33567,9 @@ exports.TabButton = function (props) {
         }
     };
     var onClose = function (event) {
-        layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+            layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        }
     };
     var onCloseMouseDown = function (event) {
         event.stopPropagation();
