@@ -187,6 +187,12 @@
   min-width: 8px;
   min-height: 8px;
 }
+@media (pointer: coarse) {
+  .flexlayout__tab_button_trailing {
+    min-width: 20px;
+    min-height: 20px;
+  }
+}
 @media (hover: hover) {
   .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
     background: transparent url("../images/close.png") no-repeat center;
@@ -333,6 +339,12 @@
   margin-left: 8px;
   min-width: 8px;
   min-height: 8px;
+}
+@media (pointer: coarse) {
+  .flexlayout__border_button_trailing {
+    min-width: 20px;
+    min-height: 20px;
+  }
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover .flexlayout__border_button_trailing {
