@@ -1,0 +1,93 @@
+{
+	"global": {
+		"tabEnableFloat": true
+	},
+	"layout": {
+		"type": "row",
+		"weight": 100,
+		"children": [{
+			"type": "tabset",
+			"weight": 50,
+			"selected": 0,
+			"children": [{
+				"type": "tab",
+				"name": "Letters",
+				"component": "sub",
+				"config": {
+					"model": {
+						"global": {
+							"tabSetTabLocation":"bottom"
+						},
+						"layout": {
+							"type": "row",
+							"weight": 100,
+							"children": [{
+								"type": "tabset",
+								"weight": 50,
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "AAAA",
+									"component": "grid",
+									"config": {
+										"id": "1"
+									}
+								}]
+							}, {
+								"type": "tabset",
+								"weight": 50,
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "BBBB",
+									"component": "grid",
+									"config": {
+										"id": "2"
+									}
+								}]
+							}]
+						}
+					}
+				}
+			}, {
+				"type": "tab",
+				"name": "Numbers",
+				"component": "sub",
+				"config": {
+					"model": {
+						"global": {"tabSetEnableTabStrip":false},
+						"layout": {
+							"type": "row",
+							"weight": 100,
+							"children": [{
+								"type": "tabset",
+								"weight": 50,
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "1111",
+									"component": "grid",
+									"config": {
+										"id": "1"
+									}
+								}]
+							}, {
+								"type": "tabset",
+								"weight": 50,
+								"selected": 0,
+								"children": [{
+									"type": "tab",
+									"name": "2222",
+									"component": "grid",
+									"config": {
+										"id": "2"
+									}
+								}]
+							}]
+						}
+					}
+				}
+			}]
+		}]
+	}
+}

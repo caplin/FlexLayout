@@ -6,8 +6,8 @@ html,body
     overflow:hidden;
     font-size: medium;
     font-family: Roboto, Arial, sans-serif;
+    background-color:black;
 }
-
 #container  {
     left:10px;
     top:10px;
@@ -17,16 +17,15 @@ html,body
     display:flex;
     display:-webkit-flex;
     overflow:hidden;
-    background-color: white;
+    background-color:black;
 }
-
 ::-webkit-scrollbar { width: 8px; height: 8px;}
-::-webkit-scrollbar-button {  background-color: #ddd; }
-::-webkit-scrollbar-track {  background-color: #efefef;}
-::-webkit-scrollbar-track-piece { background-color: #eee;}
-::-webkit-scrollbar-thumb { height: 50px; background-color: #ccc; border-radius: 3px;}
-::-webkit-scrollbar-corner { background-color: #fff;}
-::-webkit-resizer { background-color: #999;}
+::-webkit-scrollbar-button {  background-color: #222; }
+::-webkit-scrollbar-track {  background-color: #444;}
+::-webkit-scrollbar-track-piece { background-color: #333;}
+::-webkit-scrollbar-thumb { height: 50px; background-color: #666; border-radius: 3px;}
+::-webkit-scrollbar-corner { background-color: #333;}
+::-webkit-resizer { background-color: #666;}
 
 .app
 {
@@ -41,6 +40,8 @@ html,body
 .toolbar
 {
     margin:2px;
+    display: flex;
+    align-items:center;
 }
 
 .contents
@@ -52,19 +53,19 @@ html,body
     right:0;
     bottom:0;
     position:relative;
-    border:1px solid #ddd;
+    border:1px solid gray;
 }
 
 /* simple_bundled table styling*/
 .simple_table {
-    background-color: white;
-    color: #333;
+    background-color: #222;
+    color: gray;
     border-collapse: collapse;
 }
-
 .simple_table th {
-    background-color: #e0e0e0;
-    border-right: 1px solid #ddd;
+    color: #ddd;
+    background-color: #282828;
+    border-right: 1px solid #333;
     padding:4px;
     border-bottom-color: transparent;
     text-align: left;
@@ -73,10 +74,9 @@ html,body
 }
 
 .simple_table td {
-    border-right: 1px solid #ddd;
-    border-bottom-color: transparent;
+    border-right: 1px solid #333;
+    border-bottom: 1px solid #333;
     padding:4px;
 }
-.simple_table tr:nth-child(even) {background: #f0f0f0}
-.simple_table tr:nth-child(odd) {background: white}
-
+.simple_table tr:nth-child(even) {background: #242424}
+.simple_table tr:nth-child(odd) {background: #222}

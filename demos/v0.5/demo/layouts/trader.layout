@@ -1,0 +1,101 @@
+{
+	"global": {
+		"splitterSize": 8,
+		"enableEdgeDock": true,
+		"tabSetEnableMaximize": true,
+		"tabEnableClose": true,
+		"tabSetEnableTabStrip": true,
+		"tabEnableFloat": true
+	},
+	"layout": {
+		"type": "row",
+		"weight": 100,
+		"children": [{
+			"type": "tabset",
+			"name": "Navigation",
+			"enableDrop": false,
+			"enableDrag": false,
+			"enableClose": false,
+			"enableDivide": false,
+			"enableTabStrip":false,
+			"weight": 18.564176939811457,
+			"selected": 0,
+			"children": [{
+				"type": "tab",
+				"enableDrag": false,
+				"name": "Options",
+				"component": "text",
+				"config": {
+					"text": "A named tabset with:<br>enableTabStrip:false<br>enableClose:false<br>enableDivide:false<br><br>Blotter tabset has:<br>name: Blotters,<br>enableDrop: false,<br>enableDrag: false,<br>enableClose: false,<br>enableDivide: false,"
+				}
+			}]
+		}, {
+			"type": "row",
+			"weight": 81.43582306018854,
+			"children": [{
+				"type": "tabset",
+				"weight": 74.36260623229462,
+				"selected": 2,
+				"children": [{
+					"type": "tab",
+					"name": "FI",
+					"component": "grid",
+					"config": {
+						"id": "2"
+					}
+				}, {
+					"type": "tab",
+					"name": "Metals",
+					"component": "grid",
+					"config": {}
+				}, {
+					"type": "tab",
+					"name": "Gold",
+					"component": "grid",
+					"config": {}
+				}]
+			}, {
+				"type": "tabset",
+				"name": "Blotters",
+				"enableDrop": false,
+				"enableDrag": false,
+				"enableClose": false,
+				"enableDivide": false,
+				"enableDeleteWhenEmpty":false,
+				"weight": 25.637393767705383,
+				"selected": 0,
+				"children": [{
+					"type": "tab",
+					"enableDrag": false,
+					"name": "Activity",
+					"icon": "images/grey_ball.png",
+					"component": "grid",
+					"config": {}
+				}, {
+					"type": "tab",
+					"enableDrag": false,
+					"name": "Execution",
+					"icon": "images/grey_ball.png",
+					"component": "grid",
+					"config": {
+						"id": "1"
+					}
+				}, {
+					"type": "tab",
+					"enableDrag": false,
+					"name": "Orders",
+					"icon": "images/grey_ball.png",
+					"component": "grid",
+					"config": {}
+				}, {
+					"type": "tab",
+					"enableDrag": false,
+					"name": "Historic",
+					"icon": "images/grey_ball.png",
+					"component": "grid",
+					"config": {}
+				}]
+			}]
+		}]
+	}
+}

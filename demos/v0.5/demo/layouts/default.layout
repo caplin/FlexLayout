@@ -12,12 +12,12 @@
 				"children": [
 					{
 						"type": "tab",
-						"name": "FX",
+						"name": "One",
 						"component": "grid"
 					},
 					{
 						"type": "tab",
-						"name": "Global",
+						"name": "Two",
 						"component": "grid"
 					}
 				]
@@ -28,7 +28,7 @@
 				"children": [
 					{
 						"type": "tab",
-						"name": "FI",
+						"name": "Three",
 						"component": "grid"
 					}
 				]
@@ -43,13 +43,13 @@
 				{
 					"type": "tab",
 					"enableClose":false,
-					"name": "Activity Blotter",
+					"name": "Output",
 					"component": "grid"
 				},
 				{
 					"type": "tab",
 					"enableClose":false,
-					"name": "Execution Blotter",
+					"name": "Terminal",
 					"component": "grid"
 				}
 			]
