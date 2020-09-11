@@ -32433,7 +32433,7 @@ exports.BorderButton = function (props) {
         }
         if (closeType === ICloseType_1.ICloseType.Visible) {
             // not selected but x should be visible due to hover
-            if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+            if (window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                 return true;
             }
         }
@@ -33618,7 +33618,7 @@ exports.TabButton = function (props) {
         }
         if (closeType === ICloseType_1.ICloseType.Visible) {
             // not selected but x should be visible due to hover
-            if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+            if (window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                 return true;
             }
         }
