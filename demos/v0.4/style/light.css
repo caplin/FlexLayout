@@ -97,8 +97,11 @@
   overflow: hidden;
   display: flex;
 }
+.flexlayout__tabset_tabbar_outer_top {
+  border-bottom: 1px solid #d9d9d9;
+}
 .flexlayout__tabset_tabbar_outer_bottom {
-  border-top: 1px solid #cccccc;
+  border-top: 1px solid #d9d9d9;
 }
 .flexlayout__tabset_tabbar_inner {
   position: relative;

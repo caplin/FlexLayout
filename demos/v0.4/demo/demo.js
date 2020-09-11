@@ -29261,6 +29261,7 @@ var DragDrop = /** @class */ (function () {
             this._glass.style.zIndex = "998";
             this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
+            this._glass.style.outline = "none";
         }
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -30455,6 +30456,27 @@ exports.default = BorderSet;
 
 /***/ }),
 
+/***/ "./src/model/ICloseType.ts":
+/*!*********************************!*\
+  !*** ./src/model/ICloseType.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ICloseType = void 0;
+var ICloseType;
+(function (ICloseType) {
+    ICloseType[ICloseType["Visible"] = 1] = "Visible";
+    ICloseType[ICloseType["Always"] = 2] = "Always";
+    ICloseType[ICloseType["Selected"] = 3] = "Selected"; // close only if selected
+})(ICloseType = exports.ICloseType || (exports.ICloseType = {}));
+
+
+/***/ }),
+
 /***/ "./src/model/Model.ts":
 /*!****************************!*\
   !*** ./src/model/Model.ts ***!
@@ -30516,6 +30538,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("tabCloseType", 1).setType(Attribute_1.default.INT);
         attributeDefinitions.add("tabEnableFloat", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute_1.default.BOOLEAN);
@@ -31802,6 +31825,7 @@ var TabNode = /** @class */ (function (_super) {
         attributeDefinitions.add("config", undefined).setType(Attribute_1.default.JSON);
         attributeDefinitions.add("floating", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.addInherited("closeType", "tabCloseType").setType(Attribute_1.default.INT);
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute_1.default.STRING);
@@ -31860,6 +31884,9 @@ var TabNode = /** @class */ (function (_super) {
     };
     TabNode.prototype.isEnableClose = function () {
         return this._getAttr("enableClose");
+    };
+    TabNode.prototype.getCloseType = function () {
+        return this._getAttr("closeType");
     };
     TabNode.prototype.isEnableFloat = function () {
         var allowFloat = this._getAttr("enableFloat");
@@ -32387,6 +32414,7 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 /** @hidden @internal */
 exports.BorderButton = function (props) {
     var layout = props.layout, node = props.node, selected = props.selected, border = props.border, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
@@ -32398,9 +32426,25 @@ exports.BorderButton = function (props) {
     var onClick = function () {
         layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
+    var isClosable = function () {
+        var closeType = node.getCloseType();
+        if (selected || closeType === ICloseType_1.ICloseType.Always) {
+            return true;
+        }
+        if (closeType === ICloseType_1.ICloseType.Visible) {
+            // not selected but x should be visible due to hover
+            if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+                return true;
+            }
+        }
+        return false;
+    };
     var onClose = function (event) {
-        if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+        if (isClosable()) {
             layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        }
+        else {
+            onClick();
         }
     };
     var onCloseMouseDown = function (event) {
@@ -33532,6 +33576,7 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 /** @hidden @internal */
 exports.TabButton = function (props) {
     var layout = props.layout, node = props.node, show = props.show, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
@@ -33543,7 +33588,7 @@ exports.TabButton = function (props) {
         var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tab, node.getName());
         layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
     };
-    var onClick = function (event) {
+    var onClick = function () {
         layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
     var onDoubleClick = function (event) {
@@ -33566,9 +33611,25 @@ exports.TabButton = function (props) {
             layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
         }
     };
+    var isClosable = function () {
+        var closeType = node.getCloseType();
+        if (selected || closeType === ICloseType_1.ICloseType.Always) {
+            return true;
+        }
+        if (closeType === ICloseType_1.ICloseType.Visible) {
+            // not selected but x should be visible due to hover
+            if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+                return true;
+            }
+        }
+        return false;
+    };
     var onClose = function (event) {
-        if (!window.matchMedia || window.matchMedia("(hover: hover)").matches) {
+        if (isClosable()) {
             layout.doAction(Actions_1.default.deleteTab(node.getId()));
+        }
+        else {
+            onClick();
         }
     };
     var onCloseMouseDown = function (event) {
