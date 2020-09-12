@@ -30513,6 +30513,7 @@ var Model = /** @class */ (function () {
         this._idMap = {};
         this._nextId = 0;
         this._borders = new BorderSet_1.default(this);
+        this._pointerFine = true;
     }
     /**
      * Loads the model from the given json object
@@ -30533,7 +30534,7 @@ var Model = /** @class */ (function () {
     Model._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         // splitter
-        attributeDefinitions.add("splitterSize", 8).setType(Attribute_1.default.INT).setFrom(1);
+        attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.default.INT);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
         // tab
@@ -30619,6 +30620,14 @@ var Model = /** @class */ (function () {
     /** @hidden @internal */
     Model.prototype._getOuterInnerRects = function () {
         return this._borderRects;
+    };
+    /** @hidden @internal */
+    Model.prototype._getPointerFine = function () {
+        return this._pointerFine;
+    };
+    /** @hidden @internal */
+    Model.prototype._setPointerFine = function (pointerFine) {
+        this._pointerFine = pointerFine;
     };
     /**
      * Visits all the nodes in the model and calls the given function for each
@@ -30813,7 +30822,11 @@ var Model = /** @class */ (function () {
         return json;
     };
     Model.prototype.getSplitterSize = function () {
-        return this._attributes.splitterSize;
+        var splitterSize = this._attributes.splitterSize;
+        if (splitterSize === -1) { // use defaults
+            splitterSize = this._pointerFine ? 8 : 16; // larger for mobile
+        }
+        return splitterSize;
     };
     Model.prototype.isEnableEdgeDock = function () {
         return this._attributes.enableEdgeDock;
@@ -32825,14 +32838,14 @@ var FloatingWindowTab_1 = __webpack_require__(/*! ./FloatingWindowTab */ "./src/
 var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
-// Assume any recent browser not IE or original Edge will work
+// Assume any recent desktop browser not IE or original Edge will work
 /** @hidden @internal */
 // @ts-ignore
 var isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
 /** @hidden @internal */
-var isMobile = typeof window !== "undefined" && /iPhone|iPad|Android/i.test(window.navigator.userAgent);
+var isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 /** @hidden @internal */
-var defaultSupportsPopout = !isIEorEdge && !isMobile;
+var defaultSupportsPopout = isDesktop && !isIEorEdge;
 /**
  * A React component that hosts a multi-tabbed layout
  */
@@ -33121,6 +33134,7 @@ var Layout = /** @class */ (function (_super) {
             this.firstRender = false;
             return (React.createElement("div", { ref: this.selfRef, className: this.getClassName("flexlayout__layout") }, this.metricsElements()));
         }
+        this.props.model._setPointerFine(window && window.matchMedia && window.matchMedia("(pointer: fine)").matches);
         // this.start = Date.now();
         var borderComponents = [];
         var tabSetComponents = [];
@@ -33493,6 +33507,11 @@ exports.Splitter = function (props) {
     if (parentNode instanceof BorderNode_1.default) {
         className += " " + cm("flexlayout__splitter_border");
     }
+    else {
+        if (node.getModel().getMaximizedTabset() !== undefined) {
+            style.display = "none";
+        }
+    }
     return React.createElement("div", { style: style, onTouchStart: onMouseDown, onMouseDown: onMouseDown, className: className });
 };
 
@@ -33541,8 +33560,10 @@ exports.Tab = function (props) {
     var style = node._styleWithPosition({
         display: selected ? "block" : "none"
     });
-    if (parentNode.isMaximized()) {
-        style.zIndex = 100;
+    if (parentNode instanceof TabSetNode_1.default) {
+        if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
+            style.display = "none";
+        }
     }
     var child;
     if (renderComponent) {
@@ -33745,13 +33766,9 @@ exports.TabFloating = function (props) {
         layout.doAction(Actions_1.default.unFloatTab(node.getId()));
     };
     var cm = layout.getClassName;
-    var parentNode = node.getParent();
     var style = node._styleWithPosition({
         display: selected ? "flex" : "none"
     });
-    if (parentNode.isMaximized()) {
-        style.zIndex = 100;
-    }
     var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
     var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
     var dockMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Dock_Window);
@@ -33952,8 +33969,22 @@ exports.TabSet = function (props) {
     var onInterceptMouseDown = function (event) {
         event.stopPropagation();
     };
-    var onMaximizeToggle = function () {
+    var canMaximize = function () {
         if (node.isEnableMaximize()) {
+            // always allow maximize toggle if already maximized
+            if (node.getModel().getMaximizedTabset() === node) {
+                return true;
+            }
+            // only one tabset, so disable
+            if (node.getParent() === node.getModel().getRoot() && node.getModel().getRoot().getChildren().length === 1) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    };
+    var onMaximizeToggle = function () {
+        if (canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -33963,7 +33994,7 @@ exports.TabSet = function (props) {
         }
     };
     var onDoubleClick = function (event) {
-        if (node.isEnableMaximize()) {
+        if (canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -33971,8 +34002,8 @@ exports.TabSet = function (props) {
     var cm = layout.getClassName;
     var selectedTabNode = node.getSelectedNode();
     var style = node._styleWithPosition();
-    if (node.isMaximized()) {
-        style.zIndex = 100;
+    if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
+        style.display = "none";
     }
     var tabs = [];
     if (node.isEnableTabStrip()) {
@@ -34000,7 +34031,7 @@ exports.TabSet = function (props) {
         buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
                 cm("flexlayout__tab_toolbar_button-float"), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.popout));
     }
-    if (node.isEnableMaximize()) {
+    if (canMaximize()) {
         var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
         buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm("flexlayout__tab_toolbar_button") + " " +
