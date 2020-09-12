@@ -2,9 +2,9 @@
 
 FlexLayout is a layout manager that arranges React components in multiple tab sets, these can be resized and moved.
 
-![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.20/demo1.png?raw=true "FlexLayout Demo Screenshot")
+![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.5/demo1.png?raw=true "FlexLayout Demo Screenshot")
 
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.4/demo/index.html)
+[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.5/demo/index.html)
 
 Try it now using [JSFiddle](https://jsfiddle.net/9x6hecdw/)
 
