@@ -30824,7 +30824,7 @@ var Model = /** @class */ (function () {
     Model.prototype.getSplitterSize = function () {
         var splitterSize = this._attributes.splitterSize;
         if (splitterSize === -1) { // use defaults
-            splitterSize = this._pointerFine ? 8 : 16; // larger for mobile
+            splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
         }
         return splitterSize;
     };
