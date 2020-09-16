@@ -50,11 +50,10 @@
         "sass": "^1.26.10",
         "source-map-loader": "^1.1.0",
         "typedoc": "^0.19.0",
+        "typescript": "^3",
         "webpack": "^4.44.1",
         "webpack-cli": "^3.3.12",
         "webpack-dev-server": "^3.11.0"
     },
-    "dependencies": {
-        "typescript": "^3"
-    }
+    "dependencies": {}
 }
