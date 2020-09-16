@@ -18,7 +18,12 @@
         "reactjs",
         "react-dom"
     ],
+    "private": true,
+    "workspaces": [
+        "example"
+    ],
     "scripts": {
+        "start:example": "yarn workspace example start",
         "devserver": "webpack-dev-server",
         "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
         "build:commonjs": "tsc -p tsconfig2.json",
@@ -50,10 +55,7 @@
         "sass": "^1.26.10",
         "source-map-loader": "^1.1.0",
         "typedoc": "^0.19.0",
-        "typescript": "^3",
-        "webpack": "^4.44.1",
-        "webpack-cli": "^3.3.12",
-        "webpack-dev-server": "^3.11.0"
+        "typescript": "^3"
     },
     "dependencies": {}
 }
