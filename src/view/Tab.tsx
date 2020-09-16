@@ -41,9 +41,9 @@ export const Tab = (props: ITabProps) => {
 
     const cm = layout.getClassName;
 
-    const parentNode = node.getParent() as (TabSetNode | BorderNode);
+    const parentNode = node.getParent() as TabSetNode | BorderNode;
     const style: JSMap<any> = node._styleWithPosition({
-        display: selected ? "block" : "none"
+        display: selected ? "block" : "none",
     });
 
     if (parentNode instanceof TabSetNode) {
@@ -63,14 +63,11 @@ export const Tab = (props: ITabProps) => {
         className += " " + cm("flexlayout__tab_border_" + parentNode.getLocation().getName());
     }
 
-    return <div className={className}
-        onMouseDown={onMouseDown}
-        onTouchStart={onMouseDown}
-        style={style}>
-        <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
-            <Fragment>
-                {child}
-            </Fragment>
-        </ErrorBoundary>
-    </div>;
+    return (
+        <div className={className} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+            <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
+                <Fragment>{child}</Fragment>
+            </ErrorBoundary>
+        </div>
+    );
 };

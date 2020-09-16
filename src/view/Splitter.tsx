@@ -6,7 +6,7 @@ import Node from "../model/Node";
 import RowNode from "../model/RowNode";
 import SplitterNode from "../model/SplitterNode";
 import Orientation from "../Orientation";
-import {ILayoutCallbacks} from "./Layout";
+import { ILayoutCallbacks } from "./Layout";
 
 /** @hidden @internal */
 export interface ISplitterProps {
@@ -16,22 +16,14 @@ export interface ISplitterProps {
 
 /** @hidden @internal */
 export const Splitter = (props: ISplitterProps) => {
-    const {layout, node} = props;
+    const { layout, node } = props;
 
     const pBounds = React.useRef<number[]>([]);
     const outlineDiv = React.useRef<HTMLDivElement | undefined>(undefined);
-    const parentNode = node.getParent() as (RowNode | BorderNode);
+    const parentNode = node.getParent() as RowNode | BorderNode;
 
     const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        DragDrop.instance.startDrag(event,
-            onDragStart,
-            onDragMove,
-            onDragEnd,
-            onDragCancel,
-            undefined,
-            undefined,
-            layout.getCurrentDocument()
-        );
+        DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument());
         pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
@@ -55,7 +47,7 @@ export const Splitter = (props: ISplitterProps) => {
         const clientRect = layout.getDomRect();
         const pos = {
             x: event.clientX - clientRect.left,
-            y: event.clientY - clientRect.top
+            y: event.clientY - clientRect.top,
         };
 
         if (outlineDiv) {
@@ -105,26 +97,18 @@ export const Splitter = (props: ISplitterProps) => {
     };
 
     const cm = layout.getClassName;
-    const style = node._styleWithPosition(
-        {
-            cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
-        }
-    );
-    let className = 
-        cm("flexlayout__splitter") + " " + 
-        cm("flexlayout__splitter_" + node.getOrientation().getName());
-    
+    const style = node._styleWithPosition({
+        cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize",
+    });
+    let className = cm("flexlayout__splitter") + " " + cm("flexlayout__splitter_" + node.getOrientation().getName());
+
     if (parentNode instanceof BorderNode) {
         className += " " + cm("flexlayout__splitter_border");
     } else {
-        if (node.getModel().getMaximizedTabset() !== undefined ) {
+        if (node.getModel().getMaximizedTabset() !== undefined) {
             style.display = "none";
         }
     }
 
-    return <div
-        style={style}
-        onTouchStart={onMouseDown}
-        onMouseDown={onMouseDown}
-        className={className}/>;
+    return <div style={style} onTouchStart={onMouseDown} onMouseDown={onMouseDown} className={className} />;
 };

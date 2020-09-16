@@ -1,12 +1,12 @@
 $color_text: white !default;
 $color_background: black !default;
 $color_base: black !default;
-$color_1: scale_color($color_base, $lightness:7%) !default;
-$color_2: scale_color($color_base, $lightness:10%) !default;
-$color_3: scale_color($color_base, $lightness:15%) !default;
-$color_4: scale_color($color_base, $lightness:20%) !default;
-$color_5: scale_color($color_base, $lightness:25%) !default;
-$color_6: scale_color($color_base, $lightness:30%) !default;
+$color_1: scale_color($color_base, $lightness: 7%) !default;
+$color_2: scale_color($color_base, $lightness: 10%) !default;
+$color_3: scale_color($color_base, $lightness: 15%) !default;
+$color_4: scale_color($color_base, $lightness: 20%) !default;
+$color_5: scale_color($color_base, $lightness: 25%) !default;
+$color_6: scale_color($color_base, $lightness: 30%) !default;
 $color_drag1: #cfe8ff !default;
 $color_drag2: #b7d1b5 !default;
 

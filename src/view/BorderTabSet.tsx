@@ -37,7 +37,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
 
-    const onOverflowItemSelect = (item: { node: TabNode, index: number }) => {
+    const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
         layout.doAction(Actions.selectTab(item.node.getId()));
         userControlledLeft.current = false;
     };
@@ -58,23 +58,25 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         let isSelected = border.getSelected() === i;
         let child = border.getChildren()[i] as TabNode;
 
-        tabs.push(<BorderButton layout={layout}
-            border={border.getLocation().getName()}
-            node={child}
-            key={child.getId()}
-            selected={isSelected}
-            iconFactory={iconFactory}
-            titleFactory={titleFactory}
-            icons={icons} />);
+        tabs.push(
+            <BorderButton
+                layout={layout}
+                border={border.getLocation().getName()}
+                node={child}
+                key={child.getId()}
+                selected={isSelected}
+                iconFactory={iconFactory}
+                titleFactory={titleFactory}
+                icons={icons}
+            />
+        );
     };
 
     for (let i = 0; i < border.getChildren().length; i++) {
         layoutTab(i);
     }
 
-    let borderClasses =
-        cm("flexlayout__border") + " " +
-        cm("flexlayout__border_" + border.getLocation().getName());
+    let borderClasses = cm("flexlayout__border") + " " + cm("flexlayout__border_" + border.getLocation().getName());
     if (border.getClassName() !== undefined) {
         borderClasses += " " + border.getClassName();
     }
@@ -89,14 +91,20 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
-        buttons.push(<button key="overflowbutton" ref={overflowbuttonRef}
-            className={cm("flexlayout__border_toolbar_button_overflow") + " " + 
-                        cm("flexlayout__border_toolbar_button_overflow_" + border.getLocation().getName())}
-            title={overflowTitle}
-            onClick={onOverflowClick}
-            onMouseDown={onInterceptMouseDown}
-            onTouchStart={onInterceptMouseDown}
-        >{icons?.more}{hiddenTabs.length}</button>);
+        buttons.push(
+            <button
+                key="overflowbutton"
+                ref={overflowbuttonRef}
+                className={cm("flexlayout__border_toolbar_button_overflow") + " " + cm("flexlayout__border_toolbar_button_overflow_" + border.getLocation().getName())}
+                title={overflowTitle}
+                onClick={onOverflowClick}
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+            >
+                {icons?.more}
+                {hiddenTabs.length}
+            </button>
+        );
     }
 
     const selectedIndex = border.getSelected();
@@ -104,61 +112,44 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         const selectedTabNode = border.getChildren()[selectedIndex] as TabNode;
         if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
             const floatTitle = layout.i18nName(I18nLabel.Float_Tab);
-            buttons.push(<button key="float"
-                title={floatTitle}
-                className={
-                    cm("flexlayout__border_toolbar_button") + " " +
-                    cm("flexlayout__border_toolbar_button-float")
-                }
-                onClick={onFloatTab}
-                onMouseDown={onInterceptMouseDown}
-                onTouchStart={onInterceptMouseDown}
-            />);
+            buttons.push(
+                <button
+                    key="float"
+                    title={floatTitle}
+                    className={cm("flexlayout__border_toolbar_button") + " " + cm("flexlayout__border_toolbar_button-float")}
+                    onClick={onFloatTab}
+                    onMouseDown={onInterceptMouseDown}
+                    onTouchStart={onInterceptMouseDown}
+                />
+            );
         }
     }
-    toolbar = <div
-        key="toolbar"
-        ref={toolbarRef}
-        className={
-            cm("flexlayout__border_toolbar") + " " +
-            cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
-        {buttons}
-    </div>;
+    toolbar = (
+        <div key="toolbar" ref={toolbarRef} className={cm("flexlayout__border_toolbar") + " " + cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
+            {buttons}
+        </div>
+    );
 
     style = layout.styleFont(style);
 
     let innerStyle = {};
     const borderHeight = border.getBorderBarSize() - 1;
     if (border.getLocation() === DockLocation.LEFT) {
-        innerStyle = { right: borderHeight, height: borderHeight, top: position }
+        innerStyle = { right: borderHeight, height: borderHeight, top: position };
     } else if (border.getLocation() === DockLocation.RIGHT) {
-        innerStyle = { left: borderHeight, height: borderHeight, top: position }
+        innerStyle = { left: borderHeight, height: borderHeight, top: position };
     } else {
-        innerStyle = { height: borderHeight, left: position }
+        innerStyle = { height: borderHeight, left: position };
     }
 
-    return <div
-        ref={selfRef}
-        style={style}
-        className={borderClasses}
-        onWheel={onMouseWheel}>
-
-        <div
-            style={{ height: borderHeight }}
-            className={
-                cm("flexlayout__border_inner") + " " +
-                cm("flexlayout__border_inner_" + border.getLocation().getName())}
-        >
-            <div
-                style={innerStyle}
-                className={
-                    cm("flexlayout__border_inner_tab_container") + " " +
-                    cm("flexlayout__border_inner_tab_container_" + border.getLocation().getName())}
-            >
-                {tabs}
+    return (
+        <div ref={selfRef} style={style} className={borderClasses} onWheel={onMouseWheel}>
+            <div style={{ height: borderHeight }} className={cm("flexlayout__border_inner") + " " + cm("flexlayout__border_inner_" + border.getLocation().getName())}>
+                <div style={innerStyle} className={cm("flexlayout__border_inner_tab_container") + " " + cm("flexlayout__border_inner_tab_container_" + border.getLocation().getName())}>
+                    {tabs}
+                </div>
             </div>
+            {toolbar}
         </div>
-        {toolbar}
-    </div>;
+    );
 };
-

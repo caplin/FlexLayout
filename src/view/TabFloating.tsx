@@ -2,9 +2,9 @@ import * as React from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import {JSMap} from "../Types";
-import {ILayoutCallbacks} from "./Layout";
-import {I18nLabel} from "../I18nLabel";
+import { JSMap } from "../Types";
+import { ILayoutCallbacks } from "./Layout";
+import { I18nLabel } from "../I18nLabel";
 
 /** @hidden @internal */
 export interface ITabFloatingProps {
@@ -15,7 +15,7 @@ export interface ITabFloatingProps {
 
 /** @hidden @internal */
 export const TabFloating = (props: ITabFloatingProps) => {
-    const {layout, selected, node} = props;
+    const { layout, selected, node } = props;
 
     const onMouseDown = () => {
         const parent = node.getParent() as TabSetNode;
@@ -41,7 +41,7 @@ export const TabFloating = (props: ITabFloatingProps) => {
     const cm = layout.getClassName;
 
     const style: JSMap<any> = node._styleWithPosition({
-        display: selected ? "flex" : "none"
+        display: selected ? "flex" : "none",
     });
 
     const message = layout.i18nName(I18nLabel.Floating_Window_Message);
@@ -49,15 +49,20 @@ export const TabFloating = (props: ITabFloatingProps) => {
     const dockMessage = layout.i18nName(I18nLabel.Floating_Window_Dock_Window);
 
     return (
-        <div className={cm("flexlayout__tab_floating")}
-             onMouseDown={onMouseDown}
-             onTouchStart={onMouseDown}
-             style={style}>
+        <div className={cm("flexlayout__tab_floating")} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
             <div className={cm("flexlayout__tab_floating_inner")}>
                 <div>{message}</div>
-                <div><a href="#" onClick={onClickFocus}>{showMessage}</a></div>
-                <div><a href="#" onClick={onClickDock}>{dockMessage}</a></div>
+                <div>
+                    <a href="#" onClick={onClickFocus}>
+                        {showMessage}
+                    </a>
+                </div>
+                <div>
+                    <a href="#" onClick={onClickDock}>
+                        {dockMessage}
+                    </a>
+                </div>
             </div>
-        </div>);
+        </div>
+    );
 };
-

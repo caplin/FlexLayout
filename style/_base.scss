@@ -1,551 +1,551 @@
 @mixin absoluteFill {
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
 }
 
 .flexlayout {
-  &__layout {
-    @include absoluteFill;
-    overflow: hidden;
-  }
-
-  &__splitter {
-    background-color: $color_2;
-
-    @media (hover: hover) {
-      &:hover {
-        background-color: $color_4;
-      }
-    }
-    &_border {
-      z-index: 10;
-    }
-
-    &_drag {
-      border-radius: 5px;
-      background-color: $color_5;
-      z-index: 1000;
-    }
-  }
-
-  &__outline_rect {
-    position: absolute;
-    cursor: move;
-    box-sizing: border-box;
-    border: 2px solid $color_drag1;
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
-    z-index: 1000;
-
-    &_edge {
-      cursor: move;
-      border: 2px solid $color_drag2;
-      box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
-      z-index: 1000;
-      box-sizing: border-box;
-    }
-  }
-
-  &__edge_rect {
-    position: absolute;
-    z-index: 1000;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-    background-color: gray;
-  }
-
-  &__drag_rect {
-    position: absolute;
-    cursor: move;
-    color: $color_text;
-    background-color: $color_1;
-    border: 2px solid $color_4;
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    z-index: 1000;
-    box-sizing: border-box;
-    opacity: 0.9;
-    text-align: center;
-
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 10px;
-    word-wrap: break-word;
-    font-size: $font-size;
-    font-family: $font-family;
-  }
-
-  &__tabset {
-    overflow: hidden;
-    background-color: $color_1;
-    box-sizing: border-box;
-    font-size: $font-size;
-    font-family: $font-family;
-
-    &_header {
-      // tabset header bar
-      position: absolute;
-      display: flex;
-      align-items: center;
-      left: 0;
-      right: 0;
-      background-color: $color_1;
-      color: $color_text;
-      padding: 3px 3px 3px 5px;
-      box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
-      box-sizing: border-box;
-
-      &_content {
-        flex-grow: 1;
-      }
-    }
-
-    &_tabbar {
-      &_outer {
-        // tabset tabbar outer
-        box-sizing: border-box;
-        background-color: $color_1;
-        position: absolute;
-        left: 0;
-        right: 0;
+    &__layout {
+        @include absoluteFill;
         overflow: hidden;
-        display: flex;
-      }
+    }
 
-      &_outer_top {
-        border-bottom: 1px solid $color_3;
-      }
+    &__splitter {
+        background-color: $color_2;
 
-      &_outer_bottom {
-        border-top: 1px solid $color_3;
-      }
-
-      &_inner {
-        // tabset tabbar inner
-        position: relative;
-        box-sizing: border-box;
-        display: flex;
-        flex-grow: 1;
-        overflow: hidden;
-
-        &_tab_container {
-          display: flex;
-          box-sizing: border-box;
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          width: 10000px;
-
-          &_top {
-            border-top: 2px solid transparent; // if you change this, update the _sizer above
-          }
-          &_bottom {
-            border-bottom: 2px solid transparent;
-          }
+        @media (hover: hover) {
+            &:hover {
+                background-color: $color_4;
+            }
         }
-      }
+        &_border {
+            z-index: 10;
+        }
+
+        &_drag {
+            border-radius: 5px;
+            background-color: $color_5;
+            z-index: 1000;
+        }
     }
 
-    &-selected {
-      background-image: linear-gradient($color_background, $color_4);
+    &__outline_rect {
+        position: absolute;
+        cursor: move;
+        box-sizing: border-box;
+        border: 2px solid $color_drag1;
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        z-index: 1000;
+
+        &_edge {
+            cursor: move;
+            border: 2px solid $color_drag2;
+            box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            z-index: 1000;
+            box-sizing: border-box;
+        }
     }
 
-    &-maximized {
-      background-image: linear-gradient($color_6, $color_2);
+    &__edge_rect {
+        position: absolute;
+        z-index: 1000;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        background-color: gray;
     }
-  }
 
-  &__tab {
-    overflow: auto;
-    position: absolute;
-    box-sizing: border-box;
-    color: $color_text;
-    background-color: $color_background;
-
-    &_button {
-      display: inline-flex;
-      align-items: center;
-      box-sizing: border-box;
-      padding: 3px 8px; // if you change top or bottom update the tabset_sizer above
-      margin: 0px 2px;
-      cursor: pointer;
-      box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
-
-      &--selected {
-        background-color: $color_3;
+    &__drag_rect {
+        position: absolute;
+        cursor: move;
         color: $color_text;
-      }
-      @media (hover: hover) {
-        &:hover {
-          background-color: $color_3;
-          color: $color_text;
-        }
-      }
-
-      &--unselected {
-        color: gray;
-      }
-
-      &_top {
-        border-top-left-radius: 3px;
-        border-top-right-radius: 3px;
-      }
-
-      &_bottom {
-        border-bottom-left-radius: 3px;
-        border-bottom-right-radius: 3px;
-      }
-
-      &_leading {
-        display: inline-block;
-      }
-
-      &_content {
-        display: inline-block;
-      }
-
-      &_textbox {
-        border: none;
-        color: green;
-        background-color: $color_3;
-      }
-
-      &_textbox:focus {
-        outline: none;
-      }
-
-      &_trailing {
-        display: inline-block;
-        margin-left: 8px;
-        min-width: 8px;
-        min-height: 8px;
-      }
-      @media (pointer: coarse) {
-        &_trailing {
-          min-width: 20px;
-          min-height: 20px;
-        }
-      }
-      @media (hover: hover) {
-        &:hover &_trailing {
-          background: transparent url("../images/close.png") no-repeat center;
-        }
-      }
-
-      &--selected &_trailing {
-        background: transparent url("../images/close.png") no-repeat center;
-      }
-
-      &_overflow {
-        margin-left: 10px;
-        padding-left: 12px;
-        border: none;
-        color: gray;
-        font-size: inherit;
-        background: transparent url("../images/more2.png") no-repeat left;
-      }
-    }
-
-    &_toolbar {
-      display: flex;
-      align-items: center;
-
-      &_button {
-        min-width: 20px;
-        min-height: 20px;
-        border: none;
-        outline: none;
-
-        &-min {
-          background: transparent url("../images/maximize.png") no-repeat center;
-        }
-
-        &-max {
-          background: transparent url("../images/restore.png") no-repeat center;
-        }
-
-        &-float {
-          background: transparent url("../images/popout.png") no-repeat center;
-        }
-      }
-    }
-
-    &_floating {
-      overflow: auto;
-      position: absolute;
-      box-sizing: border-box;
-      color: $color_text;
-      background-color: $color_background;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      &_inner {
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      &_inner div {
-        margin-bottom: 5px;
-        text-align: center;
-      }
-
-      &_inner div a {
-        color: royalblue;
-      }
-    }
-  }
-
-  &__border {
-    background-color: $color_2;
-    box-sizing: border-box;
-    overflow: hidden;
-    display: flex;
-    font-size: $font-size;
-    font-family: $font-family;
-
-    &_top {
-      border-bottom: 1px solid $color_3;
-      align-items: center;
-    }
-
-    &_bottom {
-      border-top: 1px solid $color_3;
-      align-items: center;
-    }
-
-    &_left {
-      border-right: 1px solid $color_3;
-      align-content: center;
-      flex-direction: column;
-    }
-
-    &_right {
-      border-left: 1px solid $color_3;
-      align-content: center;
-      flex-direction: column;
-    }
-
-    &_inner {
-      position: relative;
-      box-sizing: border-box;
-      display: flex;
-      overflow: hidden;
-      flex-grow: 1;
-
-      &_tab_container {
-        white-space: nowrap;
-        display: flex;
+        background-color: $color_1;
+        border: 2px solid $color_4;
+        box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
+        border-radius: 5px;
+        z-index: 1000;
         box-sizing: border-box;
+        opacity: 0.9;
+        text-align: center;
+
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 10px;
+        word-wrap: break-word;
+        font-size: $font-size;
+        font-family: $font-family;
+    }
+
+    &__tabset {
+        overflow: hidden;
+        background-color: $color_1;
+        box-sizing: border-box;
+        font-size: $font-size;
+        font-family: $font-family;
+
+        &_header {
+            // tabset header bar
+            position: absolute;
+            display: flex;
+            align-items: center;
+            left: 0;
+            right: 0;
+            background-color: $color_1;
+            color: $color_text;
+            padding: 3px 3px 3px 5px;
+            box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+            box-sizing: border-box;
+
+            &_content {
+                flex-grow: 1;
+            }
+        }
+
+        &_tabbar {
+            &_outer {
+                // tabset tabbar outer
+                box-sizing: border-box;
+                background-color: $color_1;
+                position: absolute;
+                left: 0;
+                right: 0;
+                overflow: hidden;
+                display: flex;
+            }
+
+            &_outer_top {
+                border-bottom: 1px solid $color_3;
+            }
+
+            &_outer_bottom {
+                border-top: 1px solid $color_3;
+            }
+
+            &_inner {
+                // tabset tabbar inner
+                position: relative;
+                box-sizing: border-box;
+                display: flex;
+                flex-grow: 1;
+                overflow: hidden;
+
+                &_tab_container {
+                    display: flex;
+                    box-sizing: border-box;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    width: 10000px;
+
+                    &_top {
+                        border-top: 2px solid transparent; // if you change this, update the _sizer above
+                    }
+                    &_bottom {
+                        border-bottom: 2px solid transparent;
+                    }
+                }
+            }
+        }
+
+        &-selected {
+            background-image: linear-gradient($color_background, $color_4);
+        }
+
+        &-maximized {
+            background-image: linear-gradient($color_6, $color_2);
+        }
+    }
+
+    &__tab {
+        overflow: auto;
         position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 10000px;
+        box-sizing: border-box;
+        color: $color_text;
+        background-color: $color_background;
+
+        &_button {
+            display: inline-flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 3px 8px; // if you change top or bottom update the tabset_sizer above
+            margin: 0px 2px;
+            cursor: pointer;
+            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+
+            &--selected {
+                background-color: $color_3;
+                color: $color_text;
+            }
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $color_3;
+                    color: $color_text;
+                }
+            }
+
+            &--unselected {
+                color: gray;
+            }
+
+            &_top {
+                border-top-left-radius: 3px;
+                border-top-right-radius: 3px;
+            }
+
+            &_bottom {
+                border-bottom-left-radius: 3px;
+                border-bottom-right-radius: 3px;
+            }
+
+            &_leading {
+                display: inline-block;
+            }
+
+            &_content {
+                display: inline-block;
+            }
+
+            &_textbox {
+                border: none;
+                color: green;
+                background-color: $color_3;
+            }
+
+            &_textbox:focus {
+                outline: none;
+            }
+
+            &_trailing {
+                display: inline-block;
+                margin-left: 8px;
+                min-width: 8px;
+                min-height: 8px;
+            }
+            @media (pointer: coarse) {
+                &_trailing {
+                    min-width: 20px;
+                    min-height: 20px;
+                }
+            }
+            @media (hover: hover) {
+                &:hover &_trailing {
+                    background: transparent url("../images/close.png") no-repeat center;
+                }
+            }
+
+            &--selected &_trailing {
+                background: transparent url("../images/close.png") no-repeat center;
+            }
+
+            &_overflow {
+                margin-left: 10px;
+                padding-left: 12px;
+                border: none;
+                color: gray;
+                font-size: inherit;
+                background: transparent url("../images/more2.png") no-repeat left;
+            }
+        }
+
+        &_toolbar {
+            display: flex;
+            align-items: center;
+
+            &_button {
+                min-width: 20px;
+                min-height: 20px;
+                border: none;
+                outline: none;
+
+                &-min {
+                    background: transparent url("../images/maximize.png") no-repeat center;
+                }
+
+                &-max {
+                    background: transparent url("../images/restore.png") no-repeat center;
+                }
+
+                &-float {
+                    background: transparent url("../images/popout.png") no-repeat center;
+                }
+            }
+        }
+
+        &_floating {
+            overflow: auto;
+            position: absolute;
+            box-sizing: border-box;
+            color: $color_text;
+            background-color: $color_background;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            &_inner {
+                overflow: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            &_inner div {
+                margin-bottom: 5px;
+                text-align: center;
+            }
+
+            &_inner div a {
+                color: royalblue;
+            }
+        }
+    }
+
+    &__border {
+        background-color: $color_2;
+        box-sizing: border-box;
+        overflow: hidden;
+        display: flex;
+        font-size: $font-size;
+        font-family: $font-family;
+
+        &_top {
+            border-bottom: 1px solid $color_3;
+            align-items: center;
+        }
+
+        &_bottom {
+            border-top: 1px solid $color_3;
+            align-items: center;
+        }
+
+        &_left {
+            border-right: 1px solid $color_3;
+            align-content: center;
+            flex-direction: column;
+        }
 
         &_right {
-          transform-origin: top left;
-          transform: rotate(90deg);
-        }
-        &_left {
-          flex-direction: row-reverse;
-          transform-origin: top right;
-          transform: rotate(-90deg);
-        }
-      }
-    }
-
-    &_button {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-      padding: 3px 8px;
-      margin: 2px;
-      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-      border-radius: 3px;
-      box-sizing: border-box;
-      white-space: nowrap;
-      background-color: $color_3;
-
-      &--selected {
-        background-color: $color_3;
-        color: $color_text;
-      }
-      @media (hover: hover) {
-        &:hover {
-          background-color: $color_3;
-          color: $color_text;
-        }
-      }
-
-      &--unselected {
-        color: gray;
-      }
-
-      &_leading {
-        display: inline;
-      }
-
-      &_content {
-        display: inline-block;
-      }
-
-      &_trailing {
-        display: inline-block;
-        margin-left: 8px;
-        min-width: 8px;
-        min-height: 8px;
-      }
-
-      @media (pointer: coarse) {
-        &_trailing {
-          min-width: 20px;
-          min-height: 20px;
-        }
-      }
-
-      @media (hover: hover) {
-        &:hover &_trailing {
-          background: transparent url("../images/close.png") no-repeat center;
-        }
-      }
-
-      &--selected &_trailing {
-        background: transparent url("../images/close.png") no-repeat center;
-      }
-    }
-
-    &_toolbar {
-      display: flex;
-      align-items: center;
-
-      &_left {
-        flex-direction: column;
-      }
-
-      &_right {
-        flex-direction: column;
-      }
-
-      &_button {
-        min-width: 20px;
-        min-height: 20px;
-        border: none;
-        outline: none;
-
-        &-float {
-          background: transparent url("../images/popout.png") no-repeat center;
+            border-left: 1px solid $color_3;
+            align-content: center;
+            flex-direction: column;
         }
 
-        &_overflow {
-          border: none;
-          padding-left: 12px;
-          color: gray;
-          font-size: inherit;
-          background: transparent url("../images/more2.png") no-repeat left;
+        &_inner {
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            overflow: hidden;
+            flex-grow: 1;
+
+            &_tab_container {
+                white-space: nowrap;
+                display: flex;
+                box-sizing: border-box;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 10000px;
+
+                &_right {
+                    transform-origin: top left;
+                    transform: rotate(90deg);
+                }
+                &_left {
+                    flex-direction: row-reverse;
+                    transform-origin: top right;
+                    transform: rotate(-90deg);
+                }
+            }
         }
 
-        &_overflow_top,
-        &_overflow_bottom {
-          margin-left: 10px;
+        &_button {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 3px 8px;
+            margin: 2px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+            border-radius: 3px;
+            box-sizing: border-box;
+            white-space: nowrap;
+            background-color: $color_3;
+
+            &--selected {
+                background-color: $color_3;
+                color: $color_text;
+            }
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $color_3;
+                    color: $color_text;
+                }
+            }
+
+            &--unselected {
+                color: gray;
+            }
+
+            &_leading {
+                display: inline;
+            }
+
+            &_content {
+                display: inline-block;
+            }
+
+            &_trailing {
+                display: inline-block;
+                margin-left: 8px;
+                min-width: 8px;
+                min-height: 8px;
+            }
+
+            @media (pointer: coarse) {
+                &_trailing {
+                    min-width: 20px;
+                    min-height: 20px;
+                }
+            }
+
+            @media (hover: hover) {
+                &:hover &_trailing {
+                    background: transparent url("../images/close.png") no-repeat center;
+                }
+            }
+
+            &--selected &_trailing {
+                background: transparent url("../images/close.png") no-repeat center;
+            }
         }
 
-        &_overflow_right,
-        &_overflow_left {
-          padding-right: 0px;
-          margin-top: 5px;
+        &_toolbar {
+            display: flex;
+            align-items: center;
+
+            &_left {
+                flex-direction: column;
+            }
+
+            &_right {
+                flex-direction: column;
+            }
+
+            &_button {
+                min-width: 20px;
+                min-height: 20px;
+                border: none;
+                outline: none;
+
+                &-float {
+                    background: transparent url("../images/popout.png") no-repeat center;
+                }
+
+                &_overflow {
+                    border: none;
+                    padding-left: 12px;
+                    color: gray;
+                    font-size: inherit;
+                    background: transparent url("../images/more2.png") no-repeat left;
+                }
+
+                &_overflow_top,
+                &_overflow_bottom {
+                    margin-left: 10px;
+                }
+
+                &_overflow_right,
+                &_overflow_left {
+                    padding-right: 0px;
+                    margin-top: 5px;
+                }
+            }
         }
-      }
-    }
-  }
-
-  &__popup_menu {
-    font-size: $font-size;
-    font-family: $font-family;
-
-    &_item {
-      padding: 2px 10px 2px 10px;
-      white-space: nowrap;
     }
 
-    @media (hover: hover) {
-      &_item:hover {
-        background-color: $color_6;
-      }
+    &__popup_menu {
+        font-size: $font-size;
+        font-family: $font-family;
+
+        &_item {
+            padding: 2px 10px 2px 10px;
+            white-space: nowrap;
+        }
+
+        @media (hover: hover) {
+            &_item:hover {
+                background-color: $color_6;
+            }
+        }
+
+        &_container {
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+            border: 1px solid $color_6;
+            color: $color_text;
+            background: $color_background;
+            border-radius: 3px;
+            position: absolute;
+            z-index: 1000;
+            max-height: 50%;
+            min-width: 100px;
+            overflow: auto;
+        }
     }
 
-    &_container {
-      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-      border: 1px solid $color_6;
-      color: $color_text;
-      background: $color_background;
-      border-radius: 3px;
-      position: absolute;
-      z-index: 1000;
-      max-height: 50%;
-      min-width: 100px;
-      overflow: auto;
-    }
-  }
+    &__floating_window {
+        _body {
+            height: 100%;
+        }
 
-  &__floating_window {
-    _body {
-      height: 100%;
-    }
+        &_content {
+            @include absoluteFill;
+        }
 
-    &_content {
-      @include absoluteFill;
+        &_tab {
+            overflow: auto;
+            @include absoluteFill;
+
+            box-sizing: border-box;
+            background-color: $color_background;
+            color: $color_text;
+        }
     }
 
-    &_tab {
-      overflow: auto;
-      @include absoluteFill;
-
-      box-sizing: border-box;
-      background-color: $color_background;
-      color: $color_text;
+    &__error_boundary_container {
+        @include absoluteFill;
+        display: flex;
+        justify-content: center;
     }
-  }
+    &__error_boundary_content {
+        display: flex;
+        align-items: center;
+    }
 
-  &__error_boundary_container {
-    @include absoluteFill;
-    display: flex;
-    justify-content: center;
-  }
-  &__error_boundary_content {
-    display: flex;
-    align-items: center;
-  }
+    // These classes are used to measure the sizes for tab header bar, tab bar and border bars,
+    // only the height is used, the padding should match the vertical spacing (padding & margins)
+    // that have been used in the above classes
 
-  // These classes are used to measure the sizes for tab header bar, tab bar and border bars,
-  // only the height is used, the padding should match the vertical spacing (padding & margins)
-  // that have been used in the above classes
+    &__tabset_sizer {
+        padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border
+        padding-bottom: 3px; // tab_button has 3 padding bottom
+        font-size: $font-size;
+        font-family: $font-family;
+    }
 
-  &__tabset_sizer {
-    padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border
-    padding-bottom: 3px; // tab_button has 3 padding bottom
-    font-size: $font-size;
-    font-family: $font-family;
-  }
+    &__tabset_header_sizer {
+        padding-top: 3px;
+        padding-bottom: 3px;
+        font-size: $font-size;
+        font-family: $font-family;
+    }
 
-  &__tabset_header_sizer {
-    padding-top: 3px;
-    padding-bottom: 3px;
-    font-size: $font-size;
-    font-family: $font-family;
-  }
-
-  &__border_sizer {
-    padding-top: 6px;
-    padding-bottom: 5px;
-    font-size: $font-size;
-    font-family: $font-family;
-  }
+    &__border_sizer {
+        padding-top: 6px;
+        padding-bottom: 5px;
+        font-size: $font-size;
+        font-family: $font-family;
+    }
 }

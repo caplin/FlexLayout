@@ -1,5 +1,5 @@
 import * as React from "react";
-import {createPortal} from "react-dom";
+import { createPortal } from "react-dom";
 import Rect from "../Rect";
 
 /** @hidden @internal */
@@ -13,12 +13,12 @@ export interface IFloatingWindowProps {
 }
 
 /** @hidden @internal */
-export const FloatingWindow  = (props : React.PropsWithChildren<IFloatingWindowProps>) => {
-    const {title, id, url, rect, onCloseWindow, onSetWindow, children} = props;
+export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowProps>) => {
+    const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
     const popoutWindow = React.useRef<Window | null>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
 
-    React.useLayoutEffect( () => {
+    React.useLayoutEffect(() => {
         const r = rect;
         popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
         if (popoutWindow.current !== null) {
@@ -71,29 +71,32 @@ export const FloatingWindow  = (props : React.PropsWithChildren<IFloatingWindowP
 };
 
 /** @hidden @internal */
-function copyStyles(doc: Document) : Promise<boolean[]> {
+function copyStyles(doc: Document): Promise<boolean[]> {
     const head = doc.head;
-    const promises : Promise<boolean>[] = [];
-    Array.from(window.document.styleSheets).forEach(styleSheet => {
-        if (styleSheet.href) { // prefer links since they will keep paths to images etc
+    const promises: Promise<boolean>[] = [];
+    Array.from(window.document.styleSheets).forEach((styleSheet) => {
+        if (styleSheet.href) {
+            // prefer links since they will keep paths to images etc
             const styleElement = doc.createElement("link");
             styleElement.type = styleSheet.type;
             styleElement.rel = "stylesheet";
             styleElement.href = styleSheet.href!;
             head.appendChild(styleElement);
-            promises.push(new Promise((resolve, reject) => {
-                styleElement.onload = () => resolve(true);
-            }));
-
+            promises.push(
+                new Promise((resolve, reject) => {
+                    styleElement.onload = () => resolve(true);
+                })
+            );
         } else {
             try {
                 const rules = styleSheet.cssRules;
                 const style = doc.createElement("style");
-                Array.from(rules).forEach(cssRule => {
+                Array.from(rules).forEach((cssRule) => {
                     style.appendChild(doc.createTextNode(cssRule.cssText));
                 });
                 head.appendChild(style);
-            } catch (e) { // styleSheet.cssRules can thro security exception
+            } catch (e) {
+                // styleSheet.cssRules can thro security exception
             }
         }
     });
