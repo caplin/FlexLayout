@@ -26,6 +26,7 @@
     "build:umd:min": "webpack --minimize --config webpack_build_min.config.js",
     "test": "jasmine",
     "lint": "tslint -c tslint.json 'src/**/*.ts*' ",
+    "lint:eslint": "eslint src/*",
     "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\" --stripInternal --disableSources --excludePrivate --excludeProtected --readme none ",
     "css": "sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
   },
@@ -36,11 +37,23 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
   "devDependencies": {
     "@types/jasmine": "^3.5.14",
     "@types/react": "16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
     "awesome-typescript-loader": "^5.2.0",
+    "eslint": "^7.9.0",
+    "eslint-config-react-app": "^5.2.1",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.6",
+    "eslint-plugin-react-hooks": "^4.1.2",
     "jasmine": "^3.6.1",
     "prettier": "^2.1.1",
     "sass": "^1.26.10",
