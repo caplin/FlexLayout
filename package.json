@@ -23,7 +23,7 @@
         "example"
     ],
     "scripts": {
-        "start:example": "yarn workspace example start",
+        "start:example": "yarn link & yarn workspace example start",
         "devserver": "webpack-dev-server",
         "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
         "build:commonjs": "tsc -p tsconfig2.json",
