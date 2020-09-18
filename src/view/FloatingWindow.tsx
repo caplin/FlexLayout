@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import Rect from "../Rect";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface IFloatingWindowProps {
@@ -36,7 +37,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
                 const popoutDocument = popoutWindow.current!.document;
                 popoutDocument.title = title;
                 const popoutContent = popoutDocument.createElement("div");
-                popoutContent.className = "flexlayout__floating_window_content";
+                popoutContent.className = CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
                 popoutDocument.body.appendChild(popoutContent);
                 copyStyles(popoutDocument).then(() => {
                     setContent(popoutContent);

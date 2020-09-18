@@ -5,6 +5,7 @@ import TabNode from "../model/TabNode";
 import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -69,12 +70,12 @@ export const BorderButton = (props: IBorderButtonProps) => {
     };
 
     const cm = layout.getClassName;
-    let classNames = cm("flexlayout__border_button") + " " + cm("flexlayout__border_button_" + border);
+    let classNames = cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_ + border);
 
     if (selected) {
-        classNames += " " + cm("flexlayout__border_button--selected");
+        classNames += " " + cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON__SELECTED);
     } else {
-        classNames += " " + cm("flexlayout__border_button--unselected");
+        classNames += " " + cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON__UNSELECTED);
     }
 
     if (node.getClassName() !== undefined) {
@@ -96,13 +97,13 @@ export const BorderButton = (props: IBorderButtonProps) => {
     layout.customizeTab(node, renderState);
     node._setRenderedName(renderState.name);
 
-    const content = <div className={cm("flexlayout__border_button_content")}>{renderState.content}</div>;
-    const leading = <div className={cm("flexlayout__border_button_leading")}>{renderState.leading}</div>;
+    const content = <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>{renderState.content}</div>;
+    const leading = <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>{renderState.leading}</div>;
 
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         buttons.push(
-            <div key="close" title={closeTitle} className={cm("flexlayout__border_button_trailing")} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
+            <div key="close" title={closeTitle} className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
                 {icons?.close}
             </div>
         );

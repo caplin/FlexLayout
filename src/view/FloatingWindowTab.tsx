@@ -4,6 +4,7 @@ import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";
 import { Fragment } from "react";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface IFloatingWindowTabProps {
@@ -19,7 +20,7 @@ export const FloatingWindowTab = (props: IFloatingWindowTabProps) => {
     const child = factory(node);
 
     return (
-        <div className={cm("flexlayout__floating_window_tab")}>
+        <div className={cm(CLASSES.FLEXLAYOUT__FLOATING_WINDOW_TAB)}>
             <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
                 <Fragment>{child}</Fragment>
             </ErrorBoundary>

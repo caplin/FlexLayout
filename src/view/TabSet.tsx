@@ -8,6 +8,7 @@ import { IIcons, ILayoutCallbacks } from "./Layout";
 import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface ITabSetProps {
@@ -132,7 +133,7 @@ export const TabSet = (props: ITabSetProps) => {
             <button
                 key="overflowbutton"
                 ref={overflowbuttonRef}
-                className={cm("flexlayout__tab_button_overflow")}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
                 title={overflowTitle}
                 onClick={onOverflowClick}
                 onMouseDown={onInterceptMouseDown}
@@ -150,7 +151,7 @@ export const TabSet = (props: ITabSetProps) => {
             <button
                 key="float"
                 title={floatTitle}
-                className={cm("flexlayout__tab_toolbar_button") + " " + cm("flexlayout__tab_toolbar_button-float")}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
                 onClick={onFloatTab}
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
@@ -166,7 +167,7 @@ export const TabSet = (props: ITabSetProps) => {
             <button
                 key="max"
                 title={node.isMaximized() ? minTitle : maxTitle}
-                className={cm("flexlayout__tab_toolbar_button") + " " + cm("flexlayout__tab_toolbar_button-" + (node.isMaximized() ? "max" : "min"))}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min"))}
                 onClick={onMaximizeToggle}
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
@@ -177,7 +178,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     toolbar = (
-        <div key="toolbar" ref={toolbarRef} className={cm("flexlayout__tab_toolbar")} onMouseDown={onInterceptMouseDown}>
+        <div key="toolbar" ref={toolbarRef} className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)} onMouseDown={onInterceptMouseDown}>
             {buttons}
         </div>
     );
@@ -186,27 +187,27 @@ export const TabSet = (props: ITabSetProps) => {
     let header;
     let tabStrip;
 
-    let tabStripClasses = cm("flexlayout__tabset_tabbar_outer");
+    let tabStripClasses = cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
     if (node.getClassNameTabStrip() !== undefined) {
         tabStripClasses += " " + node.getClassNameTabStrip();
     }
-    tabStripClasses += " flexlayout__tabset_tabbar_outer_" + node.getTabLocation();
+    tabStripClasses += " " + CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER_ + node.getTabLocation();
 
     if (node.isActive() && !showHeader) {
-        tabStripClasses += " " + cm("flexlayout__tabset-selected");
+        tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_SELECTED);
     }
 
     if (node.isMaximized() && !showHeader) {
-        tabStripClasses += " " + cm("flexlayout__tabset-maximized");
+        tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
     }
 
     if (showHeader) {
-        let tabHeaderClasses = cm("flexlayout__tabset_header");
+        let tabHeaderClasses = cm(CLASSES.FLEXLAYOUT__TABSET_HEADER);
         if (node.isActive()) {
-            tabHeaderClasses += " " + cm("flexlayout__tabset-selected");
+            tabHeaderClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_SELECTED);
         }
         if (node.isMaximized()) {
-            tabHeaderClasses += " " + cm("flexlayout__tabset-maximized");
+            tabHeaderClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
         }
         if (node.getClassNameHeader() !== undefined) {
             tabHeaderClasses += " " + node.getClassNameHeader();
@@ -214,7 +215,7 @@ export const TabSet = (props: ITabSetProps) => {
 
         header = (
             <div className={tabHeaderClasses} style={{ height: node.getHeaderHeight() + "px" }} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
-                <div className={cm("flexlayout__tabset_header_content")}>{headerContent}</div>
+                <div className={cm(CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT)}>{headerContent}</div>
                 {toolbar}
             </div>
         );
@@ -227,10 +228,10 @@ export const TabSet = (props: ITabSetProps) => {
 
         tabStrip = (
             <div className={tabStripClasses} style={tabStripStyle} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
-                <div className={cm("flexlayout__tabset_tabbar_inner") + " " + cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation())}>
+                <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
                     <div
                         style={{ left: position }}
-                        className={cm("flexlayout__tabset_tabbar_inner_tab_container") + " " + cm("flexlayout__tabset_tabbar_inner_tab_container_" + node.getTabLocation())}
+                        className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation())}
                     >
                         {tabs}
                     </div>
@@ -246,10 +247,10 @@ export const TabSet = (props: ITabSetProps) => {
         }
         tabStrip = (
             <div className={tabStripClasses} style={tabStripStyle} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
-                <div className={cm("flexlayout__tabset_tabbar_inner") + " " + cm("flexlayout__tabset_tabbar_inner_" + node.getTabLocation())}>
+                <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
                     <div
                         style={{ left: position }}
-                        className={cm("flexlayout__tabset_tabbar_inner_tab_container") + " " + cm("flexlayout__tabset_tabbar_inner_tab_container_" + node.getTabLocation())}
+                        className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation())}
                     >
                         {tabs}
                     </div>
@@ -261,7 +262,7 @@ export const TabSet = (props: ITabSetProps) => {
     style = layout.styleFont(style);
 
     return (
-        <div ref={selfRef} style={style} className={cm("flexlayout__tabset")} onWheel={onMouseWheel}>
+        <div ref={selfRef} style={style} className={cm(CLASSES.FLEXLAYOUT__TABSET)} onWheel={onMouseWheel}>
             {header}
             {tabStrip}
         </div>

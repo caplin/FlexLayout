@@ -9,6 +9,7 @@ import Actions from "../model/Actions";
 import { I18nLabel } from "../I18nLabel";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
@@ -76,7 +77,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         layoutTab(i);
     }
 
-    let borderClasses = cm("flexlayout__border") + " " + cm("flexlayout__border_" + border.getLocation().getName());
+    let borderClasses = cm(CLASSES.FLEXLAYOUT__BORDER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_ + border.getLocation().getName());
     if (border.getClassName() !== undefined) {
         borderClasses += " " + border.getClassName();
     }
@@ -116,7 +117,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 <button
                     key="float"
                     title={floatTitle}
-                    className={cm("flexlayout__border_toolbar_button") + " " + cm("flexlayout__border_toolbar_button-float")}
+                    className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT)}
                     onClick={onFloatTab}
                     onMouseDown={onInterceptMouseDown}
                     onTouchStart={onInterceptMouseDown}
@@ -125,7 +126,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         }
     }
     toolbar = (
-        <div key="toolbar" ref={toolbarRef} className={cm("flexlayout__border_toolbar") + " " + cm("flexlayout__border_toolbar_" + border.getLocation().getName())}>
+        <div key="toolbar" ref={toolbarRef} className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName())}>
             {buttons}
         </div>
     );
@@ -144,8 +145,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     return (
         <div ref={selfRef} style={style} className={borderClasses} onWheel={onMouseWheel}>
-            <div style={{ height: borderHeight }} className={cm("flexlayout__border_inner") + " " + cm("flexlayout__border_inner_" + border.getLocation().getName())}>
-                <div style={innerStyle} className={cm("flexlayout__border_inner_tab_container") + " " + cm("flexlayout__border_inner_tab_container_" + border.getLocation().getName())}>
+            <div style={{ height: borderHeight }} className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}>
+                <div style={innerStyle} className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName())}>
                     {tabs}
                 </div>
             </div>

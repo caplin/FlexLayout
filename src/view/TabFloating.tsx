@@ -2,7 +2,7 @@ import * as React from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import { JSMap } from "../Types";
+import { CLASSES, JSMap } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
 
@@ -49,8 +49,8 @@ export const TabFloating = (props: ITabFloatingProps) => {
     const dockMessage = layout.i18nName(I18nLabel.Floating_Window_Dock_Window);
 
     return (
-        <div className={cm("flexlayout__tab_floating")} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
-            <div className={cm("flexlayout__tab_floating_inner")}>
+        <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER)}>
                 <div>{message}</div>
                 <div>
                     <a href="#" onClick={onClickFocus}>

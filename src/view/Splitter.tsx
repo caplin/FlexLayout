@@ -6,6 +6,7 @@ import Node from "../model/Node";
 import RowNode from "../model/RowNode";
 import SplitterNode from "../model/SplitterNode";
 import Orientation from "../Orientation";
+import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 
 /** @hidden @internal */
@@ -28,7 +29,7 @@ export const Splitter = (props: ISplitterProps) => {
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
         outlineDiv.current.style.position = "absolute";
-        outlineDiv.current.className = layout.getClassName("flexlayout__splitter_drag");
+        outlineDiv.current.className = layout.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_DRAG);
         outlineDiv.current.style.cursor = node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";
         node.getRect().positionElement(outlineDiv.current);
         rootdiv.appendChild(outlineDiv.current);
@@ -100,10 +101,10 @@ export const Splitter = (props: ISplitterProps) => {
     const style = node._styleWithPosition({
         cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize",
     });
-    let className = cm("flexlayout__splitter") + " " + cm("flexlayout__splitter_" + node.getOrientation().getName());
+    let className = cm(CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
 
     if (parentNode instanceof BorderNode) {
-        className += " " + cm("flexlayout__splitter_border");
+        className += " " + cm(CLASSES.FLEXLAYOUT__SPLITTER_BORDER);
     } else {
         if (node.getModel().getMaximizedTabset() !== undefined) {
             style.display = "none";

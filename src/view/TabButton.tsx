@@ -6,6 +6,7 @@ import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
+import { CLASSES } from "../Types";
 
 /** @hidden @internal */
 export interface ITabButtonProps {
@@ -118,7 +119,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const cm = layout.getClassName;
     const parentNode = node.getParent() as TabSetNode;
 
-    let baseClassName = "flexlayout__tab_button";
+    let baseClassName = CLASSES.FLEXLAYOUT__TAB_BUTTON;
     let classNames = cm(baseClassName);
     classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
 
@@ -149,11 +150,11 @@ export const TabButton = (props: ITabButtonProps) => {
     node._setRenderedName(renderState.name);
 
     let content = (
-        <div ref={contentRef} className={cm("flexlayout__tab_button_content")}>
+        <div ref={contentRef} className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
             {renderState.content}
         </div>
     );
-    const leading = <div className={cm("flexlayout__tab_button_leading")}>{renderState.leading}</div>;
+    const leading = <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>{renderState.leading}</div>;
 
     if (editing) {
         const contentStyle = { width: contentWidth + "px" };
@@ -161,7 +162,7 @@ export const TabButton = (props: ITabButtonProps) => {
             <input
                 style={contentStyle}
                 ref={contentRef}
-                className={cm("flexlayout__tab_button_textbox")}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX)}
                 type="text"
                 autoFocus={true}
                 defaultValue={node.getName()}
@@ -175,7 +176,7 @@ export const TabButton = (props: ITabButtonProps) => {
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         buttons.push(
-            <div key="close" title={closeTitle} className={cm("flexlayout__tab_button_trailing")} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
+            <div key="close" title={closeTitle} className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
                 {icons?.close}
             </div>
         );

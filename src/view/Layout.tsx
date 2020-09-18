@@ -14,7 +14,7 @@ import SplitterNode from "../model/SplitterNode";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
-import { JSMap } from "../Types";
+import { CLASSES, JSMap } from "../Types";
 import { BorderTabSet } from "./BorderTabSet";
 import { Splitter } from "./Splitter";
 import { Tab } from "./Tab";
@@ -344,7 +344,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         if (this.firstRender) {
             this.firstRender = false;
             return (
-                <div ref={this.selfRef} className={this.getClassName("flexlayout__layout")}>
+                <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
                     {this.metricsElements()}
                 </div>
             );
@@ -391,7 +391,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         // this.layoutTime = (Date.now() - this.start);
 
         return (
-            <div ref={this.selfRef} className={this.getClassName("flexlayout__layout")}>
+            <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
                 {tabSetComponents}
                 {this.tabIds.map((t) => {
                     return tabComponents[t];
@@ -410,13 +410,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         const fontStyle = this.styleFont({ visibility: "hidden" });
         return (
             <React.Fragment>
-                <div key="findHeaderBarSize" ref={this.findHeaderBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__tabset_header_sizer")}>
+                <div key="findHeaderBarSize" ref={this.findHeaderBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__TABSET_HEADER_SIZER)}>
                     FindHeaderBarSize
                 </div>
-                <div key="findTabBarSize" ref={this.findTabBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__tabset_sizer")}>
+                <div key="findTabBarSize" ref={this.findTabBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__TABSET_SIZER)}>
                     FindTabBarSize
                 </div>
-                <div key="findBorderBarSize" ref={this.findBorderBarSizeRef} style={fontStyle} className={this.getClassName("flexlayout__border_sizer")}>
+                <div key="findBorderBarSize" ref={this.findBorderBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
                     FindBorderBarSize
                 </div>
             </React.Fragment>
@@ -668,12 +668,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.dropInfo = undefined;
         const rootdiv = this.selfRef.current!;
         this.outlineDiv = this.currentDocument!.createElement("div");
-        this.outlineDiv.className = this.getClassName("flexlayout__outline_rect");
+        this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         rootdiv.appendChild(this.outlineDiv);
 
         if (this.dragDiv == null) {
             this.dragDiv = this.currentDocument!.createElement("div");
-            this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
+            this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
             this.dragDiv.innerHTML = this.dragDivText;
             rootdiv.appendChild(this.dragDiv);
         }
@@ -747,7 +747,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             const width = "10px";
 
             this.edgeTopDiv = this.currentDocument!.createElement("div");
-            this.edgeTopDiv.className = this.getClassName("flexlayout__edge_rect");
+            this.edgeTopDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             this.edgeTopDiv.style.top = r.y + "px";
             this.edgeTopDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeTopDiv.style.width = length;
@@ -756,7 +756,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.edgeTopDiv.style.borderBottomRightRadius = radius;
 
             this.edgeLeftDiv = this.currentDocument!.createElement("div");
-            this.edgeLeftDiv.className = this.getClassName("flexlayout__edge_rect");
+            this.edgeLeftDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             this.edgeLeftDiv.style.top = r.y + (r.height - size) / 2 + "px";
             this.edgeLeftDiv.style.left = r.x + "px";
             this.edgeLeftDiv.style.width = width;
@@ -765,7 +765,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.edgeLeftDiv.style.borderBottomRightRadius = radius;
 
             this.edgeBottomDiv = this.currentDocument!.createElement("div");
-            this.edgeBottomDiv.className = this.getClassName("flexlayout__edge_rect");
+            this.edgeBottomDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             this.edgeBottomDiv.style.bottom = domRect.height - r.getBottom() + "px";
             this.edgeBottomDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeBottomDiv.style.width = length;
@@ -774,7 +774,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.edgeBottomDiv.style.borderTopRightRadius = radius;
 
             this.edgeRightDiv = this.currentDocument!.createElement("div");
-            this.edgeRightDiv.className = this.getClassName("flexlayout__edge_rect");
+            this.edgeRightDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             this.edgeRightDiv.style.top = r.y + (r.height - size) / 2 + "px";
             this.edgeRightDiv.style.right = domRect.width - r.getRight() + "px";
             this.edgeRightDiv.style.width = width;

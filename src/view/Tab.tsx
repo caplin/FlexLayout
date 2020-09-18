@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import { JSMap } from "../Types";
+import { CLASSES, JSMap } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";
@@ -57,10 +57,10 @@ export const Tab = (props: ITabProps) => {
         child = factory(node);
     }
 
-    let className = cm("flexlayout__tab");
+    let className = cm(CLASSES.FLEXLAYOUT__TAB);
     if (parentNode instanceof BorderNode) {
-        className += " " + cm("flexlayout__tab_border");
-        className += " " + cm("flexlayout__tab_border_" + parentNode.getLocation().getName());
+        className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER);
+        className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
     }
 
     return (
