@@ -1,21 +1,19 @@
 {
-  "compilerOptions": {
-    "outDir": "./lib/",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "target": "es5",
-    "declaration": true,
-    "declarationDir":"./declarations",
-    "stripInternal":true,
-    "alwaysStrict":true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "strict": true,
-    "noUnusedLocals": true,
-    "jsx": "react"
-  },
-  "include": [
-    "./src/**/*"
-  ]
+    "compilerOptions": {
+        "outDir": "./lib/",
+        "sourceMap": true,
+        "noImplicitAny": true,
+        "module": "commonjs",
+        "target": "es5",
+        "declaration": true,
+        "declarationDir": "./declarations",
+        "stripInternal": true,
+        "alwaysStrict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": true,
+        "strict": true,
+        "noUnusedLocals": true,
+        "jsx": "react"
+    },
+    "include": ["./src/**/*"]
 }

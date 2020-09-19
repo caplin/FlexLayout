@@ -1,28 +1,27 @@
-
 module.exports = {
-	mode:'development',
-	entry: {
-		demo: "./examples/demo/App.tsx",
-	    tests: "./spec/main.ts"
-	},
-
-	output: {
-		path: __dirname,
-		filename: "./bundles/[name].js"
-	},
-
-	resolve: {
-        // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [".ts", ".tsx", ".js", ".json"]
+    mode: "development",
+    entry: {
+        demo: "./examples/demo/App.tsx",
+        tests: "./spec/main.ts",
     },
 
-	watch:true,
+    output: {
+        path: __dirname,
+        filename: "./bundles/[name].js",
+    },
 
-	devServer: {
-		contentBase: '.'
-	   },
+    resolve: {
+        // Add '.ts' and '.tsx' as resolvable extensions.
+        extensions: [".ts", ".tsx", ".js", ".json"],
+    },
 
-	devtool: 'source-map',
+    watch: true,
+
+    devServer: {
+        contentBase: ".",
+    },
+
+    devtool: "source-map",
 
     module: {
         rules: [
@@ -30,7 +29,7 @@ module.exports = {
             { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" }
-        ]
-    }
+            { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+        ],
+    },
 };

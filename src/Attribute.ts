@@ -1,6 +1,5 @@
 /** @hidden @internal */
 class Attribute {
-
     static ENUM = "Enum";
     static INT = "Int";
     static NUMBER = "Number";
@@ -10,7 +9,7 @@ class Attribute {
     static JSON = "Json";
 
     name: string;
-    modelName?: string ;
+    modelName?: string;
     defaultValue: any;
     alwaysWriteJson?: boolean;
     type?: string;

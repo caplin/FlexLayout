@@ -16,25 +16,7 @@ import Orientation from "./Orientation";
 import Rect from "./Rect";
 import Layout from "./view/Layout";
 
-export {
-    Layout,
-    I18nLabel,
-    Actions,
-    Action,
-    Model,
-    Node,
-    RowNode,
-    SplitterNode,
-    TabNode,
-    TabSetNode,
-    BorderNode,
-    BorderSet,
-    DockLocation,
-    Orientation,
-    DragDrop,
-    DropInfo,
-    Rect
-};
+export { Layout, I18nLabel, Actions, Action, Model, Node, RowNode, SplitterNode, TabNode, TabSetNode, BorderNode, BorderSet, DockLocation, Orientation, DragDrop, DropInfo, Rect };
 
 export default {
     Layout,
@@ -53,5 +35,5 @@ export default {
     Orientation,
     DragDrop,
     DropInfo,
-    Rect
+    Rect,
 };

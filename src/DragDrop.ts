@@ -1,11 +1,7 @@
 import Rect from "./Rect";
 
 /** @hidden @internal */
-const canUseDOM = !!(
-    (typeof window !== "undefined" &&
-    window.document &&
-    window.document.createElement)
-  );
+const canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
 
 class DragDrop {
     static instance = new DragDrop();
@@ -19,7 +15,7 @@ class DragDrop {
     /** @hidden @internal */
     private _fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined;
     /** @hidden @internal */
-    private _fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined;
+    private _fDragStart: ((pos: { clientX: number; clientY: number }) => boolean) | undefined;
     /** @hidden @internal */
     private _fDragCancel: ((wasDragging: boolean) => void) | undefined;
 
@@ -50,7 +46,8 @@ class DragDrop {
 
     /** @hidden @internal */
     private constructor() {
-        if ( canUseDOM ) { // check for serverside rendering
+        if (canUseDOM) {
+            // check for serverside rendering
             this._glass = document.createElement("div");
             this._glass.style.zIndex = "998";
             this._glass.style.position = "absolute";
@@ -83,8 +80,8 @@ class DragDrop {
             this._glassShowing = true;
             this._fDragCancel = fCancel;
             this._manualGlassManagement = false;
-        }
-        else { // second call to addGlass (via dragstart)
+        } else {
+            // second call to addGlass (via dragstart)
             this._manualGlassManagement = true;
         }
     }
@@ -97,23 +94,21 @@ class DragDrop {
         }
     }
 
-    startDrag(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
-        fDragStart: ((pos: { clientX: number, clientY: number }) => boolean) | undefined,
+    startDrag(
+        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
+        fDragStart: ((pos: { clientX: number; clientY: number }) => boolean) | undefined,
         fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined,
         fDragEnd: ((event: Event) => void) | undefined,
         fDragCancel?: ((wasDragging: boolean) => void) | undefined,
         fClick?: ((event: Event) => void) | undefined,
         fDblClick?: ((event: Event) => void) | undefined,
-        currentDocument?: Document) {
-
+        currentDocument?: Document
+    ) {
         // prevent 'duplicate' action (mouse event for same action as previous touch event (a fix for ios))
-        if (event && this._lastEvent &&
-            this._lastEvent.type.startsWith("touch") &&
-            event.type.startsWith("mouse") &&
-            (event.timeStamp - this._lastEvent.timeStamp) < 500 ) {
+        if (event && this._lastEvent && this._lastEvent.type.startsWith("touch") && event.type.startsWith("mouse") && event.timeStamp - this._lastEvent.timeStamp < 500) {
             return;
         }
-        
+
         this._lastEvent = event;
 
         if (currentDocument) {
@@ -126,7 +121,7 @@ class DragDrop {
         this.addGlass(fDragCancel, currentDocument);
 
         if (this._dragging) {
-          console.warn("this._dragging true on startDrag should never happen");
+            console.warn("this._dragging true on startDrag should never happen");
         }
 
         if (event) {
@@ -137,8 +132,7 @@ class DragDrop {
             }
             this._stopPropagation(event);
             this._preventDefault(event);
-        }
-        else {
+        } else {
             this._startX = 0;
             this._startY = 0;
             this._glass!.style.cursor = "default";
@@ -152,12 +146,12 @@ class DragDrop {
         this._fClick = fClick;
         this._fDblClick = fDblClick;
 
-        this._active =true;
+        this._active = true;
 
-        this._document.addEventListener("mouseup", this._onMouseUp, {passive: false});
-        this._document.addEventListener("mousemove", this._onMouseMove, {passive: false});
-        this._document.addEventListener("touchend", this._onMouseUp, {passive: false});
-        this._document.addEventListener("touchmove", this._onMouseMove, {passive: false});
+        this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
+        this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
+        this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
+        this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
     }
 
     isDragging() {
@@ -169,18 +163,15 @@ class DragDrop {
     }
 
     toString() {
-        const rtn = "(DragDrop: " +
-            "startX=" + this._startX +
-            ", startY=" + this._startY +
-            ", dragging=" + this._dragging +
-            ")";
+        const rtn = "(DragDrop: " + "startX=" + this._startX + ", startY=" + this._startY + ", dragging=" + this._dragging + ")";
 
         return rtn;
     }
 
     /** @hidden @internal */
     private _onKeyPress(event: KeyboardEvent) {
-        if (this._fDragCancel !== undefined && event.keyCode === 27) { // esc
+        if (this._fDragCancel !== undefined && event.keyCode === 27) {
+            // esc
             this._document!.removeEventListener("mousemove", this._onMouseMove);
             this._document!.removeEventListener("mouseup", this._onMouseUp);
             this._document!.removeEventListener("touchend", this._onMouseUp);
@@ -237,7 +228,7 @@ class DragDrop {
             this._dragging = true;
             if (this._fDragStart) {
                 this._glass!.style.cursor = "move";
-                this._dragging = this._fDragStart({ "clientX": this._startX, "clientY": this._startY });
+                this._dragging = this._fDragStart({ clientX: this._startX, clientY: this._startY });
             }
         }
 
@@ -275,8 +266,7 @@ class DragDrop {
                 this._fDragEnd(event);
             }
             // dump("set dragging = false\n");
-        }
-        else {
+        } else {
             if (this._fDragCancel) {
                 this._fDragCancel(this._dragging);
             }
@@ -304,4 +294,3 @@ class DragDrop {
 }
 
 export default DragDrop;
-

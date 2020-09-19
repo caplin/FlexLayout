@@ -13,7 +13,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
 
     const [position, setPosition] = React.useState<number>(0);
     const userControlledLeft = React.useRef<boolean>(false);
-    const [hiddenTabs, setHiddenTabs] = React.useState<{ node: TabNode, index: number }[]>([]);
+    const [hiddenTabs, setHiddenTabs] = React.useState<{ node: TabNode; index: number }[]>([]);
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useLayoutEffect(() => {
@@ -25,10 +25,10 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
     });
 
     React.useEffect(() => {
-        selfRef.current!.addEventListener('wheel', onWheel);
+        selfRef.current!.addEventListener("wheel", onWheel);
         return () => {
-            selfRef.current!.removeEventListener('wheel', onWheel);
-        }
+            selfRef.current!.removeEventListener("wheel", onWheel);
+        };
     }, []);
 
     // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
@@ -42,7 +42,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         } else {
             return rect.y;
         }
-    }
+    };
 
     const getFar = (rect: Rect) => {
         if (orientation === Orientation.HORZ) {
@@ -50,7 +50,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         } else {
             return rect.getBottom();
         }
-    }
+    };
 
     const getSize = (rect: DOMRect) => {
         if (orientation === Orientation.HORZ) {
@@ -58,14 +58,15 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         } else {
             return rect.height;
         }
-    }
+    };
 
     const updateVisibleTabs = () => {
         const tabMargin = 2;
-        const nodeRect = (node instanceof TabSetNode) ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
+        const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
         let lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
 
-        if (firstRender.current === true ||
+        if (
+            firstRender.current === true ||
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height
         ) {
@@ -73,11 +74,11 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
             let endPos = getFar(nodeRect) - getSize(toolbarRef.current!.getBoundingClientRect());
             if (enabled && node.getChildren().length > 0) {
-                if (hiddenTabs.length === 0 && position === 0 && (getFar(lastChild.getTabRect()!) + tabMargin) < endPos) {
+                if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
                 }
 
-                endPos -= (hiddenTabs.length > 0 ? (orientation === Orientation.HORZ) ? 10 : 0 : 45); // will need hidden tabs
+                endPos -= hiddenTabs.length > 0 ? (orientation === Orientation.HORZ ? 10 : 0) : 45; // will need hidden tabs
 
                 let shiftPos = 0;
 
@@ -86,8 +87,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
                     const selectedRect = selectedTab.getTabRect()!;
                     const selectedStart = getNear(selectedRect) - tabMargin;
                     const selectedEnd = getFar(selectedRect) + tabMargin;
-                    if (selectedEnd > endPos ||
-                        selectedStart < getNear(nodeRect)) {
+                    if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
                         if (selectedStart < getNear(nodeRect)) {
                             shiftPos = getNear(nodeRect) - selectedStart;
                         }
@@ -103,11 +103,10 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
 
                 // find hidden tabs
                 const diff = newPosition - position;
-                const hidden: { node: TabNode, index: number }[] = [];
+                const hidden: { node: TabNode; index: number }[] = [];
                 for (let i = 0; i < node.getChildren().length; i++) {
                     const child = node.getChildren()[i] as TabNode;
-                    if ((getNear(child.getTabRect()!) + diff) < getNear(nodeRect!) ||
-                        (getFar(child.getTabRect()!) + diff) > endPos) {
+                    if (getNear(child.getTabRect()!) + diff < getNear(nodeRect!) || getFar(child.getTabRect()!) + diff > endPos) {
                         hidden.push({ node: child, index: i });
                     }
                 }
@@ -128,7 +127,8 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         } else {
             delta = event.deltaY;
         }
-        if (event.deltaMode === 1) { // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+        if (event.deltaMode === 1) {
+            // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
             delta *= 40;
         }
         setPosition(position + delta);

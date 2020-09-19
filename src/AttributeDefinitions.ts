@@ -3,7 +3,6 @@ import { JSMap } from "./Types";
 
 /** @hidden @internal */
 class AttributeDefinitions {
-
     attributes: Attribute[];
     nameToAttribute: JSMap<Attribute>;
 
@@ -53,8 +52,7 @@ class AttributeDefinitions {
             const fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
                 obj[attr.name] = attr.defaultValue;
-            }
-            else {
+            } else {
                 obj[attr.name] = fromValue;
             }
         });
@@ -62,7 +60,6 @@ class AttributeDefinitions {
 
     update(jsonObj: any, obj: any) {
         this.attributes.forEach((attr) => {
-
             const fromValue = jsonObj[attr.name];
             if (fromValue !== undefined) {
                 obj[attr.name] = fromValue;
@@ -75,7 +72,6 @@ class AttributeDefinitions {
             obj[attr.name] = attr.defaultValue;
         });
     }
-
 }
 
 /** @hidden @internal */

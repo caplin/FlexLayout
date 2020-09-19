@@ -3,7 +3,6 @@ import Rect from "./Rect";
 import { JSMap } from "./Types";
 
 class DockLocation {
-
     static values: JSMap<DockLocation> = {};
     static TOP = new DockLocation("top", Orientation.VERT, 0);
     static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);
@@ -20,20 +19,13 @@ class DockLocation {
     static getLocation(rect: Rect, x: number, y: number) {
         if (x < rect.x + rect.width / 4) {
             return DockLocation.LEFT;
-        }
-
-        else if (x > rect.getRight() - rect.width / 4) {
+        } else if (x > rect.getRight() - rect.width / 4) {
             return DockLocation.RIGHT;
-        }
-
-        else if (y < rect.y + rect.height / 4) {
+        } else if (y < rect.y + rect.height / 4) {
             return DockLocation.TOP;
-        }
-
-        else if (y > rect.getBottom() - rect.height / 4) {
+        } else if (y > rect.getBottom() - rect.height / 4) {
             return DockLocation.BOTTOM;
-        }
-        else {
+        } else {
             return DockLocation.CENTER;
         }
     }
@@ -65,17 +57,14 @@ class DockLocation {
     getDockRect(r: Rect) {
         if (this === DockLocation.TOP) {
             return new Rect(r.x, r.y, r.width, r.height / 2);
-        }
-        else if (this === DockLocation.BOTTOM) {
+        } else if (this === DockLocation.BOTTOM) {
             return new Rect(r.x, r.getBottom() - r.height / 2, r.width, r.height / 2);
         }
         if (this === DockLocation.LEFT) {
             return new Rect(r.x, r.y, r.width / 2, r.height);
-        }
-        else if (this === DockLocation.RIGHT) {
+        } else if (this === DockLocation.RIGHT) {
             return new Rect(r.getRight() - r.width / 2, r.y, r.width / 2, r.height);
-        }
-        else {
+        } else {
             return r.clone();
         }
     }
@@ -86,8 +75,7 @@ class DockLocation {
             const r1 = new Rect(rect.x, rect.y, rect.width, size);
             const r2 = new Rect(rect.x, rect.y + size, rect.width, rect.height - size);
             return { start: r1, end: r2 };
-        }
-        else if (this === DockLocation.LEFT) {
+        } else if (this === DockLocation.LEFT) {
             const r1 = new Rect(rect.x, rect.y, size, rect.height);
             const r2 = new Rect(rect.x + size, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
@@ -96,8 +84,8 @@ class DockLocation {
             const r1 = new Rect(rect.getRight() - size, rect.y, size, rect.height);
             const r2 = new Rect(rect.x, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
-        }
-        else {// if (this === DockLocation.BOTTOM) {
+        } else {
+            // if (this === DockLocation.BOTTOM) {
             const r1 = new Rect(rect.x, rect.getBottom() - size, rect.width, size);
             const r2 = new Rect(rect.x, rect.y, rect.width, rect.height - size);
             return { start: r1, end: r2 };
@@ -108,14 +96,13 @@ class DockLocation {
     reflect() {
         if (this === DockLocation.TOP) {
             return DockLocation.BOTTOM;
-        }
-        else if (this === DockLocation.LEFT) {
+        } else if (this === DockLocation.LEFT) {
             return DockLocation.RIGHT;
         }
         if (this === DockLocation.RIGHT) {
             return DockLocation.LEFT;
-        }
-        else { // if (this === DockLocation.BOTTOM) {
+        } else {
+            // if (this === DockLocation.BOTTOM) {
             return DockLocation.TOP;
         }
     }
@@ -125,6 +112,4 @@ class DockLocation {
     }
 }
 
-
 export default DockLocation;
-
