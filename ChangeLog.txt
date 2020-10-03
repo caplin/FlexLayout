@@ -1,3 +1,10 @@
+0.5.3
+Change classname strings to enum values
+TSLint replaced with ESLint
+Added Create-React-App (CRA) example
+New 'light' theme (lighter and without box shadows, gradients), 
+    existing light theme renamed to 'gray'
+
 0.5.2
 Fixed issues caused by double touch/mouse events in IOS
 Prevented IOS scroll during drag in demo app.

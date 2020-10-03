@@ -13,21 +13,21 @@
     }
 
     &__splitter {
-        background-color: $color_2;
+        @include splitter_mixin;
 
         @media (hover: hover) {
             &:hover {
-                background-color: $color_4;
+                @include splitter_hover_mixin;
             }
         }
         &_border {
             z-index: 10;
+            @include splitter_border_mixin;
         }
 
         &_drag {
-            border-radius: 5px;
-            background-color: $color_5;
             z-index: 1000;
+            @include splitter_drag_mixin;
         }
     }
 
@@ -86,6 +86,7 @@
         box-sizing: border-box;
         font-size: $font-size;
         font-family: $font-family;
+        @include tabset_mixin;
 
         &_header {
             // tabset header bar
@@ -94,11 +95,11 @@
             align-items: center;
             left: 0;
             right: 0;
-            background-color: $color_1;
-            color: $color_text;
             padding: 3px 3px 3px 5px;
-            box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
             box-sizing: border-box;
+            border-bottom: 1px solid $color_3;
+            color: $color_text;
+            @include tabset_header_mixin;
 
             &_content {
                 flex-grow: 1;
@@ -115,6 +116,7 @@
                 right: 0;
                 overflow: hidden;
                 display: flex;
+                @include tabset_tabbar_mixin;
             }
 
             &_outer_top {
@@ -152,11 +154,11 @@
         }
 
         &-selected {
-            background-image: linear-gradient($color_background, $color_4);
+            @include tabset_selected_mixin;
         }
 
         &-maximized {
-            background-image: linear-gradient($color_6, $color_2);
+            @include tabset_maximized_mixin;
         }
     }
 
@@ -174,31 +176,27 @@
             padding: 3px 8px; // if you change top or bottom update the tabset_sizer above
             margin: 0px 2px;
             cursor: pointer;
-            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+            @include tab_button_mixin;
 
             &--selected {
-                background-color: $color_3;
-                color: $color_text;
+                @include tab_button_selected_mixin;
             }
             @media (hover: hover) {
                 &:hover {
-                    background-color: $color_3;
-                    color: $color_text;
+                    @include tab_button_hovered_mixin;
                 }
             }
 
             &--unselected {
-                color: gray;
+                @include tab_button_unselected_mixin;
             }
 
             &_top {
-                border-top-left-radius: 3px;
-                border-top-right-radius: 3px;
+                @include tab_top_mixin;
             }
 
             &_bottom {
-                border-bottom-left-radius: 3px;
-                border-bottom-right-radius: 3px;
+                @include tab_bottom_mixin;
             }
 
             &_leading {
@@ -305,12 +303,12 @@
     }
 
     &__border {
-        background-color: $color_2;
         box-sizing: border-box;
         overflow: hidden;
         display: flex;
         font-size: $font-size;
         font-family: $font-family;
+        @include border_mixin;
 
         &_top {
             border-bottom: 1px solid $color_3;
@@ -368,25 +366,21 @@
             cursor: pointer;
             padding: 3px 8px;
             margin: 2px;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-            border-radius: 3px;
             box-sizing: border-box;
             white-space: nowrap;
-            background-color: $color_3;
+            @include border_button_mixin;
 
             &--selected {
-                background-color: $color_3;
-                color: $color_text;
+                @include border_button_selected_mixin;
             }
             @media (hover: hover) {
                 &:hover {
-                    background-color: $color_3;
-                    color: $color_text;
+                    @include border_button_hovered_mixin;
                 }
             }
 
             &--unselected {
-                color: gray;
+                @include border_button_unselected_mixin;
             }
 
             &_leading {

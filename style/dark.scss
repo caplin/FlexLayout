@@ -13,4 +13,104 @@ $color_drag2: #b7d1b5 !default;
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
 
+@mixin tabset_mixin {
+    background-color: $color_1;
+}
+
+@mixin tabset_tabbar_mixin {
+    background-color: $color_1;
+}
+
+@mixin tabset_header_mixin {
+    background-color: $color_1;
+}
+
+@mixin tabset_selected_mixin {
+    background-image: linear-gradient($color_background, $color_4);
+}
+
+@mixin tabset_header_mixin {
+    background-color: $color_1;
+    box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+}
+
+@mixin tabset_selected_mixin {
+    background-image: linear-gradient($color_background, $color_4);
+}
+
+@mixin tabset_maximized_mixin {
+    background-image: linear-gradient($color_6, $color_2);
+}
+
+@mixin tab_top_mixin {
+    box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+@mixin tab_bottom_mixin {
+    box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+
+@mixin tab_button_mixin {
+
+}
+
+@mixin tab_button_selected_mixin {
+    background-color: $color_3;
+    color: $color_text;
+}
+
+@mixin tab_button_unselected_mixin {
+    color: gray;
+}
+
+@mixin tab_button_hovered_mixin {
+    background-color: $color_3;
+    color: $color_text;
+}
+
+@mixin border_mixin {
+    background-color: $color_2;
+}
+
+@mixin border_button_mixin {
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+    border-radius: 3px;
+}
+
+@mixin border_button_selected_mixin {
+    background-color: $color_3;
+    color: $color_text;
+}
+
+@mixin border_button_unselected_mixin {
+    color: gray;
+}
+
+@mixin border_button_hovered_mixin {
+    background-color: $color_3;
+    color: $color_text;
+}
+
+@mixin splitter_mixin {
+    background-color: $color_2;
+}
+
+@mixin splitter_hover_mixin {
+    background-color: $color_4;
+}
+
+@mixin splitter_drag_mixin {
+    border-radius: 5px;
+    background-color: $color_5;
+}
+
+@mixin splitter_border_mixin {
+}
+
+
 @import "_base";

@@ -2,11 +2,11 @@ $color_text: black !default;
 $color_background: white !default;
 $color_base: white !default;
 $color_1: scale_color($color_base, $lightness: -3%) !default;
-$color_2: scale_color($color_1, $lightness: -3%) !default;
-$color_3: scale_color($color_2, $lightness: -3%) !default;
-$color_4: scale_color($color_3, $lightness: -3%) !default;
-$color_5: scale_color($color_4, $lightness: -3%) !default;
-$color_6: scale_color($color_5, $lightness: -3%) !default;
+$color_2: scale_color($color_base, $lightness: -10%) !default;
+$color_3: scale_color($color_base, $lightness: -15%) !default;
+$color_4: scale_color($color_base, $lightness: -20%) !default;
+$color_5: scale_color($color_base, $lightness: -25%) !default;
+$color_6: scale_color($color_base, $lightness: -30%) !default;
 $color_drag1: red !default;
 $color_drag2: green !default;
 
@@ -14,32 +14,48 @@ $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
 
 @mixin tabset_mixin {
-    background-color: $color_background;
-}
-
-@mixin tabset_tabbar_mixin {
-    background-color: $color_background;
-}
-
-@mixin tabset_header_mixin {
-    background-color: $color_background;
-}
-
-@mixin tabset_selected_mixin {
     background-color: $color_1;
 }
 
+@mixin tabset_tabbar_mixin {
+    background-color: $color_1;
+}
+
+@mixin tabset_header_mixin {
+    background-color: $color_1;
+}
+
+@mixin tabset_selected_mixin {
+    background-image: linear-gradient($color_background, $color_4);
+}
+
+@mixin tabset_header_mixin {
+    background-color: $color_1;
+    box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+}
+
+@mixin tabset_selected_mixin {
+    background-image: linear-gradient($color_background, $color_4);
+}
+
 @mixin tabset_maximized_mixin {
-    background-color: $color_6;
+    background-image: linear-gradient($color_6, $color_2);
 }
 
 @mixin tab_top_mixin {
+    box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 @mixin tab_bottom_mixin {
+    box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 @mixin tab_button_mixin {
+
 }
 
 @mixin tab_button_selected_mixin {
@@ -56,12 +72,15 @@ $font-family: Roboto, Arial, sans-serif !default;
     color: $color_text;
 }
 
+
+
 @mixin border_mixin {
-    background-color: $color_background;
+    background-color: $color_2;
 }
 
 @mixin border_button_mixin {
-    background-color: $color_3;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+    border-radius: 3px;
 }
 
 @mixin border_button_selected_mixin {
@@ -79,7 +98,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin splitter_mixin {
-    background-color: $color_1;
+    background-color: $color_2;
 }
 
 @mixin splitter_hover_mixin {
@@ -87,10 +106,12 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin splitter_drag_mixin {
-    background-color: $color_4;
+    border-radius: 5px;
+    background-color: $color_5;
 }
 
 @mixin splitter_border_mixin {
 }
+
 
 @import "_base";

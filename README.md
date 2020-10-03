@@ -26,7 +26,7 @@ Features:
 *   popout tabs into new browser windows (only enabled in latest browsers)
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
-*	themeing - light and dark
+*	themeing - light, gray and dark
 *	touch events - works on mobile devices (iPad, Android)
 *   add tabs using drag, indirect drag, add to active tabset, add to tabset by id
 *   preferred pixel size tabsets (try to keep their size when window resizes)
@@ -55,10 +55,10 @@ import ReactDOM from "react-dom";
 import FlexLayout from "flexlayout-react";
 ```
 
-Include the light or dark style in your html:
+Include the light, gray or dark style in your html:
 
 ```
-<link rel="stylesheet" href="node_modules/flexlayout-react/style/dark.css" />
+<link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
 ```
 
 ## Usage

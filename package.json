@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -18,7 +18,6 @@
         "reactjs",
         "react-dom"
     ],
-    "private": true,
     "workspaces": [
         "example"
     ],
@@ -32,7 +31,7 @@
         "test": "jasmine",
         "lint:eslint": "eslint src/*",
         "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\" --stripInternal --disableSources --excludePrivate --excludeProtected --readme none ",
-        "css": "sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
+        "css": "sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
     },
     "author": "Caplin Systems Ltd",
     "repository": "https://github.com/caplin/FlexLayout",

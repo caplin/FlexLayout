@@ -303,6 +303,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <select style={{ marginLeft: 5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
+                    <option value="gray">Gray</option>
                     <option value="dark">Dark</option>
                 </select>
                 <button style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
