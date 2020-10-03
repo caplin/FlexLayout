@@ -18,9 +18,9 @@
   z-index: 10;
 }
 .flexlayout__splitter_drag {
+  z-index: 1000;
   border-radius: 5px;
   background-color: #404040;
-  z-index: 1000;
 }
 .flexlayout__outline_rect {
   position: absolute;
@@ -72,6 +72,7 @@
   box-sizing: border-box;
   font-size: medium;
   font-family: Roboto, Arial, sans-serif;
+  background-color: #121212;
 }
 .flexlayout__tabset_header {
   position: absolute;
@@ -79,11 +80,12 @@
   align-items: center;
   left: 0;
   right: 0;
-  background-color: #121212;
-  color: white;
   padding: 3px 3px 3px 5px;
-  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
   box-sizing: border-box;
+  border-bottom: 1px solid #262626;
+  color: white;
+  background-color: #121212;
+  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
 }
 .flexlayout__tabset_header_content {
   flex-grow: 1;
@@ -96,6 +98,7 @@
   right: 0;
   overflow: hidden;
   display: flex;
+  background-color: #121212;
 }
 .flexlayout__tabset_tabbar_outer_top {
   border-bottom: 1px solid #262626;
@@ -144,7 +147,6 @@
   padding: 3px 8px;
   margin: 0px 2px;
   cursor: pointer;
-  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
 }
 .flexlayout__tab_button--selected {
   background-color: #262626;
@@ -160,10 +162,12 @@
   color: gray;
 }
 .flexlayout__tab_button_top {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
 .flexlayout__tab_button_bottom {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
 }
@@ -253,12 +257,12 @@
   color: royalblue;
 }
 .flexlayout__border {
-  background-color: #1a1a1a;
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
   font-size: medium;
   font-family: Roboto, Arial, sans-serif;
+  background-color: #1a1a1a;
 }
 .flexlayout__border_top {
   border-bottom: 1px solid #262626;
@@ -309,11 +313,10 @@
   cursor: pointer;
   padding: 3px 8px;
   margin: 2px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
   box-sizing: border-box;
   white-space: nowrap;
-  background-color: #262626;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
 }
 .flexlayout__border_button--selected {
   background-color: #262626;
