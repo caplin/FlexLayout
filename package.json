@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.5.3",
+    "version": "0.5.4",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -18,16 +18,13 @@
         "reactjs",
         "react-dom"
     ],
-    "workspaces": [
-        "example"
-    ],
     "scripts": {
         "start:example": "yarn link & yarn workspace example start",
-        "devserver": "webpack-dev-server",
+        "start": "webpack serve",
         "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
         "build:commonjs": "tsc -p tsconfig2.json",
-        "build:umd": "webpack --config webpack_build.config.js",
-        "build:umd:min": "webpack --minimize --config webpack_build_min.config.js",
+        "build:umd": "webpack --mode=development --config webpack_build.config.js",
+        "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
         "test": "jasmine",
         "lint:eslint": "eslint src/*",
         "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\" --stripInternal --disableSources --excludePrivate --excludeProtected --readme none ",
@@ -37,24 +34,26 @@
     "repository": "https://github.com/caplin/FlexLayout",
     "license": "ISC",
     "peerDependencies": {
-        "react": "^16.13.1",
-        "react-dom": "^16.13.1"
+        "react": "^17.0.1",
+        "react-dom": "^17.0.1"
     },
     "eslintConfig": {
         "extends": "react-app"
     },
     "devDependencies": {
-        "@types/jasmine": "^3.5.14",
-        "@types/react": "16.9.35",
+        "@types/jasmine": "^3.6.0",
+        "@types/node": "^14.0.0",
+        "@types/react": "^16.9.53",
         "@types/react-dom": "^16.9.8",
         "awesome-typescript-loader": "^5.2.0",
-        "jasmine": "^3.6.1",
-        "prettier": "^2.1.1",
-        "react-scripts": "^3.4.3",
-        "sass": "^1.26.10",
-        "source-map-loader": "^1.1.0",
-        "typedoc": "^0.19.0",
-        "typescript": "^3"
+        "jasmine": "^3.6.2",
+        "prettier": "^2.1.2",
+        "react-scripts": "4.0.0",
+        "sass": "^1.27.0",
+        "source-map-loader": "^1.1.2",
+        "typedoc": "^0.19.2",
+        "typescript": "^4.0.3",
+        "webpack-cli": "^4.1.0"
     },
     "dependencies": {}
 }

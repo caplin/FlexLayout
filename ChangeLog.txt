@@ -1,3 +1,7 @@
+0.5.4
+Fix issue running with React 17.0.1
+Window title now updates when tab renamed
+
 0.5.3
 Change classname strings to enum values
 TSLint replaced with ESLint

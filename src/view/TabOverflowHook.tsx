@@ -27,7 +27,9 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
     React.useEffect(() => {
         selfRef.current!.addEventListener("wheel", onWheel);
         return () => {
-            selfRef.current!.removeEventListener("wheel", onWheel);
+            if (selfRef.current) {
+                selfRef.current!.removeEventListener("wheel", onWheel);
+            }
         };
     }, []);
 

@@ -153,6 +153,9 @@ class TabNode extends Node implements IDraggable {
     /** @hidden @internal */
     _setName(name: string) {
         this._attributes.name = name;
+        if (this._window && this._window.document) {
+            this._window.document.title = name;
+        }
     }
 
     /** @hidden @internal */
