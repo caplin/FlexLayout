@@ -159,7 +159,7 @@ class Model {
     }
 
     /** @hidden @internal */
-    _setMaximizedTabset(tabsetNode: TabSetNode) {
+    _setMaximizedTabset(tabsetNode: (TabSetNode | undefined)) {
         this._maximizedTabSet = tabsetNode;
     }
 

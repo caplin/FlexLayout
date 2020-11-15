@@ -329,7 +329,6 @@ class RowNode extends Node implements IDropTarget {
 
     /** @hidden @internal */
     _tidy() {
-        // console.log("a", this._model.toString());
         let i = 0;
         while (i < this._children.length) {
             const child = this._children[i];
@@ -365,6 +364,9 @@ class RowNode extends Node implements IDropTarget {
             } else if (child instanceof TabSetNode && child.getChildren().length === 0) {
                 if (child.isEnableDeleteWhenEmpty()) {
                     this._removeChild(child);
+                    if ( child === this._model.getMaximizedTabset()) {
+                        this._model._setMaximizedTabset(undefined);
+                    }
                 } else {
                     i++;
                 }
@@ -380,7 +382,6 @@ class RowNode extends Node implements IDropTarget {
             this._addChild(child);
         }
 
-        // console.log("b", this._model.toString());
     }
 
     /** @hidden @internal */

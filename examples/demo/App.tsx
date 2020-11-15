@@ -2,18 +2,18 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as FlexLayout from "../../src/index";
 import Utils from "./Utils";
-import { Node, TabSetNode, TabNode, DropInfo, BorderNode, Actions, Action } from "../../src/index";
+import { Node, TabSetNode, TabNode, DropInfo, BorderNode, Action } from "../../src/index";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, maximized: boolean, fontSize: string }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, fontSize: string }> {
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
 
     constructor(props: any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, maximized: false, fontSize: "medium" };
+        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
 
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
@@ -131,9 +131,6 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     onAction = (action: Action) => {
-        if (action.type === Actions.MAXIMIZE_TOGGLE) {
-            this.setState({ maximized: this.state.model!.getMaximizedTabset() === undefined })
-        }
         return action;
     }
 
@@ -227,7 +224,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         };
 
         let contents: React.ReactNode = "loading ...";
+        let maximized = false;
         if (this.state.model !== null) {
+            maximized = this.state.model.getMaximizedTabset() !== undefined;
             contents = <FlexLayout.Layout
                 ref="layout"
                 model={this.state.model}
@@ -307,13 +306,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="dark">Dark</option>
                 </select>
                 <button style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
-                <button disabled={this.state.adding || this.state.maximized}
+                <button disabled={this.state.adding || maximized}
                     style={{ height: "30px", marginLeft: 5, border: "none", outline: "none", backgroundColor: "lightgray" }}
                     title="Add using Layout.addTabWithDragAndDrop"
                     onMouseDown={this.onAddDragMouseDown}
                     onTouchStart={this.onAddDragMouseDown}>Add Drag</button>
-                <button disabled={this.state.adding || this.state.maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
-                <button disabled={this.state.adding || this.state.maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
+                <button disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                <button disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
             </div>
             <div className="contents">
                 {contents}
