@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",

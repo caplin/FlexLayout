@@ -1,3 +1,6 @@
+0.5.5
+Fix for #170 - Closing the last tab of a maximized tabset crashes the layout
+
 0.5.4
 Fix issue running with React 17.0.1
 Window title now updates when tab renamed
