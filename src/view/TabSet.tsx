@@ -54,23 +54,8 @@ export const TabSet = (props: ITabSetProps) => {
         event.stopPropagation();
     };
 
-    const canMaximize = () => {
-        if (node.isEnableMaximize()) {
-            // always allow maximize toggle if already maximized
-            if (node.getModel().getMaximizedTabset() === node) {
-                return true;
-            }
-            // only one tabset, so disable
-            if (node.getParent() === node.getModel().getRoot() && node.getModel().getRoot().getChildren().length === 1) {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    };
-
     const onMaximizeToggle = () => {
-        if (canMaximize()) {
+        if (node.canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -82,7 +67,7 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onDoubleClick = (event: Event) => {
-        if (canMaximize()) {
+        if (node.canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -160,7 +145,7 @@ export const TabSet = (props: ITabSetProps) => {
             </button>
         );
     }
-    if (canMaximize()) {
+    if (node.canMaximize()) {
         const minTitle = layout.i18nName(I18nLabel.Restore);
         const maxTitle = layout.i18nName(I18nLabel.Maximize);
         buttons.push(

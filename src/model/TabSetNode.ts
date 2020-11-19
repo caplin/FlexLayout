@@ -168,6 +168,21 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         return this._getAttr("enableMaximize") as boolean;
     }
 
+    canMaximize() {
+        if (this.isEnableMaximize()) {
+            // always allow maximize toggle if already maximized
+            if (this.getModel().getMaximizedTabset() === this) {
+                return true;
+            }
+            // only one tabset, so disable
+            if (this.getParent() === this.getModel().getRoot() && this.getModel().getRoot().getChildren().length === 1) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     isEnableTabStrip() {
         return this._getAttr("enableTabStrip") as boolean;
     }

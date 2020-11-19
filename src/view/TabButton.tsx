@@ -42,12 +42,13 @@ export const TabButton = (props: ITabButtonProps) => {
             setEditing(true);
             layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
-        } else {
-            const parentNode = node.getParent() as TabSetNode;
-            if (parentNode.isEnableMaximize()) {
-                layout.maximize(parentNode);
-            }
-        }
+        } 
+        // else {
+        //     const parentNode = node.getParent() as TabSetNode;
+        //     if (parentNode.canMaximize()) {
+        //         layout.maximize(parentNode);
+        //     }
+        // }
     };
 
     const onEndEdit = (event: Event) => {
