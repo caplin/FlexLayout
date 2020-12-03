@@ -338,7 +338,7 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "200%" }, "Size 200%")),
                 React.createElement("select", { style: { marginLeft: 5 }, onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
-                    React.createElement("option", { value: "gray" }, "Gray"),
+                    React.createElement("option", { value: "gray", selected: true }, "Gray"),
                     React.createElement("option", { value: "dark" }, "Dark")),
                 React.createElement("button", { style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
                 React.createElement("button", { disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none", backgroundColor: "lightgray" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
@@ -33688,6 +33688,20 @@ var TabSetNode = /** @class */ (function (_super) {
     TabSetNode.prototype.isEnableMaximize = function () {
         return this._getAttr("enableMaximize");
     };
+    TabSetNode.prototype.canMaximize = function () {
+        if (this.isEnableMaximize()) {
+            // always allow maximize toggle if already maximized
+            if (this.getModel().getMaximizedTabset() === this) {
+                return true;
+            }
+            // only one tabset, so disable
+            if (this.getParent() === this.getModel().getRoot() && this.getModel().getRoot().getChildren().length === 1) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    };
     TabSetNode.prototype.isEnableTabStrip = function () {
         return this._getAttr("enableTabStrip");
     };
@@ -35189,12 +35203,12 @@ exports.TabButton = function (props) {
             layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
         }
-        else {
-            var parentNode_1 = node.getParent();
-            if (parentNode_1.isEnableMaximize()) {
-                layout.maximize(parentNode_1);
-            }
-        }
+        // else {
+        //     const parentNode = node.getParent() as TabSetNode;
+        //     if (parentNode.canMaximize()) {
+        //         layout.maximize(parentNode);
+        //     }
+        // }
     };
     var onEndEdit = function (event) {
         if (event.target !== contentRef.current) {
@@ -35544,22 +35558,8 @@ exports.TabSet = function (props) {
     var onInterceptMouseDown = function (event) {
         event.stopPropagation();
     };
-    var canMaximize = function () {
-        if (node.isEnableMaximize()) {
-            // always allow maximize toggle if already maximized
-            if (node.getModel().getMaximizedTabset() === node) {
-                return true;
-            }
-            // only one tabset, so disable
-            if (node.getParent() === node.getModel().getRoot() && node.getModel().getRoot().getChildren().length === 1) {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    };
     var onMaximizeToggle = function () {
-        if (canMaximize()) {
+        if (node.canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -35569,7 +35569,7 @@ exports.TabSet = function (props) {
         }
     };
     var onDoubleClick = function (event) {
-        if (canMaximize()) {
+        if (node.canMaximize()) {
             layout.maximize(node);
         }
     };
@@ -35605,7 +35605,7 @@ exports.TabSet = function (props) {
         var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
         buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.popout));
     }
-    if (canMaximize()) {
+    if (node.canMaximize()) {
         var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
         buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
