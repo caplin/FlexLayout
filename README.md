@@ -329,12 +329,12 @@ Attributes allowed in the 'global' element
 | tabSetEnableDivide | true | allow user to drag tabs to region of all tabsets, splitting into new tabset |
 | tabSetEnableMaximize | true | allow user to maximize all tabsets to fill view via maximize button |
 | tabSetAutoSelectTab | true | whether to select new/moved tabs in all tabsets |
-| tabSetClassNameTabStrip | null | |
+| tabSetClassNameTabStrip | null | height in pixels of tab strips in all tabsets |
 | tabSetClassNameHeader | null | |
-| tabSetEnableTabStrip | true | |
-| tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 then the value will be calculated from the current fontSize |
-| tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 then the value will be calculated from the current fontSize |
-| borderBarSize | 0 | Size of the border bars in pixels, if left as 0 then the value will be calculated from the current fontSize |
+| tabSetEnableTabStrip | true | enable tab strip and allow multiple tabs in all tabsets |
+| tabSetHeaderHeight | 0 | height of tabset header in pixels; if left as 0 then the value will be calculated from the current fontSize |
+| tabSetTabStripHeight | 0 | height of tabset tab bar in pixels; if left as 0 then the value will be calculated from the current fontSize |
+| borderBarSize | 0 | size of the border bars in pixels; if left as 0 then the value will be calculated from the current fontSize |
 | borderEnableDrop | true | allow user to drag tabs into this border |
 | borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
 | borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
@@ -397,12 +397,12 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | tabset | |
-| weight | 100 | |
+| weight | 100 | relative weight for sizing of this tabset in parent row |
 | width | null | preferred pixel width |
 | height | null | preferred pixel height |
 | name | null | named tabsets will show a header bar above the tabs |
-| selected | 0 | |
-| maximized | false | |
+| selected | 0 | index of selected/visible tab in tabset |
+| maximized | false | whether tabset is currently maximized to fill view |
 | id | auto generated | |
 | children | *required* | a list of tab nodes |
 | enableDeleteWhenEmpty | *inherited* | |
@@ -413,12 +413,12 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | autoSelectTab | *inherited* | whether to select new/moved tabs in tabset |
 | classNameTabStrip | *inherited* | |
 | classNameHeader | *inherited* | |
-| enableTabStrip | *inherited* | |
+| enableTabStrip | *inherited* | enable tab strip and allow multiple tabs in this tabset |
 | headerHeight | *inherited* | |
-| tabStripHeight | *inherited* | |
+| tabStripHeight | *inherited* | height in pixels of tab strip |
 | tabLocation | *inherited* | show tabs in location top or bottom |
-| minHeight | *inherited* | |
-| minWidth | *inherited* | |
+| minHeight | *inherited* | minimum width (in px) for this tabset |
+| minWidth | *inherited* | minimum height (in px) for this tabset |
 
 ## Border Attributes
 
@@ -432,11 +432,11 @@ Inherited defaults will take their value from the associated global attributes (
 | type | border | |
 | size | *inherited* | size of the tab body when selected |
 | minSize | *inherited* |  |
-| selected | -1 | -1 is the unselected value|
+| selected | -1 | index of selected/visible tab in border; -1 means no tab unselected / border closed |
 | id | auto generated | border_ + border name e.g. border_left |
 | show | true | show/hide this border |
 | children | *required* | a list of tab nodes |
-| barSize | *inherited* | |
+| barSize | *inherited* | size of this border's bar in pixels; if left as 0 then the value will be calculated from the current fontSize |
 | enableDrop | *inherited* | |
 | autoSelectTabWhenOpen | *inherited* | whether to select new/moved tabs in border when the border is already open |
 | autoSelectTabWhenClosed | *inherited* | whether to select new/moved tabs in border when the border is currently closed |
