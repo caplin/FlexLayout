@@ -312,37 +312,37 @@ Attributes allowed in the 'global' element
 
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
-| splitterSize | 8 | |
+| splitterSize | 8 | width in pixels of all splitters between tabsets/borders |
 | enableEdgeDock | true | |
-| tabEnableClose | true | |
+| tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |
-| tabEnableDrag | true | |
-| tabEnableRename | true | |
+| tabEnableDrag | true | allow user to drag all tabs to new location |
+| tabEnableRename | true | allow user to rename all tabs by double clicking |
 | tabEnableFloat | false | enable popouts in all tabs (in popout capable browser) |
 | tabClassName | null | |
 | tabIcon | null | |
-| tabEnableRenderOnDemand | true | |
+| tabEnableRenderOnDemand | true | whether to avoid rendering component until tab is visible |
 | tabDragSpeed | 0.3 | CSS transition speed of drag outlines (in seconds) |
 | tabSetEnableDeleteWhenEmpty | true | |
-| tabSetEnableDrop | true | |
-| tabSetEnableDrag | true | |
-| tabSetEnableDivide | true | |
-| tabSetEnableMaximize | true | |
-| tabSetAutoSelectTab | true | whether to select new/moved tabs in tabset |
+| tabSetEnableDrop | true | allow user to drag tabs into all tabsets |
+| tabSetEnableDrag | true | allow user to drag tabs out of all tabsets |
+| tabSetEnableDivide | true | allow user to drag tabs to region of all tabsets, splitting into new tabset |
+| tabSetEnableMaximize | true | allow user to maximize all tabsets to fill view via maximize button |
+| tabSetAutoSelectTab | true | whether to select new/moved tabs in all tabsets |
 | tabSetClassNameTabStrip | null | |
 | tabSetClassNameHeader | null | |
 | tabSetEnableTabStrip | true | |
 | tabSetHeaderHeight | 0 | Height of tabset header in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | tabSetTabStripHeight | 0 | Height of tabset tab bar in pixels, if left as 0 then the value will be calculated from the current fontSize |
 | borderBarSize | 0 | Size of the border bars in pixels, if left as 0 then the value will be calculated from the current fontSize |
-| borderEnableDrop | true | |
+| borderEnableDrop | true | allow user to drag tabs into this border |
 | borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
 | borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
 | borderClassName | null | |
-| borderSize | 200 | |
-| borderMinSize | 0 | |
-| tabSetMinHeight | 0 | |
-| tabSetMinWidth | 0 | |
+| borderSize | 200 | initial width in pixels for left/right borders, height for top/bottom borders |
+| borderMinSize | 0 | minimum width in pixels for left/right borders, height for top/bottom borders |
+| tabSetMinHeight | 0 | minimum width (in px) for all tabsets |
+| tabSetMinWidth | 0 | minimum height (in px) for all tabsets |
 | tabSetTabLocation | top | show tabs in location top or bottom |
 
 
@@ -368,19 +368,19 @@ Inherited defaults will take their value from the associated global attributes (
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | tab | |
-| name | *required* | |
-| component | *required* | |
+| name | *required* | internal unique string identifying tab (for factory) |
+| component | *required* | string identifying which component to run (for factory) |
 | config | null | a place to hold json config for the hosted component |
 | id | auto generated | |
-| enableClose | *inherited* | |
-| closeType | *inherited* | |
-| enableDrag | *inherited* | |
-| enableRename | *inherited* | |
+| enableClose | *inherited* | allow user to close tab via close button |
+| closeType | *inherited* | see values in ICloseType |
+| enableDrag | *inherited* | allow user to drag tab to new location |
+| enableRename | *inherited* | allow user to rename tabs by double clicking |
 | enableFloat | *inherited* | enable popout (in popout capable browser) |
 | floating | false | |
 | className | *inherited* | |
 | icon | *inherited* | |
-| enableRenderOnDemand | *inherited* | |
+| enableRenderOnDemand | *inherited* | whether to avoid rendering component until tab is visible |
 
 Tab nodes have a getExtraData() method that initially returns an empty object, this is the place to 
 add extra data to a tab node that will not be saved.
@@ -406,10 +406,10 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | id | auto generated | |
 | children | *required* | a list of tab nodes |
 | enableDeleteWhenEmpty | *inherited* | |
-| enableDrop | *inherited* | |
-| enableDrag | *inherited* | |
-| enableDivide | *inherited* | |
-| enableMaximize | *inherited* | |
+| enableDrop | *inherited* | allow user to drag tabs into this tabset |
+| enableDrag | *inherited* | allow user to drag tabs out this tabset |
+| enableDivide | *inherited* | allow user to drag tabs to region of this tabset, splitting into new tabset |
+| enableMaximize | *inherited* | allow user to maximize tabset to fill view via maximize button |
 | autoSelectTab | *inherited* | whether to select new/moved tabs in tabset |
 | classNameTabStrip | *inherited* | |
 | classNameHeader | *inherited* | |
