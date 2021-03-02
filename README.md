@@ -495,9 +495,9 @@ Methods on the Layout Component for adding tabs, the tabs are specified by their
 Example:
 
 ```
-this.refs.layout.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
+this.layoutRef.current.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
 ```
-This would add a new grid component to the tabset with id "NAVIGATION".
+This would add a new grid component to the tabset with id "NAVIGATION" (where this.layoutRef is a ref to the Layout element, see https://reactjs.org/docs/refs-and-the-dom.html ).
 
 
 | Layout Method | Description  |
