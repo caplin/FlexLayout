@@ -78,6 +78,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onRenderTab     | optional          | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
 | onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |
 | onModelChange   | optional          | function called when model has changed |
+| onExternalDrag  | optional          | function called when an external object (not a tab) gets dragged onto the layout, which should return either `undefined` to reject the drag/drop or an object with keys `dragText`, `json`, and optionally `onDrop` to create a tab via drag (similar to a call to `addTabToTabSet`) |
 | classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
 | i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
 | supportsPopout  | optional          | if left undefined will do simple check based on userAgent |
