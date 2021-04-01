@@ -445,23 +445,12 @@ Inherited defaults will take their value from the associated global attributes (
 
 ## Model Actions
 
-All changes to the model are applied through actions, you can intercept actions resulting from GUI changes before they are applied by
-implementing the onAction callback property of the Layout. You can also apply actions directly using the Model.doAction()
-method.
-
-#Example
-
-```
-        model.doAction(Actions.updateModelAttributes({
-            splitterSize:40,
-            tabSetHeaderHeight:40,
-            tabSetTabStripHeight:40
-        }));
-```
-
-The above example would increase the size of the splitters, tabset headers and tabs, this could be used to make
-adjusting the layout easier on a small device.
-
+All changes to the model are applied through actions.
+You can intercept actions resulting from GUI changes before they are applied by
+implementing the `onAction` callback property of the `Layout`.
+You can also apply actions directly using the `Model.doAction()` method.
+This method takes a single argument, created by one of the following action
+generators (typically accessed as `FlexLayout.Actions.<actionName>`):
 
 | Action Creator | Description  |
 | ------------- | -----|
@@ -479,13 +468,27 @@ adjusting the layout easier on a small device.
 |	Actions.floatTab(nodeId) | popout the tab into a floating browser window |
 |	Actions.unFloatTab(nodeId) | restore a popped out tab to the main layout |
 
-for example:
+### Examples
+
+```js
+model.doAction(FlexLayout.Actions.updateModelAttributes({
+    splitterSize:40,
+    tabSetHeaderHeight:40,
+    tabSetTabStripHeight:40
+}));
+```
+
+The above example would increase the size of the splitters, tabset headers and tabs, this could be used to make
+adjusting the layout easier on a small device.
 
 ```
-model.doAction(Actions.addNode({type:"tab", component:"grid", name:"a grid", id:"5"}, "1", DockLocation.CENTER, 0));
+model.doAction(FlexLayout.Actions.addNode(
+    {type:"tab", component:"grid", name:"a grid", id:"5"},
+    "1", FlexLayout.DockLocation.CENTER, 0));
 ```
-This would add a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
-Note: you can get the id of a node using the method node.getId(), if an id wasn't assigned when the node was created then one will be created for you of the form #<next available id> (e.g. #1, #2 ...).
+This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
+Note: you can get the id of a node using the method `node.getId()`.
+If an id wasn't assigned when the node was created, then one will be created for you of the form `#<next available id>` (e.g. `#1`, `#2`, ...).
 
 
 ## Layout Component Methods to Create New Tabs
