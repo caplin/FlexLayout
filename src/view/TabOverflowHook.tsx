@@ -130,9 +130,9 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
     const onMouseWheel = (event: React.WheelEvent<HTMLDivElement>) => {
         let delta = 0;
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-            delta = event.deltaX;
+            delta = -event.deltaX;
         } else {
-            delta = event.deltaY;
+            delta = -event.deltaY;
         }
         if (event.deltaMode === 1) {
             // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
