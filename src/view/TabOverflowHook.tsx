@@ -53,7 +53,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         }
     };
 
-    const getSize = (rect: DOMRect) => {
+    const getSize = (rect: DOMRect | Rect) => {
         if (orientation === Orientation.HORZ) {
             return rect.width;
         } else {
