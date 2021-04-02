@@ -58,7 +58,7 @@ export interface ILayoutProps {
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
       dragText: string,
       json: any,
-      onDrop?: () => void
+      onDrop?: (event?: Event) => void
     };
     classNameMapper?: (defaultClassName: string) => string;
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
@@ -179,7 +179,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private edgeTopDiv?: HTMLDivElement;
     /** @hidden @internal */
-    private fnNewNodeDropped?: () => void;
+    private fnNewNodeDropped?: (event?: Event) => void;
     /** @hidden @internal */
     private currentDocument?: HTMLDocument;
     /** @hidden @internal */
@@ -573,7 +573,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: () => void) {
+    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: (event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
@@ -720,7 +720,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
-    onDragEnd = () => {
+    onDragEnd = (event: Event) => {
         const rootdiv = this.selfRef.current!;
         rootdiv.removeChild(this.outlineDiv!);
         rootdiv.removeChild(this.dragDiv!);
@@ -733,7 +733,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
 
                 if (this.fnNewNodeDropped != null) {
-                    this.fnNewNodeDropped();
+                    this.fnNewNodeDropped(event);
                     this.fnNewNodeDropped = undefined;
                 }
                 this.newTabJson = undefined;
