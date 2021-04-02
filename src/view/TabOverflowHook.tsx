@@ -88,13 +88,19 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
                     const selectedRect = selectedTab.getTabRect()!;
                     const selectedStart = getNear(selectedRect) - tabMargin;
                     const selectedEnd = getFar(selectedRect) + tabMargin;
-                    if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
-                        if (selectedStart < getNear(nodeRect)) {
-                            shiftPos = getNear(nodeRect) - selectedStart;
-                        }
-                        // use second if statement to prevent tab moving back then forwards if not enough space for single tab
-                        if (selectedEnd + shiftPos > endPos) {
-                            shiftPos = endPos - selectedEnd;
+
+                    // when selected tab is larger than available space then align left
+                    if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect) ) {
+                        shiftPos = getNear(nodeRect) - selectedStart;
+                    } else {
+                        if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
+                            if (selectedStart < getNear(nodeRect)) {
+                                shiftPos = getNear(nodeRect) - selectedStart;
+                            }
+                            // use second if statement to prevent tab moving back then forwards if not enough space for single tab
+                            if (selectedEnd + shiftPos > endPos) {
+                                shiftPos = endPos - selectedEnd;
+                            }
                         }
                     }
                 }

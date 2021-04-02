@@ -14,7 +14,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     constructor(props: any) {
         super(props);
         this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
-
+        
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
             this.save();
@@ -302,7 +302,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <select style={{ marginLeft: 5 }} onChange={this.onThemeChange}>
                     <option value="light">Light</option>
-                    <option value="gray">Gray</option>
+                    <option value="gray" selected>Gray</option>
                     <option value="dark">Dark</option>
                 </select>
                 <button style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
