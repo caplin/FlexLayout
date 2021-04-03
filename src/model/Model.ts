@@ -215,8 +215,10 @@ class Model {
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
      * @param action the action to perform
+     * @returns added Node for Actions.addNode; undefined otherwise
      */
-    doAction(action: Action) {
+    doAction(action: Action): Node | undefined {
+        let returnVal = undefined;
         // console.log(action);
         switch (action.type) {
             case Actions.ADD_NODE: {
@@ -224,6 +226,7 @@ class Model {
                 const toNode = this._idMap[action.data.toNode] as Node & IDraggable;
                 if (toNode instanceof TabSetNode || toNode instanceof BorderNode || toNode instanceof RowNode) {
                     toNode.drop(newNode, DockLocation.getByName(action.data.location), action.data.index, action.data.select);
+                    returnVal = newNode;
                 }
                 break;
             }
@@ -343,6 +346,8 @@ class Model {
         if (this._changeListener !== undefined) {
             this._changeListener();
         }
+
+        return returnVal;
     }
 
     /** @hidden @internal */
