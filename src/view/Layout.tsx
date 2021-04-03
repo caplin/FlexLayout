@@ -55,6 +55,11 @@ export interface ILayoutProps {
         }
     ) => void;
     onModelChange?: (model: Model) => void;
+    onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
+      dragText: string,
+      json: any,
+      onDrop?: (node?: Node, event?: Event) => void
+    };
     classNameMapper?: (defaultClassName: string) => string;
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
     supportsPopout?: boolean | undefined;
@@ -85,11 +90,11 @@ export interface ILayoutCallbacks {
     isSupportsPopout(): boolean;
     getCurrentDocument(): HTMLDocument | undefined;
     getClassName(defaultClassName: string): string;
-    doAction(action: Action): void;
+    doAction(action: Action): Node | undefined;
     getDomRect(): any;
     getRootDiv(): HTMLDivElement;
     dragStart(
-        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
+        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
         dragDivText: string,
         node: Node & IDraggable,
         allowDrag: boolean,
@@ -174,7 +179,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private edgeTopDiv?: HTMLDivElement;
     /** @hidden @internal */
-    private fnNewNodeDropped?: () => void;
+    private fnNewNodeDropped?: (node?: Node, event?: Event) => void;
     /** @hidden @internal */
     private currentDocument?: HTMLDocument;
     /** @hidden @internal */
@@ -202,6 +207,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.firstRender = true;
 
         this.state = { rect: new Rect(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30 };
+
+        this.onDragEnter = this.onDragEnter.bind(this);
     }
 
     /** @hidden @internal */
@@ -232,14 +239,15 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
-    doAction(action: Action): void {
+    doAction(action: Action): Node | undefined {
         if (this.props.onAction !== undefined) {
             const outcome = this.props.onAction(action);
             if (outcome !== undefined) {
-                this.props.model.doAction(outcome);
+                return this.props.model.doAction(outcome);
             }
+            return undefined;
         } else {
-            this.props.model.doAction(action);
+            return this.props.model.doAction(action);
         }
     }
 
@@ -391,7 +399,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         // this.layoutTime = (Date.now() - this.start);
 
         return (
-            <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
+            <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)} onDragEnter={this.props.onExternalDrag ? this.onDragEnter : undefined}>
                 {tabSetComponents}
                 {this.tabIds.map((t) => {
                     return tabComponents[t];
@@ -566,7 +574,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: () => void) {
+    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
@@ -647,7 +655,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     dragStart = (
-        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | undefined,
+        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
         dragDivText: string,
         node: Node & IDraggable,
         allowDrag: boolean,
@@ -655,11 +663,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         onDoubleClick?: (event: Event) => void
     ) => {
         if (this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
-            DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument);
+            DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, this.selfRef.current!);
         } else {
             this.dragNode = node;
             this.dragDivText = dragDivText;
-            DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument);
+            DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument, this.selfRef.current!);
         }
     };
 
@@ -713,7 +721,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
-    onDragEnd = () => {
+    onDragEnd = (event: Event) => {
         const rootdiv = this.selfRef.current!;
         rootdiv.removeChild(this.outlineDiv!);
         rootdiv.removeChild(this.dragDiv!);
@@ -723,10 +731,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         if (this.dropInfo) {
             if (this.newTabJson !== undefined) {
-                this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
+                const newNode = this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
 
                 if (this.fnNewNodeDropped != null) {
-                    this.fnNewNodeDropped();
+                    this.fnNewNodeDropped(newNode, event);
                     this.fnNewNodeDropped = undefined;
                 }
                 this.newTabJson = undefined;
@@ -735,6 +743,21 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             }
         }
     };
+
+    /** @hidden @internal */
+    onDragEnter(event: React.DragEvent<HTMLDivElement>) {
+        // DragDrop keeps track of number of dragenters minus the number of
+        // dragleaves. Only start a new drag if there isn't one already.
+        if (DragDrop.instance.isDragging())
+            return;
+        const drag = this.props.onExternalDrag!(event);
+        if (drag) {
+            // Mimic addTabWithDragAndDrop, but pass in DragEvent
+            this.fnNewNodeDropped = drag.onDrop;
+            this.newTabJson = drag.json;
+            this.dragStart(event, drag.dragText, TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
+        }
+    }
 
     /** @hidden @internal */
     showEdges(rootdiv: HTMLElement) {

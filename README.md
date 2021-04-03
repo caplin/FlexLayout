@@ -78,6 +78,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onRenderTab     | optional          | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
 | onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |
 | onModelChange   | optional          | function called when model has changed |
+| onExternalDrag  | optional          | function called when an external object (not a tab) gets dragged onto the layout, with a single `dragenter` argument. Should return either `undefined` to reject the drag/drop or an object with keys `dragText`, `json`, and optionally `onDrop`, to create a tab via drag (similar to a call to `addTabToTabSet`). Function `onDrop` is passed the added tab `Node` and the `drop` `DragEvent`, unless the drag was canceled. |
 | classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
 | i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
 | supportsPopout  | optional          | if left undefined will do simple check based on userAgent |
@@ -454,7 +455,7 @@ generators (typically accessed as `FlexLayout.Actions.<actionName>`):
 
 | Action Creator | Description  |
 | ------------- | -----|
-|	Actions.addNode(newNodeJson, toNodeId, location, index, select?) | add a new tab node to the given tabset node; `select` specifies whether to select new tab, defaulting to `autoSelectTab` attribute |
+|	Actions.addNode(newNodeJson, toNodeId, location, index, select?) | add a new tab node to the given tabset node; `select` specifies whether to select new tab, defaulting to `autoSelectTab` attribute; returns the created `Node` |
 |	Actions.moveNode(fromNodeId, toNodeId, location, index, select?) | move a tab node from its current location to the new node and location; `select` specifies whether to select tab, defaulting to new tabset's `autoSelectTab` attribute |
 |	Actions.deleteTab(tabNodeId) | delete the given tab |
 |	Actions.renameTab(tabNodeId, newName) | rename the given tab |
@@ -481,13 +482,15 @@ model.doAction(FlexLayout.Actions.updateModelAttributes({
 The above example would increase the size of the splitters, tabset headers and tabs, this could be used to make
 adjusting the layout easier on a small device.
 
-```
+```js
 model.doAction(FlexLayout.Actions.addNode(
     {type:"tab", component:"grid", name:"a grid", id:"5"},
     "1", FlexLayout.DockLocation.CENTER, 0));
 ```
+
 This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
-Note: you can get the id of a node using the method `node.getId()`.
+Note: you can get the id of a node (e.g., the node returned by the `addNode`
+action) using the method `node.getId()`.
 If an id wasn't assigned when the node was created, then one will be created for you of the form `#<next available id>` (e.g. `#1`, `#2`, ...).
 
 
@@ -507,7 +510,7 @@ This would add a new grid component to the tabset with id "NAVIGATION" (where th
 | ------------- | -----|
 | addTabToTabSet(tabsetId, json) | adds a new tab to the tabset with the given Id |
 | addTabToActiveTabSet(json) | adds a new tab to the active tabset |
-| addTabWithDragAndDrop(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the drag starts immediately |
+| addTabWithDragAndDrop(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, with the drag starting immediately; on success, `onDrop` is passed the created tab `Node`; on cancel, no arguments are passed |
 | addTabWithDragAndDropIndirect(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the marker is shown and must be clicked on to start dragging |
 
 ## Tab Node Events
