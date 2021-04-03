@@ -113,6 +113,7 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var FlexLayout = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
+var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
@@ -167,6 +168,35 @@ var App = /** @class */ (function (_super) {
                 _this.setState({ adding: true });
             }
         };
+        _this.onExternalDrag = function (e) {
+            console.log("onExternaldrag");
+            // Check for supported content type
+            if (e.dataTransfer.types.indexOf('text/plain') < 0)
+                return;
+            // Set dropEffect (icon)
+            e.dataTransfer.dropEffect = 'link';
+            return {
+                dragText: "Drag Link To New Tab",
+                json: {
+                    type: 'tab',
+                    name: 'Dragged Link',
+                    component: 'text',
+                },
+                onDrop: function (node, event) {
+                    if (!node || !event)
+                        return; // aborted drag
+                    if (node instanceof index_1.TabNode && event instanceof DragEvent) {
+                        var dragEvent = event;
+                        if (dragEvent.dataTransfer) {
+                            var text = dragEvent.dataTransfer.getData('text/plain');
+                            if (text) {
+                                _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { text: text } }));
+                            }
+                        }
+                    }
+                }
+            };
+        };
         _this.onShowLayoutClick = function (event) {
             console.log(JSON.stringify(_this.state.model.toJson(), null, "\t"));
         };
@@ -207,7 +237,12 @@ var App = /** @class */ (function (_super) {
                 return React.createElement(FlexLayout.Layout, { model: model, factory: _this.factory });
             }
             else if (component === "text") {
-                return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
+                try {
+                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
+                }
+                catch (e) {
+                    console.log(e);
+                }
             }
             return null;
         };
@@ -298,7 +333,7 @@ var App = /** @class */ (function (_super) {
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet });
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet, onExternalDrag: this.onExternalDrag });
         }
         return React.createElement("div", { className: "app" },
             React.createElement("div", { className: "toolbar" },
@@ -30762,6 +30797,8 @@ var DragDrop = /** @class */ (function () {
         /** @hidden @internal */
         this._startY = 0;
         /** @hidden @internal */
+        this._dragDepth = 0;
+        /** @hidden @internal */
         this._glassShowing = false;
         /** @hidden @internal */
         this._dragging = false;
@@ -30774,10 +30811,14 @@ var DragDrop = /** @class */ (function () {
             this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
+            this._glass.style.pointerEvents = "none";
         }
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
+        this._onDragCancel = this._onDragCancel.bind(this);
+        this._onDragEnter = this._onDragEnter.bind(this);
+        this._onDragLeave = this._onDragLeave.bind(this);
         this._lastClick = 0;
         this._clickX = 0;
         this._clickY = 0;
@@ -30809,9 +30850,10 @@ var DragDrop = /** @class */ (function () {
             this._document.body.removeChild(this._glass);
             this._glassShowing = false;
             this._document = undefined;
+            this._rootElement = undefined;
         }
     };
-    DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument) {
+    DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument, rootElement) {
         // prevent 'duplicate' action (mouse event for same action as previous touch event (a fix for ios))
         if (event && this._lastEvent && this._lastEvent.type.startsWith("touch") && event.type.startsWith("mouse") && event.timeStamp - this._lastEvent.timeStamp < 500) {
             return;
@@ -30822,6 +30864,12 @@ var DragDrop = /** @class */ (function () {
         }
         else {
             this._document = window.document;
+        }
+        if (rootElement) {
+            this._rootElement = rootElement;
+        }
+        else {
+            this._rootElement = this._document.body;
         }
         var posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel, currentDocument);
@@ -30850,10 +30898,20 @@ var DragDrop = /** @class */ (function () {
         this._fClick = fClick;
         this._fDblClick = fDblClick;
         this._active = true;
-        this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
-        this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
-        this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
-        this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
+        if ((event === null || event === void 0 ? void 0 : event.type) === 'dragenter') {
+            this._dragDepth = 1;
+            this._rootElement.addEventListener("dragenter", this._onDragEnter, { passive: false });
+            this._rootElement.addEventListener("dragover", this._onMouseMove, { passive: false });
+            this._rootElement.addEventListener("dragleave", this._onDragLeave, { passive: false });
+            this._document.addEventListener("dragend", this._onDragCancel, { passive: false });
+            this._document.addEventListener("drop", this._onMouseUp, { passive: false });
+        }
+        else {
+            this._document.addEventListener("mouseup", this._onMouseUp, { passive: false });
+            this._document.addEventListener("mousemove", this._onMouseMove, { passive: false });
+            this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
+            this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
+        }
     };
     DragDrop.prototype.isDragging = function () {
         return this._dragging;
@@ -30867,17 +30925,28 @@ var DragDrop = /** @class */ (function () {
     };
     /** @hidden @internal */
     DragDrop.prototype._onKeyPress = function (event) {
-        if (this._fDragCancel !== undefined && event.keyCode === 27) {
+        if (event.keyCode === 27) {
             // esc
-            this._document.removeEventListener("mousemove", this._onMouseMove);
-            this._document.removeEventListener("mouseup", this._onMouseUp);
-            this._document.removeEventListener("touchend", this._onMouseUp);
-            this._document.removeEventListener("touchmove", this._onMouseMove);
-            this.hideGlass();
-            this._fDragCancel(this._dragging);
-            this._dragging = false;
-            this._active = false;
+            this._onDragCancel();
         }
+    };
+    /** @hidden @internal */
+    DragDrop.prototype._onDragCancel = function () {
+        this._rootElement.removeEventListener("dragenter", this._onDragEnter);
+        this._rootElement.removeEventListener("dragover", this._onMouseMove);
+        this._rootElement.removeEventListener("dragleave", this._onDragLeave);
+        this._document.removeEventListener("dragend", this._onDragCancel);
+        this._document.removeEventListener("drop", this._onMouseUp);
+        this._document.removeEventListener("mousemove", this._onMouseMove);
+        this._document.removeEventListener("mouseup", this._onMouseUp);
+        this._document.removeEventListener("touchend", this._onMouseUp);
+        this._document.removeEventListener("touchmove", this._onMouseMove);
+        this.hideGlass();
+        if (this._fDragCancel !== undefined) {
+            this._fDragCancel(this._dragging);
+        }
+        this._dragging = false;
+        this._active = false;
     };
     /** @hidden @internal */
     DragDrop.prototype._getLocationEvent = function (event) {
@@ -30935,6 +31004,11 @@ var DragDrop = /** @class */ (function () {
         this._stopPropagation(event);
         this._preventDefault(event);
         this._active = false;
+        this._rootElement.removeEventListener("dragenter", this._onDragEnter);
+        this._rootElement.removeEventListener("dragover", this._onMouseMove);
+        this._rootElement.removeEventListener("dragleave", this._onDragLeave);
+        this._document.removeEventListener("dragend", this._onDragCancel);
+        this._document.removeEventListener("drop", this._onMouseUp);
         this._document.removeEventListener("mousemove", this._onMouseMove);
         this._document.removeEventListener("mouseup", this._onMouseUp);
         this._document.removeEventListener("touchend", this._onMouseUp);
@@ -30970,6 +31044,23 @@ var DragDrop = /** @class */ (function () {
                 this._clickX = posEvent.clientX;
                 this._clickY = posEvent.clientY;
             }
+        }
+        return false;
+    };
+    /** @hidden @internal */
+    DragDrop.prototype._onDragEnter = function (event) {
+        this._preventDefault(event);
+        this._stopPropagation(event);
+        this._dragDepth++;
+        return false;
+    };
+    /** @hidden @internal */
+    DragDrop.prototype._onDragLeave = function (event) {
+        this._preventDefault(event);
+        this._stopPropagation(event);
+        this._dragDepth--;
+        if (this._dragDepth <= 0) {
+            this._onDragCancel();
         }
         return false;
     };
@@ -32226,8 +32317,10 @@ var Model = /** @class */ (function () {
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
      * @param action the action to perform
+     * @returns added Node for Actions.addNode; undefined otherwise
      */
     Model.prototype.doAction = function (action) {
+        var returnVal = undefined;
         // console.log(action);
         switch (action.type) {
             case Actions_1.default.ADD_NODE: {
@@ -32235,6 +32328,7 @@ var Model = /** @class */ (function () {
                 var toNode = this._idMap[action.data.toNode];
                 if (toNode instanceof TabSetNode_1.default || toNode instanceof BorderNode_1.default || toNode instanceof RowNode_1.default) {
                     toNode.drop(newNode, DockLocation_1.default.getByName(action.data.location), action.data.index, action.data.select);
+                    returnVal = newNode;
                 }
                 break;
             }
@@ -32351,6 +32445,7 @@ var Model = /** @class */ (function () {
         if (this._changeListener !== undefined) {
             this._changeListener();
         }
+        return returnVal;
     };
     /** @hidden @internal */
     Model.prototype._updateIdMap = function () {
@@ -34547,12 +34642,12 @@ var Layout = /** @class */ (function (_super) {
         /** @hidden @internal */
         _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
             if (_this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
-                DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument);
+                DragDrop_1.default.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
             }
             else {
                 _this.dragNode = node;
                 _this.dragDivText = dragDivText;
-                DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick, _this.currentDocument);
+                DragDrop_1.default.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
             }
         };
         /** @hidden @internal */
@@ -34598,7 +34693,7 @@ var Layout = /** @class */ (function (_super) {
             }
         };
         /** @hidden @internal */
-        _this.onDragEnd = function () {
+        _this.onDragEnd = function (event) {
             var rootdiv = _this.selfRef.current;
             rootdiv.removeChild(_this.outlineDiv);
             rootdiv.removeChild(_this.dragDiv);
@@ -34607,9 +34702,9 @@ var Layout = /** @class */ (function (_super) {
             DragDrop_1.default.instance.hideGlass();
             if (_this.dropInfo) {
                 if (_this.newTabJson !== undefined) {
-                    _this.doAction(Actions_1.default.addNode(_this.newTabJson, _this.dropInfo.node.getId(), _this.dropInfo.location, _this.dropInfo.index));
+                    var newNode = _this.doAction(Actions_1.default.addNode(_this.newTabJson, _this.dropInfo.node.getId(), _this.dropInfo.location, _this.dropInfo.index));
                     if (_this.fnNewNodeDropped != null) {
-                        _this.fnNewNodeDropped();
+                        _this.fnNewNodeDropped(newNode, event);
                         _this.fnNewNodeDropped = undefined;
                     }
                     _this.newTabJson = undefined;
@@ -34631,6 +34726,7 @@ var Layout = /** @class */ (function (_super) {
         _this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
         _this.firstRender = true;
         _this.state = { rect: new Rect_1.default(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30 };
+        _this.onDragEnter = _this.onDragEnter.bind(_this);
         return _this;
     }
     /** @hidden @internal */
@@ -34656,11 +34752,12 @@ var Layout = /** @class */ (function (_super) {
         if (this.props.onAction !== undefined) {
             var outcome = this.props.onAction(action);
             if (outcome !== undefined) {
-                this.props.model.doAction(outcome);
+                return this.props.model.doAction(outcome);
             }
+            return undefined;
         }
         else {
-            this.props.model.doAction(action);
+            return this.props.model.doAction(action);
         }
     };
     /** @hidden @internal */
@@ -34749,7 +34846,7 @@ var Layout = /** @class */ (function (_super) {
             }
         });
         // this.layoutTime = (Date.now() - this.start);
-        return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT) },
+        return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
             tabSetComponents,
             this.tabIds.map(function (t) {
                 return tabComponents[t];
@@ -34897,6 +34994,20 @@ var Layout = /** @class */ (function (_super) {
         this.dragDiv.style.top = r.y + "px";
         var rootdiv = this.selfRef.current;
         rootdiv.appendChild(this.dragDiv);
+    };
+    /** @hidden @internal */
+    Layout.prototype.onDragEnter = function (event) {
+        // DragDrop keeps track of number of dragenters minus the number of
+        // dragleaves. Only start a new drag if there isn't one already.
+        if (DragDrop_1.default.instance.isDragging())
+            return;
+        var drag = this.props.onExternalDrag(event);
+        if (drag) {
+            // Mimic addTabWithDragAndDrop, but pass in DragEvent
+            this.fnNewNodeDropped = drag.onDrop;
+            this.newTabJson = drag.json;
+            this.dragStart(event, drag.dragText, TabNode_1.default._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
+        }
     };
     /** @hidden @internal */
     Layout.prototype.showEdges = function (rootdiv) {
@@ -35458,13 +35569,19 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
                     var selectedRect = selectedTab.getTabRect();
                     var selectedStart = getNear(selectedRect) - tabMargin;
                     var selectedEnd = getFar(selectedRect) + tabMargin;
-                    if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
-                        if (selectedStart < getNear(nodeRect)) {
-                            shiftPos = getNear(nodeRect) - selectedStart;
-                        }
-                        // use second if statement to prevent tab moving back then forwards if not enough space for single tab
-                        if (selectedEnd + shiftPos > endPos) {
-                            shiftPos = endPos - selectedEnd;
+                    // when selected tab is larger than available space then align left
+                    if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect)) {
+                        shiftPos = getNear(nodeRect) - selectedStart;
+                    }
+                    else {
+                        if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
+                            if (selectedStart < getNear(nodeRect)) {
+                                shiftPos = getNear(nodeRect) - selectedStart;
+                            }
+                            // use second if statement to prevent tab moving back then forwards if not enough space for single tab
+                            if (selectedEnd + shiftPos > endPos) {
+                                shiftPos = endPos - selectedEnd;
+                            }
                         }
                     }
                 }
@@ -35491,10 +35608,10 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
     var onMouseWheel = function (event) {
         var delta = 0;
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-            delta = event.deltaX;
+            delta = -event.deltaX;
         }
         else {
-            delta = event.deltaY;
+            delta = -event.deltaY;
         }
         if (event.deltaMode === 1) {
             // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
@@ -35534,6 +35651,7 @@ exports.TabSet = function (props) {
     var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
+    var tabbarInnerRef = React.useRef(null);
     var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.default.HORZ, toolbarRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
     var onOverflowClick = function () {
         var element = overflowbuttonRef.current;
@@ -35575,6 +35693,10 @@ exports.TabSet = function (props) {
     };
     // Start Render
     var cm = layout.getClassName;
+    // tabbar inner can get shifted left via tab rename, this resets scrollleft to 0
+    if (tabbarInnerRef.current !== null && tabbarInnerRef.current.scrollLeft !== 0) {
+        tabbarInnerRef.current.scrollLeft = 0;
+    }
     var selectedTabNode = node.getSelectedNode();
     var style = node._styleWithPosition();
     if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
@@ -35647,7 +35769,7 @@ exports.TabSet = function (props) {
             tabStripStyle["bottom"] = "0px";
         }
         tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
+            React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
                 React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs))));
     }
     else {
@@ -35659,7 +35781,7 @@ exports.TabSet = function (props) {
             tabStripStyle["bottom"] = "0px";
         }
         tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
+            React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
                 React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
             toolbar));
     }
