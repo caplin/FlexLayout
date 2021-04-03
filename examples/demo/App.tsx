@@ -117,6 +117,35 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
     }
 
+    onExternalDrag = (e: React.DragEvent) => {
+        console.log("onExternaldrag");
+        // Check for supported content type
+        if (e.dataTransfer.types.indexOf('text/plain') < 0) return;
+        // Set dropEffect (icon)
+        e.dataTransfer.dropEffect = 'link';
+        return {
+          dragText: "Drag Link To New Tab",
+          json: {
+            type: 'tab',
+            name: 'Dragged Link',
+            component: 'text',
+          },
+          onDrop: (node?: Node, event?: Event) => {
+            if (!node || !event) return;  // aborted drag
+
+            if (node instanceof TabNode && event instanceof DragEvent) {
+                const dragEvent = event as DragEvent;
+                if (dragEvent.dataTransfer) {
+                    var text = dragEvent.dataTransfer!.getData('text/plain');
+                    if (text) {
+                     this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), {config: {text}}));
+                    }
+                }
+            }
+          }
+        }
+      };
+
     onShowLayoutClick = (event: React.MouseEvent) => {
         console.log(JSON.stringify(this.state.model!.toJson(), null, "\t"));
     }
@@ -166,7 +195,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             return <FlexLayout.Layout model={model} factory={this.factory} />;
         }
         else if (component === "text") {
-            return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
+            try {
+                return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
+            } catch (e) {
+                console.log(e);
+            }
         }
 
         return null;
@@ -237,6 +270,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 iconFactory={this.iconFactory}
                 onRenderTab={onRenderTab}
                 onRenderTabSet={onRenderTabSet}
+                onExternalDrag={this.onExternalDrag}
             // classNameMapper={
             //     className => {
             //         console.log(className);
