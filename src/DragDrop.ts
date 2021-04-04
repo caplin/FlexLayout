@@ -55,7 +55,6 @@ class DragDrop {
             // check for serverside rendering
             this._glass = document.createElement("div");
             this._glass.style.zIndex = "998";
-            this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
         }
@@ -66,6 +65,7 @@ class DragDrop {
         this._onDragCancel = this._onDragCancel.bind(this);
         this._onDragEnter = this._onDragEnter.bind(this);
         this._onDragLeave = this._onDragLeave.bind(this);
+        this.resizeGlass = this.resizeGlass.bind(this);
 
         this._lastClick = 0;
         this._clickX = 0;
@@ -73,15 +73,17 @@ class DragDrop {
     }
 
     // if you add the glass pane then you should remove it
-    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined, currentDocument?: HTMLDocument) {
+    addGlass(fCancel: ((wasDragging: boolean) => void) | undefined) {
         if (!this._glassShowing) {
-            if (!currentDocument) {
-                currentDocument = window.document;
+            if (!this._document) {
+                this._document = window.document;
             }
-            this._document = currentDocument;
-            const glassRect = new Rect(0, 0, currentDocument!.documentElement.scrollWidth, currentDocument!.documentElement.scrollHeight);
-            glassRect.positionElement(this._glass!);
-            currentDocument!.body.appendChild(this._glass!);
+            if (!this._rootElement) {
+                this._rootElement = this._document.body;
+            }
+            this.resizeGlass();
+            this._document.defaultView?.addEventListener('resize', this.resizeGlass);
+            this._document.body.appendChild(this._glass!);
             this._glass!.tabIndex = -1;
             this._glass!.focus();
             this._glass!.addEventListener("keydown", this._onKeyPress);
@@ -97,9 +99,15 @@ class DragDrop {
         }
     }
 
+    resizeGlass() {
+        const glassRect = Rect.fromElement(this._rootElement!);
+        glassRect.positionElement(this._glass!, "fixed");
+    }
+
     hideGlass() {
         if (this._glassShowing) {
             this._document!.body.removeChild(this._glass!);
+            this._document!.defaultView?.removeEventListener('resize', this.resizeGlass);
             this._glassShowing = false;
             this._document = undefined;
             this._rootElement = undefined;
@@ -136,7 +144,7 @@ class DragDrop {
         }
 
         const posEvent = this._getLocationEvent(event);
-        this.addGlass(fDragCancel, currentDocument);
+        this.addGlass(fDragCancel);
 
         if (this._dragging) {
             console.warn("this._dragging true on startDrag should never happen");

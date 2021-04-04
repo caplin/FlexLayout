@@ -18,6 +18,11 @@ class Rect {
         this.height = height;
     }
 
+    static fromElement(element: Element) {
+      let {x, y, width, height} = element.getBoundingClientRect();
+      return new Rect(x, y, width, height);
+    }
+
     clone() {
         return new Rect(this.x, this.y, this.width, this.height);
     }
@@ -38,16 +43,16 @@ class Rect {
         return this.x + this.width;
     }
 
-    positionElement(element: HTMLElement) {
-        this.styleWithPosition(element.style);
+    positionElement(element: HTMLElement, position?: string) {
+        this.styleWithPosition(element.style, position);
     }
 
-    styleWithPosition(style: JSMap<any>) {
+    styleWithPosition(style: JSMap<any>, position: string = "absolute") {
         style.left = this.x + "px";
         style.top = this.y + "px";
         style.width = Math.max(0, this.width) + "px"; // need Math.max to prevent -ve, cause error in IE
         style.height = Math.max(0, this.height) + "px";
-        style.position = "absolute";
+        style.position = position;
         return style;
     }
 
