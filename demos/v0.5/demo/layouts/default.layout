@@ -30,6 +30,14 @@
 						"type": "tab",
 						"name": "Three",
 						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"name": "Wikipedia",
+						"component": "iframe",
+						"config": {
+							"text": "https://en.wikipedia.org/wiki/Main_Page"
+						}
 					}
 				]
 			}

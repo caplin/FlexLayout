@@ -180,7 +180,7 @@ var App = /** @class */ (function (_super) {
                 json: {
                     type: 'tab',
                     name: 'Dragged Link',
-                    component: 'text',
+                    component: 'iframe',
                 },
                 onDrop: function (node, event) {
                     if (!node || !event)
@@ -242,6 +242,14 @@ var App = /** @class */ (function (_super) {
                 }
                 catch (e) {
                     console.log(e);
+                }
+            }
+            else if (component === "iframe") {
+                try {
+                    return React.createElement("iframe", { src: node.getConfig().text, style: { display: "block", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                }
+                catch (e) {
+                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: String(e) } });
                 }
             }
             return null;
@@ -30811,7 +30819,6 @@ var DragDrop = /** @class */ (function () {
             this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
-            this._glass.style.pointerEvents = "none";
         }
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -30823,6 +30830,12 @@ var DragDrop = /** @class */ (function () {
         this._clickX = 0;
         this._clickY = 0;
     }
+    // allow pointer events to be disabled on glass pane, needed for external drag
+    // in other cases pointer events must be enabled to allow dragging over iframes 
+    // re-enabled in hideGlass()
+    DragDrop.prototype.disableGlassPointerEvents = function () {
+        this._glass.style.pointerEvents = "none";
+    };
     // if you add the glass pane then you should remove it
     DragDrop.prototype.addGlass = function (fCancel, currentDocument) {
         if (!this._glassShowing) {
@@ -30847,6 +30860,7 @@ var DragDrop = /** @class */ (function () {
     };
     DragDrop.prototype.hideGlass = function () {
         if (this._glassShowing) {
+            this._glass.style.pointerEvents = "auto";
             this._document.body.removeChild(this._glass);
             this._glassShowing = false;
             this._document = undefined;
@@ -35006,6 +35020,7 @@ var Layout = /** @class */ (function (_super) {
             // Mimic addTabWithDragAndDrop, but pass in DragEvent
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
+            DragDrop_1.default.instance.disableGlassPointerEvents();
             this.dragStart(event, drag.dragText, TabNode_1.default._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
         }
     };
