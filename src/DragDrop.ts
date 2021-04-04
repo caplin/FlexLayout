@@ -72,13 +72,6 @@ class DragDrop {
         this._clickY = 0;
     }
 
-    // allow pointer events to be disabled on glass pane, needed for external drag
-    // in other cases pointer events must be enabled to allow dragging over iframes 
-    // re-enabled in hideGlass()
-    disableGlassPointerEvents() {
-        this._glass!.style.pointerEvents = "none";
-    }
-
     // if you add the glass pane then you should remove it
     addGlass(fCancel: ((wasDragging: boolean) => void) | undefined, currentDocument?: HTMLDocument) {
         if (!this._glassShowing) {
@@ -92,6 +85,9 @@ class DragDrop {
             this._glass!.tabIndex = -1;
             this._glass!.focus();
             this._glass!.addEventListener("keydown", this._onKeyPress);
+            this._glass!.addEventListener("dragenter", this._onDragEnter, { passive: false });
+            this._glass!.addEventListener("dragover", this._onMouseMove, { passive: false });
+            this._glass!.addEventListener("dragleave", this._onDragLeave, { passive: false });
             this._glassShowing = true;
             this._fDragCancel = fCancel;
             this._manualGlassManagement = false;
@@ -103,7 +99,6 @@ class DragDrop {
 
     hideGlass() {
         if (this._glassShowing) {
-            this._glass!.style.pointerEvents = "auto";
             this._document!.body.removeChild(this._glass!);
             this._glassShowing = false;
             this._document = undefined;
