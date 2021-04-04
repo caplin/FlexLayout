@@ -755,6 +755,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             // Mimic addTabWithDragAndDrop, but pass in DragEvent
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
+            DragDrop.instance.disableGlassPointerEvents();
             this.dragStart(event, drag.dragText, TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
         }
     }

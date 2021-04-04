@@ -128,7 +128,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
           json: {
             type: 'tab',
             name: 'Dragged Link',
-            component: 'text',
+            component: 'iframe',
           },
           onDrop: (node?: Node, event?: Event) => {
             if (!node || !event) return;  // aborted drag
@@ -199,6 +199,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
             } catch (e) {
                 console.log(e);
+            }
+        }
+        else if (component === "iframe") {
+            try {
+                return <iframe src={node.getConfig().text} style={{display:"block", boxSizing: "border-box"}} width="100%" height="100%" />;
+            } catch (e) {
+                return <div dangerouslySetInnerHTML={{ __html: String(e) }} />;
             }
         }
 

@@ -58,7 +58,6 @@ class DragDrop {
             this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
-            this._glass.style.pointerEvents = "none";
         }
 
         this._onMouseMove = this._onMouseMove.bind(this);
@@ -71,6 +70,13 @@ class DragDrop {
         this._lastClick = 0;
         this._clickX = 0;
         this._clickY = 0;
+    }
+
+    // allow pointer events to be disabled on glass pane, needed for external drag
+    // in other cases pointer events must be enabled to allow dragging over iframes 
+    // re-enabled in hideGlass()
+    disableGlassPointerEvents() {
+        this._glass!.style.pointerEvents = "none";
     }
 
     // if you add the glass pane then you should remove it
@@ -97,6 +103,7 @@ class DragDrop {
 
     hideGlass() {
         if (this._glassShowing) {
+            this._glass!.style.pointerEvents = "auto";
             this._document!.body.removeChild(this._glass!);
             this._glassShowing = false;
             this._document = undefined;
