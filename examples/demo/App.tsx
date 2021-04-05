@@ -14,7 +14,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     constructor(props: any) {
         super(props);
         this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
-        
+
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
             this.save();
@@ -29,7 +29,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     componentDidMount() {
         this.loadLayout("default", false);
-        document.body.addEventListener('touchmove', this.preventIOSScrollingWhenDragging, { passive: false });
+        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
     }
 
     save() {
@@ -118,33 +118,41 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     onExternalDrag = (e: React.DragEvent) => {
-        console.log("onExternaldrag");
+        // console.log("onExternaldrag ", e.dataTransfer.types);
         // Check for supported content type
-        if (e.dataTransfer.types.indexOf('text/plain') < 0) return;
+        const validTypes = ["text/uri-list", "text/html", "text/plain"];
+        if (e.dataTransfer.types.find(t => validTypes.indexOf(t) !== -1) === undefined) return;
         // Set dropEffect (icon)
-        e.dataTransfer.dropEffect = 'link';
+        e.dataTransfer.dropEffect = "link";
         return {
-          dragText: "Drag Link To New Tab",
-          json: {
-            type: 'tab',
-            name: 'Dragged Link',
-            component: 'iframe',
-          },
-          onDrop: (node?: Node, event?: Event) => {
-            if (!node || !event) return;  // aborted drag
+            dragText: "Drag To New Tab",
+            json: {
+                type: "tab",
+                component: "multitype"
+            },
+            onDrop: (node?: Node, event?: Event) => {
+                if (!node || !event) return;  // aborted drag
 
-            if (node instanceof TabNode && event instanceof DragEvent) {
-                const dragEvent = event as DragEvent;
-                if (dragEvent.dataTransfer) {
-                    var text = dragEvent.dataTransfer!.getData('text/plain');
-                    if (text) {
-                     this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), {config: {text}}));
+                if (node instanceof TabNode && event instanceof DragEvent) {
+                    const dragEvent = event as DragEvent;
+                    if (dragEvent.dataTransfer) {
+                        if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
+                            const data = dragEvent.dataTransfer!.getData("text/uri-list");
+                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data, type: "url" } }));
+                        }
+                        else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
+                            const data = dragEvent.dataTransfer!.getData("text/html");
+                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data, type: "html" } }));
+                        }
+                        else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
+                            const data = dragEvent.dataTransfer!.getData("text/plain");
+                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data, type: "text" } }));
+                        }
                     }
                 }
             }
-          }
         }
-      };
+    };
 
     onShowLayoutClick = (event: React.MouseEvent) => {
         console.log(JSON.stringify(this.state.model!.toJson(), null, "\t"));
@@ -201,11 +209,21 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 console.log(e);
             }
         }
-        else if (component === "iframe") {
+        else if (component === "multitype") {
             try {
-                return <iframe src={node.getConfig().text} style={{display:"block", boxSizing: "border-box"}} width="100%" height="100%" />;
+                const config = node.getConfig();
+                if (config.type === "url") {
+                    return <iframe title={node.getId()} src={config.data} style={{ display: "block", boxSizing: "border-box" }} width="100%" height="100%" />;
+                } else if (config.type === "html") {
+                    return (<div dangerouslySetInnerHTML={{ __html: config.data }} />);
+                } else if (config.type === "text") {
+                    return (
+                        <textarea style={{ position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }}
+                            defaultValue={config.data}
+                        />);
+                }
             } catch (e) {
-                return <div dangerouslySetInnerHTML={{ __html: String(e) }} />;
+                return (<div>{String(e)}</div>);
             }
         }
 
@@ -213,14 +231,14 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     titleFactory = (node: TabNode) => {
-        if (node.getId() === 'custom-tab') {
+        if (node.getId() === "custom-tab") {
             return <>(Added by titleFactory) {node.getName()}</>
         }
         return;
     }
 
     iconFactory = (node: TabNode) => {
-        if (node.getId() === 'custom-tab') {
+        if (node.getId() === "custom-tab") {
             return <><span style={{ marginRight: 3 }}>:)</span></>
         }
         return;
