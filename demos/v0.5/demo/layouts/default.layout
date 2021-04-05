@@ -34,9 +34,10 @@
 					{
 						"type": "tab",
 						"name": "Wikipedia",
-						"component": "iframe",
+						"component": "multitype",
 						"config": {
-							"text": "https://en.wikipedia.org/wiki/Main_Page"
+                            "type":"url",
+							"data": "https://en.wikipedia.org/wiki/Main_Page"
 						}
 					}
 				]

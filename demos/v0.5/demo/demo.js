@@ -169,18 +169,18 @@ var App = /** @class */ (function (_super) {
             }
         };
         _this.onExternalDrag = function (e) {
-            console.log("onExternaldrag");
+            // console.log("onExternaldrag ", e.dataTransfer.types);
             // Check for supported content type
-            if (e.dataTransfer.types.indexOf('text/plain') < 0)
+            var validTypes = ["text/uri-list", "text/html", "text/plain"];
+            if (e.dataTransfer.types.find(function (t) { return validTypes.indexOf(t) !== -1; }) === undefined)
                 return;
             // Set dropEffect (icon)
-            e.dataTransfer.dropEffect = 'link';
+            e.dataTransfer.dropEffect = "link";
             return {
-                dragText: "Drag Link To New Tab",
+                dragText: "Drag To New Tab",
                 json: {
-                    type: 'tab',
-                    name: 'Dragged Link',
-                    component: 'iframe',
+                    type: "tab",
+                    component: "multitype"
                 },
                 onDrop: function (node, event) {
                     if (!node || !event)
@@ -188,9 +188,17 @@ var App = /** @class */ (function (_super) {
                     if (node instanceof index_1.TabNode && event instanceof DragEvent) {
                         var dragEvent = event;
                         if (dragEvent.dataTransfer) {
-                            var text = dragEvent.dataTransfer.getData('text/plain');
-                            if (text) {
-                                _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { text: text } }));
+                            if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/uri-list");
+                                _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data: data, type: "url" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/html");
+                                _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data: data, type: "html" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/plain");
+                                _this.state.model.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data: data, type: "text" } }));
                             }
                         }
                     }
@@ -244,18 +252,27 @@ var App = /** @class */ (function (_super) {
                     console.log(e);
                 }
             }
-            else if (component === "iframe") {
+            else if (component === "multitype") {
                 try {
-                    return React.createElement("iframe", { src: node.getConfig().text, style: { display: "block", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                    var config = node.getConfig();
+                    if (config.type === "url") {
+                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                    }
+                    else if (config.type === "html") {
+                        return (React.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
+                    }
+                    else if (config.type === "text") {
+                        return (React.createElement("textarea", { style: { position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }, defaultValue: config.data }));
+                    }
                 }
                 catch (e) {
-                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: String(e) } });
+                    return (React.createElement("div", null, String(e)));
                 }
             }
             return null;
         };
         _this.titleFactory = function (node) {
-            if (node.getId() === 'custom-tab') {
+            if (node.getId() === "custom-tab") {
                 return React.createElement(React.Fragment, null,
                     "(Added by titleFactory) ",
                     node.getName());
@@ -263,7 +280,7 @@ var App = /** @class */ (function (_super) {
             return;
         };
         _this.iconFactory = function (node) {
-            if (node.getId() === 'custom-tab') {
+            if (node.getId() === "custom-tab") {
                 return React.createElement(React.Fragment, null,
                     React.createElement("span", { style: { marginRight: 3 } }, ":)"));
             }
@@ -304,7 +321,7 @@ var App = /** @class */ (function (_super) {
     };
     App.prototype.componentDidMount = function () {
         this.loadLayout("default", false);
-        document.body.addEventListener('touchmove', this.preventIOSScrollingWhenDragging, { passive: false });
+        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
     };
     App.prototype.save = function () {
         var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
@@ -30816,7 +30833,6 @@ var DragDrop = /** @class */ (function () {
             // check for serverside rendering
             this._glass = document.createElement("div");
             this._glass.style.zIndex = "998";
-            this._glass.style.position = "absolute";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
         }
@@ -30826,29 +30842,30 @@ var DragDrop = /** @class */ (function () {
         this._onDragCancel = this._onDragCancel.bind(this);
         this._onDragEnter = this._onDragEnter.bind(this);
         this._onDragLeave = this._onDragLeave.bind(this);
+        this.resizeGlass = this.resizeGlass.bind(this);
         this._lastClick = 0;
         this._clickX = 0;
         this._clickY = 0;
     }
-    // allow pointer events to be disabled on glass pane, needed for external drag
-    // in other cases pointer events must be enabled to allow dragging over iframes 
-    // re-enabled in hideGlass()
-    DragDrop.prototype.disableGlassPointerEvents = function () {
-        this._glass.style.pointerEvents = "none";
-    };
     // if you add the glass pane then you should remove it
-    DragDrop.prototype.addGlass = function (fCancel, currentDocument) {
+    DragDrop.prototype.addGlass = function (fCancel) {
+        var _a;
         if (!this._glassShowing) {
-            if (!currentDocument) {
-                currentDocument = window.document;
+            if (!this._document) {
+                this._document = window.document;
             }
-            this._document = currentDocument;
-            var glassRect = new Rect_1.default(0, 0, currentDocument.documentElement.scrollWidth, currentDocument.documentElement.scrollHeight);
-            glassRect.positionElement(this._glass);
-            currentDocument.body.appendChild(this._glass);
+            if (!this._rootElement) {
+                this._rootElement = this._document.body;
+            }
+            this.resizeGlass();
+            (_a = this._document.defaultView) === null || _a === void 0 ? void 0 : _a.addEventListener('resize', this.resizeGlass);
+            this._document.body.appendChild(this._glass);
             this._glass.tabIndex = -1;
             this._glass.focus();
             this._glass.addEventListener("keydown", this._onKeyPress);
+            this._glass.addEventListener("dragenter", this._onDragEnter, { passive: false });
+            this._glass.addEventListener("dragover", this._onMouseMove, { passive: false });
+            this._glass.addEventListener("dragleave", this._onDragLeave, { passive: false });
             this._glassShowing = true;
             this._fDragCancel = fCancel;
             this._manualGlassManagement = false;
@@ -30858,10 +30875,15 @@ var DragDrop = /** @class */ (function () {
             this._manualGlassManagement = true;
         }
     };
+    DragDrop.prototype.resizeGlass = function () {
+        var glassRect = Rect_1.default.fromElement(this._rootElement);
+        glassRect.positionElement(this._glass, "fixed");
+    };
     DragDrop.prototype.hideGlass = function () {
+        var _a;
         if (this._glassShowing) {
-            this._glass.style.pointerEvents = "auto";
             this._document.body.removeChild(this._glass);
+            (_a = this._document.defaultView) === null || _a === void 0 ? void 0 : _a.removeEventListener('resize', this.resizeGlass);
             this._glassShowing = false;
             this._document = undefined;
             this._rootElement = undefined;
@@ -30886,7 +30908,7 @@ var DragDrop = /** @class */ (function () {
             this._rootElement = this._document.body;
         }
         var posEvent = this._getLocationEvent(event);
-        this.addGlass(fDragCancel, currentDocument);
+        this.addGlass(fDragCancel);
         if (this._dragging) {
             console.warn("this._dragging true on startDrag should never happen");
         }
@@ -31264,6 +31286,10 @@ var Rect = /** @class */ (function () {
     Rect.empty = function () {
         return new Rect(0, 0, 0, 0);
     };
+    Rect.fromElement = function (element) {
+        var _a = element.getBoundingClientRect(), x = _a.x, y = _a.y, width = _a.width, height = _a.height;
+        return new Rect(x, y, width, height);
+    };
     Rect.prototype.clone = function () {
         return new Rect(this.x, this.y, this.width, this.height);
     };
@@ -31281,15 +31307,16 @@ var Rect = /** @class */ (function () {
     Rect.prototype.getRight = function () {
         return this.x + this.width;
     };
-    Rect.prototype.positionElement = function (element) {
-        this.styleWithPosition(element.style);
+    Rect.prototype.positionElement = function (element, position) {
+        this.styleWithPosition(element.style, position);
     };
-    Rect.prototype.styleWithPosition = function (style) {
+    Rect.prototype.styleWithPosition = function (style, position) {
+        if (position === void 0) { position = "absolute"; }
         style.left = this.x + "px";
         style.top = this.y + "px";
         style.width = Math.max(0, this.width) + "px"; // need Math.max to prevent -ve, cause error in IE
         style.height = Math.max(0, this.height) + "px";
-        style.position = "absolute";
+        style.position = position;
         return style;
     };
     Rect.prototype.contains = function (x, y) {
@@ -35020,7 +35047,6 @@ var Layout = /** @class */ (function (_super) {
             // Mimic addTabWithDragAndDrop, but pass in DragEvent
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
-            DragDrop_1.default.instance.disableGlassPointerEvents();
             this.dragStart(event, drag.dragText, TabNode_1.default._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
         }
     };
