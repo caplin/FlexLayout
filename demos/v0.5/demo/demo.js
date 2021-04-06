@@ -35168,7 +35168,7 @@ exports.Splitter = function (props) {
     var outlineDiv = React.useRef(undefined);
     var parentNode = node.getParent();
     var onMouseDown = function (event) {
-        DragDrop_1.default.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument());
+        DragDrop_1.default.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
         pBounds.current = parentNode._getSplitterBounds(node, true);
         var rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument().createElement("div");
