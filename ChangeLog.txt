@@ -1,6 +1,9 @@
 0.5.6
-Added external drag drop into layout 
+Added external drag drop into layout, see new onExternalDrag prop
 Updated demo to accept dragged links, html and text.
+Tab scrolling direction changed to match VSCode
+Improved positioning of single tab when overflow menu shown
+Some small changes to theme colors
 
 0.5.5
 Fix for #170 - Closing the last tab of a maximized tabset crashes the layout
