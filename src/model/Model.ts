@@ -11,6 +11,7 @@ import BorderNode from "./BorderNode";
 import BorderSet from "./BorderSet";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
+import IJsonModel from './IJsonModel';
 import Node from "./Node";
 import RowNode from "./RowNode";
 import TabNode from "./TabNode";
@@ -32,7 +33,7 @@ class Model {
      * @param json the json model to load
      * @returns {Model} a new Model object
      */
-    static fromJson(json: any) {
+    static fromJson(json: IJsonModel) {
         const model = new Model();
         Model._attributeDefinitions.fromJson(json.global, model._attributes);
 
@@ -370,7 +371,7 @@ class Model {
 
     /**
      * Converts the model to a json object
-     * @returns {*} json object that represents this model
+     * @returns {IJsonModel} json object that represents this model
      */
     toJson() {
         const json: any = { global: {}, layout: {} };
@@ -383,7 +384,7 @@ class Model {
 
         json.borders = this._borders._toJson();
         json.layout = (this._root as RowNode)._toJson();
-        return json;
+        return json as IJsonModel;
     }
 
     getSplitterSize() {
