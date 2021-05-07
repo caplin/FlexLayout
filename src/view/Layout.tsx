@@ -66,7 +66,6 @@ export interface ILayoutProps {
     popoutURL?: string | undefined;
 }
 
-/** @hidden @internal */
 export interface ILayoutState {
     rect: Rect;
     calculatedHeaderBarSize: number;
