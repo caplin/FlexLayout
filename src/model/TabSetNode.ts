@@ -92,7 +92,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
     getName() {
-        return this._getAttributeAsStringOrUndefined("name");
+        return this._getAttr("name") as string | undefined;
     }
 
     getSelected() {
@@ -112,11 +112,11 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
     getWeight(): number {
-        return this._attributes.weight as number;
+        return this._getAttr("weight") as number;
     }
 
     getWidth() {
-        return this._getAttributeAsNumberOrUndefined("width");
+        return this._getAttr("width") as number | undefined;
     }
 
     getMinWidth() {
@@ -124,7 +124,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
     getHeight() {
-        return this._getAttributeAsNumberOrUndefined("height");
+        return this._getAttr("height") as number | undefined;
     }
 
     getMinHeight() {
@@ -192,11 +192,11 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
     getClassNameTabStrip() {
-        return this._getAttributeAsStringOrUndefined("classNameTabStrip");
+        return this._getAttr("classNameTabStrip") as string | undefined;
     }
 
     getClassNameHeader() {
-        return this._getAttributeAsStringOrUndefined("classNameHeader");
+        return this._getAttr("classNameHeader") as string | undefined;
     }
 
     /** @hidden @internal */

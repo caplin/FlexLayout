@@ -286,24 +286,6 @@ abstract class Node {
     abstract _getAttributeDefinitions(): AttributeDefinitions;
     /** @hidden @internal */
     abstract _toJson(): any;
-
-    /** @hidden @internal */
-    protected _getAttributeAsStringOrUndefined(attr: string) {
-        const value = this._attributes[attr];
-        if (value !== undefined) {
-            return value as string;
-        }
-        return undefined;
-    }
-
-    /** @hidden @internal */
-    protected _getAttributeAsNumberOrUndefined(attr: string) {
-        const value = this._attributes[attr];
-        if (value !== undefined) {
-            return value as number;
-        }
-        return undefined;
-    }
 }
 
 export default Node;

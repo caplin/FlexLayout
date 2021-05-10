@@ -69,11 +69,11 @@ class RowNode extends Node implements IDropTarget {
     }
 
     getWidth() {
-        return this._getAttributeAsNumberOrUndefined("width");
+        return this._getAttr("width") as number | undefined;
     }
 
     getHeight() {
-        return this._getAttributeAsNumberOrUndefined("height");
+        return this._getAttr("height") as number | undefined;
     }
 
     /** @hidden @internal */

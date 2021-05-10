@@ -107,7 +107,7 @@ class BorderNode extends Node implements IDropTarget {
     }
 
     getClassName() {
-        return this._getAttributeAsStringOrUndefined("className");
+        return this._getAttr("className") as string | undefined;
     }
 
     /** @hidden @internal */

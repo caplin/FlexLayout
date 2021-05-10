@@ -90,7 +90,7 @@ class TabNode extends Node implements IDraggable {
     }
 
     getComponent() {
-        return this._getAttributeAsStringOrUndefined("component");
+        return this._getAttr("component") as string | undefined;
     }
 
     /**
@@ -113,12 +113,11 @@ class TabNode extends Node implements IDraggable {
     }
 
     isFloating() {
-        const configFloating = this._getAttr("floating") as boolean;
-        return configFloating;
+        return this._getAttr("floating") as boolean;
     }
 
     getIcon() {
-        return this._getAttributeAsStringOrUndefined("icon");
+        return this._getAttr("icon") as string | undefined;
     }
 
     isEnableClose() {
@@ -130,8 +129,7 @@ class TabNode extends Node implements IDraggable {
     }
 
     isEnableFloat() {
-        const allowFloat = this._getAttr("enableFloat") as boolean;
-        return allowFloat;
+        return this._getAttr("enableFloat") as boolean;
     }
 
     isEnableDrag() {
@@ -143,7 +141,7 @@ class TabNode extends Node implements IDraggable {
     }
 
     getClassName() {
-        return this._getAttributeAsStringOrUndefined("className");
+        return this._getAttr("className") as string | undefined;
     }
 
     isEnableRenderOnDemand() {
