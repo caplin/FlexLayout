@@ -676,6 +676,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         const rootdiv = this.selfRef.current!;
         this.outlineDiv = this.currentDocument!.createElement("div");
         this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+        this.outlineDiv.style.visibility = "hidden";
         rootdiv.appendChild(this.outlineDiv);
 
         if (this.dragDiv == null) {
@@ -716,6 +717,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.dropInfo = dropInfo;
             this.outlineDiv!.className = this.getClassName(dropInfo.className);
             dropInfo.rect.positionElement(this.outlineDiv!);
+            this.outlineDiv!.style.visibility = "visible";
         }
     };
 
