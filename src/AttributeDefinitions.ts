@@ -72,6 +72,49 @@ class AttributeDefinitions {
             obj[attr.name] = attr.defaultValue;
         });
     }
+
+    toTypescriptInterface(name: string, parentAttributes: AttributeDefinitions | undefined) {
+        const lines = [];
+        const sorted = this.attributes.sort((a,b)=> a.name.localeCompare(b.name));
+        // const sorted = this.attributes;
+        lines.push("interface I" + name + "Attributes {");
+        for (let i = 0; i < sorted.length; i++) {
+            const c = sorted[i];
+            let type = c.type;
+            let defaultValue = undefined;
+
+            let attr = c;
+            let inherited = undefined;
+            if (attr.defaultValue !== undefined){
+                defaultValue = attr.defaultValue;
+            } else if (attr.modelName !== undefined 
+                && parentAttributes !== undefined 
+                && parentAttributes.nameToAttribute[attr.modelName] !== undefined) {
+                    inherited = attr.modelName;
+                    attr = parentAttributes.nameToAttribute[attr.modelName];
+                    defaultValue = attr.defaultValue ;
+                    type = attr.type;
+            }
+
+            let defValue = JSON.stringify(defaultValue);
+
+            const required = attr.required || attr.fixed ? "": "?";
+
+            if (c.fixed) {
+                lines.push("\t" + c.name + ": " + defValue +";");
+            } else {
+                const comment =  (defaultValue !== undefined ? "default: " + defValue : "") +
+                    (inherited !== undefined ? " - inherited from global " + inherited : "");
+
+                lines.push("\t" + c.name + required + ": " + type + ";" + 
+                 (comment.length > 0 ? " // " + comment: "")
+                );
+            }
+        }
+        lines.push("}");
+
+        return lines.join("\n");
+    }
 }
 
 /** @hidden @internal */

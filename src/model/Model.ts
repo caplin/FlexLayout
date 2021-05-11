@@ -11,7 +11,7 @@ import BorderNode from "./BorderNode";
 import BorderSet from "./BorderSet";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
-import IJsonModel from './IJsonModel';
+import { IJsonModel } from "./IJsonModel";
 import Node from "./Node";
 import RowNode from "./RowNode";
 import TabNode from "./TabNode";
@@ -51,13 +51,14 @@ class Model {
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         // splitter
-        attributeDefinitions.add("splitterSize", -1).setType(Attribute.INT);
+        attributeDefinitions.add("splitterSize", -1).setType(Attribute.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
-        attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
+        attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
 
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
-        attributeDefinitions.add("tabCloseType", 1).setType(Attribute.INT);
+        attributeDefinitions.add("tabCloseType", 1).setType("ICloseType");
         attributeDefinitions.add("tabEnableFloat", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
@@ -76,18 +77,20 @@ class Model {
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute.INT).setFrom(0);
-        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute.INT).setFrom(0);
-        attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
-        attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute.JSON);
-        attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute.STRING);
+        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute.NUMBER);
+        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute.NUMBER);
+        attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
+        attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
+        attributeDefinitions.add("tabSetTabLocation", "top").setType("ITabLocation");
         attributeDefinitions.add("tabSetMinWidth", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("tabSetMinHeight", 0).setType(Attribute.NUMBER);
 
         // border
-        attributeDefinitions.add("borderSize", 200).setType(Attribute.INT).setFrom(0);
-        attributeDefinitions.add("borderMinSize", 0).setType(Attribute.INT).setFrom(0);
-        attributeDefinitions.add("borderBarSize", 0).setType(Attribute.INT).setFrom(0);
+        attributeDefinitions.add("borderSize", 200).setType(Attribute.NUMBER);
+        attributeDefinitions.add("borderMinSize", 0).setType(Attribute.NUMBER);
+        attributeDefinitions.add("borderBarSize", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("borderEnableDrop", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute.BOOLEAN);
@@ -373,7 +376,7 @@ class Model {
      * Converts the model to a json object
      * @returns {IJsonModel} json object that represents this model
      */
-    toJson() {
+    toJson(): IJsonModel {
         const json: any = { global: {}, layout: {} };
         Model._attributeDefinitions.toJson(json.global, this._attributes);
 
@@ -473,9 +476,20 @@ class Model {
         return this._onAllowDrop;
     }
 
+    static toTypescriptInterfaces() {
+        console.log(Model._attributeDefinitions.toTypescriptInterface("Global", undefined));
+        console.log(RowNode.getAttributeDefinitions().toTypescriptInterface("Row", Model._attributeDefinitions));
+        console.log(TabSetNode.getAttributeDefinitions().toTypescriptInterface("TabSet", Model._attributeDefinitions));
+        console.log(TabNode.getAttributeDefinitions().toTypescriptInterface("Tab", Model._attributeDefinitions));
+        console.log(BorderNode.getAttributeDefinitions().toTypescriptInterface("Border", Model._attributeDefinitions));
+    }
+
     toString() {
         return JSON.stringify(this.toJson());
     }
 }
+
+// use to generate json typescript interfaces 
+// Model.toTypescriptInterfaces();
 
 export default Model;

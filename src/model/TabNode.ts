@@ -22,16 +22,16 @@ class TabNode extends Node implements IDraggable {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", TabNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute.ID);
+        attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute.STRING);
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
         attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
-        attributeDefinitions.add("config", undefined).setType(Attribute.JSON);
+        attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
 
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("closeType", "tabCloseType").setType(Attribute.INT);
+        attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
@@ -196,6 +196,13 @@ class TabNode extends Node implements IDraggable {
     _setWindow(window: Window | undefined) {
         this._window = window;
     }
+
+
+    /** @hidden @internal */
+    static getAttributeDefinitions() {
+        return TabNode._attributeDefinitions;
+    }
+
 }
 
 export default TabNode;

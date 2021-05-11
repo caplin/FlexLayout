@@ -22,6 +22,7 @@ import { TabSet } from "./TabSet";
 import { FloatingWindow } from "./FloatingWindow";
 import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
+import { IJsonTabNode } from "../model/IJsonModel";
 
 export interface ILayoutProps {
     model: Model;
@@ -549,7 +550,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param tabsetId the id of the tabset where the new tab will be added
      * @param json the json for the new tab node
      */
-    addTabToTabSet(tabsetId: string, json: any) {
+    addTabToTabSet(tabsetId: string, json: IJsonTabNode) {
         const tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
             this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
@@ -560,7 +561,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
      */
-    addTabToActiveTabSet(json: any) {
+    addTabToActiveTabSet(json: IJsonTabNode) {
         const tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
             this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
@@ -573,7 +574,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDrop(dragText: string, json: any, onDrop?: (node?: Node, event?: Event) => void) {
+    addTabWithDragAndDrop(dragText: string, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
@@ -587,7 +588,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
-    addTabWithDragAndDropIndirect(dragText: string, json: any, onDrop?: () => void) {
+    addTabWithDragAndDropIndirect(dragText: string, json: IJsonTabNode, onDrop?: () => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
 

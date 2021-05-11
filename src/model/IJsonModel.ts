@@ -1,106 +1,129 @@
 import { ICloseType } from './ICloseType';
+type IBorderLocation = "top" | "bottom" | "left" | "right";
+type ITabLocation = "top" | "bottom";
+type IInsets = { "top": number, "right": number, "bottom": number, "left": number };
 
-type TabLocationVertical = "top" | "bottom";
-type TabLocationHorizontal = "left" | "right";
-type TabLocation = TabLocationHorizontal | TabLocationVertical;
-
-interface IJsonModelGlobalSettings {
- splitterSize?: number; // default:  8  width in pixels of all splitters between tabsets/borders
- enableEdgeDock?: boolean; // default:  true
- tabEnableClose?: boolean; // default:  true  allow user to close all tabs via close button
- tabCloseType?: ICloseType; // default:  1  see values in ICloseType
- tabEnableDrag?: boolean; // default:  true  allow user to drag all tabs to new location
- tabEnableRename?: boolean; // default:  true  allow user to rename all tabs by double clicking
- tabEnableFloat?: boolean; // default:  false  enable popouts in all tabs (in popout capable browser)
- tabClassName?: string | null; // default:  null
- tabIcon?: string | null; // default:  null
- tabEnableRenderOnDemand?: boolean; // default:  true  whether to avoid rendering component until tab is visible
- tabDragSpeed?: number; // default:  0.3  CSS transition speed of drag outlines (in seconds)
- tabSetEnableDeleteWhenEmpty?: boolean; // default:  true
- tabSetEnableDrop?: boolean; // default:  true  allow user to drag tabs into all tabsets
- tabSetEnableDrag?: boolean; // default:  true  allow user to drag tabs out of all tabsets
- tabSetEnableDivide?: boolean; // default:  true  allow user to drag tabs to region of all tabsets, splitting into new tabset
- tabSetEnableMaximize?: boolean; // default:  true  allow user to maximize all tabsets to fill view via maximize button
- tabSetAutoSelectTab?: boolean; // default:  true  whether to select new/moved tabs in all tabsets
- tabSetClassNameTabStrip?: string | null; // default:  null  height in pixels of tab strips in all tabsets
- tabSetClassNameHeader?: string | null; // default:  null
- tabSetEnableTabStrip?: boolean; // default:  true  enable tab strip and allow multiple tabs in all tabsets
- tabSetHeaderHeight?: number; // default:  0  height of tabset header in pixels; if left as 0 then the value will be calculated from the current fontSize
- tabSetTabStripHeight?: number; // default:  0  height of tabset tab bar in pixels; if left as 0 then the value will be calculated from the current fontSize
- borderBarSize?: number; // default:  0  size of the border bars in pixels; if left as 0 then the value will be calculated from the current fontSize
- borderEnableDrop?: boolean; // default:  true  allow user to drag tabs into this border
- borderAutoSelectTabWhenOpen?: boolean; // default:  true  whether to select new/moved tabs in border when the border is already open
- borderAutoSelectTabWhenClosed?: boolean; // default:  false  whether to select new/moved tabs in border when the border is curently closed
- borderClassName?: string | null; // default:  null
- borderSize?: number; // default:  200  initial width in pixels for left/right borders, height for top/bottom borders
- borderMinSize?: number; // default:  0  minimum width in pixels for left/right borders, height for top/bottom borders
- tabSetMinHeight?: number; // default:  0  minimum width (in px) for all tabsets
- tabSetMinWidth?: number; // default:  0  minimum height (in px) for all tabsets
- tabSetTabLocation?: TabLocationVertical; // default:  top  show tabs in location top or bottom
+export interface IJsonModel {
+    global?: IGlobalAttributes;
+    borders?: IJsonBorderNode[];
+    layout: IJsonRowNode; // top level 'row' is horizontal, rows inside rows take opposite orientation to parent row (ie can act as columns)
 }
 
-interface IJsonModelTabNode {
- type: "tab";
- name: string; //  required  internal unique string identifying tab (for factory)
- component: string; //  required  string identifying which component to run (for factory)
- config?: Record<string, any> | null; //  default: null  a place to hold json config for the hosted component
- id?: string; //  default: auto generated
- enableClose?: boolean; //  default: inherited  allow user to close tab via close button
- closeType?: ICloseType; //  default: inherited  see values in ICloseType
- enableDrag?: boolean; //  default: inherited  allow user to drag tab to new location
- enableRename?: boolean; //  default: inherited  allow user to rename tabs by double clicking
- enableFloat?: boolean; //  default: inherited  enable popout (in popout capable browser)
- floating?: boolean; //  default: false
- className?: string; //  default: inherited
- icon?: string; //  default: inherited
- enableRenderOnDemand?: boolean; //  default: inherited  whether to avoid rendering component until tab is visible
+interface IJsonBorderNode extends IBorderAttributes {
+    location: IBorderLocation;
+    children: IJsonTabNode[];
 }
 
-interface IJsonModelDividerNode {
- type: "row" | "column";
- weight?: number; // default: 100
- width?: number | null; // default: null  preferred width in pixels
- height?: number | null; // default: null  preferred height in pixels
- children: (IJsonModelDividerNode | IJsonModelTabNode | IJsonModelTabSetNode)[];
+interface IJsonRowNode extends IRowAttributes {
+    children: (IJsonRowNode | IJsonTabSetNode)[];
 }
 
-interface IJsonModelTabSetNode {
- type: "tabset";
- active?: boolean;
- weight?: number; // default: 100  	relative weight for sizing of this tabset in parent row
- width?: number | null; // default: null  	preferred pixel width
- height?: number | null; // default: null  	preferred pixel height
- name?: string | null; // default: null  	named tabsets will show a header bar above the tabs
- selected?: number; // default: 0  	index of selected/visible tab in tabset
- maximized?: boolean; // default: false  	whether tabset is currently maximized to fill view
- id?: string; // default: auto generated
- children: IJsonModelTabNode[]; // required  	a list of tab nodes
- enableDeleteWhenEmpty?: boolean; // default: inherited
- enableDrop?: boolean; // default: inherited  	allow user to drag tabs into this tabset
- enableDrag?: boolean; // default: inherited  	allow user to drag tabs out this tabset
- enableDivide?: boolean; // default: inherited  	allow user to drag tabs to region of this tabset, splitting into new tabset
- enableMaximize?: boolean; // default: inherited  	allow user to maximize tabset to fill view via maximize button
- autoSelectTab?: boolean; // default: inherited  	whether to select new/moved tabs in tabset
- classNameTabStrip?: string; // default: inherited
- classNameHeader?: string; // default: inherited
- enableTabStrip?: boolean; // default: inherited  	enable tab strip and allow multiple tabs in this tabset
- headerHeight?: number; // default: inherited
- tabStripHeight?: number; // default: inherited  	height in pixels of tab strip
- tabLocation?: TabLocationVertical; // default: inherited  	show tabs in location top or bottom
- minHeight?: number; // default: inherited  	minimum width (in px) for this tabset
- minWidth?: number; // default: inherited  	minimum height (in px) for this tabset
+interface IJsonTabSetNode extends ITabSetAttributes {
+    active?: boolean; // default: false - only one tabset can be active
+    maximized?: boolean; // default: false - only one tabset can be maximized
+    children: IJsonTabNode[];
 }
 
-interface IJsonModelBorderNode {
- type: "border";
- location: TabLocation;
- children: IJsonModelTabNode[];
+export interface IJsonTabNode extends ITabAttributes {
 }
 
-interface IJsonModel {
- global?: IJsonModelGlobalSettings;
- borders?: IJsonModelBorderNode[];
- layout: IJsonModelTabNode | IJsonModelDividerNode | IJsonModelTabSetNode;
+//----------------------------------------------------------------------------------------------------------
+// below this line is autogenerated from attributes in code via Model static method toTypescriptInterfaces()
+//----------------------------------------------------------------------------------------------------------
+interface IGlobalAttributes {
+    borderAutoSelectTabWhenClosed?: boolean; // default: false
+    borderAutoSelectTabWhenOpen?: boolean; // default: true
+    borderBarSize?: number; // default: 0
+    borderClassName?: string;
+    borderEnableDrop?: boolean; // default: true
+    borderMinSize?: number; // default: 0
+    borderSize?: number; // default: 200
+    enableEdgeDock?: boolean; // default: true
+    marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
+    splitterSize?: number; // default: -1
+    tabClassName?: string;
+    tabCloseType?: ICloseType; // default: 1
+    tabDragSpeed?: number; // default: 0.3
+    tabEnableClose?: boolean; // default: true
+    tabEnableDrag?: boolean; // default: true
+    tabEnableFloat?: boolean; // default: false
+    tabEnableRename?: boolean; // default: true
+    tabEnableRenderOnDemand?: boolean; // default: true
+    tabIcon?: string;
+    tabSetAutoSelectTab?: boolean; // default: true
+    tabSetBorderInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
+    tabSetClassNameHeader?: string;
+    tabSetClassNameTabStrip?: string;
+    tabSetEnableDeleteWhenEmpty?: boolean; // default: true
+    tabSetEnableDivide?: boolean; // default: true
+    tabSetEnableDrag?: boolean; // default: true
+    tabSetEnableDrop?: boolean; // default: true
+    tabSetEnableMaximize?: boolean; // default: true
+    tabSetEnableTabStrip?: boolean; // default: true
+    tabSetHeaderHeight?: number; // default: 0
+    tabSetMarginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
+    tabSetMinHeight?: number; // default: 0
+    tabSetMinWidth?: number; // default: 0
+    tabSetTabLocation?: ITabLocation; // default: "top"
+    tabSetTabStripHeight?: number; // default: 0
 }
-
-export default IJsonModel;
+interface IRowAttributes {
+    height?: number;
+    id?: string;
+    type: "row";
+    weight?: number; // default: 100
+    width?: number;
+}
+interface ITabSetAttributes {
+    autoSelectTab?: boolean; // default: true - inherited from global tabSetAutoSelectTab
+    borderInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0} - inherited from global tabSetBorderInsets
+    classNameHeader?: string; //  - inherited from global tabSetClassNameHeader
+    classNameTabStrip?: string; //  - inherited from global tabSetClassNameTabStrip
+    enableDeleteWhenEmpty?: boolean; // default: true - inherited from global tabSetEnableDeleteWhenEmpty
+    enableDivide?: boolean; // default: true - inherited from global tabSetEnableDivide
+    enableDrag?: boolean; // default: true - inherited from global tabSetEnableDrag
+    enableDrop?: boolean; // default: true - inherited from global tabSetEnableDrop
+    enableMaximize?: boolean; // default: true - inherited from global tabSetEnableMaximize
+    enableTabStrip?: boolean; // default: true - inherited from global tabSetEnableTabStrip
+    headerHeight?: number; // default: 0 - inherited from global tabSetHeaderHeight
+    height?: number;
+    id?: string;
+    marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0} - inherited from global tabSetMarginInsets
+    minHeight?: number; // default: 0 - inherited from global tabSetMinHeight
+    minWidth?: number; // default: 0 - inherited from global tabSetMinWidth
+    name?: string;
+    selected?: number; // default: 0
+    tabLocation?: ITabLocation; // default: "top" - inherited from global tabSetTabLocation
+    tabStripHeight?: number; // default: 0 - inherited from global tabSetTabStripHeight
+    type: "tabset";
+    weight?: number; // default: 100
+    width?: number;
+}
+interface ITabAttributes {
+    className?: string; //  - inherited from global tabClassName
+    closeType?: ICloseType; // default: 1 - inherited from global tabCloseType
+    component?: string;
+    config?: any;
+    enableClose?: boolean; // default: true - inherited from global tabEnableClose
+    enableDrag?: boolean; // default: true - inherited from global tabEnableDrag
+    enableFloat?: boolean; // default: false - inherited from global tabEnableFloat
+    enableRename?: boolean; // default: true - inherited from global tabEnableRename
+    enableRenderOnDemand?: boolean; // default: true - inherited from global tabEnableRenderOnDemand
+    floating?: boolean; // default: false
+    icon?: string; //  - inherited from global tabIcon
+    id?: string;
+    name?: string; // default: "[Unnamed Tab]"
+    type?: string; // default: "tab"
+}
+interface IBorderAttributes {
+    autoSelectTabWhenClosed?: boolean; // default: false - inherited from global borderAutoSelectTabWhenClosed
+    autoSelectTabWhenOpen?: boolean; // default: true - inherited from global borderAutoSelectTabWhenOpen
+    barSize?: number; // default: 0 - inherited from global borderBarSize
+    className?: string; //  - inherited from global borderClassName
+    enableDrop?: boolean; // default: true - inherited from global borderEnableDrop
+    minSize?: number; // default: 0 - inherited from global borderMinSize
+    selected?: number; // default: -1
+    show?: boolean; // default: true
+    size?: number; // default: 200 - inherited from global borderSize
+    type: "border";
+}

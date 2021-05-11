@@ -1,3 +1,4 @@
+import Attribute from "../Attribute";
 import AttributeDefinitions from "../AttributeDefinitions";
 import DockLocation from "../DockLocation";
 import DropInfo from "../DropInfo";
@@ -38,12 +39,12 @@ class RowNode extends Node implements IDropTarget {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", RowNode.TYPE, true);
-        attributeDefinitions.add("id", undefined);
+        attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
 
-        attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", undefined);
-        attributeDefinitions.add("height", undefined);
+        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(Attribute.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(Attribute.NUMBER);
 
         return attributeDefinitions;
     }
@@ -535,6 +536,12 @@ class RowNode extends Node implements IDropTarget {
     _updateAttrs(json: any) {
         RowNode._attributeDefinitions.update(json, this._attributes);
     }
+
+    /** @hidden @internal */
+    static getAttributeDefinitions() {
+        return RowNode._attributeDefinitions;
+    }
+
 }
 
 export default RowNode;

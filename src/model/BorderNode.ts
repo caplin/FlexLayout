@@ -36,12 +36,12 @@ class BorderNode extends Node implements IDropTarget {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", BorderNode.TYPE, true);
+        attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute.STRING).setFixed();
 
-        attributeDefinitions.add("selected", -1);
+        attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER);
         attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);
 
-        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.INT).setFrom(0);
+        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.NUMBER);
         attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING);
         attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute.BOOLEAN);
@@ -388,6 +388,12 @@ class BorderNode extends Node implements IDropTarget {
     _getAttributeDefinitions() {
         return BorderNode._attributeDefinitions;
     }
+
+    /** @hidden @internal */
+    static getAttributeDefinitions() {
+        return BorderNode._attributeDefinitions;
+    }
+
 }
 
 export default BorderNode;

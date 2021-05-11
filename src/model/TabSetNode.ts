@@ -43,13 +43,13 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", TabSetNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute.ID);
+        attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
 
-        attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", undefined);
-        attributeDefinitions.add("height", undefined);
-        attributeDefinitions.add("selected", 0);
+        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(Attribute.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(Attribute.NUMBER);
+        attributeDefinitions.add("selected", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("name", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
@@ -452,6 +452,13 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         }
         return prefSize;
     }
+
+
+    /** @hidden @internal */
+    static getAttributeDefinitions() {
+        return TabSetNode._attributeDefinitions;
+    }
+
 }
 
 export default TabSetNode;
