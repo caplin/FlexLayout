@@ -4,7 +4,6 @@ import DockLocation from "../DockLocation";
 import DropInfo from "../DropInfo";
 import Orientation from "../Orientation";
 import Rect from "../Rect";
-import { JSMap } from "../Types";
 import Action from "./Action";
 import Actions from "./Actions";
 import BorderNode from "./BorderNode";
@@ -99,9 +98,9 @@ class Model {
     }
 
     /** @hidden @internal */
-    private _attributes: JSMap<any>;
+    private _attributes: Record<string, any>;
     /** @hidden @internal */
-    private _idMap: JSMap<Node>;
+    private _idMap: Record<string, Node>;
     /** @hidden @internal */
     private _nextId: number;
     /** @hidden @internal */

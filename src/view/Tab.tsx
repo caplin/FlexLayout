@@ -3,7 +3,7 @@ import { Fragment } from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import { CLASSES, JSMap } from "../Types";
+import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";
@@ -42,7 +42,7 @@ export const Tab = (props: ITabProps) => {
     const cm = layout.getClassName;
 
     const parentNode = node.getParent() as TabSetNode | BorderNode;
-    const style: JSMap<any> = node._styleWithPosition({
+    const style: Record<string, any> = node._styleWithPosition({
         display: selected ? "block" : "none",
     });
 

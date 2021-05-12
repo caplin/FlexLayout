@@ -1,10 +1,9 @@
 import Attribute from "./Attribute";
-import { JSMap } from "./Types";
 
 /** @hidden @internal */
 class AttributeDefinitions {
     attributes: Attribute[];
-    nameToAttribute: JSMap<Attribute>;
+    nameToAttribute: Record<string, Attribute>;
 
     constructor() {
         this.attributes = [];

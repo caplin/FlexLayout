@@ -3,7 +3,6 @@ import DockLocation from "../DockLocation";
 import DropInfo from "../DropInfo";
 import Orientation from "../Orientation";
 import Rect from "../Rect";
-import { JSMap } from "../Types";
 import IDraggable from "./IDraggable";
 import Model, { ILayoutMetrics } from "./Model";
 
@@ -11,7 +10,7 @@ abstract class Node {
     /** @hidden @internal */
     protected _model: Model;
     /** @hidden @internal */
-    protected _attributes: JSMap<any>;
+    protected _attributes: Record<string, any>;
     /** @hidden @internal */
     protected _parent?: Node;
     /** @hidden @internal */
@@ -23,7 +22,7 @@ abstract class Node {
     /** @hidden @internal */
     protected _visible: boolean;
     /** @hidden @internal */
-    protected _listeners: JSMap<(params: any) => void>;
+    protected _listeners: Record<string, (params: any) => void>;
     /** @hidden @internal */
     protected _dirty: boolean = false;
     /** @hidden @internal */
@@ -252,7 +251,7 @@ abstract class Node {
     }
 
     /** @hidden @internal */
-    _styleWithPosition(style?: JSMap<any>) {
+    _styleWithPosition(style?: Record<string, any>) {
         if (style == null) {
             style = {};
         }

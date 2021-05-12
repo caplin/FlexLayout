@@ -2,7 +2,7 @@ import * as React from "react";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
-import { CLASSES, JSMap } from "../Types";
+import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
 
@@ -40,7 +40,7 @@ export const TabFloating = (props: ITabFloatingProps) => {
 
     const cm = layout.getClassName;
 
-    const style: JSMap<any> = node._styleWithPosition({
+    const style: Record<string, any> = node._styleWithPosition({
         display: selected ? "flex" : "none",
     });
 

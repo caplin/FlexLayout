@@ -1,7 +1,6 @@
 import Attribute from "../Attribute";
 import AttributeDefinitions from "../AttributeDefinitions";
 import Rect from "../Rect";
-import { JSMap } from "../Types";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
 import Model, { ILayoutMetrics } from "./Model";
@@ -46,7 +45,7 @@ class TabNode extends Node implements IDraggable {
     /** @hidden @internal */
     private _renderedName?: string;
     /** @hidden @internal */
-    private _extra: JSMap<any>;
+    private _extra: Record<string, any>;
     /** @hidden @internal */
     private _window?: Window;
 

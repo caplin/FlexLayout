@@ -14,7 +14,7 @@ import SplitterNode from "../model/SplitterNode";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
-import { CLASSES, JSMap } from "../Types";
+import { CLASSES } from "../Types";
 import { BorderTabSet } from "./BorderTabSet";
 import { Splitter } from "./Splitter";
 import { Tab } from "./Tab";
@@ -117,7 +117,7 @@ export interface ILayoutCallbacks {
             buttons: React.ReactNode[];
         }
     ): void;
-    styleFont: (style: JSMap<string>) => JSMap<string>;
+    styleFont: (style: Record<string, string>) => Record<string, string>;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -212,7 +212,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    styleFont(style: JSMap<string>): JSMap<string> {
+    styleFont(style: Record<string, string>): Record<string, string> {
         if (this.props.font) {
             if (this.props.font.size) {
                 style.fontSize = this.props.font.size;
@@ -363,7 +363,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         const borderComponents: React.ReactNode[] = [];
         const tabSetComponents: React.ReactNode[] = [];
         const floatingWindows: React.ReactNode[] = [];
-        const tabComponents: JSMap<React.ReactNode> = {};
+        const tabComponents: Record<string, React.ReactNode> = {};
         const splitterComponents: React.ReactNode[] = [];
 
         const metrics: ILayoutMetrics = {
@@ -378,7 +378,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.renderChildren(this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
 
         const nextTopIds: string[] = [];
-        const nextTopIdsMap: JSMap<string> = {};
+        const nextTopIdsMap: Record<string, string> = {};
 
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
         this.tabIds.forEach((t) => {
@@ -447,7 +447,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
-    renderBorder(borderSet: BorderSet, borderComponents: React.ReactNode[], tabComponents: JSMap<React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
+    renderBorder(borderSet: BorderSet, borderComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
         for (const border of borderSet.getBorders()) {
             if (border.isShowing()) {
                 borderComponents.push(
@@ -493,7 +493,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    renderChildren(node: RowNode | TabSetNode, tabSetComponents: React.ReactNode[], tabComponents: JSMap<React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
+    renderChildren(node: RowNode | TabSetNode, tabSetComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
         const drawChildren = node._getDrawChildren();
 
         for (const child of drawChildren!) {

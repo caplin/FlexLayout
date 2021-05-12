@@ -1,9 +1,8 @@
 import Orientation from "./Orientation";
 import Rect from "./Rect";
-import { JSMap } from "./Types";
 
 class DockLocation {
-    static values: JSMap<DockLocation> = {};
+    static values: Record<string, DockLocation> = {};
     static TOP = new DockLocation("top", Orientation.VERT, 0);
     static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);
     static LEFT = new DockLocation("left", Orientation.HORZ, 0);
