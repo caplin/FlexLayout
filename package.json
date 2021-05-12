@@ -27,7 +27,7 @@
         "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
         "test": "jasmine",
         "lint:eslint": "eslint src/*",
-        "doc": "typedoc --out typedoc --mode file --exclude \"**/examples/**/*.tsx\" --stripInternal --disableSources --excludePrivate --excludeProtected --readme none ",
+        "doc": "typedoc --out typedoc --exclude \"**/examples/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
         "css": "sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/dark.scss style/dark.css"
     },
     "author": "Caplin Systems Ltd",
