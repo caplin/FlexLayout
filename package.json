@@ -19,7 +19,6 @@
         "react-dom"
     ],
     "scripts": {
-        "start:example": "yarn link & yarn workspace example start",
         "start": "webpack serve",
         "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min && npm run css",
         "build:commonjs": "tsc -p tsconfig2.json",
