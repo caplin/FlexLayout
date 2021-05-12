@@ -103,6 +103,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -624,7 +626,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v17.0.1
+/** @license React v17.0.2
  * react-dom.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -11972,7 +11974,7 @@ function flushSyncCallbackQueueImpl() {
 }
 
 // TODO: this is special because it gets imported during build.
-var ReactVersion = '17.0.1';
+var ReactVersion = '17.0.2';
 
 var NoMode = 0;
 var StrictMode = 1; // TODO: Remove BlockingMode and ConcurrentMode by reading from the root
@@ -26938,7 +26940,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v17.0.1
+/** @license React v17.0.2
  * react.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -26956,7 +26958,7 @@ if (true) {
 var _assign = __webpack_require__(/*! object-assign */ "./node_modules/object-assign/index.js");
 
 // TODO: this is special because it gets imported during build.
-var ReactVersion = '17.0.1';
+var ReactVersion = '17.0.2';
 
 // ATTENTION
 // When adding new symbols to this file,
@@ -29300,7 +29302,7 @@ if (false) {} else {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v0.20.1
+/** @license React v0.20.2
  * scheduler-tracing.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -29659,7 +29661,7 @@ exports.unstable_wrap = unstable_wrap;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/** @license React v0.20.1
+/** @license React v0.20.2
  * scheduler.development.js
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -29675,7 +29677,7 @@ if (true) {
 'use strict';
 
 var enableSchedulerDebugging = false;
-var enableProfiling = true;
+var enableProfiling = false;
 
 var requestHostCallback;
 var requestHostTimeout;
@@ -29945,172 +29947,13 @@ function compare(a, b) {
 }
 
 // TODO: Use symbols?
-var NoPriority = 0;
 var ImmediatePriority = 1;
 var UserBlockingPriority = 2;
 var NormalPriority = 3;
 var LowPriority = 4;
 var IdlePriority = 5;
 
-var runIdCounter = 0;
-var mainThreadIdCounter = 0;
-var profilingStateSize = 4;
-var sharedProfilingBuffer =  // $FlowFixMe Flow doesn't know about SharedArrayBuffer
-typeof SharedArrayBuffer === 'function' ? new SharedArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : // $FlowFixMe Flow doesn't know about ArrayBuffer
-typeof ArrayBuffer === 'function' ? new ArrayBuffer(profilingStateSize * Int32Array.BYTES_PER_ELEMENT) : null // Don't crash the init path on IE9
-;
-var profilingState =  sharedProfilingBuffer !== null ? new Int32Array(sharedProfilingBuffer) : []; // We can't read this but it helps save bytes for null checks
-
-var PRIORITY = 0;
-var CURRENT_TASK_ID = 1;
-var CURRENT_RUN_ID = 2;
-var QUEUE_SIZE = 3;
-
-{
-  profilingState[PRIORITY] = NoPriority; // This is maintained with a counter, because the size of the priority queue
-  // array might include canceled tasks.
-
-  profilingState[QUEUE_SIZE] = 0;
-  profilingState[CURRENT_TASK_ID] = 0;
-} // Bytes per element is 4
-
-
-var INITIAL_EVENT_LOG_SIZE = 131072;
-var MAX_EVENT_LOG_SIZE = 524288; // Equivalent to 2 megabytes
-
-var eventLogSize = 0;
-var eventLogBuffer = null;
-var eventLog = null;
-var eventLogIndex = 0;
-var TaskStartEvent = 1;
-var TaskCompleteEvent = 2;
-var TaskErrorEvent = 3;
-var TaskCancelEvent = 4;
-var TaskRunEvent = 5;
-var TaskYieldEvent = 6;
-var SchedulerSuspendEvent = 7;
-var SchedulerResumeEvent = 8;
-
-function logEvent(entries) {
-  if (eventLog !== null) {
-    var offset = eventLogIndex;
-    eventLogIndex += entries.length;
-
-    if (eventLogIndex + 1 > eventLogSize) {
-      eventLogSize *= 2;
-
-      if (eventLogSize > MAX_EVENT_LOG_SIZE) {
-        // Using console['error'] to evade Babel and ESLint
-        console['error']("Scheduler Profiling: Event log exceeded maximum size. Don't " + 'forget to call `stopLoggingProfilingEvents()`.');
-        stopLoggingProfilingEvents();
-        return;
-      }
-
-      var newEventLog = new Int32Array(eventLogSize * 4);
-      newEventLog.set(eventLog);
-      eventLogBuffer = newEventLog.buffer;
-      eventLog = newEventLog;
-    }
-
-    eventLog.set(entries, offset);
-  }
-}
-
-function startLoggingProfilingEvents() {
-  eventLogSize = INITIAL_EVENT_LOG_SIZE;
-  eventLogBuffer = new ArrayBuffer(eventLogSize * 4);
-  eventLog = new Int32Array(eventLogBuffer);
-  eventLogIndex = 0;
-}
-function stopLoggingProfilingEvents() {
-  var buffer = eventLogBuffer;
-  eventLogSize = 0;
-  eventLogBuffer = null;
-  eventLog = null;
-  eventLogIndex = 0;
-  return buffer;
-}
-function markTaskStart(task, ms) {
-  {
-    profilingState[QUEUE_SIZE]++;
-
-    if (eventLog !== null) {
-      // performance.now returns a float, representing milliseconds. When the
-      // event is logged, it's coerced to an int. Convert to microseconds to
-      // maintain extra degrees of precision.
-      logEvent([TaskStartEvent, ms * 1000, task.id, task.priorityLevel]);
-    }
-  }
-}
-function markTaskCompleted(task, ms) {
-  {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskCompleteEvent, ms * 1000, task.id]);
-    }
-  }
-}
-function markTaskCanceled(task, ms) {
-  {
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskCancelEvent, ms * 1000, task.id]);
-    }
-  }
-}
 function markTaskErrored(task, ms) {
-  {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[QUEUE_SIZE]--;
-
-    if (eventLog !== null) {
-      logEvent([TaskErrorEvent, ms * 1000, task.id]);
-    }
-  }
-}
-function markTaskRun(task, ms) {
-  {
-    runIdCounter++;
-    profilingState[PRIORITY] = task.priorityLevel;
-    profilingState[CURRENT_TASK_ID] = task.id;
-    profilingState[CURRENT_RUN_ID] = runIdCounter;
-
-    if (eventLog !== null) {
-      logEvent([TaskRunEvent, ms * 1000, task.id, runIdCounter]);
-    }
-  }
-}
-function markTaskYield(task, ms) {
-  {
-    profilingState[PRIORITY] = NoPriority;
-    profilingState[CURRENT_TASK_ID] = 0;
-    profilingState[CURRENT_RUN_ID] = 0;
-
-    if (eventLog !== null) {
-      logEvent([TaskYieldEvent, ms * 1000, task.id, runIdCounter]);
-    }
-  }
-}
-function markSchedulerSuspended(ms) {
-  {
-    mainThreadIdCounter++;
-
-    if (eventLog !== null) {
-      logEvent([SchedulerSuspendEvent, ms * 1000, mainThreadIdCounter]);
-    }
-  }
-}
-function markSchedulerUnsuspended(ms) {
-  {
-    if (eventLog !== null) {
-      logEvent([SchedulerResumeEvent, ms * 1000, mainThreadIdCounter]);
-    }
-  }
 }
 
 /* eslint-disable no-var */
@@ -30151,11 +29994,6 @@ function advanceTimers(currentTime) {
       pop(timerQueue);
       timer.sortIndex = timer.expirationTime;
       push(taskQueue, timer);
-
-      {
-        markTaskStart(timer, currentTime);
-        timer.isQueued = true;
-      }
     } else {
       // Remaining timers are pending.
       return;
@@ -30184,9 +30022,6 @@ function handleTimeout(currentTime) {
 }
 
 function flushWork(hasTimeRemaining, initialTime) {
-  {
-    markSchedulerUnsuspended(initialTime);
-  } // We'll need a host callback the next time work is scheduled.
 
 
   isHostCallbackScheduled = false;
@@ -30221,12 +30056,6 @@ function flushWork(hasTimeRemaining, initialTime) {
     currentTask = null;
     currentPriorityLevel = previousPriorityLevel;
     isPerformingWork = false;
-
-    {
-      var _currentTime = exports.unstable_now();
-
-      markSchedulerSuspended(_currentTime);
-    }
   }
 }
 
@@ -30247,18 +30076,13 @@ function workLoop(hasTimeRemaining, initialTime) {
       currentTask.callback = null;
       currentPriorityLevel = currentTask.priorityLevel;
       var didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
-      markTaskRun(currentTask, currentTime);
+
       var continuationCallback = callback(didUserCallbackTimeout);
       currentTime = exports.unstable_now();
 
       if (typeof continuationCallback === 'function') {
         currentTask.callback = continuationCallback;
-        markTaskYield(currentTask, currentTime);
       } else {
-        {
-          markTaskCompleted(currentTask, currentTime);
-          currentTask.isQueued = false;
-        }
 
         if (currentTask === peek(taskQueue)) {
           pop(taskQueue);
@@ -30403,10 +30227,6 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     sortIndex: -1
   };
 
-  {
-    newTask.isQueued = false;
-  }
-
   if (startTime > currentTime) {
     // This is a delayed task.
     newTask.sortIndex = startTime;
@@ -30427,11 +30247,6 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
   } else {
     newTask.sortIndex = expirationTime;
     push(taskQueue, newTask);
-
-    {
-      markTaskStart(newTask, currentTime);
-      newTask.isQueued = true;
-    } // Schedule a host callback, if needed. If we're already performing work,
     // wait until the next time we yield.
 
 
@@ -30460,13 +30275,6 @@ function unstable_getFirstCallbackNode() {
 }
 
 function unstable_cancelCallback(task) {
-  {
-    if (task.isQueued) {
-      var currentTime = exports.unstable_now();
-      markTaskCanceled(task, currentTime);
-      task.isQueued = false;
-    }
-  } // Null out the callback to indicate the task has been canceled. (Can't
   // remove from the queue because you can't remove arbitrary nodes from an
   // array based heap, only the first one.)
 
@@ -30479,11 +30287,7 @@ function unstable_getCurrentPriorityLevel() {
 }
 
 var unstable_requestPaint = requestPaint;
-var unstable_Profiling =  {
-  startLoggingProfilingEvents: startLoggingProfilingEvents,
-  stopLoggingProfilingEvents: stopLoggingProfilingEvents,
-  sharedProfilingBuffer: sharedProfilingBuffer
-} ;
+var unstable_Profiling =  null;
 
 exports.unstable_IdlePriority = IdlePriority;
 exports.unstable_ImmediatePriority = ImmediatePriority;
@@ -30558,38 +30362,25 @@ var Attribute = /** @class */ (function () {
         this.modelName = modelName;
         this.defaultValue = defaultValue;
         this.alwaysWriteJson = alwaysWriteJson;
-        this.type = undefined;
-        this.values = [];
-        this.from = -99999999;
-        this.to = 99999999;
+        this.required = false;
+        this.fixed = false;
+        this.type = "any";
     }
     Attribute.prototype.setType = function (value) {
         this.type = value;
         return this;
     };
-    Attribute.prototype.setValues = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        this.values = args;
+    Attribute.prototype.setRequired = function () {
+        this.required = true;
         return this;
     };
-    Attribute.prototype.setFrom = function (value) {
-        this.from = value;
+    Attribute.prototype.setFixed = function () {
+        this.fixed = true;
         return this;
     };
-    Attribute.prototype.setTo = function (value) {
-        this.to = value;
-        return this;
-    };
-    Attribute.ENUM = "Enum";
-    Attribute.INT = "Int";
-    Attribute.NUMBER = "Number";
-    Attribute.STRING = "String";
-    Attribute.BOOLEAN = "Boolean";
-    Attribute.ID = "Id";
-    Attribute.JSON = "Json";
+    Attribute.NUMBER = "number";
+    Attribute.STRING = "string";
+    Attribute.BOOLEAN = "boolean";
     return Attribute;
 }());
 /** @hidden @internal */
@@ -30668,6 +30459,43 @@ var AttributeDefinitions = /** @class */ (function () {
         this.attributes.forEach(function (attr) {
             obj[attr.name] = attr.defaultValue;
         });
+    };
+    AttributeDefinitions.prototype.toTypescriptInterface = function (name, parentAttributes) {
+        var lines = [];
+        var sorted = this.attributes.sort(function (a, b) { return a.name.localeCompare(b.name); });
+        // const sorted = this.attributes;
+        lines.push("interface I" + name + "Attributes {");
+        for (var i = 0; i < sorted.length; i++) {
+            var c = sorted[i];
+            var type = c.type;
+            var defaultValue = undefined;
+            var attr = c;
+            var inherited = undefined;
+            if (attr.defaultValue !== undefined) {
+                defaultValue = attr.defaultValue;
+            }
+            else if (attr.modelName !== undefined
+                && parentAttributes !== undefined
+                && parentAttributes.nameToAttribute[attr.modelName] !== undefined) {
+                inherited = attr.modelName;
+                attr = parentAttributes.nameToAttribute[attr.modelName];
+                defaultValue = attr.defaultValue;
+                type = attr.type;
+            }
+            var defValue = JSON.stringify(defaultValue);
+            var required = attr.required || attr.fixed ? "" : "?";
+            if (c.fixed) {
+                lines.push("\t" + c.name + ": " + defValue + ";");
+            }
+            else {
+                var comment = (defaultValue !== undefined ? "default: " + defValue : "") +
+                    (inherited !== undefined ? " - inherited from global " + inherited : "");
+                lines.push("\t" + c.name + required + ": " + type + ";" +
+                    (comment.length > 0 ? " // " + comment : ""));
+            }
+        }
+        lines.push("}");
+        return lines.join("\n");
     };
     return AttributeDefinitions;
 }());
@@ -31695,6 +31523,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -31743,10 +31573,10 @@ var BorderNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     BorderNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
-        attributeDefinitions.add("type", BorderNode.TYPE, true);
-        attributeDefinitions.add("selected", -1);
+        attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute_1.default.STRING).setFixed();
+        attributeDefinitions.add("selected", -1).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("show", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute_1.default.INT).setFrom(0);
+        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute_1.default.NUMBER);
         attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute_1.default.STRING);
         attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute_1.default.BOOLEAN);
@@ -31782,7 +31612,7 @@ var BorderNode = /** @class */ (function (_super) {
         }
     };
     BorderNode.prototype.getClassName = function () {
-        return this._getAttributeAsStringOrUndefined("className");
+        return this._getAttr("className");
     };
     /** @hidden @internal */
     BorderNode.prototype.calcBorderBarSize = function (metrics) {
@@ -32035,6 +31865,10 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype._getAttributeDefinitions = function () {
         return BorderNode._attributeDefinitions;
     };
+    /** @hidden @internal */
+    BorderNode.getAttributeDefinitions = function () {
+        return BorderNode._attributeDefinitions;
+    };
     BorderNode.TYPE = "border";
     /** @hidden @internal */
     BorderNode._attributeDefinitions = BorderNode._createAttributeDefinitions();
@@ -32244,12 +32078,13 @@ var Model = /** @class */ (function () {
     Model._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         // splitter
-        attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.default.INT);
+        attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
+        attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabCloseType", 1).setType(Attribute_1.default.INT);
+        attributeDefinitions.add("tabCloseType", 1).setType("ICloseType");
         attributeDefinitions.add("tabEnableFloat", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute_1.default.BOOLEAN);
@@ -32267,17 +32102,19 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute_1.default.INT).setFrom(0);
-        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute_1.default.INT).setFrom(0);
-        attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
-        attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 }).setType(Attribute_1.default.JSON);
-        attributeDefinitions.add("tabSetTabLocation", "top").setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
+        attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 })
+            .setType("IInsets");
+        attributeDefinitions.add("tabSetTabLocation", "top").setType("ITabLocation");
         attributeDefinitions.add("tabSetMinWidth", 0).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("tabSetMinHeight", 0).setType(Attribute_1.default.NUMBER);
         // border
-        attributeDefinitions.add("borderSize", 200).setType(Attribute_1.default.INT).setFrom(0);
-        attributeDefinitions.add("borderMinSize", 0).setType(Attribute_1.default.INT).setFrom(0);
-        attributeDefinitions.add("borderBarSize", 0).setType(Attribute_1.default.INT).setFrom(0);
+        attributeDefinitions.add("borderSize", 200).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("borderMinSize", 0).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("borderBarSize", 0).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("borderEnableDrop", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute_1.default.BOOLEAN);
@@ -32508,7 +32345,7 @@ var Model = /** @class */ (function () {
     };
     /**
      * Converts the model to a json object
-     * @returns {*} json object that represents this model
+     * @returns {IJsonModel} json object that represents this model
      */
     Model.prototype.toJson = function () {
         var json = { global: {}, layout: {} };
@@ -32594,6 +32431,13 @@ var Model = /** @class */ (function () {
     Model.prototype._getOnAllowDrop = function () {
         return this._onAllowDrop;
     };
+    Model.toTypescriptInterfaces = function () {
+        console.log(Model._attributeDefinitions.toTypescriptInterface("Global", undefined));
+        console.log(RowNode_1.default.getAttributeDefinitions().toTypescriptInterface("Row", Model._attributeDefinitions));
+        console.log(TabSetNode_1.default.getAttributeDefinitions().toTypescriptInterface("TabSet", Model._attributeDefinitions));
+        console.log(TabNode_1.default.getAttributeDefinitions().toTypescriptInterface("Tab", Model._attributeDefinitions));
+        console.log(BorderNode_1.default.getAttributeDefinitions().toTypescriptInterface("Border", Model._attributeDefinitions));
+    };
     Model.prototype.toString = function () {
         return JSON.stringify(this.toJson());
     };
@@ -32601,6 +32445,8 @@ var Model = /** @class */ (function () {
     Model._attributeDefinitions = Model._createAttributeDefinitions();
     return Model;
 }());
+// use to generate json typescript interfaces 
+// Model.toTypescriptInterfaces();
 exports.default = Model;
 
 
@@ -32835,22 +32681,6 @@ var Node = /** @class */ (function () {
     Node.prototype._toAttributeString = function () {
         return JSON.stringify(this._attributes, undefined, "\t");
     };
-    /** @hidden @internal */
-    Node.prototype._getAttributeAsStringOrUndefined = function (attr) {
-        var value = this._attributes[attr];
-        if (value !== undefined) {
-            return value;
-        }
-        return undefined;
-    };
-    /** @hidden @internal */
-    Node.prototype._getAttributeAsNumberOrUndefined = function (attr) {
-        var value = this._attributes[attr];
-        if (value !== undefined) {
-            return value;
-        }
-        return undefined;
-    };
     return Node;
 }());
 exports.default = Node;
@@ -32875,12 +32705,15 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
 var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
@@ -32924,21 +32757,21 @@ var RowNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     RowNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
-        attributeDefinitions.add("type", RowNode.TYPE, true);
-        attributeDefinitions.add("id", undefined);
-        attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", undefined);
-        attributeDefinitions.add("height", undefined);
+        attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute_1.default.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("weight", 100).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(Attribute_1.default.NUMBER);
         return attributeDefinitions;
     };
     RowNode.prototype.getWeight = function () {
         return this._attributes.weight;
     };
     RowNode.prototype.getWidth = function () {
-        return this._getAttributeAsNumberOrUndefined("width");
+        return this._getAttr("width");
     };
     RowNode.prototype.getHeight = function () {
-        return this._getAttributeAsNumberOrUndefined("height");
+        return this._getAttr("height");
     };
     /** @hidden @internal */
     RowNode.prototype._setWeight = function (weight) {
@@ -33379,6 +33212,10 @@ var RowNode = /** @class */ (function (_super) {
     RowNode.prototype._updateAttrs = function (json) {
         RowNode._attributeDefinitions.update(json, this._attributes);
     };
+    /** @hidden @internal */
+    RowNode.getAttributeDefinitions = function () {
+        return RowNode._attributeDefinitions;
+    };
     RowNode.TYPE = "row";
     /** @hidden @internal */
     RowNode._attributeDefinitions = RowNode._createAttributeDefinitions();
@@ -33406,6 +33243,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -33505,6 +33344,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -33536,14 +33377,14 @@ var TabNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     TabNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
-        attributeDefinitions.add("type", TabNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.ID);
+        attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute_1.default.STRING);
         attributeDefinitions.add("component", undefined).setType(Attribute_1.default.STRING);
-        attributeDefinitions.add("config", undefined).setType(Attribute_1.default.JSON);
+        attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute_1.default.BOOLEAN);
-        attributeDefinitions.addInherited("closeType", "tabCloseType").setType(Attribute_1.default.INT);
+        attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute_1.default.STRING);
@@ -33574,7 +33415,7 @@ var TabNode = /** @class */ (function (_super) {
         return this._getAttr("name");
     };
     TabNode.prototype.getComponent = function () {
-        return this._getAttributeAsStringOrUndefined("component");
+        return this._getAttr("component");
     };
     /**
      * Returns the config attribute that can be used to store node specific data that
@@ -33594,11 +33435,10 @@ var TabNode = /** @class */ (function (_super) {
         return this._extra;
     };
     TabNode.prototype.isFloating = function () {
-        var configFloating = this._getAttr("floating");
-        return configFloating;
+        return this._getAttr("floating");
     };
     TabNode.prototype.getIcon = function () {
-        return this._getAttributeAsStringOrUndefined("icon");
+        return this._getAttr("icon");
     };
     TabNode.prototype.isEnableClose = function () {
         return this._getAttr("enableClose");
@@ -33607,8 +33447,7 @@ var TabNode = /** @class */ (function (_super) {
         return this._getAttr("closeType");
     };
     TabNode.prototype.isEnableFloat = function () {
-        var allowFloat = this._getAttr("enableFloat");
-        return allowFloat;
+        return this._getAttr("enableFloat");
     };
     TabNode.prototype.isEnableDrag = function () {
         return this._getAttr("enableDrag");
@@ -33617,7 +33456,7 @@ var TabNode = /** @class */ (function (_super) {
         return this._getAttr("enableRename");
     };
     TabNode.prototype.getClassName = function () {
-        return this._getAttributeAsStringOrUndefined("className");
+        return this._getAttr("className");
     };
     TabNode.prototype.isEnableRenderOnDemand = function () {
         return this._getAttr("enableRenderOnDemand");
@@ -33663,6 +33502,10 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype._setWindow = function (window) {
         this._window = window;
     };
+    /** @hidden @internal */
+    TabNode.getAttributeDefinitions = function () {
+        return TabNode._attributeDefinitions;
+    };
     TabNode.TYPE = "tab";
     /** @hidden @internal */
     TabNode._attributeDefinitions = TabNode._createAttributeDefinitions();
@@ -33690,6 +33533,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -33737,12 +33582,12 @@ var TabSetNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     TabSetNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
-        attributeDefinitions.add("type", TabSetNode.TYPE, true);
-        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.ID);
-        attributeDefinitions.add("weight", 100);
-        attributeDefinitions.add("width", undefined);
-        attributeDefinitions.add("height", undefined);
-        attributeDefinitions.add("selected", 0);
+        attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(Attribute_1.default.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("weight", 100).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("selected", 0).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("name", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
@@ -33763,7 +33608,7 @@ var TabSetNode = /** @class */ (function (_super) {
         return attributeDefinitions;
     };
     TabSetNode.prototype.getName = function () {
-        return this._getAttributeAsStringOrUndefined("name");
+        return this._getAttr("name");
     };
     TabSetNode.prototype.getSelected = function () {
         var selected = this._attributes.selected;
@@ -33780,16 +33625,16 @@ var TabSetNode = /** @class */ (function (_super) {
         return undefined;
     };
     TabSetNode.prototype.getWeight = function () {
-        return this._attributes.weight;
+        return this._getAttr("weight");
     };
     TabSetNode.prototype.getWidth = function () {
-        return this._getAttributeAsNumberOrUndefined("width");
+        return this._getAttr("width");
     };
     TabSetNode.prototype.getMinWidth = function () {
         return this._getAttr("minWidth");
     };
     TabSetNode.prototype.getHeight = function () {
-        return this._getAttributeAsNumberOrUndefined("height");
+        return this._getAttr("height");
     };
     TabSetNode.prototype.getMinHeight = function () {
         return this._getAttr("minHeight");
@@ -33845,10 +33690,10 @@ var TabSetNode = /** @class */ (function (_super) {
         return this._getAttr("autoSelectTab");
     };
     TabSetNode.prototype.getClassNameTabStrip = function () {
-        return this._getAttributeAsStringOrUndefined("classNameTabStrip");
+        return this._getAttr("classNameTabStrip");
     };
     TabSetNode.prototype.getClassNameHeader = function () {
-        return this._getAttributeAsStringOrUndefined("classNameHeader");
+        return this._getAttr("classNameHeader");
     };
     /** @hidden @internal */
     TabSetNode.prototype.calculateHeaderBarHeight = function (metrics) {
@@ -34081,6 +33926,10 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         return prefSize;
     };
+    /** @hidden @internal */
+    TabSetNode.getAttributeDefinitions = function () {
+        return TabSetNode._attributeDefinitions;
+    };
     TabSetNode.TYPE = "tabset";
     /** @hidden @internal */
     TabSetNode._attributeDefinitions = TabSetNode._createAttributeDefinitions();
@@ -34154,7 +34003,7 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.BorderButton = function (props) {
+var BorderButton = function (props) {
     var layout = props.layout, node = props.node, selected = props.selected, border = props.border, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var selfRef = React.useRef(null);
     var onMouseDown = function (event) {
@@ -34230,6 +34079,7 @@ exports.BorderButton = function (props) {
         content,
         buttons));
 };
+exports.BorderButton = BorderButton;
 
 
 /***/ }),
@@ -34255,7 +34105,7 @@ var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.BorderTabSet = function (props) {
+var BorderTabSet = function (props) {
     var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
@@ -34330,6 +34180,7 @@ exports.BorderTabSet = function (props) {
             React.createElement("div", { style: innerStyle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName()) }, tabs)),
         toolbar));
 };
+exports.BorderTabSet = BorderTabSet;
 
 
 /***/ }),
@@ -34351,6 +34202,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -34404,7 +34257,7 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_dom_1 = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.FloatingWindow = function (props) {
+var FloatingWindow = function (props) {
     var title = props.title, id = props.id, url = props.url, rect = props.rect, onCloseWindow = props.onCloseWindow, onSetWindow = props.onSetWindow, children = props.children;
     var popoutWindow = React.useRef(null);
     var _a = React.useState(undefined), content = _a[0], setContent = _a[1];
@@ -34456,6 +34309,7 @@ exports.FloatingWindow = function (props) {
         return null;
     }
 };
+exports.FloatingWindow = FloatingWindow;
 /** @hidden @internal */
 function copyStyles(doc) {
     var head = doc.head;
@@ -34509,7 +34363,7 @@ var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.FloatingWindowTab = function (props) {
+var FloatingWindowTab = function (props) {
     var layout = props.layout, node = props.node, factory = props.factory;
     var cm = layout.getClassName;
     var child = factory(node);
@@ -34517,6 +34371,7 @@ exports.FloatingWindowTab = function (props) {
         React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
             React.createElement(react_1.Fragment, null, child))));
 };
+exports.FloatingWindowTab = FloatingWindowTab;
 
 
 /***/ }),
@@ -34538,6 +34393,8 @@ var __extends = (this && this.__extends) || (function () {
         return extendStatics(d, b);
     };
     return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
         extendStatics(d, b);
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -34697,6 +34554,7 @@ var Layout = /** @class */ (function (_super) {
             var rootdiv = _this.selfRef.current;
             _this.outlineDiv = _this.currentDocument.createElement("div");
             _this.outlineDiv.className = _this.getClassName(Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            _this.outlineDiv.style.visibility = "hidden";
             rootdiv.appendChild(_this.outlineDiv);
             if (_this.dragDiv == null) {
                 _this.dragDiv = _this.currentDocument.createElement("div");
@@ -34731,6 +34589,7 @@ var Layout = /** @class */ (function (_super) {
                 _this.dropInfo = dropInfo;
                 _this.outlineDiv.className = _this.getClassName(dropInfo.className);
                 dropInfo.rect.positionElement(_this.outlineDiv);
+                _this.outlineDiv.style.visibility = "visible";
             }
         };
         /** @hidden @internal */
@@ -35162,7 +35021,7 @@ var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/B
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.Splitter = function (props) {
+var Splitter = function (props) {
     var layout = props.layout, node = props.node;
     var pBounds = React.useRef([]);
     var outlineDiv = React.useRef(undefined);
@@ -35249,6 +35108,7 @@ exports.Splitter = function (props) {
     }
     return React.createElement("div", { style: style, onTouchStart: onMouseDown, onMouseDown: onMouseDown, className: className });
 };
+exports.Splitter = Splitter;
 
 
 /***/ }),
@@ -35273,7 +35133,7 @@ var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/Err
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
 /** @hidden @internal */
-exports.Tab = function (props) {
+var Tab = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node, factory = props.factory;
     var _a = React.useState(!props.node.isEnableRenderOnDemand() || props.selected), renderComponent = _a[0], setRenderComponent = _a[1];
     React.useLayoutEffect(function () {
@@ -35314,6 +35174,7 @@ exports.Tab = function (props) {
         React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
             React.createElement(react_1.Fragment, null, child))));
 };
+exports.Tab = Tab;
 
 
 /***/ }),
@@ -35336,7 +35197,7 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.TabButton = function (props) {
+var TabButton = function (props) {
     var layout = props.layout, node = props.node, show = props.show, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var selfRef = React.useRef(null);
     var contentRef = React.useRef(null);
@@ -35464,6 +35325,7 @@ exports.TabButton = function (props) {
         content,
         buttons));
 };
+exports.TabButton = TabButton;
 
 
 /***/ }),
@@ -35485,7 +35347,7 @@ var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/T
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 /** @hidden @internal */
-exports.TabFloating = function (props) {
+var TabFloating = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node;
     var onMouseDown = function () {
         var parent = node.getParent();
@@ -35520,6 +35382,7 @@ exports.TabFloating = function (props) {
             React.createElement("div", null,
                 React.createElement("a", { href: "#", onClick: onClickDock }, dockMessage)))));
 };
+exports.TabFloating = TabFloating;
 
 
 /***/ }),
@@ -35540,7 +35403,7 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 /** @hidden @internal */
-exports.useTabOverflow = function (node, orientation, toolbarRef) {
+var useTabOverflow = function (node, orientation, toolbarRef) {
     var firstRender = React.useRef(true);
     var lastRect = React.useRef(new Rect_1.default(0, 0, 0, 0));
     var selfRef = React.useRef(null);
@@ -35664,6 +35527,7 @@ exports.useTabOverflow = function (node, orientation, toolbarRef) {
     };
     return { selfRef: selfRef, position: position, userControlledLeft: userControlledLeft, hiddenTabs: hiddenTabs, onMouseWheel: onMouseWheel };
 };
+exports.useTabOverflow = useTabOverflow;
 
 
 /***/ }),
@@ -35688,7 +35552,7 @@ var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 /** @hidden @internal */
-exports.TabSet = function (props) {
+var TabSet = function (props) {
     var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
@@ -35831,6 +35695,7 @@ exports.TabSet = function (props) {
         header,
         tabStrip));
 };
+exports.TabSet = TabSet;
 
 
 /***/ })
