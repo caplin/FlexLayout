@@ -280,8 +280,6 @@ tabs or drag and drop).
 ```
 ## Floating Tabs (Popouts)
 
-(Press the 'reload from file' button in the demo app to load new layouts with the popout attribute)
-
 Note: this feature only works for Chrome, Firefox, Safari, latest Edge (the Chrome based one) and Opera, it does
 NOT work for any version of IE or the previous version of Edge. For unsupported browsers the popout icons
 will not be shown and any saved layout with popouts will show with all their tabs in the main layout.
