@@ -173,6 +173,10 @@ The above code would render two tabsets horizontally each containing a single ta
 
 Try it now using [JSFiddle](https://jsfiddle.net/9x6hecdw/) 
 
+A simple Create React App (CRA) example (using typescript) can be found here:
+
+https://github.com/nealus/FlexLayout_cra_example
+
 
 The model is built up using 4 types of 'node':
 
