@@ -177,7 +177,6 @@ A simple Create React App (CRA) example (using typescript) can be found here:
 
 https://github.com/nealus/FlexLayout_cra_example
 
-
 The model is built up using 4 types of 'node':
 
 * row - rows contains a list of tabsets and child rows, the top level 'row' will render horizontally (unless the global attribute rootOrientationVertical is set)
@@ -199,6 +198,10 @@ The model json contains 3 top level elements:
 * borders - (optional) where up to 4 borders are defined ("top", "bottom", "left", "right"). 
 
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
+
+NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.5/demo/index.html) app, modify one of the 
+existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
+
 
 example borders section:
 ```
