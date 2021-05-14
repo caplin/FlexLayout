@@ -466,11 +466,13 @@ class RowNode extends Node implements IDropTarget {
 
         tabSet._setWeight(size / 3);
 
-        if (dockLocation === DockLocation.LEFT) {
+        const horz = !this._model.isRootOrientationVertical();
+        
+        if (horz && dockLocation === DockLocation.LEFT || !horz && dockLocation === DockLocation.TOP) {
             this._addChild(tabSet, 0);
-        } else if (dockLocation === DockLocation.RIGHT) {
+        } else if (horz && dockLocation === DockLocation.RIGHT || !horz && dockLocation === DockLocation.BOTTOM) {
             this._addChild(tabSet);
-        } else if (dockLocation === DockLocation.TOP) {
+        } else if (horz && dockLocation === DockLocation.TOP || !horz && dockLocation === DockLocation.LEFT) {
             const vrow = new RowNode(this._model, {});
             const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);
@@ -482,7 +484,7 @@ class RowNode extends Node implements IDropTarget {
             vrow._addChild(tabSet);
             vrow._addChild(hrow);
             this._addChild(vrow);
-        } else if (dockLocation === DockLocation.BOTTOM) {
+        } else if (horz && dockLocation === DockLocation.BOTTOM || !horz && dockLocation === DockLocation.RIGHT) {
             const vrow = new RowNode(this._model, {});
             const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);

@@ -77,7 +77,7 @@ abstract class Node {
 
     getOrientation(): Orientation {
         if (this._parent === undefined) {
-            return Orientation.HORZ;
+            return this._model.isRootOrientationVertical() ? Orientation.VERT : Orientation.HORZ;
         } else {
             return Orientation.flip(this._parent.getOrientation());
         }

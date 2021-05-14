@@ -180,7 +180,8 @@ https://github.com/nealus/FlexLayout_cra_example
 
 The model is built up using 4 types of 'node':
 
-* row - rows contains a list of tabsets and child rows, the top level row will render horizontally, child 'rows' will render in the opposite orientation to their parent.
+* row - rows contains a list of tabsets and child rows, the top level 'row' will render horizontally (unless the global attribute rootOrientationVertical is set)
+, child 'rows' will render in the opposite orientation to their parent.
 
 * tabset - tabsets contain a list of tabs and the index of the selected tab
 
@@ -347,6 +348,7 @@ Attributes allowed in the 'global' element
 | tabSetMinHeight | 0 | minimum width (in px) for all tabsets |
 | tabSetMinWidth | 0 | minimum height (in px) for all tabsets |
 | tabSetTabLocation | top | show tabs in location top or bottom |
+| rootOrientationVertical | false | the top level 'row' will layout horizontally by default, set this option true to make it layout vertically |
 
 
 ## Row Attributes

@@ -1,3 +1,8 @@
+0.5.8
+Fix for #172 - Added global rootOrientationVertical attribute to allow vertical layout for root 'row'
+Added missing exports for typescript json model
+Moved CRA example to separate repo
+
 0.5.7
 Added typescript typings for the model json
 Fixed drag rectangle showing as dot before first position found (when dragging into the layout)

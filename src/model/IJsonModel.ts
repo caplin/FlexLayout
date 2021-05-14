@@ -6,6 +6,7 @@ type IInsets = { "top": number, "right": number, "bottom": number, "left": numbe
 export interface IJsonModel {
     global?: IGlobalAttributes;
     borders?: IJsonBorderNode[];
+    rootOrientationVertical?: boolean;
     layout: IJsonRowNode; // top level 'row' is horizontal, rows inside rows take opposite orientation to parent row (ie can act as columns)
 }
 
