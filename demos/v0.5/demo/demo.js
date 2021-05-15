@@ -275,9 +275,13 @@ var App = /** @class */ (function (_super) {
         };
         _this.titleFactory = function (node) {
             if (node.getId() === "custom-tab") {
-                return React.createElement(React.Fragment, null,
-                    "(Added by titleFactory) ",
-                    node.getName());
+                // return "(Added by titleFactory) " + node.getName();
+                return {
+                    titleContent: React.createElement("div", null,
+                        "(Added by titleFactory) ",
+                        node.getName()),
+                    name: "the name for custom tab"
+                };
             }
             return;
         };
@@ -398,9 +402,9 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "160%" }, "Size 160%"),
                     React.createElement("option", { value: "180%" }, "Size 180%"),
                     React.createElement("option", { value: "200%" }, "Size 200%")),
-                React.createElement("select", { style: { marginLeft: 5 }, onChange: this.onThemeChange },
+                React.createElement("select", { style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
                     React.createElement("option", { value: "light" }, "Light"),
-                    React.createElement("option", { value: "gray", selected: true }, "Gray"),
+                    React.createElement("option", { value: "gray" }, "Gray"),
                     React.createElement("option", { value: "dark" }, "Dark")),
                 React.createElement("button", { style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
                 React.createElement("button", { disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none", backgroundColor: "lightgray" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
@@ -32080,6 +32084,7 @@ var Model = /** @class */ (function () {
         // splitter
         attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
         // tab
@@ -32156,6 +32161,9 @@ var Model = /** @class */ (function () {
      */
     Model.prototype.getRoot = function () {
         return this._root;
+    };
+    Model.prototype.isRootOrientationVertical = function () {
+        return this._attributes.rootOrientationVertical;
     };
     /**
      * Gets the
@@ -32509,7 +32517,7 @@ var Node = /** @class */ (function () {
     };
     Node.prototype.getOrientation = function () {
         if (this._parent === undefined) {
-            return Orientation_1.default.HORZ;
+            return this._model.isRootOrientationVertical() ? Orientation_1.default.VERT : Orientation_1.default.HORZ;
         }
         else {
             return Orientation_1.default.flip(this._parent.getOrientation());
@@ -33148,13 +33156,14 @@ var RowNode = /** @class */ (function (_super) {
             size = 100;
         }
         tabSet._setWeight(size / 3);
-        if (dockLocation === DockLocation_1.default.LEFT) {
+        var horz = !this._model.isRootOrientationVertical();
+        if (horz && dockLocation === DockLocation_1.default.LEFT || !horz && dockLocation === DockLocation_1.default.TOP) {
             this._addChild(tabSet, 0);
         }
-        else if (dockLocation === DockLocation_1.default.RIGHT) {
+        else if (horz && dockLocation === DockLocation_1.default.RIGHT || !horz && dockLocation === DockLocation_1.default.BOTTOM) {
             this._addChild(tabSet);
         }
-        else if (dockLocation === DockLocation_1.default.TOP) {
+        else if (horz && dockLocation === DockLocation_1.default.TOP || !horz && dockLocation === DockLocation_1.default.LEFT) {
             var vrow = new RowNode(this._model, {});
             var hrow_1 = new RowNode(this._model, {});
             hrow_1._setWeight(75);
@@ -33167,7 +33176,7 @@ var RowNode = /** @class */ (function (_super) {
             vrow._addChild(hrow_1);
             this._addChild(vrow);
         }
-        else if (dockLocation === DockLocation_1.default.BOTTOM) {
+        else if (horz && dockLocation === DockLocation_1.default.BOTTOM || !horz && dockLocation === DockLocation_1.default.RIGHT) {
             var vrow = new RowNode(this._model, {});
             var hrow_2 = new RowNode(this._model, {});
             hrow_2._setWeight(75);
@@ -34058,11 +34067,30 @@ var BorderButton = function (props) {
         classNames += " " + node.getClassName();
     }
     var leadingContent = iconFactory ? iconFactory(node) : undefined;
-    var titleContent = (titleFactory ? titleFactory(node) : undefined) || node.getName();
+    var titleContent = node.getName();
+    var name = node.getName();
+    function isTitleObject(obj) {
+        return obj.titleContent !== undefined;
+    }
+    if (titleFactory !== undefined) {
+        var titleObj = titleFactory(node);
+        if (titleObj !== undefined) {
+            if (typeof titleObj === "string") {
+                titleContent = titleObj;
+                name = titleObj;
+            }
+            else if (isTitleObject(titleObj)) {
+                titleContent = titleObj.titleContent;
+                name = titleObj.name;
+            }
+            else {
+                titleContent = titleObj;
+            }
+        }
+    }
     if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
         leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
     }
-    var name = node.getName();
     var buttons = [];
     // allow customization of leading contents (icon) and contents
     var renderState = { leading: leadingContent, content: titleContent, name: name, buttons: buttons };
@@ -35298,11 +35326,30 @@ var TabButton = function (props) {
         classNames += " " + node.getClassName();
     }
     var leadingContent = iconFactory ? iconFactory(node) : undefined;
-    var titleContent = (titleFactory ? titleFactory(node) : undefined) || node.getName();
+    var titleContent = node.getName();
+    var name = node.getName();
+    function isTitleObject(obj) {
+        return obj.titleContent !== undefined;
+    }
+    if (titleFactory !== undefined) {
+        var titleObj = titleFactory(node);
+        if (titleObj !== undefined) {
+            if (typeof titleObj === "string") {
+                titleContent = titleObj;
+                name = titleObj;
+            }
+            else if (isTitleObject(titleObj)) {
+                titleContent = titleObj.titleContent;
+                name = titleObj.name;
+            }
+            else {
+                titleContent = titleObj;
+            }
+        }
+    }
     if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
         leadingContent = React.createElement("img", { src: node.getIcon(), alt: "leadingContent" });
     }
-    var name = node.getName();
     var buttons = [];
     // allow customization of leading contents (icon) and contents
     var renderState = { leading: leadingContent, content: titleContent, name: name, buttons: buttons };
