@@ -4,7 +4,7 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
-import { IIcons, ILayoutCallbacks } from "./Layout";
+import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
 
@@ -135,13 +135,32 @@ export const TabButton = (props: ITabButtonProps) => {
     }
 
     let leadingContent = iconFactory ? iconFactory(node) : undefined;
-    const titleContent = (titleFactory ? titleFactory(node) : undefined) || node.getName();
+    let titleContent: React.ReactNode = node.getName();
+    let name = node.getName();
+
+    function isTitleObject(obj: any): obj is ITitleObject {
+        return obj.titleContent !== undefined 
+      }
+
+    if (titleFactory !== undefined) {
+        const titleObj = titleFactory(node);
+        if (titleObj !== undefined) {
+            if (typeof titleObj === "string") {
+                titleContent = titleObj as string;
+                name = titleObj as string;
+            } else if (isTitleObject(titleObj)) {
+                titleContent = titleObj.titleContent;
+                name = titleObj.name;
+            } else {
+                titleContent = titleObj;
+            }
+        }
+    }
 
     if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
         leadingContent = <img src={node.getIcon()} alt="leadingContent" />;
     }
 
-    let name = node.getName();
     let buttons: any[] = [];
 
     // allow customization of leading contents (icon) and contents

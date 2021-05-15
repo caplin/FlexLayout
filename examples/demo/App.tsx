@@ -232,7 +232,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     titleFactory = (node: TabNode) => {
         if (node.getId() === "custom-tab") {
-            return <>(Added by titleFactory) {node.getName()}</>
+            // return "(Added by titleFactory) " + node.getName();
+            return {
+                titleContent: <div>(Added by titleFactory) {node.getName()}</div>,
+                name: "the name for custom tab" 
+            };
         }
         return;
     }

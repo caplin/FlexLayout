@@ -35,7 +35,7 @@ export interface ILayoutProps {
     };
     fontFamily?: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => ITitleObject | React.ReactNode | undefined;
     closeIcon?: React.ReactNode;
     icons?: IIcons;
     onAction?: (action: Action) => Action | undefined;
@@ -65,6 +65,11 @@ export interface ILayoutProps {
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
+}
+
+export interface ITitleObject {
+    titleContent: React.ReactNode;
+    name: string;
 }
 
 export interface ILayoutState {
