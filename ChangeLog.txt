@@ -1,3 +1,7 @@
+0.5.9
+TitleFactory can now return object with titleContent and name (name is used for tab overflow menu).
+Corrected position of rootOrientationVertical in typescript json model
+
 0.5.8
 Fix for #172 - Added global rootOrientationVertical attribute to allow vertical layout for root 'row'
 Added missing exports for typescript json model
