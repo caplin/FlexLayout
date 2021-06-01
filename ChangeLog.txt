@@ -1,3 +1,6 @@
+0.5.10
+Adjust selected tab when tabs popped out to an external window
+
 0.5.9
 TitleFactory can now return object with titleContent and name (name is used for tab overflow menu).
 Corrected position of rootOrientationVertical in typescript json model

@@ -1,6 +1,48 @@
 import TabSetNode from "./TabSetNode";
 import BorderNode from "./BorderNode";
 import RowNode from "./RowNode";
+import TabNode from "./TabNode";
+
+/** @hidden @internal */
+export function adjustSelectedIndexAfterFloat(node: TabNode) {
+    const parent = node.getParent();
+    if (parent !== null) {
+        if (parent instanceof TabSetNode) {
+            let found = false;
+            let newSelected = 0;
+            const children = parent.getChildren();
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i] as TabNode;
+                if (child === node) {
+                    found = true;
+                } else {
+                    if (!child.isFloating()) {
+                        newSelected = i;
+                        if (found) break;
+                    }
+                }
+            }
+            parent._setSelected(newSelected);
+        } else if (parent instanceof BorderNode) {
+            parent._setSelected(-1);
+        }
+    }
+}
+
+/** @hidden @internal */
+export function adjustSelectedIndexAfterDock(node: TabNode) {
+    const parent = node.getParent();
+    if (parent !== null && (parent instanceof TabSetNode || parent instanceof BorderNode)) {
+        const children = parent.getChildren();
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i] as TabNode;
+            if (child === node) {
+                parent._setSelected(i);
+                return;
+            }
+        }
+    }
+}
 
 /** @hidden @internal */
 export function adjustSelectedIndex(parent: TabSetNode | BorderNode | RowNode, removedIndex: number) {

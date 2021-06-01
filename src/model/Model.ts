@@ -15,6 +15,7 @@ import Node from "./Node";
 import RowNode from "./RowNode";
 import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
+import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat } from "./Utils";
 
 /** @hidden @internal */
 export interface ILayoutMetrics {
@@ -260,6 +261,7 @@ class Model {
                 const node = this._idMap[action.data.node];
                 if (node instanceof TabNode) {
                     node._setFloating(true);
+                    adjustSelectedIndexAfterFloat(node);
                 }
                 break;
             }
@@ -267,6 +269,7 @@ class Model {
                 const node = this._idMap[action.data.node];
                 if (node instanceof TabNode) {
                     node._setFloating(false);
+                    adjustSelectedIndexAfterDock(node);
                 }
                 break;
             }
