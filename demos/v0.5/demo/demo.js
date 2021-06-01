@@ -32046,6 +32046,7 @@ var BorderSet_1 = __webpack_require__(/*! ./BorderSet */ "./src/model/BorderSet.
 var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
@@ -32240,6 +32241,7 @@ var Model = /** @class */ (function () {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabNode_1.default) {
                     node._setFloating(true);
+                    Utils_1.adjustSelectedIndexAfterFloat(node);
                 }
                 break;
             }
@@ -32247,6 +32249,7 @@ var Model = /** @class */ (function () {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabNode_1.default) {
                     node._setFloating(false);
+                    Utils_1.adjustSelectedIndexAfterDock(node);
                 }
                 break;
             }
@@ -33959,9 +33962,53 @@ exports.default = TabSetNode;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adjustSelectedIndex = void 0;
+exports.adjustSelectedIndex = exports.adjustSelectedIndexAfterDock = exports.adjustSelectedIndexAfterFloat = void 0;
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
 var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+/** @hidden @internal */
+function adjustSelectedIndexAfterFloat(node) {
+    var parent = node.getParent();
+    if (parent !== null) {
+        if (parent instanceof TabSetNode_1.default) {
+            var found = false;
+            var newSelected = 0;
+            var children = parent.getChildren();
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                if (child === node) {
+                    found = true;
+                }
+                else {
+                    if (!child.isFloating()) {
+                        newSelected = i;
+                        if (found)
+                            break;
+                    }
+                }
+            }
+            parent._setSelected(newSelected);
+        }
+        else if (parent instanceof BorderNode_1.default) {
+            parent._setSelected(-1);
+        }
+    }
+}
+exports.adjustSelectedIndexAfterFloat = adjustSelectedIndexAfterFloat;
+/** @hidden @internal */
+function adjustSelectedIndexAfterDock(node) {
+    var parent = node.getParent();
+    if (parent !== null && (parent instanceof TabSetNode_1.default || parent instanceof BorderNode_1.default)) {
+        var children = parent.getChildren();
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            if (child === node) {
+                parent._setSelected(i);
+                return;
+            }
+        }
+    }
+}
+exports.adjustSelectedIndexAfterDock = adjustSelectedIndexAfterDock;
 /** @hidden @internal */
 function adjustSelectedIndex(parent, removedIndex) {
     // for the tabset/border being removed from set the selected index
