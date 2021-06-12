@@ -13,6 +13,12 @@ export interface IFloatingWindowProps {
     onSetWindow: (id: string, window: Window) => void;
 }
 
+interface IStyleSheet {
+    href: string | null;
+    type: string;
+    rules: string[];
+}
+
 /** @hidden @internal */
 export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowProps>) => {
     const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
@@ -21,6 +27,24 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
 
     React.useLayoutEffect(() => {
         const r = rect;
+        // Make a local copy of the styles from the current window which will be passed into
+        // the floating window. window.document.styleSheets is mutable and we can't guarantee
+        // the styles will exist when 'popoutWindow.load' is called below.
+        const styles = Array.from(window.document.styleSheets).reduce((result, styleSheet) => {
+            try {
+                return [
+                    ...result,
+                    {
+                        href: styleSheet.href,
+                        type: styleSheet.type,
+                        rules: Array.from(styleSheet.cssRules).map(rule => rule.cssText),
+                    }
+                ];
+            } catch (e) {
+                // styleSheet.cssRules can throw security exception
+                return result;
+            }
+        }, [] as IStyleSheet[]);
         popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
         if (popoutWindow.current !== null) {
             onSetWindow(id, popoutWindow.current);
@@ -39,7 +63,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
                 const popoutContent = popoutDocument.createElement("div");
                 popoutContent.className = CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
                 popoutDocument.body.appendChild(popoutContent);
-                copyStyles(popoutDocument).then(() => {
+                copyStyles(popoutDocument, styles).then(() => {
                     setContent(popoutContent);
                 });
 
@@ -72,10 +96,10 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
 };
 
 /** @hidden @internal */
-function copyStyles(doc: Document): Promise<boolean[]> {
+function copyStyles(doc: Document, styleSheets: IStyleSheet[]): Promise<boolean[]> {
     const head = doc.head;
     const promises: Promise<boolean>[] = [];
-    Array.from(window.document.styleSheets).forEach((styleSheet) => {
+    styleSheets.forEach((styleSheet) => {
         if (styleSheet.href) {
             // prefer links since they will keep paths to images etc
             const styleElement = doc.createElement("link");
@@ -89,16 +113,9 @@ function copyStyles(doc: Document): Promise<boolean[]> {
                 })
             );
         } else {
-            try {
-                const rules = styleSheet.cssRules;
-                const style = doc.createElement("style");
-                Array.from(rules).forEach((cssRule) => {
-                    style.appendChild(doc.createTextNode(cssRule.cssText));
-                });
-                head.appendChild(style);
-            } catch (e) {
-                // styleSheet.cssRules can thro security exception
-            }
+            const style = doc.createElement("style");
+            styleSheet.rules.forEach(rule => style.appendChild(doc.createTextNode(rule)));
+            head.appendChild(style);
         }
     });
     return Promise.all(promises);
