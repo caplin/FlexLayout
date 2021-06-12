@@ -74,4 +74,5 @@ export enum CLASSES {
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON = "flexlayout__tab_toolbar_button",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ = "flexlayout__tab_toolbar_button-",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT = "flexlayout__tab_toolbar_button-float",
+    FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER = "flexlayout__tab_toolbar_sticky_buttons_container",
 }

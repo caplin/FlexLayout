@@ -52,6 +52,7 @@ export interface ILayoutProps {
         tabSetNode: TabSetNode | BorderNode,
         renderValues: {
             headerContent?: React.ReactNode;
+            stickyButtons: React.ReactNode[];
             buttons: React.ReactNode[];
         }
     ) => void;
@@ -120,6 +121,7 @@ export interface ILayoutCallbacks {
         renderValues: {
             headerContent?: React.ReactNode;
             buttons: React.ReactNode[];
+            stickyButtons: React.ReactNode[];
         }
     ): void;
     styleFont: (style: Record<string, string>) => Record<string, string>;
@@ -195,7 +197,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     private popoutURL: string;
     /** @hidden @internal */
     private icons?: IIcons;
+    /** @hidden @internal */
     private firstRender: boolean;
+    /** @hidden @internal */
+    private resizeObserver? : ResizeObserver;
 
     constructor(props: ILayoutProps) {
         super(props);
@@ -264,12 +269,14 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         // need to re-render if size changes
         this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
         this.currentWindow = this.currentDocument.defaultView!;
-        this.currentWindow!.addEventListener("resize", this.updateRect);
+        this.resizeObserver = new ResizeObserver(entries => {
+            this.updateRect();
+        });
+        this.resizeObserver.observe(this.selfRef.current!);
     }
 
     /** @hidden @internal */
     componentDidUpdate() {
-        this.updateRect();
         this.updateLayoutMetrics();
         if (this.props.model !== this.previousModel) {
             if (this.previousModel !== undefined) {
@@ -348,7 +355,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     componentWillUnmount() {
-        this.currentWindow!.removeEventListener("resize", this.updateRect);
+        this.resizeObserver?.unobserve(this.selfRef.current!)
     }
 
     /** @hidden @internal */
@@ -857,6 +864,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         renderValues: {
             headerContent?: React.ReactNode;
             buttons: React.ReactNode[];
+            stickyButtons: React.ReactNode[];
         }
     ) {
         if (this.props.onRenderTabSet) {

@@ -26,8 +26,9 @@ export const TabSet = (props: ITabSetProps) => {
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
     const tabbarInnerRef = React.useRef<HTMLDivElement | null>(null);
+    const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
 
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(node, Orientation.HORZ, toolbarRef);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = useTabOverflow(node, Orientation.HORZ, toolbarRef, stickyButtonsRef);
 
     const onOverflowClick = () => {
         const element = overflowbuttonRef.current!;
@@ -51,7 +52,7 @@ export const TabSet = (props: ITabSetProps) => {
         layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
     };
 
-    const onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
+    const onInterceptMouseDown = (event: React.MouseEvent | React.TouchEvent) => {
         event.stopPropagation();
     };
 
@@ -109,13 +110,32 @@ export const TabSet = (props: ITabSetProps) => {
         }
     }
 
-    let buttons: any[] = [];
+    let stickyButtons: React.ReactNode[] = [];
+    let buttons: React.ReactNode[] = [];
 
     // allow customization of header contents and buttons
-    const renderState = { headerContent: node.getName(), buttons };
+    const renderState = { headerContent: node.getName(), stickyButtons, buttons };
     layout.customizeTabSet(node, renderState);
     const headerContent = renderState.headerContent;
+    stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
+
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        } else {
+            tabs.push(<div
+                ref={stickyButtonsRef}
+                key="sticky_buttons_container"
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+                onDragStart={(e) => { e.preventDefault() }}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+            >
+                {stickyButtons}
+            </div>);
+        }
+    }
 
     let toolbar;
     if (hiddenTabs.length > 0) {
@@ -169,7 +189,12 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     toolbar = (
-        <div key="toolbar" ref={toolbarRef} className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)} onMouseDown={onInterceptMouseDown}>
+        <div key="toolbar" ref={toolbarRef}
+            className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
+            onMouseDown={onInterceptMouseDown}
+            onTouchStart={onInterceptMouseDown}
+            onDragStart={(e) => { e.preventDefault() }}
+        >
             {buttons}
         </div>
     );

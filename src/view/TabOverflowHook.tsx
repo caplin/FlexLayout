@@ -6,8 +6,14 @@ import BorderNode from "../model/BorderNode";
 import Orientation from "../Orientation";
 
 /** @hidden @internal */
-export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orientation, toolbarRef: React.MutableRefObject<HTMLDivElement | null>) => {
+export const useTabOverflow = (
+    node: TabSetNode | BorderNode, 
+    orientation: Orientation, 
+    toolbarRef: React.MutableRefObject<HTMLDivElement | null>, 
+    stickyButtonsRef: React.MutableRefObject<HTMLDivElement | null>
+    ) => {
     const firstRender = React.useRef<boolean>(true);
+    const tabsTruncated = React.useRef<boolean>(false);
     const lastRect = React.useRef<Rect>(new Rect(0, 0, 0, 0));
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -63,8 +69,12 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
 
     const updateVisibleTabs = () => {
         const tabMargin = 2;
+        if (firstRender.current === true ) {
+            tabsTruncated.current = false;
+        }
         const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
         let lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
+        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current!.getBoundingClientRect());
 
         if (
             firstRender.current === true ||
@@ -73,7 +83,7 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         ) {
             lastRect.current = nodeRect;
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
-            let endPos = getFar(nodeRect) - getSize(toolbarRef.current!.getBoundingClientRect());
+            let endPos = getFar(nodeRect) - getSize(toolbarRef.current!.getBoundingClientRect()) - stickyButtonsSize;
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
@@ -118,6 +128,10 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
                     }
                 }
 
+                if (hidden.length > 0) {
+                    tabsTruncated.current = true;
+                }
+
                 firstRender.current = false; // need to do a second render
                 setHiddenTabs(hidden);
                 setPosition(newPosition);
@@ -143,5 +157,5 @@ export const useTabOverflow = (node: TabSetNode | BorderNode, orientation: Orien
         event.stopPropagation();
     };
 
-    return { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel };
+    return { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated: tabsTruncated.current };
 };

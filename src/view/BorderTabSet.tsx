@@ -26,8 +26,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
+    const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
 
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
 
     const onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -84,7 +85,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     // allow customization of tabset right/bottom buttons
     let buttons: any[] = [];
-    const renderState = { headerContent: {}, buttons };
+    let stickyButtons: any[] = [];
+    const renderState = { headerContent: {}, buttons, stickyButtons };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
 

@@ -271,6 +271,11 @@
                     background: transparent url("../images/popout.png") no-repeat center;
                 }
             }
+
+            &_sticky_buttons_container {
+                display: flex;
+                align-items: center;
+            }
         }
 
         &_floating {

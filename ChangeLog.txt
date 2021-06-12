@@ -1,3 +1,7 @@
+0.5.11
+Added StickyButtons to onRenderTabSet render values to allow for implementation of Chrome style + button 
+Added example of + button to default layout in demo app
+
 0.5.10
 Adjust selected tab when tabs popped out to an external window
 
