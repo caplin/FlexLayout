@@ -161,6 +161,14 @@ var App = /** @class */ (function (_super) {
                 });
             }
         };
+        _this.onAddFromTabSetButton = function (node) {
+            // if (this.state.model!.getMaximizedTabset() == null) {
+            _this.refs.layout.addTabToTabSet(node.getId(), {
+                component: "grid",
+                name: "Grid " + _this.nextGridIndex++
+            });
+            // }
+        };
         _this.onAddIndirectClick = function (event) {
             if (_this.state.model.getMaximizedTabset() == null) {
                 _this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
@@ -313,6 +321,18 @@ var App = /** @class */ (function (_super) {
             var target = event.target;
             _this.setState({ fontSize: target.value });
         };
+        _this.onRenderTab = function (node, renderValues) {
+            // renderValues.content += " *";
+            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+            // renderValues.buttons.push(<img src="images/grey_ball.png"/>);
+        };
+        _this.onRenderTabSet = function (node, renderValues) {
+            if (_this.state.layoutFile === "default") {
+                //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
+                //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
+                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.png", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { marginLeft: 5 }, onClick: function () { return _this.onAddFromTabSetButton(node); } }));
+            }
+        };
         _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
         // save layout when unloading page
         window.onbeforeunload = function (event) {
@@ -351,20 +371,11 @@ var App = /** @class */ (function (_super) {
         }
     };
     App.prototype.render = function () {
-        var onRenderTab = function (node, renderValues) {
-            // renderValues.content += " *";
-            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
-            // renderValues.buttons.push(<img src="images/grey_ball.png"/>);
-        };
-        var onRenderTabSet = function (node, renderValues) {
-            //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-            //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
-        };
         var contents = "loading ...";
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: onRenderTab, onRenderTabSet: onRenderTabSet, onExternalDrag: this.onExternalDrag });
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag });
         }
         return React.createElement("div", { className: "app" },
             React.createElement("div", { className: "toolbar" },
@@ -31255,6 +31266,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON"] = "flexlayout__tab_toolbar_button";
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON_"] = "flexlayout__tab_toolbar_button-";
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT"] = "flexlayout__tab_toolbar_button-float";
+    CLASSES["FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER"] = "flexlayout__tab_toolbar_sticky_buttons_container";
 })(CLASSES = exports.CLASSES || (exports.CLASSES = {}));
 
 
@@ -34184,7 +34196,8 @@ var BorderTabSet = function (props) {
     var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
-    var _a = TabOverflowHook_1.useTabOverflow(border, Orientation_1.default.flip(border.getOrientation()), toolbarRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
+    var stickyButtonsRef = React.useRef(null);
+    var _a = TabOverflowHook_1.useTabOverflow(border, Orientation_1.default.flip(border.getOrientation()), toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
     var onInterceptMouseDown = function (event) {
         event.stopPropagation();
     };
@@ -34219,7 +34232,8 @@ var BorderTabSet = function (props) {
     }
     // allow customization of tabset right/bottom buttons
     var buttons = [];
-    var renderState = { headerContent: {}, buttons: buttons };
+    var stickyButtons = [];
+    var renderState = { headerContent: {}, buttons: buttons, stickyButtons: stickyButtons };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
     var toolbar;
@@ -34737,16 +34751,19 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.componentDidMount = function () {
+        var _this = this;
         this.updateRect();
         this.updateLayoutMetrics();
         // need to re-render if size changes
         this.currentDocument = this.selfRef.current.ownerDocument;
         this.currentWindow = this.currentDocument.defaultView;
-        this.currentWindow.addEventListener("resize", this.updateRect);
+        this.resizeObserver = new ResizeObserver(function (entries) {
+            _this.updateRect();
+        });
+        this.resizeObserver.observe(this.selfRef.current);
     };
     /** @hidden @internal */
     Layout.prototype.componentDidUpdate = function () {
-        this.updateRect();
         this.updateLayoutMetrics();
         if (this.props.model !== this.previousModel) {
             if (this.previousModel !== undefined) {
@@ -34779,7 +34796,8 @@ var Layout = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     Layout.prototype.componentWillUnmount = function () {
-        this.currentWindow.removeEventListener("resize", this.updateRect);
+        var _a;
+        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.selfRef.current);
     };
     /** @hidden @internal */
     Layout.prototype.render = function () {
@@ -35497,8 +35515,9 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 /** @hidden @internal */
-var useTabOverflow = function (node, orientation, toolbarRef) {
+var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) {
     var firstRender = React.useRef(true);
+    var tabsTruncated = React.useRef(false);
     var lastRect = React.useRef(new Rect_1.default(0, 0, 0, 0));
     var selfRef = React.useRef(null);
     var _a = React.useState(0), position = _a[0], setPosition = _a[1];
@@ -35548,14 +35567,18 @@ var useTabOverflow = function (node, orientation, toolbarRef) {
     };
     var updateVisibleTabs = function () {
         var tabMargin = 2;
+        if (firstRender.current === true) {
+            tabsTruncated.current = false;
+        }
         var nodeRect = node instanceof TabSetNode_1.default ? node.getRect() : node.getTabHeaderRect();
         var lastChild = node.getChildren()[node.getChildren().length - 1];
+        var stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current.getBoundingClientRect());
         if (firstRender.current === true ||
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height) {
             lastRect.current = nodeRect;
             var enabled = node instanceof TabSetNode_1.default ? node.isEnableTabStrip() === true : true;
-            var endPos = getFar(nodeRect) - getSize(toolbarRef.current.getBoundingClientRect());
+            var endPos = getFar(nodeRect) - getSize(toolbarRef.current.getBoundingClientRect()) - stickyButtonsSize;
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
@@ -35594,6 +35617,9 @@ var useTabOverflow = function (node, orientation, toolbarRef) {
                         hidden.push({ node: child, index: i });
                     }
                 }
+                if (hidden.length > 0) {
+                    tabsTruncated.current = true;
+                }
                 firstRender.current = false; // need to do a second render
                 setHiddenTabs(hidden);
                 setPosition(newPosition);
@@ -35619,7 +35645,7 @@ var useTabOverflow = function (node, orientation, toolbarRef) {
         userControlledLeft.current = true;
         event.stopPropagation();
     };
-    return { selfRef: selfRef, position: position, userControlledLeft: userControlledLeft, hiddenTabs: hiddenTabs, onMouseWheel: onMouseWheel };
+    return { selfRef: selfRef, position: position, userControlledLeft: userControlledLeft, hiddenTabs: hiddenTabs, onMouseWheel: onMouseWheel, tabsTruncated: tabsTruncated.current };
 };
 exports.useTabOverflow = useTabOverflow;
 
@@ -35635,6 +35661,11 @@ exports.useTabOverflow = useTabOverflow;
 
 "use strict";
 
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TabSet = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -35651,7 +35682,8 @@ var TabSet = function (props) {
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
     var tabbarInnerRef = React.useRef(null);
-    var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.default.HORZ, toolbarRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
+    var stickyButtonsRef = React.useRef(null);
+    var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.default.HORZ, toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel, tabsTruncated = _a.tabsTruncated;
     var onOverflowClick = function () {
         var element = overflowbuttonRef.current;
         PopupMenu_1.showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
@@ -35709,12 +35741,22 @@ var TabSet = function (props) {
             tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, key: child.getId(), selected: isSelected, show: true, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         }
     }
+    var stickyButtons = [];
     var buttons = [];
     // allow customization of header contents and buttons
-    var renderState = { headerContent: node.getName(), buttons: buttons };
+    var renderState = { headerContent: node.getName(), stickyButtons: stickyButtons, buttons: buttons };
     layout.customizeTabSet(node, renderState);
     var headerContent = renderState.headerContent;
+    stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = __spreadArray(__spreadArray([], stickyButtons), buttons);
+        }
+        else {
+            tabs.push(React.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+        }
+    }
     var toolbar;
     if (hiddenTabs.length > 0) {
         var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
@@ -35731,7 +35773,7 @@ var TabSet = function (props) {
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
         buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
     }
-    toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown }, buttons));
+    toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, buttons));
     var showHeader = node.getName() !== undefined;
     var header;
     var tabStrip;

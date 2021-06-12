@@ -232,6 +232,10 @@
 .flexlayout__tab_toolbar_button-float {
   background: transparent url("../images/popout.png") no-repeat center;
 }
+.flexlayout__tab_toolbar_sticky_buttons_container {
+  display: flex;
+  align-items: center;
+}
 .flexlayout__tab_floating {
   overflow: auto;
   position: absolute;
