@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import * as FlexLayout from "../../src/index";
 import Utils from "./Utils";
 import { Node, TabSetNode, TabNode, DropInfo, BorderNode, Action } from "../../src/index";
+import { ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -281,13 +282,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         this.setState({ fontSize: target.value });
     }
 
-    onRenderTab = (node: TabNode, renderValues: any) => {
+    onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         // renderValues.content += " *";
         // renderValues.name = "tab " + node.getId(); // name used in overflow menu
         // renderValues.buttons.push(<img src="images/grey_ball.png"/>);
     }
 
-    onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: any) => {
+    onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (this.state.layoutFile === "default") {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
             //renderValues.buttons.push(<img src="images/grey_ball.png"/>);

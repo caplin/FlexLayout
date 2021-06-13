@@ -27,12 +27,7 @@ import { IJsonTabNode } from "../model/IJsonModel";
 export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
-    font?: {
-        size?: string;
-        family?: string;
-        style?: string;
-        weight?: string;
-    };
+    font?: IFontValues;
     fontFamily?: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => ITitleObject | React.ReactNode | undefined;
@@ -41,20 +36,11 @@ export interface ILayoutProps {
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
         node: TabNode,
-        renderValues: {
-            leading: React.ReactNode;
-            content: React.ReactNode;
-            name: string;
-            buttons: React.ReactNode[];
-        }
+        renderValues: ITabRenderValues,
     ) => void;
     onRenderTabSet?: (
         tabSetNode: TabSetNode | BorderNode,
-        renderValues: {
-            headerContent?: React.ReactNode;
-            stickyButtons: React.ReactNode[];
-            buttons: React.ReactNode[];
-        }
+        renderValues: ITabSetRenderValues,
     ) => void;
     onModelChange?: (model: Model) => void;
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
@@ -66,6 +52,25 @@ export interface ILayoutProps {
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
+}
+export interface IFontValues {
+    size?: string;
+    family?: string;
+    style?: string;
+    weight?: string;
+}
+
+export interface ITabSetRenderValues {
+    headerContent?: React.ReactNode;
+    stickyButtons: React.ReactNode[];
+    buttons: React.ReactNode[];
+}
+
+export interface ITabRenderValues {
+    leading: React.ReactNode;
+    content: React.ReactNode;
+    name: string;
+    buttons: React.ReactNode[];
 }
 
 export interface ITitleObject {
