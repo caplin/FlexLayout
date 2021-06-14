@@ -64,6 +64,7 @@ export interface ITabSetRenderValues {
     headerContent?: React.ReactNode;
     stickyButtons: React.ReactNode[];
     buttons: React.ReactNode[];
+    headerButtons: React.ReactNode[];
 }
 
 export interface ITabRenderValues {
@@ -83,6 +84,7 @@ export interface ILayoutState {
     calculatedHeaderBarSize: number;
     calculatedTabBarSize: number;
     calculatedBorderBarSize: number;
+    editingTab?: TabNode;
 }
 
 export interface IIcons {
@@ -114,22 +116,16 @@ export interface ILayoutCallbacks {
     ): void;
     customizeTab(
         tabNode: TabNode,
-        renderValues: {
-            leading: React.ReactNode;
-            content: React.ReactNode;
-            name: string;
-            buttons: React.ReactNode[];
-        }
+        renderValues: ITabRenderValues,
     ): void;
     customizeTabSet(
         tabSetNode: TabSetNode | BorderNode,
-        renderValues: {
-            headerContent?: React.ReactNode;
-            buttons: React.ReactNode[];
-            stickyButtons: React.ReactNode[];
-        }
+        renderValues: ITabSetRenderValues,
     ): void;
     styleFont: (style: Record<string, string>) => Record<string, string>;
+    setEditingTab(tabNode?: TabNode): void;
+    getEditingTab(): TabNode | undefined;
+
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -221,7 +217,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
         this.firstRender = true;
 
-        this.state = { rect: new Rect(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30 };
+        this.state = { rect: new Rect(0, 0, 0, 0), 
+            calculatedHeaderBarSize: 25, 
+            calculatedTabBarSize: 26, 
+            calculatedBorderBarSize: 30,
+            editingTab: undefined,
+        };
 
         this.onDragEnter = this.onDragEnter.bind(this);
     }
@@ -361,6 +362,16 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     componentWillUnmount() {
         this.resizeObserver?.unobserve(this.selfRef.current!)
+    }
+
+    /** @hidden @internal */
+    setEditingTab(tabNode?: TabNode) {
+        this.setState({editingTab:tabNode});
+    }
+
+    /** @hidden @internal */
+    getEditingTab() {
+        return this.state.editingTab;
     }
 
     /** @hidden @internal */
@@ -851,12 +862,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     customizeTab(
         tabNode: TabNode,
-        renderValues: {
-            leading: React.ReactNode;
-            content: React.ReactNode;
-            name: string;
-            buttons: React.ReactNode[];
-        }
+        renderValues: ITabRenderValues,
     ) {
         if (this.props.onRenderTab) {
             this.props.onRenderTab(tabNode, renderValues);
@@ -866,11 +872,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     customizeTabSet(
         tabSetNode: TabSetNode | BorderNode,
-        renderValues: {
-            headerContent?: React.ReactNode;
-            buttons: React.ReactNode[];
-            stickyButtons: React.ReactNode[];
-        }
+        renderValues: ITabSetRenderValues,
     ) {
         if (this.props.onRenderTabSet) {
             this.props.onRenderTabSet(tabSetNode, renderValues);

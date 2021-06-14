@@ -1,3 +1,10 @@
+0.5.12
+New callback on Model to allow TabSet attributes to be set when a tab is moved in such a way 
+that it creates a new TabSet.
+Added config attributes to TabSet and Border
+Added headerButtons to ITabSetRenderValues, to allow different set of buttons to be applied to headed
+TabSets.
+
 0.5.11
 Added StickyButtons to onRenderTabSet render values to allow for implementation of Chrome style + button 
 Added example of + button to default layout in demo app

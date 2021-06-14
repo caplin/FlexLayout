@@ -1,3 +1,4 @@
+import { TabNode } from "..";
 import Attribute from "../Attribute";
 import AttributeDefinitions from "../AttributeDefinitions";
 import DockLocation from "../DockLocation";
@@ -365,7 +366,7 @@ class RowNode extends Node implements IDropTarget {
             } else if (child instanceof TabSetNode && child.getChildren().length === 0) {
                 if (child.isEnableDeleteWhenEmpty()) {
                     this._removeChild(child);
-                    if ( child === this._model.getMaximizedTabset()) {
+                    if (child === this._model.getMaximizedTabset()) {
                         this._model._setMaximizedTabset(undefined);
                     }
                 } else {
@@ -378,7 +379,8 @@ class RowNode extends Node implements IDropTarget {
 
         // add tabset into empty root
         if (this === this._model.getRoot() && this._children.length === 0) {
-            const child = new TabSetNode(this._model, { type: "tabset" });
+            const callback = this._model._getOnCreateTabSet();
+            const child = new TabSetNode(this._model, callback ? callback() : {});
             this._model._setActiveTabset(child);
             this._addChild(child);
         }
@@ -453,7 +455,8 @@ class RowNode extends Node implements IDropTarget {
         if (dragNode instanceof TabSetNode) {
             tabSet = dragNode;
         } else {
-            tabSet = new TabSetNode(this._model, {});
+            const callback = this._model._getOnCreateTabSet();
+            tabSet = new TabSetNode(this._model, callback ? callback(dragNode as TabNode) : {});
             tabSet._addChild(dragNode);
         }
         let size = this._children.reduce((sum, child) => {
@@ -467,7 +470,7 @@ class RowNode extends Node implements IDropTarget {
         tabSet._setWeight(size / 3);
 
         const horz = !this._model.isRootOrientationVertical();
-        
+
         if (horz && dockLocation === DockLocation.LEFT || !horz && dockLocation === DockLocation.TOP) {
             this._addChild(tabSet, 0);
         } else if (horz && dockLocation === DockLocation.RIGHT || !horz && dockLocation === DockLocation.BOTTOM) {

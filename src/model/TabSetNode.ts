@@ -51,6 +51,7 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         attributeDefinitions.add("height", undefined).setType(Attribute.NUMBER);
         attributeDefinitions.add("selected", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("name", undefined).setType(Attribute.STRING);
+        attributeDefinitions.add("config", undefined).setType("any");
 
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
@@ -138,6 +139,17 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         } else {
             return this.getMinHeight();
         }
+    }
+
+    /**
+     * Returns the config attribute that can be used to store node specific data that
+     * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
+     * than directly, for example:
+     * this.state.model.doAction(
+     *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
+     */
+    getConfig() {
+        return this._attributes.config;
     }
 
     isMaximized() {
@@ -382,7 +394,8 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
             if (dragNode instanceof TabNode) {
                 // create new tabset parent
                 // console.log("create a new tabset");
-                tabSet = new TabSetNode(this._model, {});
+                const callback = this._model._getOnCreateTabSet();
+                tabSet = new TabSetNode(this._model, callback ? callback(dragNode as TabNode) : {});
                 tabSet._addChild(dragNode);
                 // console.log("added child at end");
                 dragParent = tabSet;

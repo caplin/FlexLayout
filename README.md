@@ -409,6 +409,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | width | null | preferred pixel width |
 | height | null | preferred pixel height |
 | name | null | named tabsets will show a header bar above the tabs |
+| config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
 | maximized | false | whether tabset is currently maximized to fill view |
 | id | auto generated | |
@@ -442,6 +443,7 @@ Inherited defaults will take their value from the associated global attributes (
 | minSize | *inherited* |  |
 | selected | -1 | index of selected/visible tab in border; -1 means no tab unselected / border closed |
 | id | auto generated | border_ + border name e.g. border_left |
+| config | null | a place to hold json config used in your own code |
 | show | true | show/hide this border |
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | size of this border's bar in pixels; if left as 0 then the value will be calculated from the current fontSize |

@@ -76,7 +76,7 @@ class AttributeDefinitions {
         const lines = [];
         const sorted = this.attributes.sort((a,b)=> a.name.localeCompare(b.name));
         // const sorted = this.attributes;
-        lines.push("interface I" + name + "Attributes {");
+        lines.push("export interface I" + name + "Attributes {");
         for (let i = 0; i < sorted.length; i++) {
             const c = sorted[i];
             let type = c.type;

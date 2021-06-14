@@ -26,11 +26,12 @@ export const TabButton = (props: ITabButtonProps) => {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
-    const [editing, setEditing] = React.useState<boolean>(false);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
-        layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
+        if (!layout.getEditingTab()) {
+            const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
+            layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
+        }
     };
 
     const onClick = () => {
@@ -39,7 +40,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const onDoubleClick = (event: Event) => {
         if (node.isEnableRename()) {
-            setEditing(true);
+            layout.setEditingTab(node);
             layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
         } 
@@ -53,9 +54,9 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const onEndEdit = (event: Event) => {
         if (event.target !== contentRef.current!) {
-            setEditing(false);
             layout.getCurrentDocument()!.body.removeEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument()!.body.removeEventListener("touchstart", onEndEdit);
+            layout.setEditingTab(undefined);
         }
     };
 
@@ -87,7 +88,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     React.useLayoutEffect(() => {
         updateRect();
-        if (editing) {
+        if (layout.getEditingTab() === node) {
             (contentRef.current! as HTMLInputElement).select();
         }
     });
@@ -109,10 +110,10 @@ export const TabButton = (props: ITabButtonProps) => {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) {
             // esc
-            setEditing(false);
+            layout.setEditingTab(undefined);
         } else if (event.keyCode === 13) {
             // enter
-            setEditing(false);
+            layout.setEditingTab(undefined);
             layout.doAction(Actions.renameTab(node.getId(), (event.target as HTMLInputElement).value));
         }
     };
@@ -176,7 +177,7 @@ export const TabButton = (props: ITabButtonProps) => {
     );
     const leading = <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>{renderState.leading}</div>;
 
-    if (editing) {
+    if (layout.getEditingTab() === node) {
         const contentStyle = { width: contentWidth + "px" };
         content = (
             <input

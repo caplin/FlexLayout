@@ -40,6 +40,7 @@ class BorderNode extends Node implements IDropTarget {
 
         attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER);
         attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("config", undefined).setType("any");
 
         attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute.NUMBER);
         attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN);
@@ -146,6 +147,17 @@ class BorderNode extends Node implements IDropTarget {
 
     getOrientation() {
         return this._location.getOrientation();
+    }
+
+    /**
+     * Returns the config attribute that can be used to store node specific data that
+     * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
+     * than directly, for example:
+     * this.state.model.doAction(
+     *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
+     */
+     getConfig() {
+        return this._attributes.config;
     }
 
     isMaximized() {

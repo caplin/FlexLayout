@@ -85,8 +85,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     // allow customization of tabset right/bottom buttons
     let buttons: any[] = [];
-    let stickyButtons: any[] = [];
-    const renderState = { headerContent: {}, buttons, stickyButtons };
+    const renderState = { headerContent: {}, buttons, stickyButtons: [], headerButtons: [] };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
 

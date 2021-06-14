@@ -83,7 +83,10 @@ export const useTabOverflow = (
         ) {
             lastRect.current = nodeRect;
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
-            let endPos = getFar(nodeRect) - getSize(toolbarRef.current!.getBoundingClientRect()) - stickyButtonsSize;
+            let endPos = getFar(nodeRect) - stickyButtonsSize;
+            if (toolbarRef.current !== null) {
+                endPos -= getSize(toolbarRef.current.getBoundingClientRect());
+            } 
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space

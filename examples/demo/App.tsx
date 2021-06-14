@@ -31,6 +31,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     componentDidMount() {
         this.loadLayout("default", false);
         document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
+
+        // use to generate json typescript interfaces 
+        // Model.toTypescriptInterfaces();
     }
 
     save() {
@@ -61,6 +64,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     load = (jsonText: string) => {
         let json = JSON.parse(jsonText);
         let model = FlexLayout.Model.fromJson(json);
+        // model.setOnCreateTabSet((tabNode?: TabNode) => {
+        //     console.log("onCreateTabSet " + tabNode);
+        //     // return { type: "tabset", name: "Header Text" };
+        //     return { type: "tabset" };
+        // });
 
         // you can control where nodes can be dropped
         //model.setOnAllowDrop(this.allowDrop);
@@ -297,7 +305,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     alt="Add"
                     key="Add button"
                     title="Add Tab (using onRenderTabSet callback, see Demo)"
-                    style={{ marginLeft: 5 }}
+                    style={{ marginLeft: 5, width:24, height:24 }}
                     onClick={() => this.onAddFromTabSetButton(node)}
                 />);
         }
