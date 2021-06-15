@@ -125,6 +125,11 @@ var App = /** @class */ (function (_super) {
         _this.load = function (jsonText) {
             var json = JSON.parse(jsonText);
             var model = FlexLayout.Model.fromJson(json);
+            // model.setOnCreateTabSet((tabNode?: TabNode) => {
+            //     console.log("onCreateTabSet " + tabNode);
+            //     // return { type: "tabset", name: "Header Text" };
+            //     return { type: "tabset" };
+            // });
             // you can control where nodes can be dropped
             //model.setOnAllowDrop(this.allowDrop);
             _this.setState({ layoutFile: _this.loadingLayoutName, model: model });
@@ -330,7 +335,7 @@ var App = /** @class */ (function (_super) {
             if (_this.state.layoutFile === "default") {
                 //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
                 //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
-                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.png", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { marginLeft: 5 }, onClick: function () { return _this.onAddFromTabSetButton(node); } }));
+                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.png", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { marginLeft: 5, width: 24, height: 24 }, onClick: function () { return _this.onAddFromTabSetButton(node); } }));
             }
         };
         _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
@@ -348,6 +353,8 @@ var App = /** @class */ (function (_super) {
     App.prototype.componentDidMount = function () {
         this.loadLayout("default", false);
         document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
+        // use to generate json typescript interfaces 
+        // Model.toTypescriptInterfaces();
     };
     App.prototype.save = function () {
         var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
@@ -30479,7 +30486,7 @@ var AttributeDefinitions = /** @class */ (function () {
         var lines = [];
         var sorted = this.attributes.sort(function (a, b) { return a.name.localeCompare(b.name); });
         // const sorted = this.attributes;
-        lines.push("interface I" + name + "Attributes {");
+        lines.push("export interface I" + name + "Attributes {");
         for (var i = 0; i < sorted.length; i++) {
             var c = sorted[i];
             var type = c.type;
@@ -31592,6 +31599,7 @@ var BorderNode = /** @class */ (function (_super) {
         attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute_1.default.STRING).setFixed();
         attributeDefinitions.add("selected", -1).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("show", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute_1.default.NUMBER);
         attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute_1.default.STRING);
@@ -31661,6 +31669,16 @@ var BorderNode = /** @class */ (function (_super) {
     };
     BorderNode.prototype.getOrientation = function () {
         return this._location.getOrientation();
+    };
+    /**
+     * Returns the config attribute that can be used to store node specific data that
+     * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
+     * than directly, for example:
+     * this.state.model.doAction(
+     *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
+     */
+    BorderNode.prototype.getConfig = function () {
+        return this._attributes.config;
     };
     BorderNode.prototype.isMaximized = function () {
         return false;
@@ -32454,6 +32472,19 @@ var Model = /** @class */ (function () {
     Model.prototype._getOnAllowDrop = function () {
         return this._onAllowDrop;
     };
+    /**
+     * set callback called when a new TabSet is created.
+     * The tabNode can be undefined if it's the auto created first tabset in the root row (when the last
+     * tab is deleted, the root tabset can be recreated)
+     * @param onCreateTabSet
+     */
+    Model.prototype.setOnCreateTabSet = function (onCreateTabSet) {
+        this._onCreateTabSet = onCreateTabSet;
+    };
+    /** @hidden @internal */
+    Model.prototype._getOnCreateTabSet = function () {
+        return this._onCreateTabSet;
+    };
     Model.toTypescriptInterfaces = function () {
         console.log(Model._attributeDefinitions.toTypescriptInterface("Global", undefined));
         console.log(RowNode_1.default.getAttributeDefinitions().toTypescriptInterface("Row", Model._attributeDefinitions));
@@ -32468,8 +32499,6 @@ var Model = /** @class */ (function () {
     Model._attributeDefinitions = Model._createAttributeDefinitions();
     return Model;
 }());
-// use to generate json typescript interfaces 
-// Model.toTypescriptInterfaces();
 exports.default = Model;
 
 
@@ -33093,7 +33122,8 @@ var RowNode = /** @class */ (function (_super) {
         }
         // add tabset into empty root
         if (this === this._model.getRoot() && this._children.length === 0) {
-            var child = new TabSetNode_1.default(this._model, { type: "tabset" });
+            var callback = this._model._getOnCreateTabSet();
+            var child = new TabSetNode_1.default(this._model, callback ? callback() : {});
             this._model._setActiveTabset(child);
             this._addChild(child);
         }
@@ -33161,7 +33191,8 @@ var RowNode = /** @class */ (function (_super) {
             tabSet = dragNode;
         }
         else {
-            tabSet = new TabSetNode_1.default(this._model, {});
+            var callback = this._model._getOnCreateTabSet();
+            tabSet = new TabSetNode_1.default(this._model, callback ? callback(dragNode) : {});
             tabSet._addChild(dragNode);
         }
         var size = this._children.reduce(function (sum, child) {
@@ -33613,6 +33644,7 @@ var TabSetNode = /** @class */ (function (_super) {
         attributeDefinitions.add("height", undefined).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("selected", 0).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("name", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
         attributeDefinitions.addInherited("enableDrag", "tabSetEnableDrag");
@@ -33671,6 +33703,16 @@ var TabSetNode = /** @class */ (function (_super) {
         else {
             return this.getMinHeight();
         }
+    };
+    /**
+     * Returns the config attribute that can be used to store node specific data that
+     * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
+     * than directly, for example:
+     * this.state.model.doAction(
+     *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
+     */
+    TabSetNode.prototype.getConfig = function () {
+        return this._attributes.config;
     };
     TabSetNode.prototype.isMaximized = function () {
         return this._model.getMaximizedTabset() === this;
@@ -33888,7 +33930,8 @@ var TabSetNode = /** @class */ (function (_super) {
             if (dragNode instanceof TabNode_1.default) {
                 // create new tabset parent
                 // console.log("create a new tabset");
-                tabSet = new TabSetNode(this._model, {});
+                var callback = this._model._getOnCreateTabSet();
+                tabSet = new TabSetNode(this._model, callback ? callback(dragNode) : {});
                 tabSet._addChild(dragNode);
                 // console.log("added child at end");
                 dragParent = tabSet;
@@ -34232,8 +34275,7 @@ var BorderTabSet = function (props) {
     }
     // allow customization of tabset right/bottom buttons
     var buttons = [];
-    var stickyButtons = [];
-    var renderState = { headerContent: {}, buttons: buttons, stickyButtons: stickyButtons };
+    var renderState = { headerContent: {}, buttons: buttons, stickyButtons: [], headerButtons: [] };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
     var toolbar;
@@ -34714,7 +34756,12 @@ var Layout = /** @class */ (function (_super) {
         // For backwards compatibility, prop closeIcon sets prop icons.close:
         _this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
         _this.firstRender = true;
-        _this.state = { rect: new Rect_1.default(0, 0, 0, 0), calculatedHeaderBarSize: 25, calculatedTabBarSize: 26, calculatedBorderBarSize: 30 };
+        _this.state = { rect: new Rect_1.default(0, 0, 0, 0),
+            calculatedHeaderBarSize: 25,
+            calculatedTabBarSize: 26,
+            calculatedBorderBarSize: 30,
+            editingTab: undefined,
+        };
         _this.onDragEnter = _this.onDragEnter.bind(_this);
         return _this;
     }
@@ -34798,6 +34845,14 @@ var Layout = /** @class */ (function (_super) {
     Layout.prototype.componentWillUnmount = function () {
         var _a;
         (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.selfRef.current);
+    };
+    /** @hidden @internal */
+    Layout.prototype.setEditingTab = function (tabNode) {
+        this.setState({ editingTab: tabNode });
+    };
+    /** @hidden @internal */
+    Layout.prototype.getEditingTab = function () {
+        return this.state.editingTab;
     };
     /** @hidden @internal */
     Layout.prototype.render = function () {
@@ -35295,17 +35350,18 @@ var TabButton = function (props) {
     var selfRef = React.useRef(null);
     var contentRef = React.useRef(null);
     var contentWidth = React.useRef(0);
-    var _a = React.useState(false), editing = _a[0], setEditing = _a[1];
     var onMouseDown = function (event) {
-        var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tab, node.getName());
-        layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
+        if (!layout.getEditingTab()) {
+            var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tab, node.getName());
+            layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
+        }
     };
     var onClick = function () {
         layout.doAction(Actions_1.default.selectTab(node.getId()));
     };
     var onDoubleClick = function (event) {
         if (node.isEnableRename()) {
-            setEditing(true);
+            layout.setEditingTab(node);
             layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
         }
@@ -35318,9 +35374,9 @@ var TabButton = function (props) {
     };
     var onEndEdit = function (event) {
         if (event.target !== contentRef.current) {
-            setEditing(false);
             layout.getCurrentDocument().body.removeEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
+            layout.setEditingTab(undefined);
         }
     };
     var isClosable = function () {
@@ -35349,7 +35405,7 @@ var TabButton = function (props) {
     };
     React.useLayoutEffect(function () {
         updateRect();
-        if (editing) {
+        if (layout.getEditingTab() === node) {
             contentRef.current.select();
         }
     });
@@ -35368,11 +35424,11 @@ var TabButton = function (props) {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) {
             // esc
-            setEditing(false);
+            layout.setEditingTab(undefined);
         }
         else if (event.keyCode === 13) {
             // enter
-            setEditing(false);
+            layout.setEditingTab(undefined);
             layout.doAction(Actions_1.default.renameTab(node.getId(), event.target.value));
         }
     };
@@ -35422,7 +35478,7 @@ var TabButton = function (props) {
     node._setRenderedName(renderState.name);
     var content = (React.createElement("div", { ref: contentRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content));
     var leading = React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading);
-    if (editing) {
+    if (layout.getEditingTab() === node) {
         var contentStyle = { width: contentWidth + "px" };
         content = (React.createElement("input", { style: contentStyle, ref: contentRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
     }
@@ -35578,7 +35634,10 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
             nodeRect.height !== lastRect.current.height) {
             lastRect.current = nodeRect;
             var enabled = node instanceof TabSetNode_1.default ? node.isEnableTabStrip() === true : true;
-            var endPos = getFar(nodeRect) - getSize(toolbarRef.current.getBoundingClientRect()) - stickyButtonsSize;
+            var endPos = getFar(nodeRect) - stickyButtonsSize;
+            if (toolbarRef.current !== null) {
+                endPos -= getSize(toolbarRef.current.getBoundingClientRect());
+            }
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
@@ -35701,8 +35760,10 @@ var TabSet = function (props) {
             name = ": " + name;
         }
         layout.doAction(Actions_1.default.setActiveTabset(node.getId()));
-        var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tabset, name);
-        layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
+        if (!layout.getEditingTab()) {
+            var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tabset, name);
+            layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
+        }
     };
     var onInterceptMouseDown = function (event) {
         event.stopPropagation();
@@ -35741,14 +35802,17 @@ var TabSet = function (props) {
             tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, key: child.getId(), selected: isSelected, show: true, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         }
     }
+    var showHeader = node.getName() !== undefined;
     var stickyButtons = [];
     var buttons = [];
+    var headerButtons = [];
     // allow customization of header contents and buttons
-    var renderState = { headerContent: node.getName(), stickyButtons: stickyButtons, buttons: buttons };
+    var renderState = { headerContent: node.getName(), stickyButtons: stickyButtons, buttons: buttons, headerButtons: headerButtons };
     layout.customizeTabSet(node, renderState);
     var headerContent = renderState.headerContent;
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
+    headerButtons = renderState.headerButtons;
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
             buttons = __spreadArray(__spreadArray([], stickyButtons), buttons);
@@ -35771,10 +35835,10 @@ var TabSet = function (props) {
     if (node.canMaximize()) {
         var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
-        buttons.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
+        var btns = showHeader ? headerButtons : buttons;
+        btns.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
     }
     toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, buttons));
-    var showHeader = node.getName() !== undefined;
     var header;
     var tabStrip;
     var tabStripClasses = cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
@@ -35789,6 +35853,7 @@ var TabSet = function (props) {
         tabStripClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
     }
     if (showHeader) {
+        var headerToolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, headerButtons));
         var tabHeaderClasses = cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_HEADER);
         if (node.isActive()) {
             tabHeaderClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_SELECTED);
@@ -35801,31 +35866,20 @@ var TabSet = function (props) {
         }
         header = (React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
             React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT) }, headerContent),
-            toolbar));
-        var tabStripStyle = { height: node.getTabStripHeight() + "px" };
-        if (node.getTabLocation() === "top") {
-            tabStripStyle["top"] = node.getHeaderHeight() + "px";
-        }
-        else {
-            tabStripStyle["bottom"] = "0px";
-        }
-        tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
-                React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs))));
+            headerToolbar));
+    }
+    var tabStripStyle = { height: node.getTabStripHeight() + "px" };
+    if (node.getTabLocation() === "top") {
+        var top_1 = showHeader ? node.getHeaderHeight() + "px" : "0px";
+        tabStripStyle["top"] = top_1;
     }
     else {
-        var tabStripStyle = { height: node.getTabStripHeight() + "px" };
-        if (node.getTabLocation() === "top") {
-            tabStripStyle["top"] = "0px";
-        }
-        else {
-            tabStripStyle["bottom"] = "0px";
-        }
-        tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
-            React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
-                React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
-            toolbar));
+        tabStripStyle["bottom"] = "0px";
     }
+    tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+        React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
+            React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
+        toolbar));
     style = layout.styleFont(style);
     return (React.createElement("div", { ref: selfRef, style: style, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET), onWheel: onMouseWheel },
         header,
