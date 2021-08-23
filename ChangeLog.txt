@@ -1,5 +1,5 @@
 0.5.13
-Added prop (realtimeResize) to make tabs resize as they are dragged.
+Added prop (realtimeResize) to make tabs resize as their splitters are dragged.
 Warning: this can cause resizing to become choppy when tabs are slow to draw.
 
 0.5.12
