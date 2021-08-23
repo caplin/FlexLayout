@@ -52,6 +52,7 @@ export interface ILayoutProps {
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
+    realtimeResize?: boolean | undefined;
 }
 export interface IFontValues {
     size?: string;
@@ -101,6 +102,7 @@ export interface ILayoutCallbacks {
     maximize(tabsetNode: TabSetNode): void;
     getPopoutURL(): string;
     isSupportsPopout(): boolean;
+    isRealtimeResize(): boolean;
     getCurrentDocument(): HTMLDocument | undefined;
     getClassName(defaultClassName: string): string;
     doAction(action: Action): Node | undefined;
@@ -352,6 +354,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     isSupportsPopout() {
         return this.supportsPopout;
+    }
+
+    /** @hidden @internal */
+    isRealtimeResize() {
+        return this.props.realtimeResize ?? false;
     }
 
     /** @hidden @internal */

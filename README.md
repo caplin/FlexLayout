@@ -83,6 +83,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
 | supportsPopout  | optional          | if left undefined will do simple check based on userAgent |
 | popoutURL      | optional          | URL of popout window relative to origin, defaults to popout.html |
+| realtimeResize      | optional          | boolean value, defaults to false, resize tabs as splitters are dragged. Warning: this can cause resizing to become choppy when tabs are slow to draw |
 
 The model is tree of Node objects that define the structure of the layout.
 

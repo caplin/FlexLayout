@@ -9,16 +9,16 @@ export interface IJsonModel {
     layout: IJsonRowNode; // top level 'row' is horizontal, rows inside rows take opposite orientation to parent row (ie can act as columns)
 }
 
-interface IJsonBorderNode extends IBorderAttributes {
+export interface IJsonBorderNode extends IBorderAttributes {
     location: IBorderLocation;
     children: IJsonTabNode[];
 }
 
-interface IJsonRowNode extends IRowAttributes {
+export interface IJsonRowNode extends IRowAttributes {
     children: (IJsonRowNode | IJsonTabSetNode)[];
 }
 
-interface IJsonTabSetNode extends ITabSetAttributes {
+export interface IJsonTabSetNode extends ITabSetAttributes {
     active?: boolean; // default: false - only one tabset can be active
     maximized?: boolean; // default: false - only one tabset can be maximized
     children: IJsonTabNode[];

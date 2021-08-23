@@ -58,9 +58,13 @@ export const Splitter = (props: ISplitterProps) => {
                 outlineDiv.current!.style.left = getBoundPosition(pos.x - 4) + "px";
             }
         }
+
+        if (layout.isRealtimeResize()) {
+            updateLayout();
+        }
     };
 
-    const onDragEnd = () => {
+    const updateLayout = () => {
         let value = 0;
         if (outlineDiv) {
             if (node.getOrientation() === Orientation.HORZ) {
@@ -79,6 +83,10 @@ export const Splitter = (props: ISplitterProps) => {
                 layout.doAction(Actions.adjustSplit(splitSpec));
             }
         }
+    };
+
+    const onDragEnd = () => {
+        updateLayout();
 
         const rootdiv = layout.getRootDiv();
         rootdiv.removeChild(outlineDiv.current as HTMLDivElement);

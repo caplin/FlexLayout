@@ -1,3 +1,7 @@
+0.5.13
+Added prop (realtimeResize) to make tabs resize as they are dragged.
+Warning: this can cause resizing to become choppy when tabs are slow to draw.
+
 0.5.12
 New callback on Model to allow TabSet attributes to be set when a tab is moved in such a way 
 that it creates a new TabSet.

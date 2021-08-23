@@ -7,14 +7,14 @@ import { ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, fontSize: string }> {
+class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, fontSize: string, realtimeResize: boolean }> {
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
 
     constructor(props: any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
+        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false};
 
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
@@ -133,6 +133,13 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             this.setState({ adding: true });
         }
     }
+
+    onRealtimeResize = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({
+          realtimeResize: event.target.checked
+        });
+    }
+    
 
     onExternalDrag = (e: React.DragEvent) => {
         // console.log("onExternaldrag ", e.dataTransfer.types);
@@ -329,6 +336,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTab={this.onRenderTab}
                 onRenderTabSet={this.onRenderTabSet}
                 onExternalDrag={this.onExternalDrag}
+                realtimeResize={this.state.realtimeResize}
             // classNameMapper={
             //     className => {
             //         console.log(className);
@@ -364,7 +372,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <button onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>reload from file</button>
                 <div style={{ flexGrow: 1 }}></div>
-
+                <span style={{ fontSize: "14px" }}>Realtime resize</span>
+                <input
+                    name="realtimeResize"
+                    type="checkbox"
+                    checked={this.state.realtimeResize}
+                    onChange={this.onRealtimeResize} />
                 <select style={{ marginLeft: 5 }}
                     onChange={this.onSizeChange}
                     defaultValue="medium">
