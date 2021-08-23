@@ -183,6 +183,11 @@ var App = /** @class */ (function (_super) {
                 _this.setState({ adding: true });
             }
         };
+        _this.onRealtimeResize = function (event) {
+            _this.setState({
+                realtimeResize: event.target.checked
+            });
+        };
         _this.onExternalDrag = function (e) {
             // console.log("onExternaldrag ", e.dataTransfer.types);
             // Check for supported content type
@@ -338,7 +343,7 @@ var App = /** @class */ (function (_super) {
                 renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.png", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { marginLeft: 5, width: 24, height: 24 }, onClick: function () { return _this.onAddFromTabSetButton(node); } }));
             }
         };
-        _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium" };
+        _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
         // save layout when unloading page
         window.onbeforeunload = function (event) {
             _this.save();
@@ -382,7 +387,7 @@ var App = /** @class */ (function (_super) {
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag });
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize });
         }
         return React.createElement("div", { className: "app" },
             React.createElement("div", { className: "toolbar" },
@@ -396,6 +401,8 @@ var App = /** @class */ (function (_super) {
                     React.createElement("option", { value: "trader" }, "Trader")),
                 React.createElement("button", { onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "reload from file"),
                 React.createElement("div", { style: { flexGrow: 1 } }),
+                React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
+                React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
                 React.createElement("select", { style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
                     React.createElement("option", { value: "xx-small" }, "Size xx-small"),
                     React.createElement("option", { value: "x-small" }, "Size x-small"),
@@ -34838,6 +34845,11 @@ var Layout = /** @class */ (function (_super) {
         return this.supportsPopout;
     };
     /** @hidden @internal */
+    Layout.prototype.isRealtimeResize = function () {
+        var _a;
+        return (_a = this.props.realtimeResize) !== null && _a !== void 0 ? _a : false;
+    };
+    /** @hidden @internal */
     Layout.prototype.getPopoutURL = function () {
         return this.popoutURL;
     };
@@ -35206,8 +35218,11 @@ var Splitter = function (props) {
                 outlineDiv.current.style.left = getBoundPosition(pos.x - 4) + "px";
             }
         }
+        if (layout.isRealtimeResize()) {
+            updateLayout();
+        }
     };
-    var onDragEnd = function () {
+    var updateLayout = function () {
         var value = 0;
         if (outlineDiv) {
             if (node.getOrientation() === Orientation_1.default.HORZ) {
@@ -35227,6 +35242,9 @@ var Splitter = function (props) {
                 layout.doAction(Actions_1.default.adjustSplit(splitSpec));
             }
         }
+    };
+    var onDragEnd = function () {
+        updateLayout();
         var rootdiv = layout.getRootDiv();
         rootdiv.removeChild(outlineDiv.current);
     };
