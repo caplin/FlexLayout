@@ -181,6 +181,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     private outlineDiv?: HTMLDivElement;
 
     /** @hidden @internal */
+    private edgeRectLength = 100;
+    /** @hidden @internal */
+    private edgeRectWidth = 10;
+    /** @hidden @internal */
+    private edgesShown = false;
+    /** @hidden @internal */
     private edgeRightDiv?: HTMLDivElement;
     /** @hidden @internal */
     private edgeBottomDiv?: HTMLDivElement;
@@ -411,6 +417,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
         this.renderChildren(this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
+
+        if (this.edgesShown) {
+            this.repositionEdges(this.state.rect)
+        }
 
         const nextTopIds: string[] = [];
         const nextTopIdsMap: Record<string, string> = {};
@@ -799,17 +809,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     showEdges(rootdiv: HTMLElement) {
         if (this.props.model.isEnableEdgeDock()) {
-            const domRect = rootdiv.getBoundingClientRect();
-            const r = this.centerRect!;
-            const size = 100;
-            const length = size + "px";
+            const length = this.edgeRectLength + "px";
             const radius = "50px";
-            const width = "10px";
+            const width = this.edgeRectWidth + "px";
 
             this.edgeTopDiv = this.currentDocument!.createElement("div");
             this.edgeTopDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            this.edgeTopDiv.style.top = r.y + "px";
-            this.edgeTopDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeTopDiv.style.width = length;
             this.edgeTopDiv.style.height = width;
             this.edgeTopDiv.style.borderBottomLeftRadius = radius;
@@ -817,8 +822,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
             this.edgeLeftDiv = this.currentDocument!.createElement("div");
             this.edgeLeftDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            this.edgeLeftDiv.style.top = r.y + (r.height - size) / 2 + "px";
-            this.edgeLeftDiv.style.left = r.x + "px";
             this.edgeLeftDiv.style.width = width;
             this.edgeLeftDiv.style.height = length;
             this.edgeLeftDiv.style.borderTopRightRadius = radius;
@@ -826,8 +829,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
             this.edgeBottomDiv = this.currentDocument!.createElement("div");
             this.edgeBottomDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            this.edgeBottomDiv.style.bottom = domRect.height - r.getBottom() + "px";
-            this.edgeBottomDiv.style.left = r.x + (r.width - size) / 2 + "px";
             this.edgeBottomDiv.style.width = length;
             this.edgeBottomDiv.style.height = width;
             this.edgeBottomDiv.style.borderTopLeftRadius = radius;
@@ -835,17 +836,38 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
             this.edgeRightDiv = this.currentDocument!.createElement("div");
             this.edgeRightDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            this.edgeRightDiv.style.top = r.y + (r.height - size) / 2 + "px";
-            this.edgeRightDiv.style.right = domRect.width - r.getRight() + "px";
             this.edgeRightDiv.style.width = width;
             this.edgeRightDiv.style.height = length;
             this.edgeRightDiv.style.borderTopLeftRadius = radius;
             this.edgeRightDiv.style.borderBottomLeftRadius = radius;
 
+            this.repositionEdges(this.state.rect);
+
             rootdiv.appendChild(this.edgeTopDiv);
             rootdiv.appendChild(this.edgeLeftDiv);
             rootdiv.appendChild(this.edgeBottomDiv);
             rootdiv.appendChild(this.edgeRightDiv);
+
+            this.edgesShown = true;
+        }
+    }
+
+    /** @hidden @internal */
+    repositionEdges(domRect: Rect) {
+        if (this.props.model.isEnableEdgeDock()) {
+            const r = this.centerRect!;
+
+            this.edgeTopDiv!.style.top = r.y + "px";
+            this.edgeTopDiv!.style.left = r.x + (r.width - this.edgeRectLength) / 2 + "px";
+
+            this.edgeLeftDiv!.style.top = r.y + (r.height - this.edgeRectLength) / 2 + "px";
+            this.edgeLeftDiv!.style.left = r.x + "px";
+
+            this.edgeBottomDiv!.style.bottom = domRect.height - r.getBottom() + "px";
+            this.edgeBottomDiv!.style.left = r.x + (r.width - this.edgeRectLength) / 2 + "px";
+
+            this.edgeRightDiv!.style.top = r.y + (r.height - this.edgeRectLength) / 2 + "px";
+            this.edgeRightDiv!.style.right = domRect.width - r.getRight() + "px";
         }
     }
 
@@ -859,6 +881,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 rootdiv.removeChild(this.edgeRightDiv!);
             } catch (e) {}
         }
+
+        this.edgesShown = false;
     }
 
     /** @hidden @internal */
