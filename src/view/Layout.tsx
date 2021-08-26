@@ -278,7 +278,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
         this.currentWindow = this.currentDocument.defaultView!;
         this.resizeObserver = new ResizeObserver(entries => {
-            this.updateRect();
+            this.updateRect(entries[0].contentRect);
         });
         this.resizeObserver.observe(this.selfRef.current!);
     }
@@ -297,8 +297,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    updateRect = () => {
-        const domRect = this.getDomRect();
+    updateRect = (domRect: DOMRectReadOnly = this.getDomRect()) => {
         const rect = new Rect(0, 0, domRect.width, domRect.height);
         if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
             this.setState({ rect });
