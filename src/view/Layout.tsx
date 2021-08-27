@@ -157,6 +157,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     private previousModel?: Model;
     /** @hidden @internal */
     private centerRect?: Rect;
+    /** @hidden @internal */
+    private selfRect: DOMRectReadOnly;
 
     /** @hidden @internal */
     // private start: number = 0;
@@ -219,6 +221,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.findHeaderBarSizeRef = React.createRef<HTMLDivElement>();
         this.findTabBarSizeRef = React.createRef<HTMLDivElement>();
         this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
+        this.selfRect = new DOMRect();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         // For backwards compatibility, prop closeIcon sets prop icons.close:
@@ -303,7 +306,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    updateRect = (domRect: DOMRectReadOnly = this.getDomRect()) => {
+    updateRect = (domRect: DOMRectReadOnly = this.selfRef.current!.getBoundingClientRect()) => {
+        this.selfRect = domRect;
         const rect = new Rect(0, 0, domRect.width, domRect.height);
         if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
             this.setState({ rect });
@@ -348,7 +352,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     getDomRect() {
-        return this.selfRef.current!.getBoundingClientRect();
+        return this.selfRect;
     }
 
     /** @hidden @internal */
@@ -581,7 +585,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     _getScreenRect(node: TabNode) {
         const rect = node!.getRect()!.clone();
-        const bodyRect: DOMRect = this.selfRef.current!.getBoundingClientRect();
+        const bodyRect = this.selfRect;
         const navHeight = Math.min(80, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
         const navWidth = Math.min(80, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
         rect.x = rect.x + bodyRect.x + this.currentWindow!.screenX + navWidth;
@@ -748,7 +752,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.outlineDiv!.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
         }
         this.firstMove = false;
-        const clientRect = this.selfRef.current!.getBoundingClientRect();
+        const clientRect = this.selfRect;
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top,
