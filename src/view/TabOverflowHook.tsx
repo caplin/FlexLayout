@@ -28,7 +28,10 @@ export const useTabOverflow = (
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
     React.useLayoutEffect(() => {
-        getElementBounds([stickyButtonsRef.current!, toolbarRef.current!]).then(es => updateVisibleTabs(es[0], es[1]))
+        getElementBounds([
+            stickyButtonsRef.current! || undefined,
+            toolbarRef.current! || undefined
+        ]).then(es => updateVisibleTabs(es[0], es[1]))
     });
 
     React.useEffect(() => {
@@ -75,7 +78,7 @@ export const useTabOverflow = (
         }
         const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
         let lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
-        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRect);
+        const stickyButtonsSize = !stickyButtonsRect ? 0 : getSize(stickyButtonsRect);
 
         if (
             firstRender.current === true ||
@@ -85,7 +88,7 @@ export const useTabOverflow = (
             lastRect.current = nodeRect;
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
             let endPos = getFar(nodeRect) - stickyButtonsSize;
-            if (toolbarRef.current !== null) {
+            if (toolbarRect) {
                 endPos -= getSize(toolbarRect);
             } 
             if (enabled && node.getChildren().length > 0) {
