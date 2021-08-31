@@ -6,6 +6,7 @@ import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
+import { getElementBounds } from "./GetElementBounds";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -59,13 +60,13 @@ export const BorderButton = (props: IBorderButtonProps) => {
     };
 
     React.useLayoutEffect(() => {
-        updateRect();
+        if (!node.getTabRect()) updateRect();
+        else getElementBounds([selfRef.current!]).then(es => updateRect(es[0]));
     });
 
-    const updateRect = () => {
+    const updateRect = (r = selfRef.current!.getBoundingClientRect()) => {
         // record position of tab in border
         const clientRect = layout.getDomRect();
-        const r = selfRef.current!.getBoundingClientRect();
         node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
     };
 

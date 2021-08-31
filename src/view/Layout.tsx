@@ -23,6 +23,7 @@ import { FloatingWindow } from "./FloatingWindow";
 import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
+import { getElementBounds } from "./GetElementBounds";
 
 export interface ILayoutProps {
     model: Model;
@@ -286,9 +287,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         // need to re-render if size changes
         this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
         this.currentWindow = this.currentDocument.defaultView!;
-        this.resizeObserver = new ResizeObserver(entries => {
-            this.updateRect(entries[0].contentRect);
-        });
+        this.resizeObserver = new ResizeObserver(() => getElementBounds([this.selfRef.current!]).then(es => this.updateRect(es[0])));
         this.resizeObserver.observe(this.selfRef.current!);
     }
 
@@ -316,24 +315,26 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     updateLayoutMetrics = () => {
-        if (this.findHeaderBarSizeRef.current) {
-            const headerBarSize = this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
-            if (headerBarSize !== this.state.calculatedHeaderBarSize) {
+        getElementBounds([
+            this.findHeaderBarSizeRef.current || undefined,
+            this.findTabBarSizeRef.current || undefined,
+            this.findBorderBarSizeRef.current || undefined
+        ]).then(([headerBar, tabBar, borderBar]) => {
+            const headerBarSize = headerBar?.height;
+            if (headerBarSize !== undefined && headerBarSize !== this.state.calculatedHeaderBarSize) {
                 this.setState({ calculatedHeaderBarSize: headerBarSize });
             }
-        }
-        if (this.findTabBarSizeRef.current) {
-            const tabBarSize = this.findTabBarSizeRef.current.getBoundingClientRect().height;
-            if (tabBarSize !== this.state.calculatedTabBarSize) {
+
+            const tabBarSize = tabBar?.height;
+            if (tabBarSize !== undefined && tabBarSize !== this.state.calculatedTabBarSize) {
                 this.setState({ calculatedTabBarSize: tabBarSize });
             }
-        }
-        if (this.findBorderBarSizeRef.current) {
-            const borderBarSize = this.findBorderBarSizeRef.current.getBoundingClientRect().height;
-            if (borderBarSize !== this.state.calculatedBorderBarSize) {
+
+            const borderBarSize = borderBar?.height;
+            if (borderBarSize !== undefined && borderBarSize !== this.state.calculatedBorderBarSize) {
                 this.setState({ calculatedBorderBarSize: borderBarSize });
             }
-        }
+        })
     };
 
     /** @hidden @internal */

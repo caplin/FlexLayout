@@ -4,6 +4,7 @@ import Rect from "../Rect";
 import TabSetNode from "../model/TabSetNode";
 import BorderNode from "../model/BorderNode";
 import Orientation from "../Orientation";
+import { getElementBounds } from "./GetElementBounds";
 
 /** @hidden @internal */
 export const useTabOverflow = (
@@ -27,7 +28,7 @@ export const useTabOverflow = (
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
     React.useLayoutEffect(() => {
-        updateVisibleTabs();
+        getElementBounds([stickyButtonsRef.current!, toolbarRef.current!]).then(es => updateVisibleTabs(es[0], es[1]))
     });
 
     React.useEffect(() => {
@@ -67,14 +68,14 @@ export const useTabOverflow = (
         }
     };
 
-    const updateVisibleTabs = () => {
+    const updateVisibleTabs = (stickyButtonsRect: DOMRectReadOnly, toolbarRect: DOMRectReadOnly) => {
         const tabMargin = 2;
         if (firstRender.current === true ) {
             tabsTruncated.current = false;
         }
         const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
         let lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
-        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current!.getBoundingClientRect());
+        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRect);
 
         if (
             firstRender.current === true ||
@@ -85,7 +86,7 @@ export const useTabOverflow = (
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
             let endPos = getFar(nodeRect) - stickyButtonsSize;
             if (toolbarRef.current !== null) {
-                endPos -= getSize(toolbarRef.current.getBoundingClientRect());
+                endPos -= getSize(toolbarRect);
             } 
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
