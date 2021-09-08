@@ -1,3 +1,7 @@
+0.5.14
+Fix an issue with copying styles for a floating window when using a CSS-in-JS solution 
+Fix for #227 - edge rects are not moved if window is resized while dragging
+
 0.5.13
 Added prop (realtimeResize) to make tabs resize as their splitters are dragged.
 Warning: this can cause resizing to become choppy when tabs are slow to draw.
