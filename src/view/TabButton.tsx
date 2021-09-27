@@ -212,6 +212,7 @@ export const TabButton = (props: ITabButtonProps) => {
             className={classNames}
             onMouseDown={onMouseDown}
             onTouchStart={onMouseDown}
+            title={node.getHelpText()}
         >
             {leading}
             {content}

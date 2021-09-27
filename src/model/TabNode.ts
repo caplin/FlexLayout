@@ -25,6 +25,7 @@ class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
+        attributeDefinitions.add("helpText", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
@@ -86,6 +87,10 @@ class TabNode extends Node implements IDraggable {
 
     getName() {
         return this._getAttr("name") as string;
+    }
+
+    getHelpText() {
+        return this._getAttr("helpText") as string | undefined;
     }
 
     getComponent() {
