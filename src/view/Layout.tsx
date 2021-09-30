@@ -788,7 +788,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.customDrop = undefined;
 
             const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
-            if (dragging && dropInfo.node instanceof TabSetNode && dropInfo.index === -1) {
+            if (dragging && (dropInfo.node instanceof TabSetNode || dropInfo.node instanceof BorderNode) && dropInfo.index === -1) {
                 const selected = dropInfo.node.getSelectedNode() as TabNode | undefined;
                 const tabRect = selected?.getRect()
 
