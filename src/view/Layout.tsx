@@ -847,7 +847,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                     const {callback, dragging, over, x, y, location} = this.customDrop;
                     callback(dragging, over, x, y, location);
                 } catch (e) {
-                    console.log(e)
+                    console.error(e)
                 }
             } else if (this.newTabJson !== undefined) {
                 const newNode = this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
