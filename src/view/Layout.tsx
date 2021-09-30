@@ -1,6 +1,7 @@
 import * as React from "react";
 import DockLocation from "../DockLocation";
 import DragDrop from "../DragDrop";
+import DropInfo from "../DropInfo";
 import { I18nLabel } from "../I18nLabel";
 import Action from "../model/Action";
 import Actions from "../model/Actions";
@@ -53,6 +54,13 @@ export interface ILayoutProps {
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
     realtimeResize?: boolean | undefined;
+    onTabDrag?: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => undefined | {
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void
+    };
 }
 export interface IFontValues {
     size?: string;
@@ -94,6 +102,16 @@ export interface IIcons {
     maximize?: React.ReactNode;
     restore?: React.ReactNode;
     more?: React.ReactNode;
+}
+
+export interface ICustomDropDestination {
+    rect: Rect;
+    callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
+    dragging: TabNode | IJsonTabNode;
+    over: TabNode;
+    x: number;
+    y: number;
+    location: DockLocation;
 }
 
 /** @hidden @internal */
@@ -166,7 +184,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private tabIds: string[];
     /** @hidden @internal */
-    private newTabJson: any;
+    private newTabJson: IJsonTabNode | undefined;
     /** @hidden @internal */
     private firstMove: boolean = false;
     /** @hidden @internal */
@@ -176,7 +194,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private dragDivText: string = "";
     /** @hidden @internal */
-    private dropInfo: any;
+    private dropInfo: DropInfo | undefined;
+    /** @hidden @internal */
+    private customDrop: ICustomDropDestination | undefined;
     /** @hidden @internal */
     private outlineDiv?: HTMLDivElement;
 
@@ -364,6 +384,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     isRealtimeResize() {
         return this.props.realtimeResize ?? false;
+    }
+
+    /** @hidden @internal */
+    onTabDrag(dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) {
+        return this.props.onTabDrag?.(dragging, over, x, y, location);
     }
 
     /** @hidden @internal */
@@ -718,6 +743,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     onDragStart = () => {
         this.dropInfo = undefined;
+        this.customDrop = undefined;
         const rootdiv = this.selfRef.current!;
         this.outlineDiv = this.currentDocument!.createElement("div");
         this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
@@ -757,11 +783,49 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.dragDiv!.style.left = pos.x - this.dragDiv!.getBoundingClientRect().width / 2 + "px";
         this.dragDiv!.style.top = pos.y + 5 + "px";
 
-        const dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
+        let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
         if (dropInfo) {
+            this.customDrop = undefined;
+
+            const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
+            if (dragging && dropInfo.node instanceof TabSetNode && dropInfo.index === -1) {
+                const selected = dropInfo.node.getSelectedNode() as TabNode | undefined;
+                const tabRect = selected?.getRect()
+
+                if (selected && tabRect?.contains(pos.x, pos.y)) {
+                    let customDrop: ICustomDropDestination | undefined = undefined;
+
+                    try {
+                        const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location);
+
+                        if (dest) {
+                            customDrop = {
+                                rect: new Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
+                                callback: dest.callback,
+                                dragging: dragging,
+                                over: selected,
+                                x: pos.x - tabRect.x,
+                                y: pos.y - tabRect.y,
+                                location: dropInfo.location
+                            };
+                        }
+                    } catch (e) {
+                        console.error(e)
+                    }
+
+                    this.customDrop = customDrop;
+                }
+            }
+
             this.dropInfo = dropInfo;
-            this.outlineDiv!.className = this.getClassName(dropInfo.className);
-            dropInfo.rect.positionElement(this.outlineDiv!);
+            this.outlineDiv!.className = this.getClassName(this.customDrop ? "flexlayout__outline_rect" : dropInfo.className);
+
+            if (this.customDrop) {
+                this.customDrop.rect.positionElement(this.outlineDiv!);
+            } else {
+                dropInfo.rect.positionElement(this.outlineDiv!);
+            }
+
             this.outlineDiv!.style.visibility = "visible";
         }
     };
@@ -776,7 +840,16 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         DragDrop.instance.hideGlass();
 
         if (this.dropInfo) {
-            if (this.newTabJson !== undefined) {
+            if (this.customDrop) {
+                this.newTabJson = undefined;
+
+                try {
+                    const {callback, dragging, over, x, y, location} = this.customDrop;
+                    callback(dragging, over, x, y, location);
+                } catch (e) {
+                    console.log(e)
+                }
+            } else if (this.newTabJson !== undefined) {
                 const newNode = this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
 
                 if (this.fnNewNodeDropped != null) {

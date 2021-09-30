@@ -337,6 +337,16 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTabSet={this.onRenderTabSet}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
+                onTabDrag={(dragging, over, x, y, location) => {
+                    if (over.getComponent() === 'multitype' && over.getConfig()?.type === 'url' && over.getConfig()?.data === 'https://en.wikipedia.org/wiki/Main_Page') {
+                        let cellX = Math.floor(x / 50)
+                        let cellY = Math.floor(y / 50)
+
+                        return {x: cellX * 50, y: cellY * 50, width: 50, height: 50, callback: () => console.log('Dropped!')}
+                    }
+
+                    return undefined
+                }}
             // classNameMapper={
             //     className => {
             //         console.log(className);
