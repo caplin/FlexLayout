@@ -70,7 +70,7 @@ const PopupMenu = (props: IPopupMenuProps) => {
     };
 
     const itemElements = items.map((item) => (
-        <div key={item.index} className={classNameMapper("flexlayout__popup_menu_item")} onClick={(event) => onItemClick(item, event)}>
+        <div key={item.index} className={classNameMapper("flexlayout__popup_menu_item")} onClick={(event) => onItemClick(item, event)} title={item.node._getRenderedName()}>
             {item.node._getRenderedName()}
         </div>
     ));
