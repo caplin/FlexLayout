@@ -17,6 +17,7 @@ import TabNode from "./TabNode";
 import TabSetNode from "./TabSetNode";
 import {ITabSetAttributes} from "./IJsonModel";
 import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat } from "./Utils";
+import * as uuid from "uuid";
 
 /** @hidden @internal */
 export interface ILayoutMetrics {
@@ -105,8 +106,6 @@ class Model {
     /** @hidden @internal */
     private _idMap: Record<string, Node>;
     /** @hidden @internal */
-    private _nextId: number;
-    /** @hidden @internal */
     private _changeListener?: () => void;
     /** @hidden @internal */
     private _root?: RowNode;
@@ -133,7 +132,6 @@ class Model {
     private constructor() {
         this._attributes = {};
         this._idMap = {};
-        this._nextId = 0;
         this._borders = new BorderSet(this);
         this._pointerFine = true;
     }
@@ -460,12 +458,7 @@ class Model {
 
     /** @hidden @internal */
     _nextUniqueId() {
-        this._nextId++;
-        while (this._idMap["#" + this._nextId] !== undefined) {
-            this._nextId++;
-        }
-
-        return "#" + this._nextId;
+        return '#' + uuid.v4();
     }
 
     /** @hidden @internal */
