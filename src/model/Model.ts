@@ -458,7 +458,7 @@ class Model {
 
     /** @hidden @internal */
     _nextUniqueId() {
-        return uuid.v4();
+        return '#' + uuid.v4();
     }
 
     /** @hidden @internal */
