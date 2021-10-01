@@ -1,9 +1,10 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
-import * as FlexLayout from "../../src/index";
-import Utils from "./Utils";
-import { Node, TabSetNode, TabNode, DropInfo, BorderNode, Action } from "../../src/index";
-import { ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
+import * as React                                   from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import * as ReactDOM                                from "react-dom";
+import * as FlexLayout                                                                          from "../../src/index";
+import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, Rect, TabNode, TabSetNode } from "../../src/index";
+import { ILayoutProps, ITabRenderValues, ITabSetRenderValues }                                  from "../../src/view/Layout";
+import Utils                                                                                    from "./Utils";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -139,7 +140,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
           realtimeResize: event.target.checked
         });
     }
-    
+
 
     onExternalDrag = (e: React.DragEvent) => {
         // console.log("onExternaldrag ", e.dataTransfer.types);
@@ -250,6 +251,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 return (<div>{String(e)}</div>);
             }
         }
+        else if (component === "tabstorage") {
+            return <TabStorage tab={node} layout={this.refs.layout as FlexLayout.Layout} />
+        }
 
         return null;
     }
@@ -337,6 +341,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTabSet={this.onRenderTabSet}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
+                onTabDrag={(dragging, over, x, y, location) => {
+                    const tabStorageImpl = over.getExtraData().tabStorage_onTabDrag as ILayoutProps['onTabDrag']
+                    if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location)
+                    return undefined
+                }}
             // classNameMapper={
             //     className => {
             //         console.log(className);
@@ -473,6 +482,108 @@ class SimpleTable extends React.Component<{ fields: any, data: any, onClick: any
             </tbody>
         </table>;
     }
+}
+
+function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
+    const [storedTabs, setStoredTabs] = useState<IJsonTabNode[]>(tab.getConfig()?.storedTabs ?? [])
+
+    useEffect(() => {
+        tab.getModel().doAction(Actions.updateNodeAttributes(tab.getId(), {config: {...(tab.getConfig() ?? {}), storedTabs}}))
+    }, [storedTabs])
+
+    const [contents, setContents] = useState<HTMLDivElement | null>(null)
+    const [list, setList] = useState<HTMLDivElement | null>(null)
+    const refs = useRef<(HTMLDivElement | undefined)[]>([]).current
+    const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
+
+    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
+        if (contents && list) {
+            const layoutDomRect = layout.getDomRect()
+            const tabRect = tab.getRect()
+            const rect = new Rect(tabRect.x + layoutDomRect.left, tabRect.y + layoutDomRect.top, tabRect.width, tabRect.height)
+            const absoluteX = x + rect.x
+            const absoluteY = y + rect.y
+            const listBounds = list.getBoundingClientRect()
+
+            if (absoluteX >= listBounds.left && absoluteX < listBounds.right &&
+                absoluteY >= listBounds.top && absoluteY < listBounds.bottom) {
+                if (emptyElem) {
+                    return {
+                        x: listBounds.left - rect.x,
+                        y: listBounds.top - rect.y,
+                        width: listBounds.width,
+                        height: listBounds.height,
+                        callback: () => {
+                            const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
+
+                            setStoredTabs(tabs => [...tabs, json])
+
+                            if (dragging instanceof TabNode) {
+                                tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
+                            }
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < storedTabs.length; i++) {
+                        const ref = refs[i]
+                        if (!ref) continue
+
+                        const itemRect = ref.getBoundingClientRect()
+
+                        if (absoluteX >= itemRect.left && absoluteX < itemRect.right &&
+                            absoluteY >= itemRect.top && absoluteY < itemRect.bottom) {
+                            const isTop = absoluteY - itemRect.top < itemRect.bottom - absoluteY
+                            const newIndex = isTop ? i : i + 1
+
+                            return {
+                                x: itemRect.left - rect.x,
+                                y: itemRect.top + (isTop ? 0 : itemRect.height) - rect.y,
+                                width: itemRect.width,
+                                height: 0,
+                                callback: () => {
+                                    const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
+
+                                    setStoredTabs(tabs => {
+                                        const newTabs = [...tabs]
+                                        const foundAt = newTabs.indexOf(json)
+
+                                        if (foundAt > -1) {
+                                            newTabs.splice(foundAt, 1)
+                                            newTabs.splice(newIndex > foundAt ? newIndex - 1 : newIndex, 0, json)
+                                        } else {
+                                            newTabs.splice(newIndex, 0, json)
+                                        }
+
+                                        return newTabs
+                                    })
+
+                                    if (dragging instanceof TabNode) {
+                                        tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return undefined
+    }) as Required<ILayoutProps>['onTabDrag'], [storedTabs, contents, list, refs, emptyElem])
+
+    return <div ref={setContents} className="tab-storage">
+        <p>
+            This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list.
+            You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!
+        </p>
+        <div ref={setList} className="tab-storage-tabs">
+            {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
+            {storedTabs.map((stored, i) => <div ref={ref => refs[i] = ref ?? undefined} className="tab-storage-entry" key={stored.id} onMouseDown={e => {
+                e.preventDefault()
+                layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)))
+            }}>{stored.name ?? 'Unnamed'}</div>)}
+        </div>
+    </div>
 }
 
 ReactDOM.render(<App />, document.getElementById("container"));

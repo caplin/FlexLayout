@@ -39,6 +39,11 @@
                             "type":"url",
 							"data": "https://en.wikipedia.org/wiki/Main_Page"
 						}
+					},
+					{
+						"type": "tab",
+						"name": "Tab Storage",
+						"component": "tabstorage"
 					}
 				]
 			}
