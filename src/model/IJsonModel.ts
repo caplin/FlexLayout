@@ -25,7 +25,6 @@ export interface IJsonTabSetNode extends ITabSetAttributes {
 }
 
 export interface IJsonTabNode extends ITabAttributes {
-    external?: any;
 }
 
 //----------------------------------------------------------------------------------------------------------

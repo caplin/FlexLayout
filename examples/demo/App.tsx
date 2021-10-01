@@ -1,4 +1,3 @@
-
 import * as React                                   from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as ReactDOM                                from "react-dom";
@@ -496,28 +495,6 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
     const [list, setList] = useState<HTMLDivElement | null>(null)
     const refs = useRef<(HTMLDivElement | undefined)[]>([]).current
     const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
-    const nextKey = useRef<number>(0)
-
-    const nextUniqueId = () => {
-        nextKey.current++;
-        while (storedTabs.map(t=>t.external).findIndex(v => v === nextKey.current) !== -1) {
-            nextKey.current++;
-        }
-
-        return nextKey.current;
-    }
-
-    const updateKey = (json: IJsonTabNode) => {
-        // ids starting with # were auto generated unique ids in flexlayout, they should not be
-        // copied externally since they can be reused in flexlayout
-        if (json.id?.startsWith("#")) {
-            delete json["id"];
-        }
-        // give the json a unique key for use in the list
-        if (!json.external) {
-            json.external = nextUniqueId();
-        }
-    }
 
     tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
         if (contents && list) {
@@ -538,7 +515,6 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
                         height: listBounds.height,
                         callback: () => {
                             const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
-                            updateKey(json);
 
                             setStoredTabs(tabs => [...tabs, json])
 
@@ -566,7 +542,6 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
                                 height: 0,
                                 callback: () => {
                                     const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
-                                    updateKey(json);
 
                                     setStoredTabs(tabs => {
                                         const newTabs = [...tabs]
@@ -603,7 +578,7 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
         </p>
         <div ref={setList} className="tab-storage-tabs">
             {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
-            {storedTabs.map((stored, i) => <div ref={ref => refs[i] = ref ?? undefined} className="tab-storage-entry" key={stored.external} onMouseDown={e => {
+            {storedTabs.map((stored, i) => <div ref={ref => refs[i] = ref ?? undefined} className="tab-storage-entry" key={stored.id} onMouseDown={e => {
                 e.preventDefault()
                 layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)))
             }}>{stored.name ?? 'Unnamed'}</div>)}
