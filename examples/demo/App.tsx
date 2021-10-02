@@ -514,7 +514,7 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
                         width: listBounds.width,
                         height: listBounds.height,
                         callback: () => {
-                            const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
+                            const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
 
                             setStoredTabs(tabs => [...tabs, json])
 
@@ -541,7 +541,7 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
                                 width: itemRect.width,
                                 height: 0,
                                 callback: () => {
-                                    const json = dragging instanceof TabNode ? dragging._toJson() as IJsonTabNode : dragging
+                                    const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
 
                                     setStoredTabs(tabs => {
                                         const newTabs = [...tabs]

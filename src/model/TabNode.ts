@@ -3,6 +3,7 @@ import AttributeDefinitions from "../AttributeDefinitions";
 import Rect from "../Rect";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
+import { IJsonTabNode } from "./IJsonModel";
 import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import TabSetNode from "./TabSetNode";
@@ -174,8 +175,7 @@ class TabNode extends Node implements IDraggable {
         this._fireEvent("close", {});
     }
 
-    /** @hidden @internal */
-    _toJson() {
+    toJson(): IJsonTabNode {
         const json = {};
         TabNode._attributeDefinitions.toJson(json, this._attributes);
         return json;

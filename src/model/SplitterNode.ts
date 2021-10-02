@@ -72,8 +72,7 @@ class SplitterNode extends Node {
         return new AttributeDefinitions();
     }
 
-    /** @hidden @internal */
-    _toJson(): any {
+    toJson(): undefined {
         return undefined;
     }
 }
