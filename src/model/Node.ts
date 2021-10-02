@@ -4,6 +4,7 @@ import DropInfo from "../DropInfo";
 import Orientation from "../Orientation";
 import Rect from "../Rect";
 import IDraggable from "./IDraggable";
+import { IJsonBorderNode, IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from "./IJsonModel";
 import Model, { ILayoutMetrics } from "./Model";
 
 abstract class Node {
@@ -91,6 +92,8 @@ abstract class Node {
     removeEventListener(event: string) {
         delete this._listeners[event];
     }
+
+    abstract toJson(): IJsonRowNode | IJsonBorderNode | IJsonTabSetNode | IJsonTabNode | undefined;
 
     /** @hidden @internal */
     _setId(id: string) {
@@ -283,8 +286,6 @@ abstract class Node {
     abstract _updateAttrs(json: any): void;
     /** @hidden @internal */
     abstract _getAttributeDefinitions(): AttributeDefinitions;
-    /** @hidden @internal */
-    abstract _toJson(): any;
 }
 
 export default Node;

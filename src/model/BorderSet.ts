@@ -40,7 +40,7 @@ class BorderSet {
 
     /** @hidden @internal */
     _toJson() {
-        return this._borders.map((borderNode) => borderNode._toJson());
+        return this._borders.map((borderNode) => borderNode.toJson());
     }
 
     /** @hidden @internal */

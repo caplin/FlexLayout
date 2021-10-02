@@ -8,6 +8,7 @@ import Rect from "../Rect";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
+import { IJsonRowNode } from "./IJsonModel";
 import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import SplitterNode from "./SplitterNode";
@@ -506,14 +507,13 @@ class RowNode extends Node implements IDropTarget {
         this._model._tidy();
     }
 
-    /** @hidden @internal */
-    _toJson() {
+    toJson(): IJsonRowNode {
         const json: any = {};
         RowNode._attributeDefinitions.toJson(json, this._attributes);
 
         json.children = [];
         this._children.forEach((child) => {
-            json.children.push(child._toJson());
+            json.children.push(child.toJson());
         });
 
         return json;

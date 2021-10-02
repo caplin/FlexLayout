@@ -6,6 +6,7 @@ import Orientation from "../Orientation";
 import Rect from "../Rect";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
+import { IJsonBorderNode } from "./IJsonModel";
 import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import SplitterNode from "./SplitterNode";
@@ -355,12 +356,11 @@ class BorderNode extends Node implements IDropTarget {
         this._model._tidy();
     }
 
-    /** @hidden @internal */
-    _toJson() {
+    toJson(): IJsonBorderNode {
         const json: any = {};
         BorderNode._attributeDefinitions.toJson(json, this._attributes);
         json.location = this._location.getName();
-        json.children = this._children.map((child) => (child as TabNode)._toJson());
+        json.children = this._children.map((child) => (child as TabNode).toJson());
         return json;
     }
 

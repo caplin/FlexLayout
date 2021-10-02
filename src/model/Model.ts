@@ -385,17 +385,15 @@ class Model {
      * @returns {IJsonModel} json object that represents this model
      */
     toJson(): IJsonModel {
-        const json: any = { global: {}, layout: {} };
-        Model._attributeDefinitions.toJson(json.global, this._attributes);
+        const global: any = {};
+        Model._attributeDefinitions.toJson(global, this._attributes);
 
         // save state of nodes
         this.visitNodes((node) => {
             node._fireEvent("save", undefined);
         });
 
-        json.borders = this._borders._toJson();
-        json.layout = (this._root as RowNode)._toJson();
-        return json as IJsonModel;
+        return { global, borders: this._borders._toJson(), layout: (this._root as RowNode).toJson() };
     }
 
     getSplitterSize() {

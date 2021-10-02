@@ -7,6 +7,7 @@ import Rect from "../Rect";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
+import { IJsonTabSetNode } from "./IJsonModel";
 import Model, { ILayoutMetrics } from "./Model";
 import Node from "./Node";
 import RowNode from "./RowNode";
@@ -430,11 +431,10 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
         this._model._tidy();
     }
 
-    /** @hidden @internal */
-    _toJson(): any {
+    toJson(): IJsonTabSetNode {
         const json: any = {};
         TabSetNode._attributeDefinitions.toJson(json, this._attributes);
-        json.children = this._children.map((child) => child._toJson());
+        json.children = this._children.map((child) => child.toJson());
 
         if (this.isActive()) {
             json.active = true;
