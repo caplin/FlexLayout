@@ -12,7 +12,7 @@ Try it now using [JSFiddle](https://jsfiddle.net/9x6hecdw/)
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-FlexLayout's only dependency is React.
+FlexLayout's only dependencies are React and uuid.
 
 Features:
 *	splitters
@@ -502,7 +502,7 @@ model.doAction(FlexLayout.Actions.addNode(
 This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
 Note: you can get the id of a node (e.g., the node returned by the `addNode`
 action) using the method `node.getId()`.
-If an id wasn't assigned when the node was created, then one will be created for you of the form `#<next available id>` (e.g. `#1`, `#2`, ...).
+If an id wasn't assigned when the node was created, then one will be created for you of the form `#<uuid>` (e.g. `#0c459064-8dee-444e-8636-eb9ab910fb27`).
 
 
 ## Layout Component Methods to Create New Tabs

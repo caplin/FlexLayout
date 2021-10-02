@@ -1,3 +1,11 @@
+0.5.15
+Added new Layout prop: onTabDrag that allows tab dragging to be intercepted.
+Added example of onTabDrag in demo app, example shows a list where tabs can be dragged into, 
+moved in the list and dragged back out into the layout. 
+Node id's that are not assigned a value are now auto-generated using a uuid rather than a rolling number
+(for example: previous id: #3, new id: #0c459064-8dee-444e-8636-eb9ab910fb27).
+Made toJson method of node public.
+
 0.5.14
 Fix an issue with copying styles for a floating window when using a CSS-in-JS solution 
 Fix for #227 - edge rects are not moved if window is resized while dragging
