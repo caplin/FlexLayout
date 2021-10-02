@@ -15,7 +15,6 @@ html,body
     bottom:10px;
     position:absolute;
     display:flex;
-    display:-webkit-flex;
     overflow:hidden;
     background-color:black;
 }
@@ -32,9 +31,6 @@ html,body
     display:flex;
     flex-direction: column;
     flex-grow:1;
-    display:-webkit-flex;
-    -webkit-flex-direction: column;
-    -webkit-flex-grow:1;
 }
 
 .toolbar
@@ -47,7 +43,6 @@ html,body
 .contents
 {
     flex-grow:1;
-    -webkit-flex-grow:1;
     left:0;
     top:0;
     right:0;
@@ -80,3 +75,21 @@ html,body
 }
 .simple_table tr:nth-child(even) {background: #242424}
 .simple_table tr:nth-child(odd) {background: #222}
+
+.tab-storage {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding-left: 1em;
+	padding-right: 1em;
+	padding-bottom: 1em;
+	overflow: auto;
+}
+
+.tab-storage > .tab-storage-tabs > .tab-storage-entry {
+	padding: 1em;
+	background-color: #222;
+	border-radius: 0.5em;
+}
