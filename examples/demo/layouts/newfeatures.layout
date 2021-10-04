@@ -1,6 +1,7 @@
 {
 	"global": {
-		"tabEnableFloat": true
+		"tabEnableFloat": true,
+        "tabSetEnableClose":true
 	},
 	"layout": {
 		"type": "row",
@@ -13,7 +14,11 @@
 					{
 						"type": "tab",
 						"name": "One",
-						"component": "grid"
+                        "helpText": "this tab has helpText defined",
+						"component": "text",
+                        "config": {
+                            "text":"New:<ul><li>Help text (tooltip) option on tabs: <br><small>Hover over this tab button</small></li><li>Action to close tabset:<br><small>See added x button in this tabset</small></li><li>Intercept drag drop to allow dropping tabs into custom areas:<br><small>See Tab Storage tab<small></li></ul>"
+                            }
 					},
 					{
 						"type": "tab",
@@ -28,17 +33,8 @@
 				"children": [
 					{
 						"type": "tab",
-						"name": "Three",
-						"component": "grid"
-					},
-					{
-						"type": "tab",
-						"name": "Wikipedia",
-						"component": "multitype",
-						"config": {
-                            "type":"url",
-							"data": "https://en.wikipedia.org/wiki/Main_Page"
-						}
+						"name": "Tab Storage",
+						"component": "tabstorage"
 					}
 				]
 			}

@@ -98,6 +98,7 @@ export interface ILayoutState {
 
 export interface IIcons {
     close?: React.ReactNode;
+    closeTabset?: React.ReactNode;
     popout?: React.ReactNode;
     maximize?: React.ReactNode;
     restore?: React.ReactNode;

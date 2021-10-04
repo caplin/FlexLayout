@@ -1,3 +1,9 @@
+0.5.16
+Added 'New Features' layout to demo.
+New tab attribute, helpText, to show tooltip over tabs.
+New model action, deleteTabset, to delete a tabset and all it's child tabs.
+New tabset attribute, enableClose, to close the tabset
+
 0.5.15
 Added new Layout prop: onTabDrag that allows tab dragging to be intercepted.
 Added example of onTabDrag in demo app, example shows a list where tabs can be dragged into, 

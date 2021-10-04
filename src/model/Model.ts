@@ -76,6 +76,7 @@ class Model {
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableClose", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetAutoSelectTab", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute.STRING);
@@ -253,8 +254,22 @@ class Model {
             case Actions.DELETE_TAB: {
                 const node = this._idMap[action.data.node];
                 if (node instanceof TabNode) {
-                    delete this._idMap[action.data.node];
                     node._delete();
+                }
+                break;
+            }
+            case Actions.DELETE_TABSET: {
+                const node = this._idMap[action.data.node];
+
+                if (node instanceof TabSetNode) {
+                    // first delete all child tabs
+                    const children = [...node.getChildren()];
+                    children.forEach((child, i) => {
+                        (child as TabNode)._delete();
+                    });
+
+                    node._delete();
+                    this._tidy();
                 }
                 break;
             }

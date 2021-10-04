@@ -94,3 +94,8 @@ html,body
 	background-color: #ddd;
 	border-radius: 0.5em;
 }
+
+small {
+    color: gray;
+}
+
