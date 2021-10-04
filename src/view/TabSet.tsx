@@ -65,6 +65,10 @@ export const TabSet = (props: ITabSetProps) => {
         }
     };
 
+    const onClose = () => {
+        layout.doAction(Actions.deleteTabset(node.getId()));
+    };
+
     const onFloatTab = () => {
         if (selectedTabNode !== undefined) {
             layout.doAction(Actions.floatTab(selectedTabNode.getId()));
@@ -191,6 +195,23 @@ export const TabSet = (props: ITabSetProps) => {
                 onTouchStart={onInterceptMouseDown}
             >
                 {node.isMaximized() ? icons?.restore : icons?.maximize}
+            </button>
+        );
+    }
+
+    if (!node.isMaximized() && node.isEnableClose()) {
+        const title = layout.i18nName(I18nLabel.Close_Tabset);
+        const btns = showHeader ? headerButtons : buttons;
+        btns.push(
+            <button
+                key="close"
+                title={title}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
+                onClick={onClose}
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+            >
+                {icons?.closeTabset}
             </button>
         );
     }

@@ -270,6 +270,10 @@
                 &-float {
                     background: transparent url("../images/popout.png") no-repeat center;
                 }
+
+                &-close {
+                    background: transparent url("../images/close.png") no-repeat center;
+                }
             }
 
             &_sticky_buttons_container {

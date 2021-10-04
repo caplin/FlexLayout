@@ -1,5 +1,6 @@
 export enum I18nLabel {
     Close_Tab = "Close",
+    Close_Tabset = "Close tabset",
     Move_Tab = "Move: ",
     Move_Tabset = "Move tabset",
     Maximize = "Maximize tabset",

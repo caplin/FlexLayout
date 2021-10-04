@@ -55,6 +55,7 @@ export interface IGlobalAttributes {
 	tabSetBorderInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	tabSetClassNameHeader?: string;
 	tabSetClassNameTabStrip?: string;
+	tabSetEnableClose?: boolean; // default: false
 	tabSetEnableDeleteWhenEmpty?: boolean; // default: true
 	tabSetEnableDivide?: boolean; // default: true
 	tabSetEnableDrag?: boolean; // default: true
@@ -81,6 +82,7 @@ export interface ITabSetAttributes {
 	classNameHeader?: string; //  - inherited from global tabSetClassNameHeader
 	classNameTabStrip?: string; //  - inherited from global tabSetClassNameTabStrip
 	config?: any;
+	enableClose?: boolean; // default: false - inherited from global tabSetEnableClose
 	enableDeleteWhenEmpty?: boolean; // default: true - inherited from global tabSetEnableDeleteWhenEmpty
 	enableDivide?: boolean; // default: true - inherited from global tabSetEnableDivide
 	enableDrag?: boolean; // default: true - inherited from global tabSetEnableDrag

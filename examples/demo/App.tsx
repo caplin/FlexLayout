@@ -1,10 +1,10 @@
-import * as React                                   from "react";
+import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import * as ReactDOM                                from "react-dom";
-import * as FlexLayout                                                                          from "../../src/index";
+import * as ReactDOM from "react-dom";
+import * as FlexLayout from "../../src/index";
 import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, Rect, TabNode, TabSetNode } from "../../src/index";
-import { ILayoutProps, ITabRenderValues, ITabSetRenderValues }                                  from "../../src/view/Layout";
-import Utils                                                                                    from "./Utils";
+import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
+import Utils from "./Utils";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -15,7 +15,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     constructor(props: any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false};
+        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
 
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
@@ -137,7 +137,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onRealtimeResize = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
-          realtimeResize: event.target.checked
+            realtimeResize: event.target.checked
         });
     }
 
@@ -198,9 +198,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     factory = (node: TabNode) => {
         // log lifecycle events
-        //node.setEventListener("resize", function(p){console.log("resize");});
-        //node.setEventListener("visibility", function(p){console.log("visibility");});
-        //node.setEventListener("close", function(p){console.log("close");});
+        //node.setEventListener("resize", function(p){console.log("resize", node);});
+        //node.setEventListener("visibility", function(p){console.log("visibility", node);});
+        //node.setEventListener("close", function(p){console.log("close", node);});
 
         var component = node.getComponent();
 
@@ -316,7 +316,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     alt="Add"
                     key="Add button"
                     title="Add Tab (using onRenderTabSet callback, see Demo)"
-                    style={{ marginLeft: 5, width:24, height:24 }}
+                    style={{ marginLeft: 5, width: 24, height: 24 }}
                     onClick={() => this.onAddFromTabSetButton(node)}
                 />);
         }
@@ -372,6 +372,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             <div className="toolbar">
                 <select onChange={this.onSelectLayout}>
                     <option value="default">Default</option>
+                    <option value="newfeatures">New Features</option>
                     <option value="simple">Simple</option>
                     <option value="justsplitters">Just Splitters</option>
                     <option value="sub">SubLayout</option>
@@ -484,11 +485,11 @@ class SimpleTable extends React.Component<{ fields: any, data: any, onClick: any
     }
 }
 
-function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
+function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }) {
     const [storedTabs, setStoredTabs] = useState<IJsonTabNode[]>(tab.getConfig()?.storedTabs ?? [])
 
     useEffect(() => {
-        tab.getModel().doAction(Actions.updateNodeAttributes(tab.getId(), {config: {...(tab.getConfig() ?? {}), storedTabs}}))
+        tab.getModel().doAction(Actions.updateNodeAttributes(tab.getId(), { config: { ...(tab.getConfig() ?? {}), storedTabs } }))
     }, [storedTabs])
 
     const [contents, setContents] = useState<HTMLDivElement | null>(null)
@@ -578,10 +579,22 @@ function TabStorage({tab, layout}: {tab: TabNode, layout: FlexLayout.Layout}) {
         </p>
         <div ref={setList} className="tab-storage-tabs">
             {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
-            {storedTabs.map((stored, i) => <div ref={ref => refs[i] = ref ?? undefined} className="tab-storage-entry" key={stored.id} onMouseDown={e => {
-                e.preventDefault()
-                layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)))
-            }}>{stored.name ?? 'Unnamed'}</div>)}
+            {storedTabs.map((stored, i) => (
+                <div
+                    ref={ref => refs[i] = ref ?? undefined}
+                    className="tab-storage-entry"
+                    key={stored.id}
+                    onMouseDown={e => {
+                        e.preventDefault()
+                        layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)))
+                    }}
+                    onTouchStart={e => {
+                        layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)))
+                    }}
+                >
+                    {stored.name ?? 'Unnamed'}
+                </div>))
+            }
         </div>
     </div>
 }
