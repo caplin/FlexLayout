@@ -129,7 +129,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
     }
 
     return (
-        <div ref={selfRef} style={{}} className={classNames} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
+        <div ref={selfRef} style={{}} className={classNames} onMouseDown={onMouseDown} onTouchStart={onMouseDown} title={node.getHelpText()}>
             {leading}
             {content}
             {buttons}

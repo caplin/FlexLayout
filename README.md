@@ -382,6 +382,7 @@ Inherited defaults will take their value from the associated global attributes (
 | component | *required* | string identifying which component to run (for factory) |
 | config | null | a place to hold json config for the hosted component |
 | id | auto generated | |
+| helpText | *optional* | An optional help text for the tab to be displayed upon tab hover. |
 | enableClose | *inherited* | allow user to close tab via close button |
 | closeType | *inherited* | see values in ICloseType |
 | enableDrag | *inherited* | allow user to drag tab to new location |
