@@ -257,9 +257,9 @@ var App = /** @class */ (function (_super) {
         };
         _this.factory = function (node) {
             // log lifecycle events
-            //node.setEventListener("resize", function(p){console.log("resize");});
-            //node.setEventListener("visibility", function(p){console.log("visibility");});
-            //node.setEventListener("close", function(p){console.log("close");});
+            //node.setEventListener("resize", function(p){console.log("resize", node);});
+            //node.setEventListener("visibility", function(p){console.log("visibility", node);});
+            //node.setEventListener("close", function(p){console.log("close", node);});
             var component = node.getComponent();
             if (component === "grid") {
                 if (node.getExtraData().data == null) {
@@ -418,6 +418,7 @@ var App = /** @class */ (function (_super) {
             React.createElement("div", { className: "toolbar" },
                 React.createElement("select", { onChange: this.onSelectLayout },
                     React.createElement("option", { value: "default" }, "Default"),
+                    React.createElement("option", { value: "newfeatures" }, "New Features"),
                     React.createElement("option", { value: "simple" }, "Simple"),
                     React.createElement("option", { value: "justsplitters" }, "Just Splitters"),
                     React.createElement("option", { value: "sub" }, "SubLayout"),
@@ -599,11 +600,14 @@ function TabStorage(_a) {
             storedTabs.length === 0 && React.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
             storedTabs.map(function (stored, i) {
                 var _a;
-                return React.createElement("div", { ref: function (ref) { return refs[i] = ref !== null && ref !== void 0 ? ref : undefined; }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
+                return (React.createElement("div", { ref: function (ref) { return refs[i] = ref !== null && ref !== void 0 ? ref : undefined; }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
                         var _a;
                         e.preventDefault();
                         layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
-                    } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed');
+                    }, onTouchStart: function (e) {
+                        var _a;
+                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
+                    } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed'));
             })));
 }
 ReactDOM.render(React.createElement(App, null), document.getElementById("container"));
@@ -31964,6 +31968,7 @@ exports.I18nLabel = void 0;
 var I18nLabel;
 (function (I18nLabel) {
     I18nLabel["Close_Tab"] = "Close";
+    I18nLabel["Close_Tabset"] = "Close tabset";
     I18nLabel["Move_Tab"] = "Move: ";
     I18nLabel["Move_Tabset"] = "Move tabset";
     I18nLabel["Maximize"] = "Maximize tabset";
@@ -32075,7 +32080,7 @@ var PopupMenu = function (props) {
         onHide();
         event.stopPropagation();
     };
-    var itemElements = items.map(function (item) { return (React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); } }, item.node._getRenderedName())); });
+    var itemElements = items.map(function (item) { return (React.createElement("div", { key: item.index, className: classNameMapper("flexlayout__popup_menu_item"), onClick: function (event) { return onItemClick(item, event); }, title: item.node.getHelpText() }, item.node._getRenderedName())); });
     return React.createElement("div", { className: classNameMapper("flexlayout__popup_menu") }, itemElements);
 };
 
@@ -32241,6 +32246,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON_"] = "flexlayout__tab_toolbar_button-";
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT"] = "flexlayout__tab_toolbar_button-float";
     CLASSES["FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER"] = "flexlayout__tab_toolbar_sticky_buttons_container";
+    CLASSES["FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE"] = "flexlayout__tab_toolbar_button-close";
 })(CLASSES = exports.CLASSES || (exports.CLASSES = {}));
 
 
@@ -32360,7 +32366,7 @@ var Actions = /** @class */ (function () {
      * @param location the location where the new tab will be added, one of the DockLocation enum values.
      * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
      * @param select (optional) whether to select the new tab, overriding autoSelectTab
-     * @returns {{type: (string|string), json: *, toNode: *, location: (*|string), index: *, select?: boolean}}
+     * @returns {Action} the action
      */
     Actions.addNode = function (json, toNodeId, location, index, select) {
         return new Action_1.default(Actions.ADD_NODE, {
@@ -32378,7 +32384,7 @@ var Actions = /** @class */ (function () {
      * @param location the location where the moved node will be added, one of the DockLocation enum values.
      * @param index for docking to the center this value is the index of the tab, use -1 to add to the end.
      * @param select (optional) whether to select the moved tab(s) in new tabset, overriding autoSelectTab
-     * @returns {{type: (string|string), fromNode: *, toNode: *, location: (*|string), index: *}}
+     * @returns {Action} the action
      */
     Actions.moveNode = function (fromNodeId, toNodeId, location, index, select) {
         return new Action_1.default(Actions.MOVE_NODE, {
@@ -32391,17 +32397,25 @@ var Actions = /** @class */ (function () {
     };
     /**
      * Deletes a tab node from the layout
-     * @param tabNodeId the id of the node to delete
-     * @returns {{type: (string|string), node: *}}
+     * @param tabsetNodeId the id of the tab node to delete
+     * @returns {Action} the action
      */
     Actions.deleteTab = function (tabNodeId) {
         return new Action_1.default(Actions.DELETE_TAB, { node: tabNodeId });
     };
     /**
+     * Deletes a tabset node and all it's child tab nodes from the layout
+     * @param tabsetNodeId the id of the tabset node to delete
+     * @returns {Action} the action
+     */
+    Actions.deleteTabset = function (tabsetNodeId) {
+        return new Action_1.default(Actions.DELETE_TABSET, { node: tabsetNodeId });
+    };
+    /**
      * Change the given nodes tab text
      * @param tabNodeId the id of the node to rename
      * @param text the test of the tab
-     * @returns {{type: (string|string), node: *, text: *}}
+     * @returns {Action} the action
      */
     Actions.renameTab = function (tabNodeId, text) {
         return new Action_1.default(Actions.RENAME_TAB, { node: tabNodeId, text: text });
@@ -32409,7 +32423,7 @@ var Actions = /** @class */ (function () {
     /**
      * Selects the given tab in its parent tabset
      * @param tabNodeId the id of the node to set selected
-     * @returns {{type: (string|string), tabNode: *}}
+     * @returns {Action} the action
      */
     Actions.selectTab = function (tabNodeId) {
         return new Action_1.default(Actions.SELECT_TAB, { tabNode: tabNodeId });
@@ -32417,7 +32431,7 @@ var Actions = /** @class */ (function () {
     /**
      * Set the given tabset node as the active tabset
      * @param tabsetNodeId the id of the tabset node to set as active
-     * @returns {{type: (string|string), tabsetNode: *}}
+     * @returns {Action} the action
      */
     Actions.setActiveTabset = function (tabsetNodeId) {
         return new Action_1.default(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId });
@@ -32428,7 +32442,7 @@ var Actions = /** @class */ (function () {
      *  Actions.adjustSplit({node1: "1", weight1:30, pixelWidth1:300, node2: "2", weight2:70, pixelWidth2:700});
      *
      * @param splitSpec an object the defines the new split between two tabsets, see example below.
-     * @returns {{type: (string|string), node1: *, weight1: *, pixelWidth1: *, node2: *, weight2: *, pixelWidth2: *}}
+     * @returns {Action} the action
      */
     Actions.adjustSplit = function (splitSpec) {
         var node1 = splitSpec.node1Id;
@@ -32448,7 +32462,7 @@ var Actions = /** @class */ (function () {
     /**
      * Maximizes the given tabset
      * @param tabsetNodeId the id of the tabset to maximize
-     * @returns {{type: (string|string), node: *}}
+     * @returns {Action} the action
      */
     Actions.maximizeToggle = function (tabsetNodeId) {
         return new Action_1.default(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId });
@@ -32456,7 +32470,7 @@ var Actions = /** @class */ (function () {
     /**
      * Updates the global model jsone attributes
      * @param attributes the json for the model attributes to update (merge into the existing attributes)
-     * @returns {{type: (string|string), json: *}}
+     * @returns {Action} the action
      */
     Actions.updateModelAttributes = function (attributes) {
         return new Action_1.default(Actions.UPDATE_MODEL_ATTRIBUTES, { json: attributes });
@@ -32465,7 +32479,7 @@ var Actions = /** @class */ (function () {
      * Updates the given nodes json attributes
      * @param nodeId the id of the node to update
      * @param attributes the json attributes to update (merge with the existing attributes)
-     * @returns {{type: (string|string), node: *, json: *}}
+     * @returns {Action} the action
      */
     Actions.updateNodeAttributes = function (nodeId, attributes) {
         return new Action_1.default(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
@@ -32479,6 +32493,7 @@ var Actions = /** @class */ (function () {
     Actions.ADD_NODE = "FlexLayout_AddNode";
     Actions.MOVE_NODE = "FlexLayout_MoveNode";
     Actions.DELETE_TAB = "FlexLayout_DeleteTab";
+    Actions.DELETE_TABSET = "FlexLayout_DeleteTabset";
     Actions.RENAME_TAB = "FlexLayout_RenameTab";
     Actions.SELECT_TAB = "FlexLayout_SelectTab";
     Actions.SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
@@ -33030,6 +33045,11 @@ var ICloseType;
 
 "use strict";
 
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
@@ -33100,6 +33120,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableClose", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetAutoSelectTab", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute_1.default.STRING);
@@ -33228,8 +33249,20 @@ var Model = /** @class */ (function () {
             case Actions_1.default.DELETE_TAB: {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabNode_1.default) {
-                    delete this._idMap[action.data.node];
                     node._delete();
+                }
+                break;
+            }
+            case Actions_1.default.DELETE_TABSET: {
+                var node = this._idMap[action.data.node];
+                if (node instanceof TabSetNode_1.default) {
+                    // first delete all child tabs
+                    var children = __spreadArray([], node.getChildren());
+                    children.forEach(function (child, i) {
+                        child._delete();
+                    });
+                    node._delete();
+                    this._tidy();
                 }
                 break;
             }
@@ -34393,6 +34426,7 @@ var TabNode = /** @class */ (function (_super) {
         attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("id", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("helpText", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("component", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(Attribute_1.default.BOOLEAN);
@@ -34426,6 +34460,9 @@ var TabNode = /** @class */ (function (_super) {
     };
     TabNode.prototype.getName = function () {
         return this._getAttr("name");
+    };
+    TabNode.prototype.getHelpText = function () {
+        return this._getAttr("helpText");
     };
     TabNode.prototype.getComponent = function () {
         return this._getAttr("component");
@@ -34607,6 +34644,7 @@ var TabSetNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("enableDrag", "tabSetEnableDrag");
         attributeDefinitions.addInherited("enableDivide", "tabSetEnableDivide");
         attributeDefinitions.addInherited("enableMaximize", "tabSetEnableMaximize");
+        attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
         attributeDefinitions.addInherited("classNameTabStrip", "tabSetClassNameTabStrip");
         attributeDefinitions.addInherited("classNameHeader", "tabSetClassNameHeader");
         attributeDefinitions.addInherited("enableTabStrip", "tabSetEnableTabStrip");
@@ -34691,6 +34729,9 @@ var TabSetNode = /** @class */ (function (_super) {
     };
     TabSetNode.prototype.isEnableMaximize = function () {
         return this._getAttr("enableMaximize");
+    };
+    TabSetNode.prototype.isEnableClose = function () {
+        return this._getAttr("enableClose");
     };
     TabSetNode.prototype.canMaximize = function () {
         if (this.isEnableMaximize()) {
@@ -34835,6 +34876,10 @@ var TabSetNode = /** @class */ (function (_super) {
             child._layout(_this._contentRect, metrics);
             child._setVisible(i === _this.getSelected());
         });
+    };
+    /** @hidden @internal */
+    TabSetNode.prototype._delete = function () {
+        this._parent._removeChild(this);
     };
     /** @hidden @internal */
     TabSetNode.prototype._remove = function (node) {
@@ -35160,7 +35205,7 @@ var BorderButton = function (props) {
         var closeTitle = layout.i18nName(__1.I18nLabel.Close_Tab);
         buttons.push(React.createElement("div", { key: "close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, icons === null || icons === void 0 ? void 0 : icons.close));
     }
-    return (React.createElement("div", { ref: selfRef, style: {}, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+    return (React.createElement("div", { ref: selfRef, style: {}, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         buttons));
@@ -36534,7 +36579,7 @@ var TabButton = function (props) {
     }
     return (React.createElement("div", { ref: selfRef, style: {
             visibility: show ? "visible" : "hidden",
-        }, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown },
+        }, className: classNames, onMouseDown: onMouseDown, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         buttons));
@@ -36819,6 +36864,9 @@ var TabSet = function (props) {
             layout.maximize(node);
         }
     };
+    var onClose = function () {
+        layout.doAction(Actions_1.default.deleteTabset(node.getId()));
+    };
     var onFloatTab = function () {
         if (selectedTabNode !== undefined) {
             layout.doAction(Actions_1.default.floatTab(selectedTabNode.getId()));
@@ -36883,6 +36931,11 @@ var TabSet = function (props) {
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
         var btns = showHeader ? headerButtons : buttons;
         btns.push(React.createElement("button", { key: "max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
+    }
+    if (!node.isMaximized() && node.isEnableClose()) {
+        var title = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tabset);
+        var btns = showHeader ? headerButtons : buttons;
+        btns.push(React.createElement("button", { key: "close", title: title, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.closeTabset));
     }
     toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, buttons));
     var header;
