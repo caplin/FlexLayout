@@ -337,6 +337,7 @@ Attributes allowed in the 'global' element
 | tabSetEnableDrag | true | allow user to drag tabs out of all tabsets |
 | tabSetEnableDivide | true | allow user to drag tabs to region of all tabsets, splitting into new tabset |
 | tabSetEnableMaximize | true | allow user to maximize all tabsets to fill view via maximize button |
+| tabSetEnableClose | false | allow user to close all tabsets via close button |
 | tabSetAutoSelectTab | true | whether to select new/moved tabs in all tabsets |
 | tabSetClassNameTabStrip | null | height in pixels of tab strips in all tabsets |
 | tabSetClassNameHeader | null | |
@@ -415,6 +416,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
 | maximized | false | whether tabset is currently maximized to fill view |
+| enableClose | false | allow user to close tabset via a close button |
 | id | auto generated | |
 | children | *required* | a list of tab nodes |
 | enableDeleteWhenEmpty | *inherited* | |
