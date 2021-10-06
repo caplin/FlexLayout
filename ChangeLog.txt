@@ -1,3 +1,7 @@
+0.5.17
+New global option, splitterExtra, to allow splitters to have an extended hit test area. 
+This makes it easier to use narrow splitters (for an example see the New Features layout in the demo).
+
 0.5.16
 Added 'New Features' layout to demo.
 New tab attribute, helpText, to show tooltip over tabs.

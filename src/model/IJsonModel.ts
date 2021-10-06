@@ -41,7 +41,8 @@ export interface IGlobalAttributes {
 	enableEdgeDock?: boolean; // default: true
 	marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	rootOrientationVertical?: boolean; // default: false
-	splitterSize?: number; // default: -1
+    splitterExtra?: number; // default: 0
+    splitterSize?: number; // default: -1
 	tabClassName?: string;
 	tabCloseType?: ICloseType; // default: 1
 	tabDragSpeed?: number; // default: 0.3

@@ -322,6 +322,7 @@ Attributes allowed in the 'global' element
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | splitterSize | 8 | width in pixels of all splitters between tabsets/borders |
+| splitterExtra | 0 | additional width in pixels of the splitter hit test area |
 | enableEdgeDock | true | |
 | tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |

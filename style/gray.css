@@ -22,6 +22,9 @@
   border-radius: 5px;
   background-color: #bfbfbf;
 }
+.flexlayout__splitter_extra {
+  background-color: transparent;
+}
 .flexlayout__outline_rect {
   position: absolute;
   cursor: move;

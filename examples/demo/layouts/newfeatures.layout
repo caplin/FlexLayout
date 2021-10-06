@@ -1,7 +1,9 @@
 {
 	"global": {
 		"tabEnableFloat": true,
-        "tabSetEnableClose":true
+        "tabSetEnableClose":true,
+        "splitterSize":1,
+        "splitterExtra":8
 	},
 	"layout": {
 		"type": "row",
@@ -17,7 +19,7 @@
                         "helpText": "this tab has helpText defined",
 						"component": "text",
                         "config": {
-                            "text":"New:<ul><li>Help text (tooltip) option on tabs: <br><small>Hover over this tab button</small></li><li>Action to close tabset:<br><small>See added x button in this tabset</small></li><li>Intercept drag drop to allow dropping tabs into custom areas:<br><small>See Tab Storage tab<small></li></ul>"
+                        "text":"New:<ul><li>Help text (tooltip) option on tabs: <br><small>Hover over this tab button</small></li><li>Action to close tabset:<br><small>See added x button in this tabset</small></li><li>Intercept drag drop to allow dropping tabs into custom areas:<br><small>See Tab Storage tab</small></li><li>Allow narrow splitters with extended hit test areas:<br><small>Uses the splitterExtra global attribute</small></li></ul>"
                             }
 					},
 					{

@@ -31,7 +31,14 @@ export const Splitter = (props: ISplitterProps) => {
         outlineDiv.current.style.position = "absolute";
         outlineDiv.current.className = layout.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_DRAG);
         outlineDiv.current.style.cursor = node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize";
-        node.getRect().positionElement(outlineDiv.current);
+        const r = node.getRect();
+        if (node.getOrientation() === Orientation.VERT && r.width < 2) {
+            r.width = 2;
+        } else if (node.getOrientation() === Orientation.HORZ && r.height < 2) {
+            r.height = 2;
+        }
+
+        r.positionElement(outlineDiv.current);
         rootdiv.appendChild(outlineDiv.current);
     };
 
@@ -106,7 +113,8 @@ export const Splitter = (props: ISplitterProps) => {
     };
 
     const cm = layout.getClassName;
-    const style = node._styleWithPosition({
+    let r = node.getRect();
+    const style = r.styleWithPosition({
         cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize",
     });
     let className = cm(CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
@@ -119,5 +127,42 @@ export const Splitter = (props: ISplitterProps) => {
         }
     }
 
-    return <div style={style} onTouchStart={onMouseDown} onMouseDown={onMouseDown} className={className} />;
+    const extra = node.getModel().getSplitterExtra();
+    if (extra === 0) {
+        return (<div
+            style={style}
+            className={className}
+            onTouchStart={onMouseDown}
+            onMouseDown={onMouseDown}>
+        </div>);
+    } else {
+        // add extended transparent div for hit testing
+        // extends forward only, so as not to interfere with scrollbars
+        let r2 = r.clone();
+        r2.x = 0;
+        r2.y = 0;
+        if (node.getOrientation() === Orientation.VERT) {
+            r2.width += extra;
+        } else {
+            r2.height += extra;
+        }
+        const style2 = r2.styleWithPosition({
+            cursor: node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize"
+        });
+
+        const className2 = cm(CLASSES.FLEXLAYOUT__SPLITTER_EXTRA);
+
+        return (
+            <div
+                style={style}
+                className={className}>
+                <div
+                    style={style2}
+                    className={className2}
+                    onTouchStart={onMouseDown}
+                    onMouseDown={onMouseDown}>
+                </div>
+            </div>);
+    }
+
 };

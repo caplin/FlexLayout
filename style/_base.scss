@@ -24,10 +24,12 @@
             z-index: 10;
             @include splitter_border_mixin;
         }
-
         &_drag {
             z-index: 1000;
             @include splitter_drag_mixin;
+        }
+        &_extra {
+            background-color: transparent;
         }
     }
 

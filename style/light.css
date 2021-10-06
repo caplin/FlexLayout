@@ -21,6 +21,9 @@
   z-index: 1000;
   background-color: #e2e2e2;
 }
+.flexlayout__splitter_extra {
+  background-color: transparent;
+}
 .flexlayout__outline_rect {
   position: absolute;
   cursor: move;

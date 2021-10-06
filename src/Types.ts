@@ -36,6 +36,7 @@ export enum CLASSES {
     FLEXLAYOUT__OUTLINE_RECT = "flexlayout__outline_rect",
 
     FLEXLAYOUT__SPLITTER = "flexlayout__splitter",
+    FLEXLAYOUT__SPLITTER_EXTRA = "flexlayout__splitter_extra",
     FLEXLAYOUT__SPLITTER_ = "flexlayout__splitter_",
     FLEXLAYOUT__SPLITTER_BORDER = "flexlayout__splitter_border",
     FLEXLAYOUT__SPLITTER_DRAG = "flexlayout__splitter_drag",

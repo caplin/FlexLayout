@@ -54,6 +54,7 @@ class Model {
         const attributeDefinitions = new AttributeDefinitions();
         // splitter
         attributeDefinitions.add("splitterSize", -1).setType(Attribute.NUMBER);
+        attributeDefinitions.add("splitterExtra", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
@@ -418,6 +419,10 @@ class Model {
             splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
         }
         return splitterSize;
+    }
+
+    getSplitterExtra() {
+        return this._attributes.splitterExtra as number;
     }
 
     isEnableEdgeDock() {
