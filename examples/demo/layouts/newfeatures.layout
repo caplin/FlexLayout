@@ -3,7 +3,7 @@
 		"tabEnableFloat": true,
         "tabSetEnableClose":true,
         "splitterSize":1,
-        "splitterExtra":8
+        "splitterExtra":4
 	},
 	"layout": {
 		"type": "row",
