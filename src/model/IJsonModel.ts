@@ -41,8 +41,10 @@ export interface IGlobalAttributes {
 	enableEdgeDock?: boolean; // default: true
 	marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	rootOrientationVertical?: boolean; // default: false
-    splitterExtra?: number; // default: 0
-    splitterSize?: number; // default: -1
+	splitterExtra?: number; // default: 0
+	splitterSize?: number; // default: -1
+	tabBorderHeight?: number; // default: -1
+	tabBorderWidth?: number; // default: -1
 	tabClassName?: string;
 	tabCloseType?: ICloseType; // default: 1
 	tabDragSpeed?: number; // default: 0.3
@@ -105,6 +107,8 @@ export interface ITabSetAttributes {
 	width?: number;
 }
 export interface ITabAttributes {
+	borderHeight?: number; // default: -1 - inherited from global tabBorderHeight
+	borderWidth?: number; // default: -1 - inherited from global tabBorderWidth
 	className?: string; //  - inherited from global tabClassName
 	closeType?: ICloseType; // default: 1 - inherited from global tabCloseType
 	component?: string;
@@ -115,6 +119,7 @@ export interface ITabAttributes {
 	enableRename?: boolean; // default: true - inherited from global tabEnableRename
 	enableRenderOnDemand?: boolean; // default: true - inherited from global tabEnableRenderOnDemand
 	floating?: boolean; // default: false
+	helpText?: string;
 	icon?: string; //  - inherited from global tabIcon
 	id?: string;
 	name?: string; // default: "[Unnamed Tab]"

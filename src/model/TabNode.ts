@@ -39,6 +39,8 @@ class TabNode extends Node implements IDraggable {
         attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
         attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(Attribute.NUMBER);
+        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(Attribute.NUMBER);
         return attributeDefinitions;
     }
 
@@ -200,7 +202,16 @@ class TabNode extends Node implements IDraggable {
     _setWindow(window: Window | undefined) {
         this._window = window;
     }
+    
+    /** @hidden @internal */
+    _setBorderWidth(width: number) {
+        this._attributes.borderWidth = width;
+    }
 
+    /** @hidden @internal */
+    _setBorderHeight(height: number) {
+        this._attributes.borderHeight = height;
+    }
 
     /** @hidden @internal */
     static getAttributeDefinitions() {

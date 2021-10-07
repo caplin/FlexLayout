@@ -333,6 +333,8 @@ Attributes allowed in the 'global' element
 | tabIcon | null | |
 | tabEnableRenderOnDemand | true | whether to avoid rendering component until tab is visible |
 | tabDragSpeed | 0.3 | CSS transition speed of drag outlines (in seconds) |
+| tabBorderWidth | -1 | width when added to border, -1 will use border size |
+| tabBorderHeight | -1 | height when added to border, -1 will use border size |
 | tabSetEnableDeleteWhenEmpty | true | |
 | tabSetEnableDrop | true | allow user to drag tabs into all tabsets |
 | tabSetEnableDrag | true | allow user to drag tabs out of all tabsets |
@@ -394,6 +396,8 @@ Inherited defaults will take their value from the associated global attributes (
 | className | *inherited* | |
 | icon | *inherited* | |
 | enableRenderOnDemand | *inherited* | whether to avoid rendering component until tab is visible |
+| borderWidth | *inherited* | width when added to border, -1 will use border size |
+| borderHeight | *inherited* | height when added to border, -1 will use border size |
 
 Tab nodes have a getExtraData() method that initially returns an empty object, this is the place to 
 add extra data to a tab node that will not be saved.

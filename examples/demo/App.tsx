@@ -238,7 +238,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             try {
                 const config = node.getConfig();
                 if (config.type === "url") {
-                    return <iframe title={node.getId()} src={config.data} style={{ display: "block", boxSizing: "border-box" }} width="100%" height="100%" />;
+                    return <iframe title={node.getId()} src={config.data} style={{ display: "block", border: "none", boxSizing: "border-box" }} width="100%" height="100%" />;
                 } else if (config.type === "html") {
                     return (<div dangerouslySetInnerHTML={{ __html: config.data }} />);
                 } else if (config.type === "text") {

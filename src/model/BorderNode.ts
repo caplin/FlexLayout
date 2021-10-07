@@ -128,7 +128,19 @@ class BorderNode extends Node implements IDropTarget {
     }
 
     getSize() {
-        return this._getAttr("size") as number;
+        const defaultSize = this._getAttr("size") as number;
+        const selected = this.getSelected();
+        if (selected === -1) {
+            return defaultSize;
+        } else {
+            const tabNode = this._children[selected] as TabNode;
+            const tabBorderSize = (this._location._orientation === Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            if (tabBorderSize === -1) {
+                return defaultSize;
+            } else {
+                return tabBorderSize;
+            }
+        }
     }
 
     getMinSize() {
@@ -176,7 +188,22 @@ class BorderNode extends Node implements IDropTarget {
 
     /** @hidden @internal */
     _setSize(pos: number) {
-        this._attributes.size = pos;
+        const selected = this.getSelected();
+        if (selected === -1) {
+            this._attributes.size = pos;
+        } else {
+            const tabNode = this._children[selected] as TabNode;
+            const tabBorderSize = (this._location._orientation === Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            if (tabBorderSize === -1) {
+                this._attributes.size = pos;
+            } else {
+                if (this._location._orientation === Orientation.HORZ) {
+                    tabNode._setBorderWidth(pos);
+                } else {
+                    tabNode._setBorderHeight(pos);
+                }
+            }
+        }
     }
 
     /** @hidden @internal */
