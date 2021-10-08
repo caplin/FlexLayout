@@ -46,8 +46,9 @@ class BorderSet {
     /** @hidden @internal */
     _layoutBorder(outerInnerRects: { inner: Rect; outer: Rect }, metrics: ILayoutMetrics) {
         const rect = outerInnerRects.outer;
-        const height = rect.height;
-        const width = rect.width;
+        const rootRow = this._model.getRoot();
+        const height = Math.max(0, rect.height - rootRow.getMinHeight());
+        const width = Math.max(0, rect.width - rootRow.getMinWidth());
         let sumHeight = 0;
         let sumWidth = 0;
         let adjustableHeight = 0;
@@ -78,22 +79,34 @@ class BorderSet {
 
         // adjust border sizes if too large
         let j = 0;
+        let adjusted = false;
         while ((sumWidth > width && adjustableWidth > 0) || (sumHeight > height && adjustableHeight > 0)) {
             const border = showingBorders[j];
             if (border.getSelected() !== -1) {
                 // visible
                 const size = border._getAdjustedSize();
-                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation.HORZ && size > 0) {
+                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation.HORZ && size > 0
+                 && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumWidth--;
                     adjustableWidth--;
-                } else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation.VERT && size > 0) {
+                    adjusted = true;
+                } else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation.VERT && size > 0
+                && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumHeight--;
                     adjustableHeight--;
+                    adjusted = true;
                 }
             }
             j = (j + 1) % showingBorders.length;
+            if (j===0) {
+                if (adjusted) {
+                    adjusted = false;
+                } else {
+                    break;
+                }
+            }
         }
 
         showingBorders.forEach((border) => {

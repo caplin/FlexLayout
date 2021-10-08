@@ -400,16 +400,16 @@ class BorderNode extends Node implements IDropTarget {
         const rootRow = this._model.getRoot();
         if (this._location === DockLocation.TOP) {
             pBounds[0] = outerRect.y + minSize;
-            pBounds[1] = innerRect.getBottom() - splitter.getHeight() - rootRow.getMinHeight();
+            pBounds[1] = Math.max(pBounds[0], innerRect.getBottom() - splitter.getHeight() - rootRow.getMinHeight());
         } else if (this._location === DockLocation.LEFT) {
             pBounds[0] = outerRect.x + minSize;
-            pBounds[1] = innerRect.getRight() - splitter.getWidth() - rootRow.getMinWidth();
+            pBounds[1] = Math.max(pBounds[0], innerRect.getRight() - splitter.getWidth() - rootRow.getMinWidth());
         } else if (this._location === DockLocation.BOTTOM) {
-            pBounds[0] = innerRect.y + rootRow.getMinHeight();
             pBounds[1] = outerRect.getBottom() - splitter.getHeight() - minSize;
+            pBounds[0] = Math.min(pBounds[1], innerRect.y + rootRow.getMinHeight());
         } else if (this._location === DockLocation.RIGHT) {
-            pBounds[0] = innerRect.x + rootRow.getMinWidth();
             pBounds[1] = outerRect.getRight() - splitter.getWidth() - minSize;
+            pBounds[0] = Math.min(pBounds[1], innerRect.x + rootRow.getMinWidth());
         }
         return pBounds;
     }
