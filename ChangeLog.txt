@@ -2,6 +2,7 @@
 New global option, splitterExtra, to allow splitters to have an extended hit test areas. 
 This makes it easier to use narrow splitters.
 Added new TabNode attributes: borderWidth and borderHeight, these allow for individual border sizes for certain tabs.
+Fix for #263 - borders splitters not taking minimum size of center into account
 
 0.5.16
 Added 'New Features' layout to demo.

@@ -169,7 +169,7 @@ class BorderNode extends Node implements IDropTarget {
      * this.state.model.doAction(
      *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
      */
-     getConfig() {
+    getConfig() {
         return this._attributes.config;
     }
 
@@ -397,17 +397,18 @@ class BorderNode extends Node implements IDropTarget {
         const minSize = useMinSize ? this.getMinSize() : 0;
         const outerRect = this._model._getOuterInnerRects().outer;
         const innerRect = this._model._getOuterInnerRects().inner;
+        const rootRow = this._model.getRoot();
         if (this._location === DockLocation.TOP) {
             pBounds[0] = outerRect.y + minSize;
-            pBounds[1] = innerRect.getBottom() - splitter.getHeight();
+            pBounds[1] = innerRect.getBottom() - splitter.getHeight() - rootRow.getMinHeight();
         } else if (this._location === DockLocation.LEFT) {
             pBounds[0] = outerRect.x + minSize;
-            pBounds[1] = innerRect.getRight() - splitter.getWidth();
+            pBounds[1] = innerRect.getRight() - splitter.getWidth() - rootRow.getMinWidth();
         } else if (this._location === DockLocation.BOTTOM) {
-            pBounds[0] = innerRect.y;
+            pBounds[0] = innerRect.y + rootRow.getMinHeight();
             pBounds[1] = outerRect.getBottom() - splitter.getHeight() - minSize;
         } else if (this._location === DockLocation.RIGHT) {
-            pBounds[0] = innerRect.x;
+            pBounds[0] = innerRect.x + rootRow.getMinWidth();
             pBounds[1] = outerRect.getRight() - splitter.getWidth() - minSize;
         }
         return pBounds;
