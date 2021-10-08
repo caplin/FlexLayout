@@ -47,8 +47,8 @@ class BorderSet {
     _layoutBorder(outerInnerRects: { inner: Rect; outer: Rect }, metrics: ILayoutMetrics) {
         const rect = outerInnerRects.outer;
         const rootRow = this._model.getRoot();
-        const height = Math.max(0, rect.height - rootRow.getMinHeight());
-        const width = Math.max(0, rect.width - rootRow.getMinWidth());
+        let height = Math.max(0, rect.height - rootRow.getMinHeight());
+        let width = Math.max(0, rect.width - rootRow.getMinWidth());
         let sumHeight = 0;
         let sumWidth = 0;
         let adjustableHeight = 0;
@@ -62,14 +62,16 @@ class BorderSet {
                 border._setAdjustedSize(border.getSize());
                 const visible = border.getSelected() !== -1;
                 if (border.getLocation().getOrientation() === Orientation.HORZ) {
-                    sumWidth += border.getBorderBarSize();
+                    sumWidth += border.getBorderBarSize() ;
                     if (visible) {
+                        width -= this._model.getSplitterSize();
                         sumWidth += border.getSize();
                         adjustableWidth += border.getSize();
                     }
                 } else {
                     sumHeight += border.getBorderBarSize();
                     if (visible) {
+                        height -= this._model.getSplitterSize();
                         sumHeight += border.getSize();
                         adjustableHeight += border.getSize();
                     }

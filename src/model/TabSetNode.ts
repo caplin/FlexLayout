@@ -273,24 +273,34 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
             const dockLocation = DockLocation.getLocation(this._contentRect!, x, y);
             const outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
-        } else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
-            let child = this._children[0] as TabNode;
-            let r = child.getTabRect()!;
-            const yy = r.y;
-            const h = r.height;
-            let p = this._tabHeaderRect.x;
-            let childCenter = 0;
-            for (let i = 0; i < this._children.length; i++) {
-                child = this._children[i] as TabNode;
+        } else if (this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
+            let r: Rect;
+            let yy: number;
+            let h: number;
+            if (this._children.length === 0) {
+                r = this._tabHeaderRect.clone();
+                yy = r.y + 3;
+                h = r.height - 4;
+                r.width = 2;
+            } else {
+                let child = this._children[0] as TabNode;
                 r = child.getTabRect()!;
-                childCenter = r.x + r.width / 2;
-                if (x >= p && x < childCenter) {
-                    const dockLocation = DockLocation.CENTER;
-                    const outlineRect = new Rect(r.x - 2, yy, 3, h);
-                    dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
-                    break;
+                yy = r.y;
+                h = r.height;
+                let p = this._tabHeaderRect.x;
+                let childCenter = 0;
+                for (let i = 0; i < this._children.length; i++) {
+                    child = this._children[i] as TabNode;
+                    r = child.getTabRect()!;
+                    childCenter = r.x + r.width / 2;
+                    if (x >= p && x < childCenter) {
+                        const dockLocation = DockLocation.CENTER;
+                        const outlineRect = new Rect(r.x - 2, yy, 3, h);
+                        dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
+                        break;
+                    }
+                    p = childCenter;
                 }
-                p = childCenter;
             }
             if (dropInfo == null) {
                 const dockLocation = DockLocation.CENTER;
