@@ -1,6 +1,9 @@
 {
 	"global": {
 		"tabEnableFloat": true,
+        "tabSetMinHeight":100,
+        "tabSetMinWidth":100,
+        "borderMinSize":100,
         "tabSetEnableClose":true,
         "splitterSize":1,
         "splitterExtra":4

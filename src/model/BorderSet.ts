@@ -62,13 +62,13 @@ class BorderSet {
                 border._setAdjustedSize(border.getSize());
                 const visible = border.getSelected() !== -1;
                 if (border.getLocation().getOrientation() === Orientation.HORZ) {
-                    sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
+                    sumWidth += border.getBorderBarSize();
                     if (visible) {
                         sumWidth += border.getSize();
                         adjustableWidth += border.getSize();
                     }
                 } else {
-                    sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
+                    sumHeight += border.getBorderBarSize();
                     if (visible) {
                         sumHeight += border.getSize();
                         adjustableHeight += border.getSize();
