@@ -16,16 +16,23 @@ class DockLocation {
 
     /** @hidden @internal */
     static getLocation(rect: Rect, x: number, y: number) {
-        if (x < rect.x + rect.width / 4) {
-            return DockLocation.LEFT;
-        } else if (x > rect.getRight() - rect.width / 4) {
-            return DockLocation.RIGHT;
-        } else if (y < rect.y + rect.height / 4) {
-            return DockLocation.TOP;
-        } else if (y > rect.getBottom() - rect.height / 4) {
-            return DockLocation.BOTTOM;
-        } else {
+        if (x >= rect.x + rect.width * 0.25 && x < rect.x + rect.width * 0.75 &&
+            y >= rect.y + rect.height * 0.25 && y < rect.y + rect.height * 0.75) {
             return DockLocation.CENTER;
+        }
+
+        // need to correct y into a square aspect ratio so that this doesn't break down on rectangular panels (which is pretty much all of them)
+        const angle = Math.atan2((y - rect.y - rect.height / 2) * rect.width / rect.height, x - rect.x - rect.width / 2);
+        // angle=0 is pointing to the right, range is from -pi..pi clockwise (so negative values are counter-clockwise)
+
+        if (angle > Math.PI * 3/4 || angle < -Math.PI * 3/4) {
+            return DockLocation.LEFT;
+        } else if (angle > Math.PI / 4) {
+            return DockLocation.BOTTOM;
+        } else if (angle < -Math.PI / 4) {
+            return DockLocation.TOP;
+        } else {
+            return DockLocation.RIGHT;
         }
     }
 
