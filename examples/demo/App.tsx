@@ -494,7 +494,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
 
     const [contents, setContents] = useState<HTMLDivElement | null>(null)
     const [list, setList] = useState<HTMLDivElement | null>(null)
-    const refs = useRef<(HTMLDivElement | undefined)[]>([]).current
+    const refs = useRef<Map<string, HTMLDivElement | undefined>>(new Map()).current
     const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
 
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
@@ -508,7 +508,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     }, [tab])
 
     const calculateInsertion = useCallback((absoluteY: number) => {
-        const rects = storedTabs.map((_, i) => refs[i]!.getBoundingClientRect())
+        const rects = storedTabs.map(json => refs.get(json.id!)!.getBoundingClientRect())
 
         const splits = [rects[0].top]
 
@@ -554,7 +554,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
         if (dragging instanceof TabNode) {
             tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
         }
-    }, [tab, layout])
+    }, [calculateInsertion, tab, layout])
 
     tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
         if (contents && list) {
@@ -603,7 +603,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
             {storedTabs.map((stored, i) => (
                 <div
-                    ref={ref => refs[i] = ref ?? undefined}
+                    ref={ref => ref ? refs.set(stored.id!, ref) : refs.delete(stored.id!)}
                     className="tab-storage-entry"
                     key={stored.id}
                     onMouseDown={e => {
