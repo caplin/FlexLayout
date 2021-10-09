@@ -16,33 +16,23 @@ class DockLocation {
 
     /** @hidden @internal */
     static getLocation(rect: Rect, x: number, y: number) {
-        x = x - rect.x;
-        y = y - rect.y;
-        const h = rect.height;
-        const w = rect.width;
+        x = (x - rect.x) / rect.width;
+        y = (y - rect.y) / rect.height;
 
-        // not in center, use gradients to determine location
-        if (x < w * 0.25 || x > w * 0.75 ||
-            y < h * 0.25 || y > h * 0.75) {
-            if (x !== 0 && w - x !== 0) { // prevent division by zero   
-                const g = h / w;
-                const g1 = y / x;
-                const g2 = (h - y) / x;
-                const g3 = (h - y) / (w - x);
-                const g4 = y / (w - x);
-
-                if (g1 >= g && g2 >= g) {
-                    return DockLocation.LEFT;
-                } else if (g3 >= g && g4 >= g) {
-                    return DockLocation.RIGHT;
-                } else if (g1 <= g && g4 <= g) {
-                    return DockLocation.TOP;
-                } else if (g2 <= g && g3 <= g) {
-                    return DockLocation.BOTTOM;
-                }
-            }
+        if (x >= 0.25 && x < 0.75 && y >= 0.25 && y < 0.75) {
+            return DockLocation.CENTER;
         }
-        return DockLocation.CENTER;
+
+        // Whether or not the point is in the bottom-right half of the rect
+        const tl_to_br = y >= x;
+        // Whether or not the point is in the bottom-left half of the rect
+        const tr_to_bl = y >= 1 - x;
+
+        if (tl_to_br) {
+            return tr_to_bl ? DockLocation.BOTTOM : DockLocation.LEFT;
+        } else {
+            return tr_to_bl ? DockLocation.RIGHT : DockLocation.TOP;
+        }
     }
 
     /** @hidden @internal */
