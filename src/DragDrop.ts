@@ -23,6 +23,10 @@ class DragDrop {
     /** @hidden @internal */
     private _glass: HTMLDivElement | undefined;
     /** @hidden @internal */
+    private _defaultGlassCursor: string;
+    /** @hidden @internal */
+    private _glassCursorOverride: string | undefined;
+    /** @hidden @internal */
     private _manualGlassManagement: boolean = false;
     /** @hidden @internal */
     private _lastClick: number;
@@ -58,6 +62,8 @@ class DragDrop {
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
         }
+
+        this._defaultGlassCursor = "default";
 
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
@@ -114,6 +120,22 @@ class DragDrop {
         }
     }
 
+    /** @hidden @internal */
+    _updateGlassCursor() {
+        this._glass!.style.cursor = this._glassCursorOverride ?? this._defaultGlassCursor;
+    }
+
+    /** @hidden @internal */
+    _setDefaultGlassCursor(cursor: string) {
+        this._defaultGlassCursor = cursor;
+        this._updateGlassCursor()
+    }
+
+    setGlassCursorOverride(cursor: string | undefined) {
+        this._glassCursorOverride = cursor;
+        this._updateGlassCursor()
+    }
+
     startDrag(
         event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<Element> | undefined,
         fDragStart: ((pos: { clientX: number; clientY: number }) => boolean) | undefined,
@@ -154,14 +176,14 @@ class DragDrop {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
             if (!window.matchMedia || window.matchMedia("(pointer: fine)").matches) {
-                this._glass!.style.cursor = getComputedStyle(event.target as Element).cursor;
+                this._setDefaultGlassCursor(getComputedStyle(event.target as Element).cursor);
             }
             this._stopPropagation(event);
             this._preventDefault(event);
         } else {
             this._startX = 0;
             this._startY = 0;
-            this._glass!.style.cursor = "default";
+            this._setDefaultGlassCursor("default");
         }
 
         this._dragging = false;
@@ -274,7 +296,7 @@ class DragDrop {
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
             this._dragging = true;
             if (this._fDragStart) {
-                this._glass!.style.cursor = "move";
+                this._setDefaultGlassCursor("move");
                 this._dragging = this._fDragStart({ clientX: this._startX, clientY: this._startY });
             }
         }
