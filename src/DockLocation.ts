@@ -16,16 +16,37 @@ class DockLocation {
 
     /** @hidden @internal */
     static getLocation(rect: Rect, x: number, y: number) {
-        if (x < rect.x + rect.width / 4) {
-            return DockLocation.LEFT;
-        } else if (x > rect.getRight() - rect.width / 4) {
-            return DockLocation.RIGHT;
-        } else if (y < rect.y + rect.height / 4) {
-            return DockLocation.TOP;
-        } else if (y > rect.getBottom() - rect.height / 4) {
-            return DockLocation.BOTTOM;
-        } else {
+        x = (x - rect.x) / rect.width;
+        y = (y - rect.y) / rect.height;
+
+        if (x >= 0.25 && x < 0.75 && y >= 0.25 && y < 0.75) {
             return DockLocation.CENTER;
+        }
+
+        // Whether or not the point is in the bottom-left half of the rect
+        // +-----+
+        // |\    |
+        // |x\   |
+        // |xx\  |
+        // |xxx\ |
+        // |xxxx\|
+        // +-----+
+        const bl = y >= x;
+
+        // Whether or not the point is in the bottom-right half of the rect
+        // +-----+
+        // |    /|
+        // |   /x|
+        // |  /xx|
+        // | /xxx|
+        // |/xxxx|
+        // +-----+
+        const br = y >= 1 - x;
+
+        if (bl) {
+            return br ? DockLocation.BOTTOM : DockLocation.LEFT;
+        } else {
+            return br ? DockLocation.RIGHT : DockLocation.TOP;
         }
     }
 
