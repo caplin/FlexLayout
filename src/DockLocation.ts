@@ -24,8 +24,23 @@ class DockLocation {
         }
 
         // Whether or not the point is in the bottom-right half of the rect
+        // +-----+
+        // |    /|
+        // |   /x|
+        // |  /xx|
+        // | /xxx|
+        // |/xxxx|
+        // +-----+
         const tl_to_br = y >= x;
+
         // Whether or not the point is in the bottom-left half of the rect
+        // +-----+
+        // |\    |
+        // |x\   |
+        // |xx\  |
+        // |xxx\ |
+        // |xxxx\|
+        // +-----+
         const tr_to_bl = y >= 1 - x;
 
         if (tl_to_br) {
