@@ -528,7 +528,11 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     }, [scrollDown])
 
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
-        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : { id: '#' + v4(), ...dragging }
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+
+        if (json.id === undefined) {
+            json.id = `#${v4()}`
+        }
 
         setStoredTabs(tabs => [...tabs, json])
 
@@ -565,7 +569,11 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _, __, y: number) => {
         const absoluteY = y + tab.getRect().y + layout.getDomRect().top
         const { insertionIndex } = calculateInsertion(absoluteY)
-        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : { id: '#' + v4(), ...dragging }
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+
+        if (json.id === undefined) {
+            json.id = `#${v4()}`
+        }
 
         setStoredTabs(tabs => {
             const newTabs = [...tabs]
