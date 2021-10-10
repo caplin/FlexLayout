@@ -62,9 +62,9 @@ export interface ILayoutProps {
         width: number,
         height: number,
         callback: CustomDragCallback,
-        cursor?: string | undefined,
         // Called once when `callback` is not going to be called anymore (user canceled the drag, moved mouse and you returned a different callback, etc)
-        invalidated?: () => void
+        invalidated?: () => void,
+        cursor?: string | undefined
     };
 }
 export interface IFontValues {
