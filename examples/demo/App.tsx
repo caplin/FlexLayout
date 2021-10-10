@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as ReactDOM from "react-dom";
+import { v4 } from "uuid";
 import * as FlexLayout from "../../src/index";
 import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, TabNode, TabSetNode } from "../../src/index";
 import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
@@ -341,9 +342,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTabSet={this.onRenderTabSet}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
-                onTabDrag={(dragging, over, x, y, location) => {
+                onTabDrag={(dragging, over, x, y, location, refresh) => {
                     const tabStorageImpl = over.getExtraData().tabStorage_onTabDrag as ILayoutProps['onTabDrag']
-                    if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location)
+                    if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location, refresh)
                     return undefined
                 }}
             // classNameMapper={
@@ -497,8 +498,41 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     const refs = useRef<Map<string, HTMLDivElement | undefined>>(new Map()).current
     const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
 
+    // true = down, false = up, null = none
+    const [scrollDown, setScrollDown] = useState<boolean | null>(null)
+
+    const scrollInvalidateRef = useRef<() => void>()
+    const scroller = useCallback((isDown: boolean) => {
+        contents?.scrollBy(0, isDown ? 10 : -10)
+        scrollInvalidateRef.current?.()
+    }, [contents])
+
+    const scrollerRef = useRef(scroller)
+    scrollerRef.current = scroller
+
+    useEffect(() => {
+        if (scrollDown !== null) {
+            let scrollInterval: NodeJS.Timeout
+            let scrollTimeout = setTimeout(() => {
+                scrollerRef.current(scrollDown)
+                scrollInterval = setInterval(() => scrollerRef.current(scrollDown), 50)
+            }, 500)
+
+            return () => {
+                clearTimeout(scrollTimeout)
+                clearInterval(scrollInterval)
+            }
+        }
+
+        return
+    }, [scrollDown])
+
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+
+        if (json.id === undefined) {
+            json.id = `#${v4()}`
+        }
 
         setStoredTabs(tabs => [...tabs, json])
 
@@ -537,6 +571,10 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
         const { insertionIndex } = calculateInsertion(absoluteY)
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
 
+        if (json.id === undefined) {
+            json.id = `#${v4()}`
+        }
+
         setStoredTabs(tabs => {
             const newTabs = [...tabs]
             const foundAt = newTabs.indexOf(json)
@@ -551,12 +589,14 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             return newTabs
         })
 
+        setScrollDown(null)
+
         if (dragging instanceof TabNode) {
             tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
         }
     }, [calculateInsertion, tab, layout])
 
-    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
+    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y, _, refresh) => {
         if (contents && list) {
             const layoutDomRect = layout.getDomRect()
             const tabRect = tab.getRect()
@@ -582,12 +622,23 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             } else {
                 const insertion = calculateInsertion(absY)
 
+                scrollInvalidateRef.current = refresh
+
+                if (absY - rootY < tabRect.height / 5) {
+                    setScrollDown(false)
+                } else if (absY - rootY > tabRect.height * 4/5) {
+                    setScrollDown(true)
+                } else {
+                    setScrollDown(null)
+                }
+
                 return {
                     x: listBounds.left - rootX,
                     y: insertion.split - rootY - 2, // -2 needed for border thickness, TODO: have flexlayout automatically make this unnecessary for 0-height/width borders
                     width: listBounds.width,
                     height: 0,
                     callback: insertionCallback,
+                    invalidated: () => setScrollDown(null),
                     cursor: 'row-resize'
                 }
             }
