@@ -528,7 +528,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     }, [scrollDown])
 
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
-        const json = { id: '#' + v4(), ...(dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging) }
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : { id: '#' + v4(), ...dragging }
 
         setStoredTabs(tabs => [...tabs, json])
 
