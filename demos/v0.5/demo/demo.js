@@ -130,6 +130,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
 var FlexLayout = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
@@ -293,7 +294,7 @@ var App = /** @class */ (function (_super) {
                 try {
                     var config = node.getConfig();
                     if (config.type === "url") {
-                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", border: "none", boxSizing: "border-box" }, width: "100%", height: "100%" });
                     }
                     else if (config.type === "html") {
                         return (React.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
@@ -407,10 +408,10 @@ var App = /** @class */ (function (_super) {
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: function (dragging, over, x, y, location) {
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: function (dragging, over, x, y, location, refresh) {
                     var tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
                     if (tabStorageImpl)
-                        return tabStorageImpl(dragging, over, x, y, location);
+                        return tabStorageImpl(dragging, over, x, y, location, refresh);
                     return undefined;
                 } });
         }
@@ -521,75 +522,127 @@ function TabStorage(_a) {
     }, [storedTabs]);
     var _e = react_1.useState(null), contents = _e[0], setContents = _e[1];
     var _f = react_1.useState(null), list = _f[0], setList = _f[1];
-    var refs = react_1.useRef([]).current;
+    var refs = react_1.useRef(new Map()).current;
     var _g = react_1.useState(null), emptyElem = _g[0], setEmptyElem = _g[1];
-    tab.getExtraData().tabStorage_onTabDrag = react_1.useCallback((function (dragging, over, x, y) {
+    // true = down, false = up, null = none
+    var _h = react_1.useState(null), scrollDown = _h[0], setScrollDown = _h[1];
+    var scrollInvalidateRef = react_1.useRef();
+    var scroller = react_1.useCallback(function (isDown) {
+        var _a;
+        contents === null || contents === void 0 ? void 0 : contents.scrollBy(0, isDown ? 10 : -10);
+        (_a = scrollInvalidateRef.current) === null || _a === void 0 ? void 0 : _a.call(scrollInvalidateRef);
+    }, [contents]);
+    var scrollerRef = react_1.useRef(scroller);
+    scrollerRef.current = scroller;
+    react_1.useEffect(function () {
+        if (scrollDown !== null) {
+            var scrollInterval_1;
+            var scrollTimeout_1 = setTimeout(function () {
+                scrollerRef.current(scrollDown);
+                scrollInterval_1 = setInterval(function () { return scrollerRef.current(scrollDown); }, 50);
+            }, 500);
+            return function () {
+                clearTimeout(scrollTimeout_1);
+                clearInterval(scrollInterval_1);
+            };
+        }
+        return;
+    }, [scrollDown]);
+    var kickstartingCallback = react_1.useCallback(function (dragging) {
+        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+        if (json.id === undefined) {
+            json.id = "#" + uuid_1.v4();
+        }
+        setStoredTabs(function (tabs) { return __spreadArray(__spreadArray([], tabs), [json]); });
+        if (dragging instanceof index_1.TabNode) {
+            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        }
+    }, [tab]);
+    var calculateInsertion = react_1.useCallback(function (absoluteY) {
+        var rects = storedTabs.map(function (json) { return refs.get(json.id).getBoundingClientRect(); });
+        var splits = [rects[0].top];
+        for (var i = 1; i < rects.length; i++) {
+            splits.push((rects[i - 1].bottom + rects[i].top) / 2);
+        }
+        splits.push(rects[rects.length - 1].bottom);
+        var insertionIndex = 0;
+        for (var i = 1; i < splits.length; i++) {
+            if (Math.abs(splits[i] - absoluteY) <= Math.abs(splits[insertionIndex] - absoluteY)) {
+                insertionIndex = i;
+            }
+        }
+        return {
+            insertionIndex: insertionIndex,
+            split: splits[insertionIndex]
+        };
+    }, [storedTabs]);
+    var insertionCallback = react_1.useCallback(function (dragging, _, __, y) {
+        var absoluteY = y + tab.getRect().y + layout.getDomRect().top;
+        var insertionIndex = calculateInsertion(absoluteY).insertionIndex;
+        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+        if (json.id === undefined) {
+            json.id = "#" + uuid_1.v4();
+        }
+        setStoredTabs(function (tabs) {
+            var newTabs = __spreadArray([], tabs);
+            var foundAt = newTabs.indexOf(json);
+            if (foundAt > -1) {
+                newTabs.splice(foundAt, 1);
+                newTabs.splice(insertionIndex > foundAt ? insertionIndex - 1 : insertionIndex, 0, json);
+            }
+            else {
+                newTabs.splice(insertionIndex, 0, json);
+            }
+            return newTabs;
+        });
+        setScrollDown(null);
+        if (dragging instanceof index_1.TabNode) {
+            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        }
+    }, [calculateInsertion, tab, layout]);
+    tab.getExtraData().tabStorage_onTabDrag = react_1.useCallback((function (dragging, over, x, y, _, refresh) {
         if (contents && list) {
             var layoutDomRect = layout.getDomRect();
             var tabRect = tab.getRect();
-            var rect = new index_1.Rect(tabRect.x + layoutDomRect.left, tabRect.y + layoutDomRect.top, tabRect.width, tabRect.height);
-            var absoluteX = x + rect.x;
-            var absoluteY = y + rect.y;
+            var rootX = tabRect.x + layoutDomRect.left;
+            var rootY = tabRect.y + layoutDomRect.top;
+            var absX = x + rootX;
+            var absY = y + rootY;
             var listBounds = list.getBoundingClientRect();
-            if (absoluteX >= listBounds.left && absoluteX < listBounds.right &&
-                absoluteY >= listBounds.top && absoluteY < listBounds.bottom) {
-                if (emptyElem) {
-                    return {
-                        x: listBounds.left - rect.x,
-                        y: listBounds.top - rect.y,
-                        width: listBounds.width,
-                        height: listBounds.height,
-                        callback: function () {
-                            var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
-                            setStoredTabs(function (tabs) { return __spreadArray(__spreadArray([], tabs), [json]); });
-                            if (dragging instanceof index_1.TabNode) {
-                                tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
-                            }
-                        }
-                    };
+            if (absX < listBounds.left || absX >= listBounds.right ||
+                absY < listBounds.top || absY >= listBounds.bottom)
+                return;
+            if (emptyElem) {
+                return {
+                    x: listBounds.left - rootX,
+                    y: listBounds.top - rootY,
+                    width: listBounds.width,
+                    height: listBounds.height,
+                    callback: kickstartingCallback,
+                    cursor: 'copy'
+                };
+            }
+            else {
+                var insertion = calculateInsertion(absY);
+                scrollInvalidateRef.current = refresh;
+                if (absY - rootY < tabRect.height / 5) {
+                    setScrollDown(false);
+                }
+                else if (absY - rootY > tabRect.height * 4 / 5) {
+                    setScrollDown(true);
                 }
                 else {
-                    var _loop_1 = function (i) {
-                        var ref = refs[i];
-                        if (!ref)
-                            return "continue";
-                        var itemRect = ref.getBoundingClientRect();
-                        if (absoluteX >= itemRect.left && absoluteX < itemRect.right &&
-                            absoluteY >= itemRect.top && absoluteY < itemRect.bottom) {
-                            var isTop = absoluteY - itemRect.top < itemRect.bottom - absoluteY;
-                            var newIndex_1 = isTop ? i : i + 1;
-                            return { value: {
-                                    x: itemRect.left - rect.x,
-                                    y: itemRect.top + (isTop ? 0 : itemRect.height) - rect.y,
-                                    width: itemRect.width,
-                                    height: 0,
-                                    callback: function () {
-                                        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
-                                        setStoredTabs(function (tabs) {
-                                            var newTabs = __spreadArray([], tabs);
-                                            var foundAt = newTabs.indexOf(json);
-                                            if (foundAt > -1) {
-                                                newTabs.splice(foundAt, 1);
-                                                newTabs.splice(newIndex_1 > foundAt ? newIndex_1 - 1 : newIndex_1, 0, json);
-                                            }
-                                            else {
-                                                newTabs.splice(newIndex_1, 0, json);
-                                            }
-                                            return newTabs;
-                                        });
-                                        if (dragging instanceof index_1.TabNode) {
-                                            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
-                                        }
-                                    }
-                                } };
-                        }
-                    };
-                    for (var i = 0; i < storedTabs.length; i++) {
-                        var state_1 = _loop_1(i);
-                        if (typeof state_1 === "object")
-                            return state_1.value;
-                    }
+                    setScrollDown(null);
                 }
+                return {
+                    x: listBounds.left - rootX,
+                    y: insertion.split - rootY - 2,
+                    width: listBounds.width,
+                    height: 0,
+                    callback: insertionCallback,
+                    invalidated: function () { return setScrollDown(null); },
+                    cursor: 'row-resize'
+                };
             }
         }
         return undefined;
@@ -600,7 +653,7 @@ function TabStorage(_a) {
             storedTabs.length === 0 && React.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
             storedTabs.map(function (stored, i) {
                 var _a;
-                return (React.createElement("div", { ref: function (ref) { return refs[i] = ref !== null && ref !== void 0 ? ref : undefined; }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
+                return (React.createElement("div", { ref: function (ref) { return ref ? refs.set(stored.id, ref) : refs.delete(stored.id); }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
                         var _a;
                         e.preventDefault();
                         layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
@@ -31524,20 +31577,34 @@ var DockLocation = /** @class */ (function () {
     };
     /** @hidden @internal */
     DockLocation.getLocation = function (rect, x, y) {
-        if (x < rect.x + rect.width / 4) {
-            return DockLocation.LEFT;
+        x = (x - rect.x) / rect.width;
+        y = (y - rect.y) / rect.height;
+        if (x >= 0.25 && x < 0.75 && y >= 0.25 && y < 0.75) {
+            return DockLocation.CENTER;
         }
-        else if (x > rect.getRight() - rect.width / 4) {
-            return DockLocation.RIGHT;
-        }
-        else if (y < rect.y + rect.height / 4) {
-            return DockLocation.TOP;
-        }
-        else if (y > rect.getBottom() - rect.height / 4) {
-            return DockLocation.BOTTOM;
+        // Whether or not the point is in the bottom-left half of the rect
+        // +-----+
+        // |\    |
+        // |x\   |
+        // |xx\  |
+        // |xxx\ |
+        // |xxxx\|
+        // +-----+
+        var bl = y >= x;
+        // Whether or not the point is in the bottom-right half of the rect
+        // +-----+
+        // |    /|
+        // |   /x|
+        // |  /xx|
+        // | /xxx|
+        // |/xxxx|
+        // +-----+
+        var br = y >= 1 - x;
+        if (bl) {
+            return br ? DockLocation.BOTTOM : DockLocation.LEFT;
         }
         else {
-            return DockLocation.CENTER;
+            return br ? DockLocation.RIGHT : DockLocation.TOP;
         }
     };
     DockLocation.prototype.getName = function () {
@@ -31657,6 +31724,7 @@ var DragDrop = /** @class */ (function () {
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
         }
+        this._defaultGlassCursor = "default";
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
@@ -31708,7 +31776,22 @@ var DragDrop = /** @class */ (function () {
             this._glassShowing = false;
             this._document = undefined;
             this._rootElement = undefined;
+            this.setGlassCursorOverride(undefined);
         }
+    };
+    /** @hidden @internal */
+    DragDrop.prototype._updateGlassCursor = function () {
+        var _a;
+        this._glass.style.cursor = (_a = this._glassCursorOverride) !== null && _a !== void 0 ? _a : this._defaultGlassCursor;
+    };
+    /** @hidden @internal */
+    DragDrop.prototype._setDefaultGlassCursor = function (cursor) {
+        this._defaultGlassCursor = cursor;
+        this._updateGlassCursor();
+    };
+    DragDrop.prototype.setGlassCursorOverride = function (cursor) {
+        this._glassCursorOverride = cursor;
+        this._updateGlassCursor();
     };
     DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument, rootElement) {
         // prevent 'duplicate' action (mouse event for same action as previous touch event (a fix for ios))
@@ -31737,7 +31820,7 @@ var DragDrop = /** @class */ (function () {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
             if (!window.matchMedia || window.matchMedia("(pointer: fine)").matches) {
-                this._glass.style.cursor = getComputedStyle(event.target).cursor;
+                this._setDefaultGlassCursor(getComputedStyle(event.target).cursor);
             }
             this._stopPropagation(event);
             this._preventDefault(event);
@@ -31745,7 +31828,7 @@ var DragDrop = /** @class */ (function () {
         else {
             this._startX = 0;
             this._startY = 0;
-            this._glass.style.cursor = "default";
+            this._setDefaultGlassCursor("default");
         }
         this._dragging = false;
         this._fDragStart = fDragStart;
@@ -31843,7 +31926,7 @@ var DragDrop = /** @class */ (function () {
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
             this._dragging = true;
             if (this._fDragStart) {
-                this._glass.style.cursor = "move";
+                this._setDefaultGlassCursor("move");
                 this._dragging = this._fDragStart({ clientX: this._startX, clientY: this._startY });
             }
         }
@@ -32214,6 +32297,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__LAYOUT"] = "flexlayout__layout";
     CLASSES["FLEXLAYOUT__OUTLINE_RECT"] = "flexlayout__outline_rect";
     CLASSES["FLEXLAYOUT__SPLITTER"] = "flexlayout__splitter";
+    CLASSES["FLEXLAYOUT__SPLITTER_EXTRA"] = "flexlayout__splitter_extra";
     CLASSES["FLEXLAYOUT__SPLITTER_"] = "flexlayout__splitter_";
     CLASSES["FLEXLAYOUT__SPLITTER_BORDER"] = "flexlayout__splitter_border";
     CLASSES["FLEXLAYOUT__SPLITTER_DRAG"] = "flexlayout__splitter_drag";
@@ -32635,7 +32719,21 @@ var BorderNode = /** @class */ (function (_super) {
         return this._calculatedBorderBarSize;
     };
     BorderNode.prototype.getSize = function () {
-        return this._getAttr("size");
+        var defaultSize = this._getAttr("size");
+        var selected = this.getSelected();
+        if (selected === -1) {
+            return defaultSize;
+        }
+        else {
+            var tabNode = this._children[selected];
+            var tabBorderSize = (this._location._orientation === Orientation_1.default.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            if (tabBorderSize === -1) {
+                return defaultSize;
+            }
+            else {
+                return tabBorderSize;
+            }
+        }
     };
     BorderNode.prototype.getMinSize = function () {
         return this._getAttr("minSize");
@@ -32674,7 +32772,25 @@ var BorderNode = /** @class */ (function (_super) {
     };
     /** @hidden @internal */
     BorderNode.prototype._setSize = function (pos) {
-        this._attributes.size = pos;
+        var selected = this.getSelected();
+        if (selected === -1) {
+            this._attributes.size = pos;
+        }
+        else {
+            var tabNode = this._children[selected];
+            var tabBorderSize = (this._location._orientation === Orientation_1.default.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            if (tabBorderSize === -1) {
+                this._attributes.size = pos;
+            }
+            else {
+                if (this._location._orientation === Orientation_1.default.HORZ) {
+                    tabNode._setBorderWidth(pos);
+                }
+                else {
+                    tabNode._setBorderHeight(pos);
+                }
+            }
+        }
     };
     /** @hidden @internal */
     BorderNode.prototype._updateAttrs = function (json) {
@@ -32848,21 +32964,22 @@ var BorderNode = /** @class */ (function (_super) {
         var minSize = useMinSize ? this.getMinSize() : 0;
         var outerRect = this._model._getOuterInnerRects().outer;
         var innerRect = this._model._getOuterInnerRects().inner;
+        var rootRow = this._model.getRoot();
         if (this._location === DockLocation_1.default.TOP) {
             pBounds[0] = outerRect.y + minSize;
-            pBounds[1] = innerRect.getBottom() - splitter.getHeight();
+            pBounds[1] = Math.max(pBounds[0], innerRect.getBottom() - splitter.getHeight() - rootRow.getMinHeight());
         }
         else if (this._location === DockLocation_1.default.LEFT) {
             pBounds[0] = outerRect.x + minSize;
-            pBounds[1] = innerRect.getRight() - splitter.getWidth();
+            pBounds[1] = Math.max(pBounds[0], innerRect.getRight() - splitter.getWidth() - rootRow.getMinWidth());
         }
         else if (this._location === DockLocation_1.default.BOTTOM) {
-            pBounds[0] = innerRect.y;
             pBounds[1] = outerRect.getBottom() - splitter.getHeight() - minSize;
+            pBounds[0] = Math.min(pBounds[1], innerRect.y + rootRow.getMinHeight());
         }
         else if (this._location === DockLocation_1.default.RIGHT) {
-            pBounds[0] = innerRect.x;
             pBounds[1] = outerRect.getRight() - splitter.getWidth() - minSize;
+            pBounds[0] = Math.min(pBounds[1], innerRect.x + rootRow.getMinWidth());
         }
         return pBounds;
     };
@@ -32937,8 +33054,9 @@ var BorderSet = /** @class */ (function () {
     /** @hidden @internal */
     BorderSet.prototype._layoutBorder = function (outerInnerRects, metrics) {
         var rect = outerInnerRects.outer;
-        var height = rect.height;
-        var width = rect.width;
+        var rootRow = this._model.getRoot();
+        var height = Math.max(0, rect.height - rootRow.getMinHeight());
+        var width = Math.max(0, rect.width - rootRow.getMinWidth());
         var sumHeight = 0;
         var sumWidth = 0;
         var adjustableHeight = 0;
@@ -32951,15 +33069,17 @@ var BorderSet = /** @class */ (function () {
                 border._setAdjustedSize(border.getSize());
                 var visible = border.getSelected() !== -1;
                 if (border.getLocation().getOrientation() === Orientation_1.default.HORZ) {
-                    sumWidth += border.getBorderBarSize() + this._model.getSplitterSize();
+                    sumWidth += border.getBorderBarSize();
                     if (visible) {
+                        width -= this._model.getSplitterSize();
                         sumWidth += border.getSize();
                         adjustableWidth += border.getSize();
                     }
                 }
                 else {
-                    sumHeight += border.getBorderBarSize() + this._model.getSplitterSize();
+                    sumHeight += border.getBorderBarSize();
                     if (visible) {
+                        height -= this._model.getSplitterSize();
                         sumHeight += border.getSize();
                         adjustableHeight += border.getSize();
                     }
@@ -32968,23 +33088,36 @@ var BorderSet = /** @class */ (function () {
         }
         // adjust border sizes if too large
         var j = 0;
+        var adjusted = false;
         while ((sumWidth > width && adjustableWidth > 0) || (sumHeight > height && adjustableHeight > 0)) {
             var border = showingBorders[j];
             if (border.getSelected() !== -1) {
                 // visible
                 var size = border._getAdjustedSize();
-                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation_1.default.HORZ && size > 0) {
+                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation_1.default.HORZ && size > 0
+                    && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumWidth--;
                     adjustableWidth--;
+                    adjusted = true;
                 }
-                else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation_1.default.VERT && size > 0) {
+                else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation_1.default.VERT && size > 0
+                    && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumHeight--;
                     adjustableHeight--;
+                    adjusted = true;
                 }
             }
             j = (j + 1) % showingBorders.length;
+            if (j === 0) {
+                if (adjusted) {
+                    adjusted = false;
+                }
+                else {
+                    break;
+                }
+            }
         }
         showingBorders.forEach(function (border) {
             outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
@@ -33100,6 +33233,7 @@ var Model = /** @class */ (function () {
         var attributeDefinitions = new AttributeDefinitions_1.default();
         // splitter
         attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("splitterExtra", 0).setType(Attribute_1.default.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
@@ -33114,6 +33248,8 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("tabIcon", undefined).setType(Attribute_1.default.STRING);
         attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabDragSpeed", 0.3).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("tabBorderWidth", -1).setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.add("tabBorderHeight", -1).setType(Attribute_1.default.NUMBER);
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute_1.default.BOOLEAN);
@@ -33403,6 +33539,9 @@ var Model = /** @class */ (function () {
             splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
         }
         return splitterSize;
+    };
+    Model.prototype.getSplitterExtra = function () {
+        return this._attributes.splitterExtra;
     };
     Model.prototype.isEnableEdgeDock = function () {
         return this._attributes.enableEdgeDock;
@@ -34438,6 +34577,8 @@ var TabNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute_1.default.STRING);
         attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute_1.default.BOOLEAN);
+        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(Attribute_1.default.NUMBER);
         return attributeDefinitions;
     };
     TabNode.prototype.getWindow = function () {
@@ -34550,6 +34691,14 @@ var TabNode = /** @class */ (function (_super) {
     /** @hidden @internal */
     TabNode.prototype._setWindow = function (window) {
         this._window = window;
+    };
+    /** @hidden @internal */
+    TabNode.prototype._setBorderWidth = function (width) {
+        this._attributes.borderWidth = width;
+    };
+    /** @hidden @internal */
+    TabNode.prototype._setBorderHeight = function (height) {
+        this._attributes.borderHeight = height;
     };
     /** @hidden @internal */
     TabNode.getAttributeDefinitions = function () {
@@ -34811,24 +34960,35 @@ var TabSetNode = /** @class */ (function (_super) {
             var outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect");
         }
-        else if (this._children.length > 0 && this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
-            var child = this._children[0];
-            var r = child.getTabRect();
-            var yy = r.y;
-            var h = r.height;
-            var p = this._tabHeaderRect.x;
-            var childCenter = 0;
-            for (var i = 0; i < this._children.length; i++) {
-                child = this._children[i];
+        else if (this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
+            var r = void 0;
+            var yy = void 0;
+            var h = void 0;
+            if (this._children.length === 0) {
+                r = this._tabHeaderRect.clone();
+                yy = r.y + 3;
+                h = r.height - 4;
+                r.width = 2;
+            }
+            else {
+                var child = this._children[0];
                 r = child.getTabRect();
-                childCenter = r.x + r.width / 2;
-                if (x >= p && x < childCenter) {
-                    var dockLocation = DockLocation_1.default.CENTER;
-                    var outlineRect = new Rect_1.default(r.x - 2, yy, 3, h);
-                    dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
-                    break;
+                yy = r.y;
+                h = r.height;
+                var p = this._tabHeaderRect.x;
+                var childCenter = 0;
+                for (var i = 0; i < this._children.length; i++) {
+                    child = this._children[i];
+                    r = child.getTabRect();
+                    childCenter = r.x + r.width / 2;
+                    if (x >= p && x < childCenter) {
+                        var dockLocation = DockLocation_1.default.CENTER;
+                        var outlineRect = new Rect_1.default(r.x - 2, yy, 3, h);
+                        dropInfo = new DropInfo_1.default(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
+                        break;
+                    }
+                    p = childCenter;
                 }
-                p = childCenter;
             }
             if (dropInfo == null) {
                 var dockLocation = DockLocation_1.default.CENTER;
@@ -35547,6 +35707,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layout = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -35654,6 +35819,7 @@ var Layout = /** @class */ (function (_super) {
         };
         /** @hidden @internal */
         _this.onCancelAdd = function () {
+            var _a, _b;
             var rootdiv = _this.selfRef.current;
             rootdiv.removeChild(_this.dragDiv);
             _this.dragDiv = undefined;
@@ -35661,11 +35827,19 @@ var Layout = /** @class */ (function (_super) {
                 _this.fnNewNodeDropped();
                 _this.fnNewNodeDropped = undefined;
             }
+            try {
+                (_b = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
+            }
+            catch (e) {
+                console.error(e);
+            }
             DragDrop_1.default.instance.hideGlass();
             _this.newTabJson = undefined;
+            _this.customDrop = undefined;
         };
         /** @hidden @internal */
         _this.onCancelDrag = function (wasDragging) {
+            var _a, _b;
             if (wasDragging) {
                 var rootdiv = _this.selfRef.current;
                 try {
@@ -35682,8 +35856,15 @@ var Layout = /** @class */ (function (_super) {
                     _this.fnNewNodeDropped();
                     _this.fnNewNodeDropped = undefined;
                 }
+                try {
+                    (_b = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
+                }
+                catch (e) {
+                    console.error(e);
+                }
                 DragDrop_1.default.instance.hideGlass();
                 _this.newTabJson = undefined;
+                _this.customDrop = undefined;
             }
         };
         /** @hidden @internal */
@@ -35727,6 +35908,7 @@ var Layout = /** @class */ (function (_super) {
         };
         /** @hidden @internal */
         _this.onDragMove = function (event) {
+            var _a, _b, _c;
             if (_this.firstMove === false) {
                 var speed = _this.props.model._getAttribute("tabDragSpeed");
                 _this.outlineDiv.style.transition = "top " + speed + "s, left " + speed + "s, width " + speed + "s, height " + speed + "s";
@@ -35741,6 +35923,8 @@ var Layout = /** @class */ (function (_super) {
             _this.dragDiv.style.top = pos.y + 5 + "px";
             var dropInfo = _this.props.model._findDropTargetNode(_this.dragNode, pos.x, pos.y);
             if (dropInfo) {
+                var invalidated = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated;
+                var currentCallback = (_b = _this.customDrop) === null || _b === void 0 ? void 0 : _b.callback;
                 _this.customDrop = undefined;
                 var dragging = _this.newTabJson || (_this.dragNode instanceof TabNode_1.default ? _this.dragNode : undefined);
                 if (dragging && (dropInfo.node instanceof TabSetNode_1.default || dropInfo.node instanceof BorderNode_1.default) && dropInfo.index === -1) {
@@ -35749,21 +35933,26 @@ var Layout = /** @class */ (function (_super) {
                     if (selected && (tabRect === null || tabRect === void 0 ? void 0 : tabRect.contains(pos.x, pos.y))) {
                         var customDrop = undefined;
                         try {
-                            var dest = _this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location);
+                            var dest = _this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, function () { return _this.onDragMove(event); });
                             if (dest) {
                                 customDrop = {
                                     rect: new Rect_1.default(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
                                     callback: dest.callback,
+                                    invalidated: dest.invalidated,
                                     dragging: dragging,
                                     over: selected,
                                     x: pos.x - tabRect.x,
                                     y: pos.y - tabRect.y,
-                                    location: dropInfo.location
+                                    location: dropInfo.location,
+                                    cursor: dest.cursor
                                 };
                             }
                         }
                         catch (e) {
                             console.error(e);
+                        }
+                        if ((customDrop === null || customDrop === void 0 ? void 0 : customDrop.callback) == currentCallback) {
+                            invalidated = undefined;
                         }
                         _this.customDrop = customDrop;
                     }
@@ -35776,7 +35965,14 @@ var Layout = /** @class */ (function (_super) {
                 else {
                     dropInfo.rect.positionElement(_this.outlineDiv);
                 }
+                DragDrop_1.default.instance.setGlassCursorOverride((_c = _this.customDrop) === null || _c === void 0 ? void 0 : _c.cursor);
                 _this.outlineDiv.style.visibility = "visible";
+                try {
+                    invalidated === null || invalidated === void 0 ? void 0 : invalidated();
+                }
+                catch (e) {
+                    console.error(e);
+                }
             }
         };
         /** @hidden @internal */
@@ -35909,9 +36105,13 @@ var Layout = /** @class */ (function (_super) {
         return (_a = this.props.realtimeResize) !== null && _a !== void 0 ? _a : false;
     };
     /** @hidden @internal */
-    Layout.prototype.onTabDrag = function (dragging, over, x, y, location) {
+    Layout.prototype.onTabDrag = function () {
         var _a, _b;
-        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call(_a, dragging, over, x, y, location);
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call.apply(_b, __spreadArray([_a], args));
     };
     /** @hidden @internal */
     Layout.prototype.getPopoutURL = function () {
@@ -36260,6 +36460,7 @@ var Splitter = function (props) {
     var outlineDiv = React.useRef(undefined);
     var parentNode = node.getParent();
     var onMouseDown = function (event) {
+        DragDrop_1.default.instance.setGlassCursorOverride(node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize");
         DragDrop_1.default.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
         pBounds.current = parentNode._getSplitterBounds(node, true);
         var rootdiv = layout.getRootDiv();
@@ -36267,7 +36468,14 @@ var Splitter = function (props) {
         outlineDiv.current.style.position = "absolute";
         outlineDiv.current.className = layout.getClassName(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_DRAG);
         outlineDiv.current.style.cursor = node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize";
-        node.getRect().positionElement(outlineDiv.current);
+        var r = node.getRect();
+        if (node.getOrientation() === Orientation_1.default.VERT && r.width < 2) {
+            r.width = 2;
+        }
+        else if (node.getOrientation() === Orientation_1.default.HORZ && r.height < 2) {
+            r.height = 2;
+        }
+        r.positionElement(outlineDiv.current);
         rootdiv.appendChild(outlineDiv.current);
     };
     var onDragCancel = function (wasDragging) {
@@ -36333,7 +36541,8 @@ var Splitter = function (props) {
         return rtn;
     };
     var cm = layout.getClassName;
-    var style = node._styleWithPosition({
+    var r = node.getRect();
+    var style = r.styleWithPosition({
         cursor: node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize",
     });
     var className = cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
@@ -36345,7 +36554,29 @@ var Splitter = function (props) {
             style.display = "none";
         }
     }
-    return React.createElement("div", { style: style, onTouchStart: onMouseDown, onMouseDown: onMouseDown, className: className });
+    var extra = node.getModel().getSplitterExtra();
+    if (extra === 0) {
+        return (React.createElement("div", { style: style, className: className, onTouchStart: onMouseDown, onMouseDown: onMouseDown }));
+    }
+    else {
+        // add extended transparent div for hit testing
+        // extends forward only, so as not to interfere with scrollbars
+        var r2 = r.clone();
+        r2.x = 0;
+        r2.y = 0;
+        if (node.getOrientation() === Orientation_1.default.VERT) {
+            r2.width += extra;
+        }
+        else {
+            r2.height += extra;
+        }
+        var style2 = r2.styleWithPosition({
+            cursor: node.getOrientation() === Orientation_1.default.HORZ ? "ns-resize" : "ew-resize"
+        });
+        var className2 = cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_EXTRA);
+        return (React.createElement("div", { style: style, className: className },
+            React.createElement("div", { style: style2, className: className2, onTouchStart: onMouseDown, onMouseDown: onMouseDown })));
+    }
 };
 exports.Splitter = Splitter;
 

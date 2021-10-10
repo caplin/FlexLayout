@@ -1,6 +1,9 @@
 {
 	"global": {
-		"tabEnableFloat": true
+   		"tabEnableFloat": true,
+        "tabSetMinHeight":100,
+        "tabSetMinWidth":100,
+        "borderMinSize":100
 	},
 	"layout": {
 		"type": "row",

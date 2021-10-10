@@ -21,9 +21,12 @@
   z-index: 1000;
   background-color: #e2e2e2;
 }
+.flexlayout__splitter_extra {
+  background-color: transparent;
+}
 .flexlayout__outline_rect {
   position: absolute;
-  cursor: move;
+  pointer-events: none;
   box-sizing: border-box;
   border: 2px solid red;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
@@ -31,7 +34,7 @@
   z-index: 1000;
 }
 .flexlayout__outline_rect_edge {
-  cursor: move;
+  pointer-events: none;
   border: 2px solid green;
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
@@ -43,6 +46,7 @@
   z-index: 1000;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   background-color: gray;
+  pointer-events: none;
 }
 .flexlayout__drag_rect {
   position: absolute;
