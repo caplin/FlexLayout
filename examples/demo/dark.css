@@ -92,4 +92,9 @@ html,body
 	padding: 1em;
 	background-color: #222;
 	border-radius: 0.5em;
+	margin-bottom: 1em;
+}
+
+.tab-storage > .tab-storage-tabs > .tab-storage-entry:last-child {
+	margin-bottom: 0;
 }

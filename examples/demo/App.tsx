@@ -2,7 +2,7 @@ import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as ReactDOM from "react-dom";
 import * as FlexLayout from "../../src/index";
-import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, Rect, TabNode, TabSetNode } from "../../src/index";
+import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, TabNode, TabSetNode } from "../../src/index";
 import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
 import Utils from "./Utils";
 
@@ -494,79 +494,101 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
 
     const [contents, setContents] = useState<HTMLDivElement | null>(null)
     const [list, setList] = useState<HTMLDivElement | null>(null)
-    const refs = useRef<(HTMLDivElement | undefined)[]>([]).current
+    const refs = useRef<Map<string, HTMLDivElement | undefined>>(new Map()).current
     const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
+
+    const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+
+        setStoredTabs(tabs => [...tabs, json])
+
+        if (dragging instanceof TabNode) {
+            tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
+        }
+    }, [tab])
+
+    const calculateInsertion = useCallback((absoluteY: number) => {
+        const rects = storedTabs.map(json => refs.get(json.id!)!.getBoundingClientRect())
+
+        const splits = [rects[0].top]
+
+        for (let i = 1; i < rects.length; i++) {
+            splits.push((rects[i - 1].bottom + rects[i].top) / 2)
+        }
+
+        splits.push(rects[rects.length - 1].bottom)
+
+        let insertionIndex = 0
+
+        for (let i = 1; i < splits.length; i++) {
+            if (Math.abs(splits[i] - absoluteY) <= Math.abs(splits[insertionIndex] - absoluteY)) {
+                insertionIndex = i
+            }
+        }
+
+        return {
+            insertionIndex,
+            split: splits[insertionIndex]
+        }
+    }, [storedTabs])
+
+    const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _, __, y: number) => {
+        const absoluteY = y + tab.getRect().y + layout.getDomRect().top
+        const { insertionIndex } = calculateInsertion(absoluteY)
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+
+        setStoredTabs(tabs => {
+            const newTabs = [...tabs]
+            const foundAt = newTabs.indexOf(json)
+
+            if (foundAt > -1) {
+                newTabs.splice(foundAt, 1)
+                newTabs.splice(insertionIndex > foundAt ? insertionIndex - 1 : insertionIndex, 0, json)
+            } else {
+                newTabs.splice(insertionIndex, 0, json)
+            }
+
+            return newTabs
+        })
+
+        if (dragging instanceof TabNode) {
+            tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
+        }
+    }, [calculateInsertion, tab, layout])
 
     tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
         if (contents && list) {
             const layoutDomRect = layout.getDomRect()
             const tabRect = tab.getRect()
-            const rect = new Rect(tabRect.x + layoutDomRect.left, tabRect.y + layoutDomRect.top, tabRect.width, tabRect.height)
-            const absoluteX = x + rect.x
-            const absoluteY = y + rect.y
+
+            const rootX = tabRect.x + layoutDomRect.left
+            const rootY = tabRect.y + layoutDomRect.top
+            const absX = x + rootX
+            const absY = y + rootY
+
             const listBounds = list.getBoundingClientRect()
+            if (absX < listBounds.left || absX >= listBounds.right ||
+                absY < listBounds.top || absY >= listBounds.bottom) return
 
-            if (absoluteX >= listBounds.left && absoluteX < listBounds.right &&
-                absoluteY >= listBounds.top && absoluteY < listBounds.bottom) {
-                if (emptyElem) {
-                    return {
-                        x: listBounds.left - rect.x,
-                        y: listBounds.top - rect.y,
-                        width: listBounds.width,
-                        height: listBounds.height,
-                        callback: () => {
-                            const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+            if (emptyElem) {
+                return {
+                    x: listBounds.left - rootX,
+                    y: listBounds.top - rootY,
+                    width: listBounds.width,
+                    height: listBounds.height,
+                    callback: kickstartingCallback,
+                    cursor: 'copy'
+                }
+            } else {
+                const insertion = calculateInsertion(absY)
 
-                            setStoredTabs(tabs => [...tabs, json])
-
-                            if (dragging instanceof TabNode) {
-                                tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
-                            }
-                        },
-                        cursor: 'copy'
-                    }
-                } else {
-                    for (let i = 0; i < storedTabs.length; i++) {
-                        const ref = refs[i]
-                        if (!ref) continue
-
-                        const itemRect = ref.getBoundingClientRect()
-
-                        if (absoluteX >= itemRect.left && absoluteX < itemRect.right &&
-                            absoluteY >= itemRect.top && absoluteY < itemRect.bottom) {
-                            const isTop = absoluteY - itemRect.top < itemRect.bottom - absoluteY
-                            const newIndex = isTop ? i : i + 1
-
-                            return {
-                                x: itemRect.left - rect.x,
-                                y: itemRect.top + (isTop ? 0 : itemRect.height) - rect.y,
-                                width: itemRect.width,
-                                height: 0,
-                                callback: () => {
-                                    const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
-
-                                    setStoredTabs(tabs => {
-                                        const newTabs = [...tabs]
-                                        const foundAt = newTabs.indexOf(json)
-
-                                        if (foundAt > -1) {
-                                            newTabs.splice(foundAt, 1)
-                                            newTabs.splice(newIndex > foundAt ? newIndex - 1 : newIndex, 0, json)
-                                        } else {
-                                            newTabs.splice(newIndex, 0, json)
-                                        }
-
-                                        return newTabs
-                                    })
-
-                                    if (dragging instanceof TabNode) {
-                                        tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
-                                    }
-                                },
-                                cursor: 'row-resize'
-                            }
-                        }
-                    }
+                return {
+                    x: listBounds.left - rootX,
+                    y: insertion.split - rootY - 2, // -2 needed for border thickness, TODO: have flexlayout automatically make this unnecessary for 0-height/width borders
+                    width: listBounds.width,
+                    height: 0,
+                    callback: insertionCallback,
+                    cursor: 'row-resize'
                 }
             }
         }
@@ -583,7 +605,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
             {storedTabs.map((stored, i) => (
                 <div
-                    ref={ref => refs[i] = ref ?? undefined}
+                    ref={ref => ref ? refs.set(stored.id!, ref) : refs.delete(stored.id!)}
                     className="tab-storage-entry"
                     key={stored.id}
                     onMouseDown={e => {
