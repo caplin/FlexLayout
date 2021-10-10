@@ -607,7 +607,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
                     y: listBounds.top - rootY,
                     width: listBounds.width,
                     height: listBounds.height,
-                    callback: kickstartingCallback
+                    callback: kickstartingCallback,
+                    cursor: 'copy'
                 }
             } else {
                 const insertion = calculateInsertion(absY)
@@ -628,7 +629,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
                     width: listBounds.width,
                     height: 0,
                     callback: insertionCallback,
-                    invalidated: () => setScrollDown(null)
+                    invalidated: () => setScrollDown(null),
+                    cursor: 'row-resize'
                 }
             }
         }
