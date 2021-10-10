@@ -522,7 +522,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
                             if (dragging instanceof TabNode) {
                                 tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
                             }
-                        }
+                        },
+                        cursor: 'copy'
                     }
                 } else {
                     for (let i = 0; i < storedTabs.length; i++) {
@@ -561,7 +562,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
                                     if (dragging instanceof TabNode) {
                                         tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
                                     }
-                                }
+                                },
+                                cursor: 'row-resize'
                             }
                         }
                     }
