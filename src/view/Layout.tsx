@@ -59,7 +59,8 @@ export interface ILayoutProps {
         y: number,
         width: number,
         height: number,
-        callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void
+        callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void,
+        cursor?: string | undefined
     };
 }
 export interface IFontValues {
@@ -113,6 +114,7 @@ export interface ICustomDropDestination {
     x: number;
     y: number;
     location: DockLocation;
+    cursor: string | undefined;
 }
 
 /** @hidden @internal */
@@ -807,7 +809,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                                 over: selected,
                                 x: pos.x - tabRect.x,
                                 y: pos.y - tabRect.y,
-                                location: dropInfo.location
+                                location: dropInfo.location,
+                                cursor: dest.cursor
                             };
                         }
                     } catch (e) {
@@ -827,6 +830,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 dropInfo.rect.positionElement(this.outlineDiv!);
             }
 
+            DragDrop.instance.setGlassCursorOverride(this.customDrop?.cursor);
             this.outlineDiv!.style.visibility = "visible";
         }
     };
