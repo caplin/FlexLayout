@@ -62,7 +62,7 @@
 
     &__drag_rect {
         position: absolute;
-        pointer-events: none;
+        cursor: move;
         color: $color_text;
         background-color: $color_1;
         border: 2px solid $color_4;

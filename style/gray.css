@@ -51,7 +51,7 @@
 }
 .flexlayout__drag_rect {
   position: absolute;
-  pointer-events: none;
+  cursor: move;
   color: black;
   background-color: #f7f7f7;
   border: 2px solid #cccccc;
