@@ -117,6 +117,7 @@ class DragDrop {
             this._glassShowing = false;
             this._document = undefined;
             this._rootElement = undefined;
+            this._glassCursorOverride = undefined;
         }
     }
 
