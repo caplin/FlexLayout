@@ -341,9 +341,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTabSet={this.onRenderTabSet}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
-                onTabDrag={(dragging, over, x, y, location) => {
+                onTabDrag={(dragging, over, x, y, location, refresh) => {
                     const tabStorageImpl = over.getExtraData().tabStorage_onTabDrag as ILayoutProps['onTabDrag']
-                    if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location)
+                    if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location, refresh)
                     return undefined
                 }}
             // classNameMapper={
@@ -500,8 +500,10 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     // true = down, false = up, null = none
     const [scrollDown, setScrollDown] = useState<boolean | null>(null)
 
+    const scrollInvalidateRef = useRef<() => void>()
     const scroller = useCallback((isDown: boolean) => {
         contents?.scrollBy(0, isDown ? 10 : -10)
+        scrollInvalidateRef.current?.()
     }, [contents])
 
     const scrollerRef = useRef(scroller)
@@ -585,7 +587,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
         }
     }, [calculateInsertion, tab, layout])
 
-    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y) => {
+    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y, _, refresh) => {
         if (contents && list) {
             const layoutDomRect = layout.getDomRect()
             const tabRect = tab.getRect()
@@ -609,6 +611,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
                 }
             } else {
                 const insertion = calculateInsertion(absY)
+
+                scrollInvalidateRef.current = refresh
 
                 if (absY - rootY < tabRect.height / 5) {
                     setScrollDown(false)

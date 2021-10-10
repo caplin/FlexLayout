@@ -56,7 +56,7 @@ export interface ILayoutProps {
     supportsPopout?: boolean | undefined;
     popoutURL?: string | undefined;
     realtimeResize?: boolean | undefined;
-    onTabDrag?: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => undefined | {
+    onTabDrag?: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation, refresh: () => void) => undefined | {
         x: number,
         y: number,
         width: number,
@@ -818,10 +818,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
                 if (selected && tabRect?.contains(pos.x, pos.y)) {
                     let customDrop: ICustomDropDestination | undefined = undefined;
-                    const args: Parameters<CustomDragCallback> = [dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location];
 
                     try {
-                        const dest = this.onTabDrag(...args);
+                        const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, () => this.onDragMove(event));
 
                         if (dest) {
                             customDrop = {
