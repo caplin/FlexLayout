@@ -25,6 +25,8 @@ import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
 
+export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
+
 export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
@@ -59,7 +61,9 @@ export interface ILayoutProps {
         y: number,
         width: number,
         height: number,
-        callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void
+        callback: CustomDragCallback,
+        // Called once when `callback` is not going to be called anymore (user canceled the drag, moved mouse and you returned a different callback, etc)
+        invalidated?: () => void
     };
 }
 export interface IFontValues {
@@ -107,7 +111,8 @@ export interface IIcons {
 
 export interface ICustomDropDestination {
     rect: Rect;
-    callback: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
+    callback: CustomDragCallback;
+    invalidated: (() => void) | undefined;
     dragging: TabNode | IJsonTabNode;
     over: TabNode;
     x: number;
@@ -388,8 +393,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    onTabDrag(dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) {
-        return this.props.onTabDrag?.(dragging, over, x, y, location);
+    onTabDrag(...args: Parameters<Required<ILayoutProps>['onTabDrag']>) {
+        return this.props.onTabDrag?.(...args);
     }
 
     /** @hidden @internal */
@@ -689,8 +694,16 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.fnNewNodeDropped();
             this.fnNewNodeDropped = undefined;
         }
+
+        try {
+            this.customDrop?.invalidated?.()
+        } catch (e) {
+            console.error(e)
+        }
+
         DragDrop.instance.hideGlass();
         this.newTabJson = undefined;
+        this.customDrop = undefined;
     };
 
     /** @hidden @internal */
@@ -712,8 +725,16 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 this.fnNewNodeDropped();
                 this.fnNewNodeDropped = undefined;
             }
+
+            try {
+                this.customDrop?.invalidated?.()
+            } catch (e) {
+                console.error(e)
+            }
+
             DragDrop.instance.hideGlass();
             this.newTabJson = undefined;
+            this.customDrop = undefined;
         }
     };
 
@@ -786,6 +807,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
         if (dropInfo) {
+            let invalidated = this.customDrop?.invalidated;
+            const currentCallback = this.customDrop?.callback;
             this.customDrop = undefined;
 
             const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
@@ -795,14 +818,16 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
                 if (selected && tabRect?.contains(pos.x, pos.y)) {
                     let customDrop: ICustomDropDestination | undefined = undefined;
+                    const args: Parameters<CustomDragCallback> = [dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location];
 
                     try {
-                        const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location);
+                        const dest = this.onTabDrag(...args);
 
                         if (dest) {
                             customDrop = {
                                 rect: new Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
                                 callback: dest.callback,
+                                invalidated: dest.invalidated,
                                 dragging: dragging,
                                 over: selected,
                                 x: pos.x - tabRect.x,
@@ -812,6 +837,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                         }
                     } catch (e) {
                         console.error(e)
+                    }
+
+                    if (customDrop?.callback == currentCallback) {
+                        invalidated = undefined;
                     }
 
                     this.customDrop = customDrop;
@@ -828,6 +857,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             }
 
             this.outlineDiv!.style.visibility = "visible";
+
+            try {
+                invalidated?.();
+            } catch (e) {
+                console.error(e);
+            }
         }
     };
 

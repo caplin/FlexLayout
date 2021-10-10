@@ -497,6 +497,33 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     const refs = useRef<Map<string, HTMLDivElement | undefined>>(new Map()).current
     const [emptyElem, setEmptyElem] = useState<HTMLDivElement | null>(null)
 
+    // true = down, false = up, null = none
+    const [scrollDown, setScrollDown] = useState<boolean | null>(null)
+
+    const scroller = useCallback((isDown: boolean) => {
+        contents?.scrollBy(0, isDown ? 10 : -10)
+    }, [contents])
+
+    const scrollerRef = useRef(scroller)
+    scrollerRef.current = scroller
+
+    useEffect(() => {
+        if (scrollDown !== null) {
+            let scrollInterval: NodeJS.Timeout
+            let scrollTimeout = setTimeout(() => {
+                scrollerRef.current(scrollDown)
+                scrollInterval = setInterval(() => scrollerRef.current(scrollDown), 50)
+            }, 500)
+
+            return () => {
+                clearTimeout(scrollTimeout)
+                clearInterval(scrollInterval)
+            }
+        }
+
+        return
+    }, [scrollDown])
+
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
 
@@ -551,6 +578,8 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             return newTabs
         })
 
+        setScrollDown(null)
+
         if (dragging instanceof TabNode) {
             tab.getModel().doAction(Actions.deleteTab(dragging.getId()));
         }
@@ -581,12 +610,21 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
             } else {
                 const insertion = calculateInsertion(absY)
 
+                if (absY - rootY < tabRect.height / 5) {
+                    setScrollDown(false)
+                } else if (absY - rootY > tabRect.height * 4/5) {
+                    setScrollDown(true)
+                } else {
+                    setScrollDown(null)
+                }
+
                 return {
                     x: listBounds.left - rootX,
                     y: insertion.split - rootY - 2, // -2 needed for border thickness, TODO: have flexlayout automatically make this unnecessary for 0-height/width borders
                     width: listBounds.width,
                     height: 0,
-                    callback: insertionCallback
+                    callback: insertionCallback,
+                    invalidated: () => setScrollDown(null)
                 }
             }
         }
