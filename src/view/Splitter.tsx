@@ -24,6 +24,7 @@ export const Splitter = (props: ISplitterProps) => {
     const parentNode = node.getParent() as RowNode | BorderNode;
 
     const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
+        DragDrop.instance.setGlassCursorOverride(node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize");
         DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
         pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
