@@ -565,7 +565,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _, __, y: number) => {
         const absoluteY = y + tab.getRect().y + layout.getDomRect().top
         const { insertionIndex } = calculateInsertion(absoluteY)
-        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : { id: '#' + v4(), ...dragging }
 
         setStoredTabs(tabs => {
             const newTabs = [...tabs]
