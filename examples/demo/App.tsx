@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as ReactDOM from "react-dom";
+import { v4 } from "uuid";
 import * as FlexLayout from "../../src/index";
 import { Action, Actions, BorderNode, DropInfo, IJsonTabNode, Node, TabNode, TabSetNode } from "../../src/index";
 import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
@@ -527,7 +528,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
     }, [scrollDown])
 
     const kickstartingCallback = useCallback((dragging: TabNode | IJsonTabNode) => {
-        const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging
+        const json = dragging instanceof TabNode ? { id: '#' + v4(), ...dragging.toJson() } as IJsonTabNode : dragging
 
         setStoredTabs(tabs => [...tabs, json])
 
