@@ -68,7 +68,7 @@ export interface ILayoutProps {
         invalidated?: () => void,
         cursor?: string | undefined
     };
-    onDragRectRender?: DragRectRenderCallback;
+    onRenderDragRect?: DragRectRenderCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -780,8 +780,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     dragRectRender = (text: String, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
         let content: React.ReactElement | undefined = <div style={{whiteSpace: "pre"}}>{text.replace("<br>", "\n")}</div>;
         
-        if (this.props.onDragRectRender !== undefined) {
-            const customContent = this.props.onDragRectRender(text, node, json);
+        if (this.props.onRenderDragRect !== undefined) {
+            const customContent = this.props.onRenderDragRect(text, node, json);
             if (customContent !== undefined) {
                 content = customContent;
             }
@@ -842,7 +842,15 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             y: event.clientY - clientRect.top,
         };
 
-        this.dragDiv!.style.left = pos.x - this.dragDiv!.getBoundingClientRect().width / 2 + "px";
+        // keep it between left & right
+        const dragRect = this.dragDiv!.getBoundingClientRect();
+        let newLeft = pos.x - dragRect.width / 2;
+        if (newLeft + dragRect.width > clientRect.width) {
+            newLeft = clientRect.width - dragRect.width;
+        }
+        newLeft = Math.max(0, newLeft);
+
+        this.dragDiv!.style.left = newLeft + "px";
         this.dragDiv!.style.top = pos.y + 5 + "px";
         if (this.dragRectRendered && this.dragDiv!.style.visibility === "hidden") {
             // make visible once the drag rect has been rendered

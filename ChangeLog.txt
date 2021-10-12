@@ -1,5 +1,5 @@
 0.5.18
-Added onDragRectRender callback prop for rendering the drag rectangles
+Added onRenderDragRect callback prop for rendering the drag rectangles
 
 0.5.17
 New global option, splitterExtra, to allow splitters to have an extended hit test areas. 

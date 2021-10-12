@@ -348,6 +348,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 iconFactory={this.iconFactory}
                 onRenderTab={this.onRenderTab}
                 onRenderTabSet={this.onRenderTabSet}
+                // onRenderDragRect={this.onRenderDragRect}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
                 onTabDrag={(dragging, over, x, y, location, refresh) => {
@@ -355,7 +356,6 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location, refresh)
                     return undefined
                 }}
-                // onDragRectRender={this.onRenderDragRect}
             // classNameMapper={
             //     className => {
             //         console.log(className);
