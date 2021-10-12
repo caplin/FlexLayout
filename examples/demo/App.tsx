@@ -100,7 +100,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         event.stopPropagation();
         event.preventDefault();
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
+            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid\n(Drag to location)", {
                 component: "grid",
                 name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
@@ -128,7 +128,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onAddIndirectClick = (event: React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
+            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
                 component: "grid",
                 name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
@@ -142,6 +142,14 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         });
     }
 
+    onRenderDragRect = (text: String, node?: Node, json?: IJsonTabNode) => {
+        if (node !== undefined) {
+            return <div>{JSON.stringify(node?.toJson())}</div>
+        } else if (json !== undefined) {
+            return <div>{JSON.stringify(json)}</div>
+        }
+        return undefined;
+    }
 
     onExternalDrag = (e: React.DragEvent) => {
         // console.log("onExternaldrag ", e.dataTransfer.types);
@@ -347,6 +355,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     if (tabStorageImpl) return tabStorageImpl(dragging, over, x, y, location, refresh)
                     return undefined
                 }}
+                // onDragRectRender={this.onRenderDragRect}
             // classNameMapper={
             //     className => {
             //         console.log(className);

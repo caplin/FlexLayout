@@ -1,4 +1,5 @@
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import DockLocation from "../DockLocation";
 import DragDrop from "../DragDrop";
 import DropInfo from "../DropInfo";
@@ -26,6 +27,7 @@ import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
 
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
+export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
 
 export interface ILayoutProps {
     model: Model;
@@ -47,9 +49,9 @@ export interface ILayoutProps {
     ) => void;
     onModelChange?: (model: Model) => void;
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
-      dragText: string,
-      json: any,
-      onDrop?: (node?: Node, event?: Event) => void
+        dragText: string,
+        json: any,
+        onDrop?: (node?: Node, event?: Event) => void
     };
     classNameMapper?: (defaultClassName: string) => string;
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
@@ -66,6 +68,7 @@ export interface ILayoutProps {
         invalidated?: () => void,
         cursor?: string | undefined
     };
+    onDragRectRender?: DragRectRenderCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -200,6 +203,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private dragDiv?: HTMLDivElement;
     /** @hidden @internal */
+    private dragRectRendered: boolean = true;
+    /** @hidden @internal */
     private dragDivText: string = "";
     /** @hidden @internal */
     private dropInfo: DropInfo | undefined;
@@ -237,7 +242,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private firstRender: boolean;
     /** @hidden @internal */
-    private resizeObserver? : ResizeObserver;
+    private resizeObserver?: ResizeObserver;
 
     constructor(props: ILayoutProps) {
         super(props);
@@ -253,9 +258,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
         this.firstRender = true;
 
-        this.state = { rect: new Rect(0, 0, 0, 0), 
-            calculatedHeaderBarSize: 25, 
-            calculatedTabBarSize: 26, 
+        this.state = {
+            rect: new Rect(0, 0, 0, 0),
+            calculatedHeaderBarSize: 25,
+            calculatedTabBarSize: 26,
             calculatedBorderBarSize: 30,
             editingTab: undefined,
         };
@@ -411,7 +417,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     setEditingTab(tabNode?: TabNode) {
-        this.setState({editingTab:tabNode});
+        this.setState({ editingTab: tabNode });
     }
 
     /** @hidden @internal */
@@ -649,7 +655,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
      * @param dragText the text to show on the drag panel
      * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete
+     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
     addTabWithDragAndDrop(dragText: string, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
@@ -663,9 +669,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      *
      * @param dragText the text to show on the drag panel
      * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete
+     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
-    addTabWithDragAndDropIndirect(dragText: string, json: IJsonTabNode, onDrop?: () => void) {
+    addTabWithDragAndDropIndirect(dragText: string, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
 
@@ -674,14 +680,20 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.dragDivText = dragText;
         this.dragDiv = this.currentDocument!.createElement("div");
         this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
-        this.dragDiv.innerHTML = this.dragDivText;
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown);
 
-        const r = new Rect(10, 10, 150, 50);
-        r.centerInRect(this.state.rect);
-        this.dragDiv.style.left = r.x + "px";
-        this.dragDiv.style.top = r.y + "px";
+        this.dragRectRender(this.dragDivText, undefined, this.newTabJson, () => {
+            if (this.dragDiv) {
+                // now it's been rendered into the dom it can be centered
+                this.dragDiv.style.visibility = "visible";
+                const domRect = this.dragDiv.getBoundingClientRect();
+                const r = new Rect(0, 0, domRect?.width, domRect?.height);
+                r.centerInRect(this.state.rect);
+                this.dragDiv.style.left = r.x + "px";
+                this.dragDiv.style.top = r.y + "px";
+            }
+        });
 
         const rootdiv = this.selfRef.current;
         rootdiv!.appendChild(this.dragDiv);
@@ -715,11 +727,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
             try {
                 rootdiv.removeChild(this.outlineDiv!);
-            } catch (e) {}
+            } catch (e) { }
 
             try {
                 rootdiv.removeChild(this.dragDiv!);
-            } catch (e) {}
+            } catch (e) { }
 
             this.dragDiv = undefined;
             this.hideEdges(rootdiv);
@@ -765,6 +777,31 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
+    dragRectRender = (text: String, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
+        let content: React.ReactElement | undefined = <div style={{whiteSpace: "pre"}}>{text.replace("<br>", "\n")}</div>;
+        
+        if (this.props.onDragRectRender !== undefined) {
+            const customContent = this.props.onDragRectRender(text, node, json);
+            if (customContent !== undefined) {
+                content = customContent;
+            }
+        }
+
+        // hide div until the render is complete
+        this.dragDiv!.style.visibility = "hidden";
+        this.dragRectRendered = false;
+        ReactDOM.render(<DragRectRenderWrapper
+            // wait for it to be rendered
+            onRendered={() => {
+                this.dragRectRendered = true;
+                onRendered?.();
+            }}
+        >
+            {content}
+        </DragRectRenderWrapper>, this.dragDiv!);
+    };
+
+    /** @hidden @internal */
     onDragStart = () => {
         this.dropInfo = undefined;
         this.customDrop = undefined;
@@ -777,7 +814,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         if (this.dragDiv == null) {
             this.dragDiv = this.currentDocument!.createElement("div");
             this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
-            this.dragDiv.innerHTML = this.dragDivText;
+            this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
+
             rootdiv.appendChild(this.dragDiv);
         }
         // add edge indicators
@@ -806,6 +844,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         this.dragDiv!.style.left = pos.x - this.dragDiv!.getBoundingClientRect().width / 2 + "px";
         this.dragDiv!.style.top = pos.y + 5 + "px";
+        if (this.dragRectRendered && this.dragDiv!.style.visibility === "hidden") {
+            // make visible once the drag rect has been rendered
+            this.dragDiv!.style.visibility = "visible";
+        }
 
         let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
         if (dropInfo) {
@@ -841,7 +883,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                         console.error(e)
                     }
 
-                    if (customDrop?.callback == currentCallback) {
+                    if (customDrop?.callback === currentCallback) {
                         invalidated = undefined;
                     }
 
@@ -883,7 +925,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 this.newTabJson = undefined;
 
                 try {
-                    const {callback, dragging, over, x, y, location} = this.customDrop;
+                    const { callback, dragging, over, x, y, location } = this.customDrop;
                     callback(dragging, over, x, y, location);
                 } catch (e) {
                     console.error(e)
@@ -990,7 +1032,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 rootdiv.removeChild(this.edgeLeftDiv!);
                 rootdiv.removeChild(this.edgeBottomDiv!);
                 rootdiv.removeChild(this.edgeRightDiv!);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         this.edgesShown = false;
@@ -1034,4 +1076,23 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 }
 
+// wrapper round the drag rect renderer that can call
+// a method once the rendering is written to the dom
+
+/** @hidden @internal */
+interface IDragRectRenderWrapper {
+    onRendered?: () => void;
+    children: React.ReactNode;
+}
+
+/** @hidden @internal */
+const DragRectRenderWrapper = (props: IDragRectRenderWrapper) => {
+    React.useEffect(() => {
+        props.onRendered?.();
+    }, [props]);
+
+    return (<React.Fragment>
+        {props.children}
+    </React.Fragment>)
+}
 export default Layout;
