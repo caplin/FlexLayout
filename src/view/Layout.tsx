@@ -102,6 +102,7 @@ export interface ILayoutState {
     calculatedTabBarSize: number;
     calculatedBorderBarSize: number;
     editingTab?: TabNode;
+    showHiddenBorder: DockLocation;
 }
 
 export interface IIcons {
@@ -174,6 +175,7 @@ const defaultSupportsPopout: boolean = isDesktop && !isIEorEdge;
  * A React component that hosts a multi-tabbed layout
  */
 export class Layout extends React.Component<ILayoutProps, ILayoutState> {
+
     /** @hidden @internal */
     private selfRef: React.RefObject<HTMLDivElement>;
     /** @hidden @internal */
@@ -264,6 +266,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             calculatedTabBarSize: 26,
             calculatedBorderBarSize: 30,
             editingTab: undefined,
+            showHiddenBorder: DockLocation.CENTER,
         };
 
         this.onDragEnter = this.onDragEnter.bind(this);
@@ -450,6 +453,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             tabBarSize: this.state.calculatedTabBarSize,
             borderBarSize: this.state.calculatedBorderBarSize,
         };
+        this.props.model._setShowHiddenBorder(this.state.showHiddenBorder);
 
         this.centerRect = this.props.model._layout(this.state.rect, metrics);
 
@@ -750,6 +754,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.newTabJson = undefined;
             this.customDrop = undefined;
         }
+        this.setState({ showHiddenBorder: DockLocation.CENTER });
+
     };
 
     /** @hidden @internal */
@@ -778,8 +784,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @hidden @internal */
     dragRectRender = (text: String, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
-        let content: React.ReactElement | undefined = <div style={{whiteSpace: "pre"}}>{text.replace("<br>", "\n")}</div>;
-        
+        let content: React.ReactElement | undefined = <div style={{ whiteSpace: "pre" }}>{text.replace("<br>", "\n")}</div>;
+
         if (this.props.onRenderDragRect !== undefined) {
             const customContent = this.props.onRenderDragRect(text, node, json);
             if (customContent !== undefined) {
@@ -841,6 +847,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top,
         };
+
+        this.checkForBorderToShow(pos.x, pos.y);
 
         // keep it between left & right
         const dragRect = this.dragDiv!.getBoundingClientRect();
@@ -950,6 +958,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 this.doAction(Actions.moveNode(this.dragNode.getId(), this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
             }
         }
+        this.setState({ showHiddenBorder: DockLocation.CENTER });
     };
 
     /** @hidden @internal */
@@ -964,6 +973,40 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
             this.dragStart(event, drag.dragText, TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
+        }
+    }
+
+
+    /** @hidden @internal */
+    checkForBorderToShow(x: number, y: number) {
+        const r = this.props.model._getOuterInnerRects().outer;
+        const c = r.getCenter();
+        const margin = this.edgeRectWidth;
+        const offset = this.edgeRectLength / 2;
+
+        let overEdge = false;
+        if (this.props.model.isEnableEdgeDock() && this.state.showHiddenBorder === DockLocation.CENTER) {
+            if ((y > c.y - offset && y < c.y + offset) ||
+                (x > c.x - offset && x < c.x + offset)) {
+                overEdge = true;
+            }
+        }
+
+        let location = DockLocation.CENTER;
+        if (!overEdge) {
+            if (x <= r.x + margin) {
+                location = DockLocation.LEFT;
+            } else if (x >= r.getRight() - margin) {
+                location = DockLocation.RIGHT;
+            } else if (y <= r.y + margin) {
+                location = DockLocation.TOP;
+            } else if (y >= r.getBottom() - margin) {
+                location = DockLocation.BOTTOM;
+            }
+        }
+
+        if (location !== this.state.showHiddenBorder) {
+            this.setState({ showHiddenBorder: location });
         }
     }
 

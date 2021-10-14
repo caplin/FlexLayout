@@ -349,6 +349,7 @@ Attributes allowed in the 'global' element
 | tabSetHeaderHeight | 0 | height of tabset header in pixels; if left as 0 then the value will be calculated from the current fontSize |
 | tabSetTabStripHeight | 0 | height of tabset tab bar in pixels; if left as 0 then the value will be calculated from the current fontSize |
 | borderBarSize | 0 | size of the border bars in pixels; if left as 0 then the value will be calculated from the current fontSize |
+| borderEnableAutoHide | false | hide border if it has zero tabs |
 | borderEnableDrop | true | allow user to drag tabs into this border |
 | borderAutoSelectTabWhenOpen | true | whether to select new/moved tabs in border when the border is already open |
 | borderAutoSelectTabWhenClosed | false | whether to select new/moved tabs in border when the border is curently closed |
@@ -456,6 +457,7 @@ Inherited defaults will take their value from the associated global attributes (
 | id | auto generated | border_ + border name e.g. border_left |
 | config | null | a place to hold json config used in your own code |
 | show | true | show/hide this border |
+| enableAutoHide | false | hide border if it has zero tabs |
 | children | *required* | a list of tab nodes |
 | barSize | *inherited* | size of this border's bar in pixels; if left as 0 then the value will be calculated from the current fontSize |
 | enableDrop | *inherited* | |

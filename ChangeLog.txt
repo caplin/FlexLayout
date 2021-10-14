@@ -1,5 +1,6 @@
 0.5.18
 Added onRenderDragRect callback prop for rendering the drag rectangles
+New border attribute: enableAutoHide, to hide border if it has zero tabs
 
 0.5.17
 New global option, splitterExtra, to allow splitters to have an extended hit test areas. 

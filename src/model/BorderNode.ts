@@ -50,6 +50,7 @@ class BorderNode extends Node implements IDropTarget {
         attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("size", "borderSize").setType(Attribute.NUMBER);
         attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute.NUMBER);
+        attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute.BOOLEAN);
         return attributeDefinitions;
     }
 
@@ -178,7 +179,19 @@ class BorderNode extends Node implements IDropTarget {
     }
 
     isShowing() {
-        return this._attributes.show as boolean;
+        const show = this._attributes.show as boolean;
+        if (show) {
+            if (this._model._getShowHiddenBorder() !== this._location && this.isAutoHide() && this._children.length === 0) {
+                return false;
+            } 
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    isAutoHide() {
+        return this._getAttr("enableAutoHide") as boolean;
     }
 
     /** @hidden @internal */

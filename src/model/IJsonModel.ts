@@ -35,6 +35,7 @@ export interface IGlobalAttributes {
 	borderAutoSelectTabWhenOpen?: boolean; // default: true
 	borderBarSize?: number; // default: 0
 	borderClassName?: string;
+	borderEnableAutoHide?: boolean; // default: false
 	borderEnableDrop?: boolean; // default: true
 	borderMinSize?: number; // default: 0
 	borderSize?: number; // default: 200
@@ -131,6 +132,7 @@ export interface IBorderAttributes {
 	barSize?: number; // default: 0 - inherited from global borderBarSize
 	className?: string; //  - inherited from global borderClassName
 	config?: any;
+	enableAutoHide?: boolean; // default: false - inherited from global borderEnableAutoHide
 	enableDrop?: boolean; // default: true - inherited from global borderEnableDrop
 	minSize?: number; // default: 0 - inherited from global borderMinSize
 	selected?: number; // default: -1

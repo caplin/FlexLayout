@@ -4,6 +4,7 @@
         "tabSetMinHeight":100,
         "tabSetMinWidth":100,
         "borderMinSize":100,
+        "borderEnableAutoHide": true,
         "tabSetEnableClose":true,
         "splitterSize":1,
         "splitterExtra":4

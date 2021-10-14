@@ -5,9 +5,20 @@
     <meta http-equiv='Content-type' content='text/html; charset=utf-8'>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
     <link id="page-stylesheet" rel="stylesheet" href="gray.css" />
+    <style>
+        body {
+            overflow: auto;
+        }
+        ul {
+            margin-right: 1em;
+        }
+        li {
+            margin-bottom: 1em;
+        }
+    </style>
 </head>
 
-<body style="overflow:auto">
+<body>
 
     <ul>
         <li>
@@ -29,6 +40,14 @@
         <li>
             Tab attributes: borderWidth, borderHeight to allow tabs to have individual sizes in borders:<br>
             <small>Try the 'With border sizes' tab</small>
+        </li>
+        <li>
+            Customize the drag rectangle using the callback property: onRenderDragRect <br>
+            <small>In this layout all drag rectangles are custom rendered</small>
+        </li>
+        <li>
+            New border attribute: enableAutoHide, to hide border if it has zero tabs:<br>
+            <small>Try moving all tabs from any of the borders</small>
         </li>
     </ul>
 </body>

@@ -102,6 +102,8 @@ class Model {
         attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("borderClassName", undefined).setType(Attribute.STRING);
+        attributeDefinitions.add("borderEnableAutoHide", false).setType(Attribute.BOOLEAN);
+
         return attributeDefinitions;
     }
 
@@ -127,6 +129,9 @@ class Model {
     private _pointerFine: boolean;
     /** @hidden @internal */
     private _onCreateTabSet? : (tabNode?: TabNode) => ITabSetAttributes;
+    /** @hidden @internal */
+    private _showHiddenBorder: DockLocation;
+
 
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
@@ -138,6 +143,7 @@ class Model {
         this._idMap = {};
         this._borders = new BorderSet(this);
         this._pointerFine = true;
+        this._showHiddenBorder = DockLocation.CENTER;
     }
 
     /** @hidden @internal */
@@ -154,6 +160,16 @@ class Model {
         } else {
             return undefined;
         }
+    }
+
+    /** @hidden @internal */
+    _getShowHiddenBorder() {
+        return this._showHiddenBorder;
+    }
+
+    /** @hidden @internal */
+    _setShowHiddenBorder(location: DockLocation) {
+        this._showHiddenBorder = location;
     }
 
     /** @hidden @internal */

@@ -58,23 +58,21 @@ class BorderSet {
 
         // sum size of borders to see they will fit
         for (const border of showingBorders) {
-            if (border.isShowing()) {
-                border._setAdjustedSize(border.getSize());
-                const visible = border.getSelected() !== -1;
-                if (border.getLocation().getOrientation() === Orientation.HORZ) {
-                    sumWidth += border.getBorderBarSize() ;
-                    if (visible) {
-                        width -= this._model.getSplitterSize();
-                        sumWidth += border.getSize();
-                        adjustableWidth += border.getSize();
-                    }
-                } else {
-                    sumHeight += border.getBorderBarSize();
-                    if (visible) {
-                        height -= this._model.getSplitterSize();
-                        sumHeight += border.getSize();
-                        adjustableHeight += border.getSize();
-                    }
+            border._setAdjustedSize(border.getSize());
+            const visible = border.getSelected() !== -1;
+            if (border.getLocation().getOrientation() === Orientation.HORZ) {
+                sumWidth += border.getBorderBarSize() ;
+                if (visible) {
+                    width -= this._model.getSplitterSize();
+                    sumWidth += border.getSize();
+                    adjustableWidth += border.getSize();
+                }
+            } else {
+                sumHeight += border.getBorderBarSize();
+                if (visible) {
+                    height -= this._model.getSplitterSize();
+                    sumHeight += border.getSize();
+                    adjustableHeight += border.getSize();
                 }
             }
         }

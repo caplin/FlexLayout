@@ -18,8 +18,8 @@ class Rect {
     }
 
     static fromElement(element: Element) {
-      let {x, y, width, height} = element.getBoundingClientRect();
-      return new Rect(x, y, width, height);
+        let { x, y, width, height } = element.getBoundingClientRect();
+        return new Rect(x, y, width, height);
     }
 
     clone() {
@@ -40,6 +40,10 @@ class Rect {
 
     getRight() {
         return this.x + this.width;
+    }
+
+    getCenter() {
+        return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
     }
 
     positionElement(element: HTMLElement, position?: string) {

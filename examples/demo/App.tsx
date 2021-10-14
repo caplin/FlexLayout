@@ -143,12 +143,17 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     onRenderDragRect = (text: String, node?: Node, json?: IJsonTabNode) => {
-        if (node !== undefined) {
-            return <div>{JSON.stringify(node?.toJson())}</div>
-        } else if (json !== undefined) {
-            return <div>{JSON.stringify(json)}</div>
+        if (this.state.layoutFile === "newfeatures") {
+            return (
+                <div style={{ whiteSpace: "pre" }}>{text}
+                    <br /><br />
+                    This is a customized<br />
+                    drag rectangle
+                </div>
+            );
+        } else {
+            return undefined; // use default rendering
         }
-        return undefined;
     }
 
     onExternalDrag = (e: React.DragEvent) => {
@@ -348,7 +353,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 iconFactory={this.iconFactory}
                 onRenderTab={this.onRenderTab}
                 onRenderTabSet={this.onRenderTabSet}
-                // onRenderDragRect={this.onRenderDragRect}
+                onRenderDragRect={this.onRenderDragRect}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
                 onTabDrag={(dragging, over, x, y, location, refresh) => {
@@ -635,7 +640,7 @@ function TabStorage({ tab, layout }: { tab: TabNode, layout: FlexLayout.Layout }
 
                 if (absY - rootY < tabRect.height / 5) {
                     setScrollDown(false)
-                } else if (absY - rootY > tabRect.height * 4/5) {
+                } else if (absY - rootY > tabRect.height * 4 / 5) {
                     setScrollDown(true)
                 } else {
                     setScrollDown(null)
