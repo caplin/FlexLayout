@@ -683,7 +683,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         this.dragDivText = dragText;
         this.dragDiv = this.currentDocument!.createElement("div");
-        this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
+        this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown);
 
@@ -867,62 +867,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
         let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
         if (dropInfo) {
-            let invalidated = this.customDrop?.invalidated;
-            const currentCallback = this.customDrop?.callback;
-            this.customDrop = undefined;
-
-            const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
-            if (dragging && (dropInfo.node instanceof TabSetNode || dropInfo.node instanceof BorderNode) && dropInfo.index === -1) {
-                const selected = dropInfo.node.getSelectedNode() as TabNode | undefined;
-                const tabRect = selected?.getRect()
-
-                if (selected && tabRect?.contains(pos.x, pos.y)) {
-                    let customDrop: ICustomDropDestination | undefined = undefined;
-
-                    try {
-                        const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, () => this.onDragMove(event));
-
-                        if (dest) {
-                            customDrop = {
-                                rect: new Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
-                                callback: dest.callback,
-                                invalidated: dest.invalidated,
-                                dragging: dragging,
-                                over: selected,
-                                x: pos.x - tabRect.x,
-                                y: pos.y - tabRect.y,
-                                location: dropInfo.location,
-                                cursor: dest.cursor
-                            };
-                        }
-                    } catch (e) {
-                        console.error(e)
-                    }
-
-                    if (customDrop?.callback === currentCallback) {
-                        invalidated = undefined;
-                    }
-
-                    this.customDrop = customDrop;
-                }
-            }
-
-            this.dropInfo = dropInfo;
-            this.outlineDiv!.className = this.getClassName(this.customDrop ? "flexlayout__outline_rect" : dropInfo.className);
-
-            if (this.customDrop) {
-                this.customDrop.rect.positionElement(this.outlineDiv!);
+            if (this.props.onTabDrag) {
+                this.handleCustomTabDrag(dropInfo, pos, event);
             } else {
+                this.dropInfo = dropInfo;
+                this.outlineDiv!.className = this.getClassName(dropInfo.className);
                 dropInfo.rect.positionElement(this.outlineDiv!);
-            }
-
-            DragDrop.instance.setGlassCursorOverride(this.customDrop?.cursor);
-            this.outlineDiv!.style.visibility = "visible";
-
-            try {
-                invalidated?.();
-            } catch (e) {
-                console.error(e);
+                this.outlineDiv!.style.visibility = "visible";
             }
         }
     };
@@ -943,6 +894,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 try {
                     const { callback, dragging, over, x, y, location } = this.customDrop;
                     callback(dragging, over, x, y, location);
+                    if (this.fnNewNodeDropped != null) {
+                        this.fnNewNodeDropped();
+                        this.fnNewNodeDropped = undefined;
+                    }
                 } catch (e) {
                     console.error(e)
                 }
@@ -960,6 +915,67 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
         this.setState({ showHiddenBorder: DockLocation.CENTER });
     };
+
+    /** @hidden @internal */
+    private handleCustomTabDrag(dropInfo: DropInfo, pos: { x: number; y: number; }, event: React.MouseEvent<Element, MouseEvent>) {
+        let invalidated = this.customDrop?.invalidated;
+        const currentCallback = this.customDrop?.callback;
+        this.customDrop = undefined;
+
+        const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
+        if (dragging && (dropInfo.node instanceof TabSetNode || dropInfo.node instanceof BorderNode) && dropInfo.index === -1) {
+            const selected = dropInfo.node.getSelectedNode() as TabNode | undefined;
+            const tabRect = selected?.getRect();
+
+            if (selected && tabRect?.contains(pos.x, pos.y)) {
+                let customDrop: ICustomDropDestination | undefined = undefined;
+
+                try {
+                    const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, () => this.onDragMove(event));
+
+                    if (dest) {
+                        customDrop = {
+                            rect: new Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
+                            callback: dest.callback,
+                            invalidated: dest.invalidated,
+                            dragging: dragging,
+                            over: selected,
+                            x: pos.x - tabRect.x,
+                            y: pos.y - tabRect.y,
+                            location: dropInfo.location,
+                            cursor: dest.cursor
+                        };
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+
+                if (customDrop?.callback === currentCallback) {
+                    invalidated = undefined;
+                }
+
+                this.customDrop = customDrop;
+            }
+        }
+
+        this.dropInfo = dropInfo;
+        this.outlineDiv!.className = this.getClassName(this.customDrop ? this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT) : this.getClassName(dropInfo.className));
+
+        if (this.customDrop) {
+            this.customDrop.rect.positionElement(this.outlineDiv!);
+        } else {
+            dropInfo.rect.positionElement(this.outlineDiv!);
+        }
+
+        DragDrop.instance.setGlassCursorOverride(this.customDrop?.cursor);
+        this.outlineDiv!.style.visibility = "visible";
+
+        try {
+            invalidated?.();
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     /** @hidden @internal */
     onDragEnter(event: React.DragEvent<HTMLDivElement>) {
