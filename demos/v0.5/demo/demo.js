@@ -169,7 +169,7 @@ var App = /** @class */ (function (_super) {
             event.stopPropagation();
             event.preventDefault();
             if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDrop("Add grid<br>(Drag to location)", {
+                _this.refs.layout.addTabWithDragAndDrop("Add grid\n(Drag to location)", {
                     component: "grid",
                     name: "Grid " + _this.nextGridIndex++
                 }, _this.onAdded);
@@ -194,7 +194,7 @@ var App = /** @class */ (function (_super) {
         };
         _this.onAddIndirectClick = function (event) {
             if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDropIndirect("Add grid<br>(Drag to location)", {
+                _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
                     component: "grid",
                     name: "Grid " + _this.nextGridIndex++
                 }, _this.onAdded);
@@ -205,6 +205,20 @@ var App = /** @class */ (function (_super) {
             _this.setState({
                 realtimeResize: event.target.checked
             });
+        };
+        _this.onRenderDragRect = function (text, node, json) {
+            if (_this.state.layoutFile === "newfeatures") {
+                return (React.createElement("div", { style: { whiteSpace: "pre" } },
+                    text,
+                    React.createElement("br", null),
+                    React.createElement("br", null),
+                    "This is a customized",
+                    React.createElement("br", null),
+                    "drag rectangle"));
+            }
+            else {
+                return undefined; // use default rendering
+            }
         };
         _this.onExternalDrag = function (e) {
             // console.log("onExternaldrag ", e.dataTransfer.types);
@@ -408,7 +422,7 @@ var App = /** @class */ (function (_super) {
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: function (dragging, over, x, y, location, refresh) {
+            contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: function (dragging, over, x, y, location, refresh) {
                     var tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
                     if (tabStorageImpl)
                         return tabStorageImpl(dragging, over, x, y, location, refresh);
@@ -32212,6 +32226,9 @@ var Rect = /** @class */ (function () {
     Rect.prototype.getRight = function () {
         return this.x + this.width;
     };
+    Rect.prototype.getCenter = function () {
+        return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
+    };
     Rect.prototype.positionElement = function (element, position) {
         this.styleWithPosition(element.style, position);
     };
@@ -32673,6 +32690,7 @@ var BorderNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.addInherited("size", "borderSize").setType(Attribute_1.default.NUMBER);
         attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute_1.default.NUMBER);
+        attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute_1.default.BOOLEAN);
         return attributeDefinitions;
     };
     BorderNode.prototype.getLocation = function () {
@@ -32764,7 +32782,19 @@ var BorderNode = /** @class */ (function (_super) {
         return false;
     };
     BorderNode.prototype.isShowing = function () {
-        return this._attributes.show;
+        var show = this._attributes.show;
+        if (show) {
+            if (this._model._getShowHiddenBorder() !== this._location && this.isAutoHide() && this._children.length === 0) {
+                return false;
+            }
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    BorderNode.prototype.isAutoHide = function () {
+        return this._getAttr("enableAutoHide");
     };
     /** @hidden @internal */
     BorderNode.prototype._setSelected = function (index) {
@@ -33065,24 +33095,22 @@ var BorderSet = /** @class */ (function () {
         // sum size of borders to see they will fit
         for (var _i = 0, showingBorders_1 = showingBorders; _i < showingBorders_1.length; _i++) {
             var border = showingBorders_1[_i];
-            if (border.isShowing()) {
-                border._setAdjustedSize(border.getSize());
-                var visible = border.getSelected() !== -1;
-                if (border.getLocation().getOrientation() === Orientation_1.default.HORZ) {
-                    sumWidth += border.getBorderBarSize();
-                    if (visible) {
-                        width -= this._model.getSplitterSize();
-                        sumWidth += border.getSize();
-                        adjustableWidth += border.getSize();
-                    }
+            border._setAdjustedSize(border.getSize());
+            var visible = border.getSelected() !== -1;
+            if (border.getLocation().getOrientation() === Orientation_1.default.HORZ) {
+                sumWidth += border.getBorderBarSize();
+                if (visible) {
+                    width -= this._model.getSplitterSize();
+                    sumWidth += border.getSize();
+                    adjustableWidth += border.getSize();
                 }
-                else {
-                    sumHeight += border.getBorderBarSize();
-                    if (visible) {
-                        height -= this._model.getSplitterSize();
-                        sumHeight += border.getSize();
-                        adjustableHeight += border.getSize();
-                    }
+            }
+            else {
+                sumHeight += border.getBorderBarSize();
+                if (visible) {
+                    height -= this._model.getSplitterSize();
+                    sumHeight += border.getSize();
+                    adjustableHeight += border.getSize();
                 }
             }
         }
@@ -33212,6 +33240,7 @@ var Model = /** @class */ (function () {
         this._idMap = {};
         this._borders = new BorderSet_1.default(this);
         this._pointerFine = true;
+        this._showHiddenBorder = DockLocation_1.default.CENTER;
     }
     /**
      * Loads the model from the given json object
@@ -33278,6 +33307,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("borderClassName", undefined).setType(Attribute_1.default.STRING);
+        attributeDefinitions.add("borderEnableAutoHide", false).setType(Attribute_1.default.BOOLEAN);
         return attributeDefinitions;
     };
     /** @hidden @internal */
@@ -33294,6 +33324,14 @@ var Model = /** @class */ (function () {
         else {
             return undefined;
         }
+    };
+    /** @hidden @internal */
+    Model.prototype._getShowHiddenBorder = function () {
+        return this._showHiddenBorder;
+    };
+    /** @hidden @internal */
+    Model.prototype._setShowHiddenBorder = function (location) {
+        this._showHiddenBorder = location;
     };
     /** @hidden @internal */
     Model.prototype._setActiveTabset = function (tabsetNode) {
@@ -35715,6 +35753,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Layout = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
 var DragDrop_1 = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
@@ -35750,6 +35789,8 @@ var Layout = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         /** @hidden @internal */
         _this.firstMove = false;
+        /** @hidden @internal */
+        _this.dragRectRendered = true;
         /** @hidden @internal */
         _this.dragDivText = "";
         /** @hidden @internal */
@@ -35866,6 +35907,7 @@ var Layout = /** @class */ (function (_super) {
                 _this.newTabJson = undefined;
                 _this.customDrop = undefined;
             }
+            _this.setState({ showHiddenBorder: DockLocation_1.default.CENTER });
         };
         /** @hidden @internal */
         _this.onDragDivMouseDown = function (event) {
@@ -35884,6 +35926,27 @@ var Layout = /** @class */ (function (_super) {
             }
         };
         /** @hidden @internal */
+        _this.dragRectRender = function (text, node, json, onRendered) {
+            var content = React.createElement("div", { style: { whiteSpace: "pre" } }, text.replace("<br>", "\n"));
+            if (_this.props.onRenderDragRect !== undefined) {
+                var customContent = _this.props.onRenderDragRect(text, node, json);
+                if (customContent !== undefined) {
+                    content = customContent;
+                }
+            }
+            // hide div until the render is complete
+            _this.dragDiv.style.visibility = "hidden";
+            _this.dragRectRendered = false;
+            ReactDOM.render(React.createElement(DragRectRenderWrapper
+            // wait for it to be rendered
+            , { 
+                // wait for it to be rendered
+                onRendered: function () {
+                    _this.dragRectRendered = true;
+                    onRendered === null || onRendered === void 0 ? void 0 : onRendered();
+                } }, content), _this.dragDiv);
+        };
+        /** @hidden @internal */
         _this.onDragStart = function () {
             _this.dropInfo = undefined;
             _this.customDrop = undefined;
@@ -35895,7 +35958,7 @@ var Layout = /** @class */ (function (_super) {
             if (_this.dragDiv == null) {
                 _this.dragDiv = _this.currentDocument.createElement("div");
                 _this.dragDiv.className = _this.getClassName(Types_1.CLASSES.FLEXLAYOUT__DRAG_RECT);
-                _this.dragDiv.innerHTML = _this.dragDivText;
+                _this.dragRectRender(_this.dragDivText, _this.dragNode, _this.newTabJson);
                 rootdiv.appendChild(_this.dragDiv);
             }
             // add edge indicators
@@ -35919,8 +35982,20 @@ var Layout = /** @class */ (function (_super) {
                 x: event.clientX - clientRect.left,
                 y: event.clientY - clientRect.top,
             };
-            _this.dragDiv.style.left = pos.x - _this.dragDiv.getBoundingClientRect().width / 2 + "px";
+            _this.checkForBorderToShow(pos.x, pos.y);
+            // keep it between left & right
+            var dragRect = _this.dragDiv.getBoundingClientRect();
+            var newLeft = pos.x - dragRect.width / 2;
+            if (newLeft + dragRect.width > clientRect.width) {
+                newLeft = clientRect.width - dragRect.width;
+            }
+            newLeft = Math.max(0, newLeft);
+            _this.dragDiv.style.left = newLeft + "px";
             _this.dragDiv.style.top = pos.y + 5 + "px";
+            if (_this.dragRectRendered && _this.dragDiv.style.visibility === "hidden") {
+                // make visible once the drag rect has been rendered
+                _this.dragDiv.style.visibility = "visible";
+            }
             var dropInfo = _this.props.model._findDropTargetNode(_this.dragNode, pos.x, pos.y);
             if (dropInfo) {
                 var invalidated = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated;
@@ -35951,7 +36026,7 @@ var Layout = /** @class */ (function (_super) {
                         catch (e) {
                             console.error(e);
                         }
-                        if ((customDrop === null || customDrop === void 0 ? void 0 : customDrop.callback) == currentCallback) {
+                        if ((customDrop === null || customDrop === void 0 ? void 0 : customDrop.callback) === currentCallback) {
                             invalidated = undefined;
                         }
                         _this.customDrop = customDrop;
@@ -36006,6 +36081,7 @@ var Layout = /** @class */ (function (_super) {
                     _this.doAction(Actions_1.default.moveNode(_this.dragNode.getId(), _this.dropInfo.node.getId(), _this.dropInfo.location, _this.dropInfo.index));
                 }
             }
+            _this.setState({ showHiddenBorder: DockLocation_1.default.CENTER });
         };
         _this.props.model._setChangeListener(_this.onModelChange);
         _this.tabIds = [];
@@ -36018,11 +36094,13 @@ var Layout = /** @class */ (function (_super) {
         // For backwards compatibility, prop closeIcon sets prop icons.close:
         _this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
         _this.firstRender = true;
-        _this.state = { rect: new Rect_1.default(0, 0, 0, 0),
+        _this.state = {
+            rect: new Rect_1.default(0, 0, 0, 0),
             calculatedHeaderBarSize: 25,
             calculatedTabBarSize: 26,
             calculatedBorderBarSize: 30,
             editingTab: undefined,
+            showHiddenBorder: DockLocation_1.default.CENTER,
         };
         _this.onDragEnter = _this.onDragEnter.bind(_this);
         return _this;
@@ -36150,6 +36228,7 @@ var Layout = /** @class */ (function (_super) {
             tabBarSize: this.state.calculatedTabBarSize,
             borderBarSize: this.state.calculatedBorderBarSize,
         };
+        this.props.model._setShowHiddenBorder(this.state.showHiddenBorder);
         this.centerRect = this.props.model._layout(this.state.rect, metrics);
         this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
         this.renderChildren(this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
@@ -36290,7 +36369,7 @@ var Layout = /** @class */ (function (_super) {
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
      * @param dragText the text to show on the drag panel
      * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete
+     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
     Layout.prototype.addTabWithDragAndDrop = function (dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
@@ -36303,22 +36382,29 @@ var Layout = /** @class */ (function (_super) {
      *
      * @param dragText the text to show on the drag panel
      * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete
+     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
     Layout.prototype.addTabWithDragAndDropIndirect = function (dragText, json, onDrop) {
+        var _this = this;
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         DragDrop_1.default.instance.addGlass(this.onCancelAdd);
         this.dragDivText = dragText;
         this.dragDiv = this.currentDocument.createElement("div");
         this.dragDiv.className = this.getClassName("flexlayout__drag_rect");
-        this.dragDiv.innerHTML = this.dragDivText;
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown);
-        var r = new Rect_1.default(10, 10, 150, 50);
-        r.centerInRect(this.state.rect);
-        this.dragDiv.style.left = r.x + "px";
-        this.dragDiv.style.top = r.y + "px";
+        this.dragRectRender(this.dragDivText, undefined, this.newTabJson, function () {
+            if (_this.dragDiv) {
+                // now it's been rendered into the dom it can be centered
+                _this.dragDiv.style.visibility = "visible";
+                var domRect = _this.dragDiv.getBoundingClientRect();
+                var r = new Rect_1.default(0, 0, domRect === null || domRect === void 0 ? void 0 : domRect.width, domRect === null || domRect === void 0 ? void 0 : domRect.height);
+                r.centerInRect(_this.state.rect);
+                _this.dragDiv.style.left = r.x + "px";
+                _this.dragDiv.style.top = r.y + "px";
+            }
+        });
         var rootdiv = this.selfRef.current;
         rootdiv.appendChild(this.dragDiv);
     };
@@ -36334,6 +36420,38 @@ var Layout = /** @class */ (function (_super) {
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
             this.dragStart(event, drag.dragText, TabNode_1.default._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
+        }
+    };
+    /** @hidden @internal */
+    Layout.prototype.checkForBorderToShow = function (x, y) {
+        var r = this.props.model._getOuterInnerRects().outer;
+        var c = r.getCenter();
+        var margin = this.edgeRectWidth;
+        var offset = this.edgeRectLength / 2;
+        var overEdge = false;
+        if (this.props.model.isEnableEdgeDock() && this.state.showHiddenBorder === DockLocation_1.default.CENTER) {
+            if ((y > c.y - offset && y < c.y + offset) ||
+                (x > c.x - offset && x < c.x + offset)) {
+                overEdge = true;
+            }
+        }
+        var location = DockLocation_1.default.CENTER;
+        if (!overEdge) {
+            if (x <= r.x + margin) {
+                location = DockLocation_1.default.LEFT;
+            }
+            else if (x >= r.getRight() - margin) {
+                location = DockLocation_1.default.RIGHT;
+            }
+            else if (y <= r.y + margin) {
+                location = DockLocation_1.default.TOP;
+            }
+            else if (y >= r.getBottom() - margin) {
+                location = DockLocation_1.default.BOTTOM;
+            }
+        }
+        if (location !== this.state.showHiddenBorder) {
+            this.setState({ showHiddenBorder: location });
         }
     };
     /** @hidden @internal */
@@ -36431,6 +36549,14 @@ var Layout = /** @class */ (function (_super) {
     return Layout;
 }(React.Component));
 exports.Layout = Layout;
+/** @hidden @internal */
+var DragRectRenderWrapper = function (props) {
+    React.useEffect(function () {
+        var _a;
+        (_a = props.onRendered) === null || _a === void 0 ? void 0 : _a.call(props);
+    }, [props]);
+    return (React.createElement(React.Fragment, null, props.children));
+};
 exports.default = Layout;
 
 
