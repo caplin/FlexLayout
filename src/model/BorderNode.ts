@@ -4,6 +4,7 @@ import DockLocation from "../DockLocation";
 import DropInfo from "../DropInfo";
 import Orientation from "../Orientation";
 import Rect from "../Rect";
+import { CLASSES } from "../Types";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
 import { IJsonBorderNode } from "./IJsonModel";
@@ -309,18 +310,18 @@ class BorderNode extends Node implements IDropTarget {
                         childCenter = childRect.x + childRect.width / 2;
                         if (x >= pos && x < childCenter) {
                             const outlineRect = new Rect(childRect.x - 2, childY, 3, childHeight);
-                            dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
+                            dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
                         const outlineRect = new Rect(childRect.getRight() - 2, childY, 3, childHeight);
-                        dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
+                        dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                     }
                 } else {
                     const outlineRect = new Rect(this._tabHeaderRect!.x + 1, this._tabHeaderRect!.y + 2, 3, 18);
-                    dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
+                    dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                 }
             } else {
                 if (this._children.length > 0) {
@@ -337,18 +338,18 @@ class BorderNode extends Node implements IDropTarget {
                         childCenter = childRect.y + childRect.height / 2;
                         if (y >= pos && y < childCenter) {
                             const outlineRect = new Rect(childX, childRect.y - 2, childWidth, 3);
-                            dropInfo = new DropInfo(this, outlineRect, dockLocation, i, "flexlayout__outline_rect");
+                            dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
                         const outlineRect = new Rect(childX, childRect.getBottom() - 2, childWidth, 3);
-                        dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, "flexlayout__outline_rect");
+                        dropInfo = new DropInfo(this, outlineRect, dockLocation, this._children.length, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                     }
                 } else {
                     const outlineRect = new Rect(this._tabHeaderRect!.x + 2, this._tabHeaderRect!.y + 1, 18, 3);
-                    dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, "flexlayout__outline_rect");
+                    dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                 }
             }
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
@@ -356,7 +357,7 @@ class BorderNode extends Node implements IDropTarget {
             }
         } else if (this.getSelected() !== -1 && this._contentRect!.contains(x, y)) {
             const outlineRect = this._contentRect;
-            dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, "flexlayout__outline_rect");
+            dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
                 return undefined;
             }

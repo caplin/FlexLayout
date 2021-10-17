@@ -5,6 +5,7 @@ import DockLocation from "../DockLocation";
 import DropInfo from "../DropInfo";
 import Orientation from "../Orientation";
 import Rect from "../Rect";
+import { CLASSES } from "../Types";
 import BorderNode from "./BorderNode";
 import IDraggable from "./IDraggable";
 import IDropTarget from "./IDropTarget";
@@ -404,24 +405,24 @@ class RowNode extends Node implements IDropTarget {
                 const dockLocation = DockLocation.LEFT;
                 const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
-                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
+                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             } else if (x > this._rect.getRight() - margin && yy > h / 2 - half && yy < h / 2 + half) {
                 const dockLocation = DockLocation.RIGHT;
                 const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
-                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
+                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             } else if (y < this._rect.y + margin && xx > w / 2 - half && xx < w / 2 + half) {
                 const dockLocation = DockLocation.TOP;
                 const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
-                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
+                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             } else if (y > this._rect.getBottom() - margin && xx > w / 2 - half && xx < w / 2 + half) {
                 const dockLocation = DockLocation.BOTTOM;
                 const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 outlineRect.y += outlineRect.height;
-                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, "flexlayout__outline_rect_edge");
+                dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
 
             if (dropInfo !== undefined) {

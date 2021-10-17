@@ -28,6 +28,7 @@ import { IJsonTabNode } from "../model/IJsonModel";
 
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
 export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
+export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
 
 export interface ILayoutProps {
     model: Model;
@@ -69,6 +70,7 @@ export interface ILayoutProps {
         cursor?: string | undefined
     };
     onRenderDragRect?: DragRectRenderCallback;
+    onRenderFloatingTabPlaceholder?: FloatingTabPlaceholderRenderCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -157,7 +159,7 @@ export interface ILayoutCallbacks {
     styleFont: (style: Record<string, string>) => Record<string, string>;
     setEditingTab(tabNode?: TabNode): void;
     getEditingTab(): TabNode | undefined;
-
+    getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -959,7 +961,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
 
         this.dropInfo = dropInfo;
-        this.outlineDiv!.className = this.getClassName(this.customDrop ? this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT) : this.getClassName(dropInfo.className));
+        this.outlineDiv!.className = this.getClassName(this.customDrop ? CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
 
         if (this.customDrop) {
             this.customDrop.rect.positionElement(this.outlineDiv!);
@@ -1140,6 +1142,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             message = id + (param === undefined ? "" : param);
         }
         return message;
+    }
+
+    /** @hidden @internal */
+    getOnRenderFloatingTabPlaceholder() {
+        return this.props.onRenderFloatingTabPlaceholder;
     }
 }
 

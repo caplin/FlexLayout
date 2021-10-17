@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as FlexLayout from "../../src/index";
 import { Action, BorderNode, DockLocation, DropInfo, IJsonTabNode, Node, TabNode, TabSetNode } from "../../src/index";
+import { CLASSES } from "../../src/Types";
 import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
 import { TabStorage } from "./TabStorage";
 import Utils from "./Utils";
@@ -153,6 +154,24 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         } else {
             return undefined; // use default rendering
         }
+    }
+
+    onRenderFloatingTabPlaceholder = (dockPopout: () => void, showPopout: () => void) => {
+        return (
+            <div className={CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER}>
+            <div>Custom renderer for floating tab placeholder</div>
+            <div>
+                <a href="#" onClick={showPopout}>
+                    {"show the tab"}
+                </a>
+            </div>
+            <div>
+                <a href="#" onClick={dockPopout}>
+                    {"dock the tab"}
+                </a>
+            </div>
+        </div>
+        );
     }
 
     onExternalDrag = (e: React.DragEvent) => {
@@ -361,10 +380,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onRenderTab={this.onRenderTab}
                 onRenderTabSet={this.onRenderTabSet}
                 onRenderDragRect={this.onRenderDragRect}
+                onRenderFloatingTabPlaceholder={this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
-                onTabDrag={this.onTabDrag}
-
+                onTabDrag={this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined}
+ 
             // classNameMapper={
             //     className => {
             //         console.log(className);

@@ -97,7 +97,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             <button
                 key="overflowbutton"
                 ref={overflowbuttonRef}
-                className={cm("flexlayout__border_toolbar_button_overflow") + " " + cm("flexlayout__border_toolbar_button_overflow_" + border.getLocation().getName())}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName())}
                 title={overflowTitle}
                 onClick={onOverflowClick}
                 onMouseDown={onInterceptMouseDown}

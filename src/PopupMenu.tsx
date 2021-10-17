@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import TabNode from "./model/TabNode";
+import { CLASSES } from "./Types";
 
 /** @hidden @internal */
 export function showPopup(
@@ -15,7 +16,7 @@ export function showPopup(
     const layoutRect = layoutDiv.getBoundingClientRect();
 
     const elm = currentDocument.createElement("div");
-    elm.className = classNameMapper("flexlayout__popup_menu_container");
+    elm.className = classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER);
     if (triggerRect.left < layoutRect.left + layoutRect.width / 2) {
         elm.style.left = triggerRect.left - layoutRect.left + "px";
     } else {
@@ -70,10 +71,10 @@ const PopupMenu = (props: IPopupMenuProps) => {
     };
 
     const itemElements = items.map((item) => (
-        <div key={item.index} className={classNameMapper("flexlayout__popup_menu_item")} onClick={(event) => onItemClick(item, event)} title={item.node.getHelpText()}>
+        <div key={item.index} className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)} onClick={(event) => onItemClick(item, event)} title={item.node.getHelpText()}>
             {item.node._getRenderedName()}
         </div>
     ));
 
-    return <div className={classNameMapper("flexlayout__popup_menu")}>{itemElements}</div>;
+    return <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>{itemElements}</div>;
 };

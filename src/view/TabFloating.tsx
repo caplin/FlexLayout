@@ -17,6 +17,16 @@ export interface ITabFloatingProps {
 export const TabFloating = (props: ITabFloatingProps) => {
     const { layout, selected, node } = props;
 
+    const showPopout = () => {
+        if (node.getWindow()) {
+            node.getWindow()!.focus();
+        }
+    }
+
+    const dockPopout = () => {
+        layout.doAction(Actions.unFloatTab(node.getId()));
+    }
+
     const onMouseDown = () => {
         const parent = node.getParent() as TabSetNode;
         if (parent.getType() === TabSetNode.TYPE) {
@@ -28,14 +38,12 @@ export const TabFloating = (props: ITabFloatingProps) => {
 
     const onClickFocus = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         event.preventDefault();
-        if (node.getWindow()) {
-            node.getWindow()!.focus();
-        }
+        showPopout();
     };
 
     const onClickDock = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         event.preventDefault();
-        layout.doAction(Actions.unFloatTab(node.getId()));
+        dockPopout();
     };
 
     const cm = layout.getClassName;
@@ -48,21 +56,30 @@ export const TabFloating = (props: ITabFloatingProps) => {
     const showMessage = layout.i18nName(I18nLabel.Floating_Window_Show_Window);
     const dockMessage = layout.i18nName(I18nLabel.Floating_Window_Dock_Window);
 
-    return (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
-            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER)}>
-                <div>{message}</div>
-                <div>
-                    <a href="#" onClick={onClickFocus}>
-                        {showMessage}
-                    </a>
-                </div>
-                <div>
-                    <a href="#" onClick={onClickDock}>
-                        {dockMessage}
-                    </a>
+    const customRenderCallback = layout.getOnRenderFloatingTabPlaceholder();
+    if (customRenderCallback) {
+        return (
+            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+                {customRenderCallback(dockPopout, showPopout)}
+            </div>
+        );
+    } else {
+        return (
+            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER)}>
+                    <div>{message}</div>
+                    <div>
+                        <a href="#" onClick={onClickFocus}>
+                            {showMessage}
+                        </a>
+                    </div>
+                    <div>
+                        <a href="#" onClick={onClickDock}>
+                            {dockMessage}
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    }
 };

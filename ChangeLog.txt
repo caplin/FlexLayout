@@ -1,3 +1,6 @@
+0.5.19
+Added onRenderFloatingTabPlaceholder callback prop for rendering the floating tab placeholder.
+
 0.5.18
 Added onRenderDragRect callback prop for rendering the drag rectangles
 New border attribute: enableAutoHide, to hide border if it has zero tabs

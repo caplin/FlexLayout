@@ -9,6 +9,8 @@ export enum CLASSES {
     FLEXLAYOUT__BORDER_BUTTON_TRAILING = "flexlayout__border_button_trailing",
     FLEXLAYOUT__BORDER_BUTTON__SELECTED = "flexlayout__border_button--selected",
     FLEXLAYOUT__BORDER_BUTTON__UNSELECTED = "flexlayout__border_button--unselected",
+    FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW = "flexlayout__border_toolbar_button_overflow",
+    FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ = "flexlayout__border_toolbar_button_overflow_",
 
     FLEXLAYOUT__BORDER_INNER = "flexlayout__border_inner",
     FLEXLAYOUT__BORDER_INNER_ = "flexlayout__border_inner_",
@@ -34,6 +36,7 @@ export enum CLASSES {
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
 
     FLEXLAYOUT__OUTLINE_RECT = "flexlayout__outline_rect",
+    FLEXLAYOUT__OUTLINE_RECT_EDGE = "flexlayout__outline_rect_edge",
 
     FLEXLAYOUT__SPLITTER = "flexlayout__splitter",
     FLEXLAYOUT__SPLITTER_EXTRA = "flexlayout__splitter_extra",
@@ -78,4 +81,7 @@ export enum CLASSES {
     FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER = "flexlayout__tab_toolbar_sticky_buttons_container",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE = "flexlayout__tab_toolbar_button-close",
 
+    FLEXLAYOUT__POPUP_MENU_CONTAINER = "flexlayout__popup_menu_container",
+    FLEXLAYOUT__POPUP_MENU_ITEM = "flexlayout__popup_menu_item",
+    FLEXLAYOUT__POPUP_MENU = "flexlayout__popup_menu",
 }
