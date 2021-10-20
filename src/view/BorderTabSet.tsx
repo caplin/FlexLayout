@@ -145,7 +145,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     }
 
     return (
-        <div ref={selfRef} style={style} className={borderClasses} onWheel={onMouseWheel}>
+        <div ref={selfRef} dir="ltr" style={style} className={borderClasses} onWheel={onMouseWheel}>
             <div style={{ height: borderHeight }} className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}>
                 <div style={innerStyle} className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName())}>
                     {tabs}

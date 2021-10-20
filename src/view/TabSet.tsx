@@ -300,7 +300,7 @@ export const TabSet = (props: ITabSetProps) => {
     style = layout.styleFont(style);
 
     return (
-        <div ref={selfRef} style={style} className={cm(CLASSES.FLEXLAYOUT__TABSET)} onWheel={onMouseWheel}>
+        <div ref={selfRef} dir="ltr" style={style} className={cm(CLASSES.FLEXLAYOUT__TABSET)} onWheel={onMouseWheel}>
             {header}
             {tabStrip}
         </div>

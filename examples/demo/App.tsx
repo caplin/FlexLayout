@@ -408,7 +408,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
 
         return <div className="app">
-            <div className="toolbar">
+            <div className="toolbar" dir="ltr">
                 <select onChange={this.onSelectLayout}>
                     <option value="default">Default</option>
                     <option value="newfeatures">New Features</option>

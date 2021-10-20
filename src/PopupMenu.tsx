@@ -76,5 +76,5 @@ const PopupMenu = (props: IPopupMenuProps) => {
         </div>
     ));
 
-    return <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>{itemElements}</div>;
+    return <div  dir="ltr" className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>{itemElements}</div>;
 };
