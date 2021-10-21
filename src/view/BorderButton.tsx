@@ -25,11 +25,11 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
-        props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
+        props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, () => undefined);
     };
 
-    const onClick = () => {
-        layout.doAction(Actions.selectTab(node.getId()));
+    const onClick = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+        layout.doAction(Actions.selectTab(node.getId(), event));
     };
 
     const isClosable = () => {
@@ -50,7 +50,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
         if (isClosable()) {
             layout.doAction(Actions.deleteTab(node.getId()));
         } else {
-            onClick();
+            onClick(event);
         }
     };
 
@@ -87,8 +87,8 @@ export const BorderButton = (props: IBorderButtonProps) => {
     let name = node.getName();
 
     function isTitleObject(obj: any): obj is ITitleObject {
-        return obj.titleContent !== undefined 
-      }
+        return obj.titleContent !== undefined;
+    }
 
     if (titleFactory !== undefined) {
         const titleObj = titleFactory(node);

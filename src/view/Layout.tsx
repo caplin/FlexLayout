@@ -141,12 +141,12 @@ export interface ILayoutCallbacks {
     getDomRect(): any;
     getRootDiv(): HTMLDivElement;
     dragStart(
-        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
+        event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
         dragDivText: string,
         node: Node & IDraggable,
         allowDrag: boolean,
-        onClick?: (event: Event) => void,
-        onDoubleClick?: (event: Event) => void
+        onClick?: (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => void,
+        onDoubleClick?: (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => void
     ): void;
     customizeTab(
         tabNode: TabNode,

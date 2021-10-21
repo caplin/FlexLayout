@@ -8,7 +8,7 @@ export function showPopup(
     layoutDiv: HTMLDivElement,
     triggerElement: Element,
     items: { index: number; node: TabNode }[],
-    onSelect: (item: { index: number; node: TabNode }) => void,
+    onSelect: (event: React.MouseEvent<HTMLDivElement, MouseEvent>, item: { index: number; node: TabNode }) => void,
     classNameMapper: (defaultClassName: string) => string
 ) {
     const currentDocument = triggerElement.ownerDocument;
@@ -56,7 +56,7 @@ interface IPopupMenuProps {
     items: { index: number; node: TabNode }[];
     currentDocument: Document;
     onHide: () => void;
-    onSelect: (item: { index: number; node: TabNode }) => void;
+    onSelect: (event: React.MouseEvent<HTMLDivElement, MouseEvent>, item: { index: number; node: TabNode }) => void;
     classNameMapper: (defaultClassName: string) => string;
 }
 
@@ -65,7 +65,7 @@ const PopupMenu = (props: IPopupMenuProps) => {
     const { items, onHide, onSelect, classNameMapper } = props;
 
     const onItemClick = (item: { index: number; node: TabNode }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        onSelect(item);
+        onSelect(event, item);
         onHide();
         event.stopPropagation();
     };
@@ -76,5 +76,9 @@ const PopupMenu = (props: IPopupMenuProps) => {
         </div>
     ));
 
-    return <div  dir="ltr" className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>{itemElements}</div>;
+    return (
+        <div dir="ltr" className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>
+            {itemElements}
+        </div>
+    );
 };

@@ -72,7 +72,7 @@ class Actions {
      * @param tabsetNodeId the id of the tabset node to delete
      * @returns {Action} the action
      */
-     static deleteTabset(tabsetNodeId: string): Action {
+    static deleteTabset(tabsetNodeId: string): Action {
         return new Action(Actions.DELETE_TABSET, { node: tabsetNodeId });
     }
 
@@ -89,10 +89,11 @@ class Actions {
     /**
      * Selects the given tab in its parent tabset
      * @param tabNodeId the id of the node to set selected
+     * @param event the event that originated the action
      * @returns {Action} the action
      */
-    static selectTab(tabNodeId: string): Action {
-        return new Action(Actions.SELECT_TAB, { tabNode: tabNodeId });
+    static selectTab(tabNodeId: string, event?: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement> | undefined): Action {
+        return new Action(Actions.SELECT_TAB, { tabNode: tabNodeId, event });
     }
 
     /**

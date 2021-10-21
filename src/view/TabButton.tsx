@@ -27,18 +27,18 @@ export const TabButton = (props: ITabButtonProps) => {
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
 
-    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
+    const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
         if (!layout.getEditingTab()) {
             const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
             layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
 
-    const onClick = () => {
-        layout.doAction(Actions.selectTab(node.getId()));
+    const onClick = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+        layout.doAction(Actions.selectTab(node.getId(), event));
     };
 
-    const onDoubleClick = (event: Event) => {
+    const onDoubleClick = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
         if (node.isEnableRename()) {
             layout.setEditingTab(node);
             layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
@@ -78,7 +78,7 @@ export const TabButton = (props: ITabButtonProps) => {
         if (isClosable()) {
             layout.doAction(Actions.deleteTab(node.getId()));
         } else {
-            onClick();
+            onClick(event);
         }
     };
 

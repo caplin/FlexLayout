@@ -17,7 +17,7 @@ export interface ITabSetProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
-    editingTab?: TabNode; 
+    editingTab?: TabNode;
 }
 
 /** @hidden @internal */
@@ -36,8 +36,8 @@ export const TabSet = (props: ITabSetProps) => {
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
     };
 
-    const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
-        layout.doAction(Actions.selectTab(item.node.getId()));
+    const onOverflowItemSelect = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, item: { node: TabNode; index: number }) => {
+        layout.doAction(Actions.selectTab(item.node.getId(), event));
         userControlledLeft.current = false;
     };
 
@@ -51,7 +51,7 @@ export const TabSet = (props: ITabSetProps) => {
         layout.doAction(Actions.setActiveTabset(node.getId()));
         if (!layout.getEditingTab()) {
             const message = layout.i18nName(I18nLabel.Move_Tabset, name);
-            layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
+            layout.dragStart(event, message, node, node.isEnableDrag(), () => undefined, onDoubleClick);
         }
     };
 
@@ -75,7 +75,7 @@ export const TabSet = (props: ITabSetProps) => {
         }
     };
 
-    const onDoubleClick = (event: Event) => {
+    const onDoubleClick = (event: Event | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
         if (node.canMaximize()) {
             layout.maximize(node);
         }
@@ -134,16 +134,20 @@ export const TabSet = (props: ITabSetProps) => {
         if (tabsTruncated) {
             buttons = [...stickyButtons, ...buttons];
         } else {
-            tabs.push(<div
-                ref={stickyButtonsRef}
-                key="sticky_buttons_container"
-                onMouseDown={onInterceptMouseDown}
-                onTouchStart={onInterceptMouseDown}
-                onDragStart={(e) => { e.preventDefault() }}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
-            >
-                {stickyButtons}
-            </div>);
+            tabs.push(
+                <div
+                    ref={stickyButtonsRef}
+                    key="sticky_buttons_container"
+                    onMouseDown={onInterceptMouseDown}
+                    onTouchStart={onInterceptMouseDown}
+                    onDragStart={(e) => {
+                        e.preventDefault();
+                    }}
+                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+                >
+                    {stickyButtons}
+                </div>
+            );
         }
     }
 
@@ -217,11 +221,15 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     toolbar = (
-        <div key="toolbar" ref={toolbarRef}
+        <div
+            key="toolbar"
+            ref={toolbarRef}
             className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
             onMouseDown={onInterceptMouseDown}
             onTouchStart={onInterceptMouseDown}
-            onDragStart={(e) => { e.preventDefault() }}
+            onDragStart={(e) => {
+                e.preventDefault();
+            }}
         >
             {buttons}
         </div>
@@ -245,13 +253,16 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     if (showHeader) {
-
         const headerToolbar = (
-            <div key="toolbar" ref={toolbarRef}
+            <div
+                key="toolbar"
+                ref={toolbarRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
-                onDragStart={(e) => { e.preventDefault() }}
+                onDragStart={(e) => {
+                    e.preventDefault();
+                }}
             >
                 {headerButtons}
             </div>
