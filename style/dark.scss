@@ -13,29 +13,70 @@ $color_drag2: #b7d1b5 !default;
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
 
+.flexlayout {
+    &__layout {
+        --color-text: #{$color_text};
+        --color-background: #{$color_background};
+        --color-border: #{$color_3};
+
+        --color-tabset-background: #{$color_1};
+        --color-tabset-background-selected: #{$color_1};
+        --color-tabset-divider-line: #{$color_3};
+
+        --color-tabset-header-background: #{$color_1};
+        --color-tabset-header: #{$color_text};
+
+        --color-border-background: #{$color_1};
+        --color-border-divider-line: #{$color_3};
+
+        --color-tab-selected: #{$color_text};
+        --color-tab-selected-background: #{$color_3};
+        --color-tab-unselected: gray;
+        --color-tab-unselected-background: transparent;
+        --color-tab-textbox: #{$color_3};
+
+        --color-border-tab-selected: #{$color_text};
+        --color-border-tab-selected-background: #{$color_3};
+        --color-border-tab-unselected: gray;
+        --color-border-tab-unselected-background: #{$color_2};
+
+        --color-splitter: #{$color_2};
+        --color-splitter-hover: #{$color_4};
+        --color-splitter-drag: #{$color_5};
+
+        --color-drag-rect-border: #{$color_4};
+        --color-drag-rect-background: #{$color_1};
+        --color-drag-rect: #{$color_text};
+
+        --color-edge-marker: gray;
+
+        --color-drag1: #{$color_drag1};
+        --color-drag2: #{$color_drag2};
+
+        --font-size: #{$font-size};
+        --font-family: #{$font-family};
+    }
+}
+
 @mixin tabset_mixin {
-    background-color: $color_1;
 }
 
 @mixin tabset_tabbar_mixin {
-    background-color: $color_1;
 }
 
 @mixin tabset_header_mixin {
-    background-color: $color_1;
 }
 
 @mixin tabset_selected_mixin {
-    background-image: linear-gradient($color_background, $color_4);
+    background-image: linear-gradient(var(--color_background), $color_4);
 }
 
 @mixin tabset_header_mixin {
-    background-color: $color_1;
     box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
 }
 
 @mixin tabset_selected_mixin {
-    background-image: linear-gradient($color_background, $color_4);
+    background-image: linear-gradient(var(--color-background), $color_4);
 }
 
 @mixin tabset_maximized_mixin {
@@ -54,64 +95,46 @@ $font-family: Roboto, Arial, sans-serif !default;
     border-bottom-right-radius: 3px;
 }
 
-
 @mixin tab_button_mixin {
-
 }
 
 @mixin tab_button_selected_mixin {
-    background-color: $color_3;
-    color: $color_text;
 }
 
 @mixin tab_button_unselected_mixin {
-    color: gray;
 }
 
 @mixin tab_button_hovered_mixin {
-    background-color: $color_3;
-    color: $color_text;
 }
 
 @mixin border_mixin {
-    background-color: $color_1;
 }
 
 @mixin border_button_mixin {
     box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
     border-radius: 3px;
-    background-color: $color_2;
 }
 
 @mixin border_button_selected_mixin {
-    background-color: $color_3;
-    color: $color_text;
 }
 
 @mixin border_button_unselected_mixin {
-    color: gray;
 }
 
 @mixin border_button_hovered_mixin {
-    background-color: $color_3;
-    color: $color_text;
 }
 
 @mixin splitter_mixin {
-    background-color: $color_2;
 }
 
 @mixin splitter_hover_mixin {
-    background-color: $color_4;
 }
 
 @mixin splitter_drag_mixin {
     border-radius: 5px;
-    background-color: $color_5;
 }
 
 @mixin splitter_border_mixin {
 }
-
 
 @import "_base";

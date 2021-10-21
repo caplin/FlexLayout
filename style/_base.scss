@@ -13,10 +13,12 @@
     }
 
     &__splitter {
+        background-color: var(--color-splitter);
         @include splitter_mixin;
 
         @media (hover: hover) {
             &:hover {
+                background-color: var(--color-splitter-hover);
                 @include splitter_hover_mixin;
             }
         }
@@ -26,6 +28,7 @@
         }
         &_drag {
             z-index: 1000;
+            background-color: var(--color-splitter-drag);
             @include splitter_drag_mixin;
         }
         &_extra {
@@ -37,14 +40,14 @@
         position: absolute;
         pointer-events: none;
         box-sizing: border-box;
-        border: 2px solid $color_drag1;
+        border: 2px solid var(--color-drag1);
         box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
         border-radius: 5px;
         z-index: 1000;
 
         &_edge {
             pointer-events: none;
-            border: 2px solid $color_drag2;
+            border: 2px solid var(--color-drag2);
             box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
             border-radius: 5px;
             z-index: 1000;
@@ -56,16 +59,16 @@
         position: absolute;
         z-index: 1000;
         box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-        background-color: gray;
+        background-color: var(--color-edge-marker);
         pointer-events: none;
     }
 
     &__drag_rect {
         position: absolute;
         cursor: move;
-        color: $color_text;
-        background-color: $color_1;
-        border: 2px solid $color_4;
+        color: var(--color-drag-rect);
+        background-color: var(--color-drag-rect-background);
+        border: 2px solid var(--color-drag-rect-border);
         box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
         border-radius: 5px;
         z-index: 1000;
@@ -79,16 +82,16 @@
         overflow: hidden;
         padding: 10px;
         word-wrap: break-word;
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
     }
 
     &__tabset {
         overflow: hidden;
-        background-color: $color_1;
+        background-color: var(--color-background);
         box-sizing: border-box;
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
         @include tabset_mixin;
 
         &_header {
@@ -100,8 +103,9 @@
             right: 0;
             padding: 3px 3px 3px 5px;
             box-sizing: border-box;
-            border-bottom: 1px solid $color_3;
-            color: $color_text;
+            border-bottom: 1px solid var(--color-tabset-divider-line);
+            color: var(--color-tabset-header);
+            background-color: var(--color-tabset-header-background);
             @include tabset_header_mixin;
 
             &_content {
@@ -113,7 +117,7 @@
             &_outer {
                 // tabset tabbar outer
                 box-sizing: border-box;
-                background-color: $color_1;
+                background-color: var(--color-tabset-background);
                 position: absolute;
                 left: 0;
                 right: 0;
@@ -123,11 +127,11 @@
             }
 
             &_outer_top {
-                border-bottom: 1px solid $color_3;
+                border-bottom: 1px solid var(--color-tabset-divider-line);
             }
 
             &_outer_bottom {
-                border-top: 1px solid $color_3;
+                border-top: 1px solid var(--color-tabset-divider-line);
             }
 
             &_inner {
@@ -157,6 +161,7 @@
         }
 
         &-selected {
+            background-color: var(--color-tabset-background-selected);
             @include tabset_selected_mixin;
         }
 
@@ -169,8 +174,8 @@
         overflow: auto;
         position: absolute;
         box-sizing: border-box;
-        color: $color_text;
-        background-color: $color_background;
+        color: var(--color-text);
+        background-color: var(--color-background);
 
         &_button {
             display: inline-flex;
@@ -182,15 +187,21 @@
             @include tab_button_mixin;
 
             &--selected {
+                background-color:var(--color-tab-selected-background);
+                color:var(--color-tab-selected);
                 @include tab_button_selected_mixin;
             }
             @media (hover: hover) {
                 &:hover {
+                    background-color:var(--color-tab-selected-background);
+                    color:var(--color-tab-selected);
                     @include tab_button_hovered_mixin;
                 }
             }
 
             &--unselected {
+                background-color:var(--color-tab-unselected-background);
+                color:var(--color-tab-unselected);
                 @include tab_button_unselected_mixin;
             }
 
@@ -213,7 +224,7 @@
             &_textbox {
                 border: none;
                 color: green;
-                background-color: $color_3;
+                background-color: var(--color-tab-textbox);
             }
 
             &_textbox:focus {
@@ -289,8 +300,8 @@
             overflow: auto;
             position: absolute;
             box-sizing: border-box;
-            color: $color_text;
-            background-color: $color_background;
+            color: var(--color_text);
+            background-color: var(--color-background);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -318,28 +329,29 @@
         box-sizing: border-box;
         overflow: hidden;
         display: flex;
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
+        background-color: var(--color-border-background);
         @include border_mixin;
 
         &_top {
-            border-bottom: 1px solid $color_3;
+            border-bottom: 1px solid var(--color-border-divider-line);
             align-items: center;
         }
 
         &_bottom {
-            border-top: 1px solid $color_3;
+            border-top: 1px solid var(--color-border-divider-line);
             align-items: center;
         }
 
         &_left {
-            border-right: 1px solid $color_3;
+            border-right: 1px solid var(--color-border-divider-line);
             align-content: center;
             flex-direction: column;
         }
 
         &_right {
-            border-left: 1px solid $color_3;
+            border-left: 1px solid var(--color-border-divider-line);
             align-content: center;
             flex-direction: column;
         }
@@ -383,15 +395,21 @@
             @include border_button_mixin;
 
             &--selected {
+                background-color: var(--color-border-tab-selected-background);
+                color: var(--color-border-tab-selected);
                 @include border_button_selected_mixin;
             }
             @media (hover: hover) {
                 &:hover {
+                    background-color: var(--color-border-tab-selected-background);
+                    color: var(--color-border-tab-selected);
                     @include border_button_hovered_mixin;
                 }
             }
 
             &--unselected {
+                background-color: var(--color-border-tab-unselected-background);
+                color: var(--color-border-tab-unselected);
                 @include border_button_unselected_mixin;
             }
 
@@ -473,8 +491,8 @@
     }
 
     &__popup_menu {
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
 
         &_item {
             padding: 2px 10px 2px 10px;
@@ -483,15 +501,16 @@
 
         @media (hover: hover) {
             &_item:hover {
-                background-color: $color_6;
+                color: var(--color-tab-selected);
+                background-color: var(--color-tab-selected-background);
             }
         }
 
         &_container {
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-            border: 1px solid $color_6;
-            color: $color_text;
-            background: $color_background;
+            border: 1px solid var(--color-border);
+            color: var(--color-tab-unselected);
+            background: var(--color-tabset-background);
             border-radius: 3px;
             position: absolute;
             z-index: 1000;
@@ -515,8 +534,8 @@
             @include absoluteFill;
 
             box-sizing: border-box;
-            background-color: $color_background;
-            color: $color_text;
+            background-color: var(--color-background);
+            color: var(--color-text);
         }
     }
 
@@ -537,21 +556,21 @@
     &__tabset_sizer {
         padding-top: 5px; // tab_button has 3 padding top, tabset header inner has 2 border
         padding-bottom: 3px; // tab_button has 3 padding bottom
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
     }
 
     &__tabset_header_sizer {
         padding-top: 3px;
         padding-bottom: 3px;
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
     }
 
     &__border_sizer {
         padding-top: 6px;
         padding-bottom: 5px;
-        font-size: $font-size;
-        font-family: $font-family;
+        font-size: var(--font-size);
+        font-family: var(--font-family);
     }
 }

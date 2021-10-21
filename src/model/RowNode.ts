@@ -382,7 +382,9 @@ class RowNode extends Node implements IDropTarget {
         // add tabset into empty root
         if (this === this._model.getRoot() && this._children.length === 0) {
             const callback = this._model._getOnCreateTabSet();
-            const child = new TabSetNode(this._model, callback ? callback() : {});
+            let attrs = callback ? callback() : {};
+            attrs = {...attrs, selected: -1};
+            const child = new TabSetNode(this._model, attrs);
             this._model._setActiveTabset(child);
             this._addChild(child);
         }
