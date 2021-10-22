@@ -87,6 +87,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onTabDrag       | optional          | function called while dragging a tab, whether from the layout or using `addTabWithDragAndDrop`. Called with the `TabNode` being dragged / the tab json from `addTabWithDragAndDrop`, the `TabNode` being dragged over, the x and y coordinates relative to the dragged-over tab, and the `DockLocation` that would be used. Should return undefined for default behavior, or an object containing `x`, `y`, `width`, `height`, `callback`, `cursor` fields. Coordinates are in pixels relative to the dragged-over tab, and `callback` will be called with the same arguments if the tab is dropped. `cursor` is an optional string field that should contain a CSS cursor value, such as `copy` or `row-resize`. If `callback` is called, the layout does not perform its default behavior on drop. |
 | onRenderDragRect      | optional          | callback for rendering the drag rectangles |
 | onRenderFloatingTabPlaceholder      | optional          | callback for rendering the floating tab placeholder |
+| onContextMenu      | optional          | callback for handling context actions on tabs and tabsets |
 
 
 The model is tree of Node objects that define the structure of the layout.

@@ -19,6 +19,8 @@
         @media (hover: hover) {
             &:hover {
                 background-color: var(--color-splitter-hover);
+                transition: background-color ease-in .1s;
+                transition-delay: 0.05s;
                 @include splitter_hover_mixin;
             }
         }
@@ -223,8 +225,8 @@
 
             &_textbox {
                 border: none;
-                color: green;
-                background-color: var(--color-tab-textbox);
+                color: var(--color-tab-textbox);
+                background-color: var(--color-tab-textbox-background);
             }
 
             &_textbox:focus {

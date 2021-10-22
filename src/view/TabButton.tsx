@@ -7,6 +7,7 @@ import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
+import { isSimpleEvent } from "./TabSet";
 
 /** @hidden @internal */
 export interface ITabButtonProps {
@@ -28,10 +29,15 @@ export const TabButton = (props: ITabButtonProps) => {
     const contentWidth = React.useRef<number>(0);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        if (!layout.getEditingTab()) {
+
+        if (isSimpleEvent(event) && !layout.getEditingTab()) {
             const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
             layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
+    };
+
+    const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.showContextMenu(node, event);
     };
 
     const onClick = () => {
@@ -212,6 +218,7 @@ export const TabButton = (props: ITabButtonProps) => {
             className={classNames}
             onMouseDown={onMouseDown}
             onTouchStart={onMouseDown}
+            onContextMenu={onContextMenu}
             title={node.getHelpText()}
         >
             {leading}

@@ -33,7 +33,8 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-tab-selected-background: #{$color_3};
         --color-tab-unselected: gray;
         --color-tab-unselected-background: transparent;
-        --color-tab-textbox: #{$color_3};
+        --color-tab-textbox: #{$color_text};
+        --color-tab-textbox-background: #{$color_3};
 
         --color-border-tab-selected: #{$color_text};
         --color-border-tab-selected-background: #{$color_3};

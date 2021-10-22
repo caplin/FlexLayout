@@ -6,6 +6,7 @@ import { CLASSES } from "../../src/Types";
 import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
 import { TabStorage } from "./TabStorage";
 import Utils from "./Utils";
+import { showPopup } from "./PopupMenu";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -13,6 +14,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
+    showingPopupMenu: boolean = false;
 
     constructor(props: any) {
         super(props);
@@ -156,21 +158,37 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
     }
 
+    onContextMenu = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        if (!this.showingPopupMenu) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log(node, event);
+            showPopup((this.refs.layout as FlexLayout.Layout).getRootDiv(),
+                event.clientX, event.clientY,
+                ["one", "two"],
+                (item: string | undefined) => {
+                    console.log("selected: " + item);
+                    this.showingPopupMenu = false;
+                });
+            this.showingPopupMenu = true;
+        }
+    }
+
     onRenderFloatingTabPlaceholder = (dockPopout: () => void, showPopout: () => void) => {
         return (
             <div className={CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER}>
-            <div>Custom renderer for floating tab placeholder</div>
-            <div>
-                <a href="#" onClick={showPopout}>
-                    {"show the tab"}
-                </a>
+                <div>Custom renderer for floating tab placeholder</div>
+                <div>
+                    <a href="#" onClick={showPopout}>
+                        {"show the tab"}
+                    </a>
+                </div>
+                <div>
+                    <a href="#" onClick={dockPopout}>
+                        {"dock the tab"}
+                    </a>
+                </div>
             </div>
-            <div>
-                <a href="#" onClick={dockPopout}>
-                    {"dock the tab"}
-                </a>
-            </div>
-        </div>
         );
     }
 
@@ -384,7 +402,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
                 onTabDrag={this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined}
- 
+                onContextMenu={this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined}
+
             // classNameMapper={
             //     className => {
             //         console.log(className);

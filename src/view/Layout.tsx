@@ -29,6 +29,7 @@ import { IJsonTabNode } from "../model/IJsonModel";
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
 export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
 export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
+export type ContextMenuCallback = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 
 export interface ILayoutProps {
     model: Model;
@@ -71,6 +72,7 @@ export interface ILayoutProps {
     };
     onRenderDragRect?: DragRectRenderCallback;
     onRenderFloatingTabPlaceholder?: FloatingTabPlaceholderRenderCallback;
+    onContextMenu?: ContextMenuCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -160,6 +162,7 @@ export interface ILayoutCallbacks {
     setEditingTab(tabNode?: TabNode): void;
     getEditingTab(): TabNode | undefined;
     getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
+    showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) : void;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -1147,6 +1150,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     getOnRenderFloatingTabPlaceholder() {
         return this.props.onRenderFloatingTabPlaceholder;
+    }
+
+    /** @hidden @internal */
+    showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
+        if (this.props.onContextMenu) {
+            this.props.onContextMenu(node, event);
+        }
     }
 }
 

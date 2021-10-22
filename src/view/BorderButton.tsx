@@ -6,6 +6,7 @@ import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
+import { isSimpleEvent } from "./TabSet";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -24,8 +25,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
-        props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
+        if (isSimpleEvent(event)) {
+            const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
+            props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
+        }
+    };
+
+    const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.showContextMenu(node, event);
     };
 
     const onClick = () => {
@@ -129,7 +136,11 @@ export const BorderButton = (props: IBorderButtonProps) => {
     }
 
     return (
-        <div ref={selfRef} style={{}} className={classNames} onMouseDown={onMouseDown} onTouchStart={onMouseDown} title={node.getHelpText()}>
+        <div ref={selfRef} style={{}} className={classNames} 
+        onMouseDown={onMouseDown} 
+        onContextMenu={onContextMenu}
+        onTouchStart={onMouseDown} 
+        title={node.getHelpText()}>
             {leading}
             {content}
             {buttons}

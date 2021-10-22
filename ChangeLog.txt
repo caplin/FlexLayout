@@ -1,5 +1,8 @@
 0.5.19
 Added onRenderFloatingTabPlaceholder callback prop for rendering the floating tab placeholder.
+Changed style sheets to use CSS custom properties (variables) for several values.
+Fix selected index in single empty tabset.
+Added onContextMenu callback prop for handling context menus on tabs and tabsets.
 
 0.5.18
 Added onRenderDragRect callback prop for rendering the drag rectangles

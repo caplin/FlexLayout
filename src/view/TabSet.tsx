@@ -17,7 +17,7 @@ export interface ITabSetProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
-    editingTab?: TabNode; 
+    editingTab?: TabNode;
 }
 
 /** @hidden @internal */
@@ -42,17 +42,24 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        let name = node.getName();
-        if (name === undefined) {
-            name = "";
-        } else {
-            name = ": " + name;
+        
+        if (isSimpleEvent(event)) {
+            let name = node.getName();
+            if (name === undefined) {
+                name = "";
+            } else {
+                name = ": " + name;
+            }
+            layout.doAction(Actions.setActiveTabset(node.getId()));
+            if (!layout.getEditingTab()) {
+                const message = layout.i18nName(I18nLabel.Move_Tabset, name);
+                layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
+            }
         }
-        layout.doAction(Actions.setActiveTabset(node.getId()));
-        if (!layout.getEditingTab()) {
-            const message = layout.i18nName(I18nLabel.Move_Tabset, name);
-            layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
-        }
+    };
+
+    const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.showContextMenu(node, event);
     };
 
     const onInterceptMouseDown = (event: React.MouseEvent | React.TouchEvent) => {
@@ -269,7 +276,10 @@ export const TabSet = (props: ITabSetProps) => {
         }
 
         header = (
-            <div className={tabHeaderClasses} style={{ height: node.getHeaderHeight() + "px" }} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
+            <div className={tabHeaderClasses} style={{ height: node.getHeaderHeight() + "px" }}
+                onMouseDown={onMouseDown}
+                onContextMenu={onContextMenu}
+                onTouchStart={onMouseDown}>
                 <div className={cm(CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT)}>{headerContent}</div>
                 {headerToolbar}
             </div>
@@ -284,7 +294,10 @@ export const TabSet = (props: ITabSetProps) => {
         tabStripStyle["bottom"] = "0px";
     }
     tabStrip = (
-        <div className={tabStripClasses} style={tabStripStyle} onMouseDown={onMouseDown} onTouchStart={onMouseDown}>
+        <div className={tabStripClasses} style={tabStripStyle}
+            onMouseDown={onMouseDown}
+            onContextMenu={onContextMenu}
+            onTouchStart={onMouseDown}>
             <div ref={tabbarInnerRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
                 <div
                     style={{ left: position }}
@@ -306,3 +319,15 @@ export const TabSet = (props: ITabSetProps) => {
         </div>
     );
 };
+
+/** @hidden @internal */
+export function isSimpleEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    let simpleEvent = true;
+    if (event.nativeEvent instanceof MouseEvent) {
+        if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey) {
+            simpleEvent = false; 
+        }
+    }
+    return simpleEvent;
+}
+

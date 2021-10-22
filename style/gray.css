@@ -13,7 +13,8 @@
   --color-tab-selected-background: #d9d9d9;
   --color-tab-unselected: gray;
   --color-tab-unselected-background: transparent;
-  --color-tab-textbox: #d9d9d9;
+  --color-tab-textbox: black;
+  --color-tab-textbox-background: #d9d9d9;
   --color-border-tab-selected: black;
   --color-border-tab-selected-background: #d9d9d9;
   --color-border-tab-unselected: gray;
@@ -45,6 +46,8 @@
 @media (hover: hover) {
   .flexlayout__splitter:hover {
     background-color: var(--color-splitter-hover);
+    transition: background-color ease-in 0.1s;
+    transition-delay: 0.05s;
   }
 }
 .flexlayout__splitter_border {
@@ -216,8 +219,8 @@
 }
 .flexlayout__tab_button_textbox {
   border: none;
-  color: green;
-  background-color: var(--color-tab-textbox);
+  color: var(--color-tab-textbox);
+  background-color: var(--color-tab-textbox-background);
 }
 .flexlayout__tab_button_textbox:focus {
   outline: none;

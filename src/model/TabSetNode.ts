@@ -28,6 +28,9 @@ class TabSetNode extends Node implements IDraggable, IDropTarget {
                 newLayoutNode._addChild(child);
             });
         }
+        if (newLayoutNode._children.length === 0) {
+            newLayoutNode._setSelected(-1);
+        }
 
         if (json.maximized && json.maximized === true) {
             model._setMaximizedTabset(newLayoutNode);
