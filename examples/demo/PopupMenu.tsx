@@ -13,8 +13,8 @@ export function showPopup(
 
     const elm = currentDocument.createElement("div");
     elm.className = "popup_menu_container";
-    elm.style.left = x - layoutRect.left + "px";
-    elm.style.top = y - layoutRect.top + "px";
+    elm.style.left = x - layoutRect.left - 5 + "px";
+    elm.style.top = y - layoutRect.top - 5 + "px";
     layoutDiv.appendChild(elm);
 
     const onHide = (item: string | undefined) => {

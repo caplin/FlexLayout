@@ -29,7 +29,7 @@ import { IJsonTabNode } from "../model/IJsonModel";
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
 export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
 export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
-export type ContextMenuCallback = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+export type NodeMouseEvent = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 
 export interface ILayoutProps {
     model: Model;
@@ -72,7 +72,8 @@ export interface ILayoutProps {
     };
     onRenderDragRect?: DragRectRenderCallback;
     onRenderFloatingTabPlaceholder?: FloatingTabPlaceholderRenderCallback;
-    onContextMenu?: ContextMenuCallback;
+    onContextMenu?: NodeMouseEvent;
+    onAuxMouseClick?: NodeMouseEvent;
 }
 export interface IFontValues {
     size?: string;
@@ -163,6 +164,7 @@ export interface ILayoutCallbacks {
     getEditingTab(): TabNode | undefined;
     getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) : void;
+    auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) : void;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -1156,6 +1158,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
+        }
+    }
+
+    /** @hidden @internal */
+    auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
+        if (this.props.onAuxMouseClick) {
+            this.props.onAuxMouseClick(node, event);
         }
     }
 }

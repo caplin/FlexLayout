@@ -30,6 +30,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
 
+    const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.auxMouseClick(border, event);
+    };
+
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         layout.showContextMenu(border, event);
     };
@@ -150,6 +154,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     return (
         <div ref={selfRef} dir="ltr" style={style} className={borderClasses} 
+            onClick={onAuxMouseClick}
+            onAuxClick={onAuxMouseClick}
             onContextMenu={onContextMenu}
             onWheel={onMouseWheel}>
             <div style={{ height: borderHeight }} className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}>

@@ -36,6 +36,10 @@ export const TabButton = (props: ITabButtonProps) => {
         }
     };
 
+    const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.auxMouseClick(node, event);
+    };
+
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         layout.showContextMenu(node, event);
     };
@@ -217,8 +221,10 @@ export const TabButton = (props: ITabButtonProps) => {
             }}
             className={classNames}
             onMouseDown={onMouseDown}
-            onTouchStart={onMouseDown}
+            onClick={onAuxMouseClick}
+            onAuxClick={onAuxMouseClick}
             onContextMenu={onContextMenu}
+            onTouchStart={onMouseDown}
             title={node.getHelpText()}
         >
             {leading}

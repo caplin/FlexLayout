@@ -3,6 +3,8 @@ Added onRenderFloatingTabPlaceholder callback prop for rendering the floating ta
 Changed style sheets to use CSS custom properties (variables) for several values.
 Fix selected index in single empty tabset.
 Added onContextMenu callback prop for handling context menus on tabs and tabsets.
+Added onAuxMouseClick callback prop for handling mouse clicks on tabs and tabsets 
+with alt, meta, shift keys, also handles center mouse clicks
 
 0.5.18
 Added onRenderDragRect callback prop for rendering the drag rectangles

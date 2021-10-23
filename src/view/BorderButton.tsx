@@ -31,6 +31,10 @@ export const BorderButton = (props: IBorderButtonProps) => {
         }
     };
 
+    const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.auxMouseClick(node, event);
+    };
+
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         layout.showContextMenu(node, event);
     };
@@ -138,6 +142,8 @@ export const BorderButton = (props: IBorderButtonProps) => {
     return (
         <div ref={selfRef} style={{}} className={classNames} 
         onMouseDown={onMouseDown} 
+        onClick={onAuxMouseClick}
+        onAuxClick={onAuxMouseClick}
         onContextMenu={onContextMenu}
         onTouchStart={onMouseDown} 
         title={node.getHelpText()}>

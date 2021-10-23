@@ -174,6 +174,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         }
     }
 
+    onAuxMouseClick = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        console.log(node, event);
+    }
+
     onRenderFloatingTabPlaceholder = (dockPopout: () => void, showPopout: () => void) => {
         return (
             <div className={CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER}>
@@ -403,6 +407,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 realtimeResize={this.state.realtimeResize}
                 onTabDrag={this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined}
                 onContextMenu={this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined}
+                onAuxMouseClick={this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined}
 
             // classNameMapper={
             //     className => {

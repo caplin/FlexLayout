@@ -58,6 +58,10 @@ export const TabSet = (props: ITabSetProps) => {
         }
     };
 
+    const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        layout.auxMouseClick(node, event);
+    };
+
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         layout.showContextMenu(node, event);
     };
@@ -279,6 +283,8 @@ export const TabSet = (props: ITabSetProps) => {
             <div className={tabHeaderClasses} style={{ height: node.getHeaderHeight() + "px" }}
                 onMouseDown={onMouseDown}
                 onContextMenu={onContextMenu}
+                onClick={onAuxMouseClick}
+                onAuxClick={onAuxMouseClick}
                 onTouchStart={onMouseDown}>
                 <div className={cm(CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT)}>{headerContent}</div>
                 {headerToolbar}
@@ -297,6 +303,8 @@ export const TabSet = (props: ITabSetProps) => {
         <div className={tabStripClasses} style={tabStripStyle}
             onMouseDown={onMouseDown}
             onContextMenu={onContextMenu}
+            onClick={onAuxMouseClick}
+            onAuxClick={onAuxMouseClick}
             onTouchStart={onMouseDown}>
             <div ref={tabbarInnerRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
                 <div
@@ -324,7 +332,7 @@ export const TabSet = (props: ITabSetProps) => {
 export function isSimpleEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
     let simpleEvent = true;
     if (event.nativeEvent instanceof MouseEvent) {
-        if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey) {
+        if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
             simpleEvent = false; 
         }
     }

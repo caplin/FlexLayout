@@ -88,6 +88,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onRenderDragRect      | optional          | callback for rendering the drag rectangles |
 | onRenderFloatingTabPlaceholder      | optional          | callback for rendering the floating tab placeholder |
 | onContextMenu      | optional          | callback for handling context actions on tabs and tabsets |
+| onAuxMouseClick      | optional          | callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks |
 
 
 The model is tree of Node objects that define the structure of the layout.
