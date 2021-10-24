@@ -59,8 +59,15 @@ const PopupMenu = (props: IPopupMenuProps) => {
         event.stopPropagation();
     };
 
+    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        event.stopPropagation();
+    }
+
     const itemElements = items.map((item) => (
-        <div key={item} className="popup_menu_item" onClick={(event) => onItemClick(item, event)}>
+        <div key={item}
+            className="popup_menu_item"
+            onMouseDown={onMouseDown}
+            onClick={(event) => onItemClick(item, event)}>
             {item}
         </div>
     ));
