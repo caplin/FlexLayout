@@ -66,29 +66,38 @@ Include the light, gray or dark style in your html:
 The `<Layout>` component renders the tabsets and splitters, it takes the following props:
 
 
-| Prop            | Required/Optional | Description       |
-| --------------- |:-----------------:| ----------------- |
-| model           | required          | the layout model  |
-| factory         | required          | a factory function for creating React components |
-| font        | optional          | the tab font (overrides value in css). Example: font={{size:"12px", style:"italic"}}|
-| iconFactory     | optional          | a factory function for creating icon components for tab bar buttons |
-| titleFactory    | optional          | a factory function for creating title components for tab bar buttons |
-| icons           | optional          | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
-| onAction        | optional          | function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning `undefined` from the function will halt the action, otherwise return the action to continue |
-| onRenderTab     | optional          | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
-| onRenderTabSet  | optional          | function called when rendering a tabset, allows header and buttons to be customized |
-| onModelChange   | optional          | function called when model has changed |
-| onExternalDrag  | optional          | function called when an external object (not a tab) gets dragged onto the layout, with a single `dragenter` argument. Should return either `undefined` to reject the drag/drop or an object with keys `dragText`, `json`, and optionally `onDrop`, to create a tab via drag (similar to a call to `addTabToTabSet`). Function `onDrop` is passed the added tab `Node` and the `drop` `DragEvent`, unless the drag was canceled. |
-| classNameMapper | optional          | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
-| i18nMapper      | optional          | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
-| supportsPopout  | optional          | if left undefined will do simple check based on userAgent |
-| popoutURL      | optional          | URL of popout window relative to origin, defaults to popout.html |
-| realtimeResize      | optional          | boolean value, defaults to false, resize tabs as splitters are dragged. Warning: this can cause resizing to become choppy when tabs are slow to draw |
-| onTabDrag       | optional          | function called while dragging a tab, whether from the layout or using `addTabWithDragAndDrop`. Called with the `TabNode` being dragged / the tab json from `addTabWithDragAndDrop`, the `TabNode` being dragged over, the x and y coordinates relative to the dragged-over tab, and the `DockLocation` that would be used. Should return undefined for default behavior, or an object containing `x`, `y`, `width`, `height`, `callback`, `cursor` fields. Coordinates are in pixels relative to the dragged-over tab, and `callback` will be called with the same arguments if the tab is dropped. `cursor` is an optional string field that should contain a CSS cursor value, such as `copy` or `row-resize`. If `callback` is called, the layout does not perform its default behavior on drop. |
-| onRenderDragRect      | optional          | callback for rendering the drag rectangles |
-| onRenderFloatingTabPlaceholder      | optional          | callback for rendering the floating tab placeholder |
-| onContextMenu      | optional          | callback for handling context actions on tabs and tabsets |
-| onAuxMouseClick      | optional          | callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks |
+#### Required props:
+
+
+| Prop            | Description       |
+| --------------- | ----------------- |
+| model           | the layout model  |
+| factory         | a factory function for creating React components |
+
+#### Optional props:
+
+
+| Prop            | Description       |
+| --------------- | ----------------- |
+| font            | the tab font (overrides value in css). Example: font={{size:"12px", style:"italic"}}|
+| icons           | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
+| onAction        | function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning `undefined` from the function will halt the action, otherwise return the action to continue |
+| onRenderTab     | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
+| onRenderTabSet  | function called when rendering a tabset, allows header and buttons to be customized |
+| onModelChange   | function called when model has changed |
+| onExternalDrag  | function called when an external object (not a tab) gets dragged onto the layout, with a single `dragenter` argument. Should return either `undefined` to reject the drag/drop or an object with keys `dragText`, `json`Drop`, to create a tab via drag (similar to a call to `addTabToTabSet`). Function `onDrop` is passed the added tab `Node` and the `drop` `DragEvent`, unless the drag was canceled. |
+| classNameMapper | function called with default css class name, return value is class name that will be used. Mainly for use with css modules.|
+| i18nMapper      | function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values |
+| supportsPopout  | if left undefined will do simple check based on userAgent |
+| popoutURL       | URL of popout window relative to origin, defaults to popout.html |
+| realtimeResize  | boolean value, defaults to false, resize tabs as splitters are dragged. Warning: this can cause resizing to become choppy when tabs are slow to draw |
+| onTabDrag       | function called while dragging a tab, whether from the layout or using `addTabWithDragAndDrop`. Called with the `TabNode` being dragged / the tab json from `addTabWithDragAndDrop`, the `TabNode` being dragged over, the x and y coordinates relative to the dragged-over tab, and the `DockLocation` that would be used. Should return undefined for default behavior, or an object containing `x`, `y`, `width`, `height`, `callback`, `cursor` fields. Coordinates are in pixels relative to the dragged-over tab, and `callback` will be called with the same arguments if the tab is dropped. `cursor` is an optional string field that should contain a CSS cursor value, such as `copy` or `row-resize`. If `callback` is called, the layout does not perform its default behavior on drop. |
+| onRenderDragRect | callback for rendering the drag rectangles |
+| onRenderFloatingTabPlaceholder | callback for rendering the floating tab placeholder |
+| onContextMenu    | callback for handling context actions on tabs and tabsets |
+| onAuxMouseClick  | callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks |
+| iconFactory      | a factory function for creating icon components for tab bar buttons. <br/><br/> NOTE: for greater customization of the tab use onRenderTab instead of this callback |
+| titleFactory     | a factory function for creating title components for tab bar buttons. <br /><br /> NOTE: for greater customization of the tab use onRenderTab instead of this callback  |
 
 
 The model is tree of Node objects that define the structure of the layout.
