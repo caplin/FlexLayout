@@ -118,38 +118,38 @@ render() {
 
 ```javascript
 var json = {
-	global: {},
-	borders: [],
-	layout:{
-		"type": "row",
-		"weight": 100,
-		"children": [
-			{
-				"type": "tabset",
-				"weight": 50,
-				"selected": 0,
-				"children": [
-					{
-						"type": "tab",
-						"name": "FX",
-						"component":"grid",
-					}
-				]
-			},
-			{
-				"type": "tabset",
-				"weight": 50,
-				"selected": 0,
-				"children": [
-					{
-						"type": "tab",
-						"name": "FI",
-						"component":"grid",
-					}
-				]
-			}
-		]
-	}
+    global: {},
+    borders: [],
+    layout:{
+        "type": "row",
+        "weight": 100,
+        "children": [
+            {
+                "type": "tabset",
+                "weight": 50,
+                "selected": 0,
+                "children": [
+                    {
+                        "type": "tab",
+                        "name": "FX",
+                        "component":"grid",
+                    }
+                ]
+            },
+            {
+                "type": "tabset",
+                "weight": 50,
+                "selected": 0,
+                "children": [
+                    {
+                        "type": "tab",
+                        "name": "FI",
+                        "component":"grid",
+                    }
+                ]
+            }
+        ]
+    }
 };
 ```
 
@@ -221,50 +221,50 @@ existing layouts by dragging/dropping and adding nodes then press the 'Show Layo
 
 example borders section:
 ```
-	"borders": [
-		 {
-		    "type":"border",
-		 	"location": "left",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Navigation",
-					"component": "grid",
-				}
-			]
-		},
-		{
-		    "type":"border",
-		 	"location": "right",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Options",
-					"component": "grid",
-				}
-			]
-		},
-		{
-		    "type":"border",
-			"location": "bottom",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Activity Blotter",
-					"component": "grid",
-				},
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Execution Blotter",
-					"component": "grid",
-				}
-			]
-		}
-	]
+    "borders": [
+         {
+            "type":"border",
+            "location": "left",
+            "children": [
+                {
+                    "type": "tab",
+                    "enableClose":false,
+                    "name": "Navigation",
+                    "component": "grid",
+                }
+            ]
+        },
+        {
+            "type":"border",
+            "location": "right",
+            "children": [
+                {
+                    "type": "tab",
+                    "enableClose":false,
+                    "name": "Options",
+                    "component": "grid",
+                }
+            ]
+        },
+        {
+            "type":"border",
+            "location": "bottom",
+            "children": [
+                {
+                    "type": "tab",
+                    "enableClose":false,
+                    "name": "Activity Blotter",
+                    "component": "grid",
+                },
+                {
+                    "type": "tab",
+                    "enableClose":false,
+                    "name": "Execution Blotter",
+                    "component": "grid",
+                }
+            ]
+        }
+    ]
 ```
 
 To control where nodes can be dropped you can add a callback function to the model:
