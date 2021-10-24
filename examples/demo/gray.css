@@ -8,6 +8,17 @@ html,body
     font-family: Roboto, Arial, sans-serif; 
 }
 
+select, button {
+    border-radius:3px;
+    border: 1px solid lightgray
+    ;
+}
+
+.drag-from {
+    background-color: lightgray;
+    color: black;
+}
+
 #container  {
     left:10px;
     top:10px;
@@ -104,3 +115,6 @@ small {
     color: gray;
 }
 
+li {
+    color: #444;
+}

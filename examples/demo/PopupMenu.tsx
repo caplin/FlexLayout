@@ -15,9 +15,21 @@ export function showPopup(
 
     const elm = currentDocument.createElement("div");
     elm.className = "popup_menu_container";
-    elm.style.left = x - layoutRect.left + "px";
-    elm.style.top = y - layoutRect.top + "px";
+
+    if (x < layoutRect.left + layoutRect.width / 2) {
+        elm.style.left = x - layoutRect.left + "px";
+    } else {
+        elm.style.right = layoutRect.right - x + "px";
+    }
+
+    if (y < layoutRect.top + layoutRect.height / 2) {
+        elm.style.top = y - layoutRect.top + "px";
+    } else {
+        elm.style.bottom = layoutRect.bottom - y + "px";
+    }
+
     DragDrop.instance.addGlass(() => onHide(undefined));
+    DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
 
     const onHide = (item: string | undefined) => {
@@ -25,13 +37,19 @@ export function showPopup(
         onSelect(item);
         layoutDiv.removeChild(elm);
         ReactDOM.unmountComponentAtNode(elm);
+        elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
+    };
+
+    const onElementMouseDown = (event: Event) => {
+        event.stopPropagation();
     };
 
     const onDocMouseDown = (event: Event) => {
         onHide(undefined);
     };
 
+    elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
 
     ReactDOM.render(<PopupMenu
@@ -59,21 +77,16 @@ const PopupMenu = (props: IPopupMenuProps) => {
         event.stopPropagation();
     };
 
-    const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        event.stopPropagation();
-    }
-
     const itemElements = items.map((item) => (
         <div key={item}
             className="popup_menu_item"
-            onMouseDown={onMouseDown}
             onClick={(event) => onItemClick(item, event)}>
             {item}
         </div>
     ));
 
     return (
-        <div dir="ltr" className="popup_menu">
+        <div className="popup_menu">
             <div className="popup_menu_title">{title}</div>
             {itemElements}
         </div>);

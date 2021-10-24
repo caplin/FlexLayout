@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { DragDrop } from ".";
 import TabNode from "./model/TabNode";
 import { CLASSES } from "./Types";
 
@@ -28,27 +29,37 @@ export function showPopup(
     } else {
         elm.style.bottom = layoutRect.bottom - triggerRect.bottom + "px";
     }
+    DragDrop.instance.addGlass(() => onHide());
+    DragDrop.instance.setGlassCursorOverride("default");
+
     layoutDiv.appendChild(elm);
 
     const onHide = () => {
+        DragDrop.instance.hideGlass();
         layoutDiv.removeChild(elm);
         ReactDOM.unmountComponentAtNode(elm);
-        elm.removeEventListener("mouseup", onElementMouseUp);
-        currentDocument.removeEventListener("mouseup", onDocMouseUp);
+        elm.removeEventListener("mousedown", onElementMouseDown);
+        currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
 
-    const onElementMouseUp = (event: Event) => {
+    const onElementMouseDown = (event: Event) => {
         event.stopPropagation();
     };
 
-    const onDocMouseUp = (event: Event) => {
+    const onDocMouseDown = (event: Event) => {
         onHide();
     };
 
-    elm.addEventListener("mouseup", onElementMouseUp);
-    currentDocument.addEventListener("mouseup", onDocMouseUp);
+    elm.addEventListener("mousedown", onElementMouseDown);
+    currentDocument.addEventListener("mousedown", onDocMouseDown);
 
-    ReactDOM.render(<PopupMenu currentDocument={currentDocument} onSelect={onSelect} onHide={onHide} items={items} classNameMapper={classNameMapper} />, elm);
+    ReactDOM.render(<PopupMenu
+        currentDocument={currentDocument}
+        onSelect={onSelect}
+        onHide={onHide}
+        items={items}
+        classNameMapper={classNameMapper}
+    />, elm);
 }
 
 /** @hidden @internal */
@@ -71,10 +82,16 @@ const PopupMenu = (props: IPopupMenuProps) => {
     };
 
     const itemElements = items.map((item) => (
-        <div key={item.index} className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)} onClick={(event) => onItemClick(item, event)} title={item.node.getHelpText()}>
+        <div key={item.index}
+            className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)}
+            onClick={(event) => onItemClick(item, event)}
+            title={item.node.getHelpText()}>
             {item.node._getRenderedName()}
         </div>
     ));
 
-    return <div  dir="ltr" className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>{itemElements}</div>;
+    return (
+        <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>
+            {itemElements}
+        </div>);
 };

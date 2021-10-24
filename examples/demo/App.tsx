@@ -487,7 +487,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 </select>
                 <button style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
                 <button disabled={this.state.adding || maximized}
-                    style={{ height: "30px", marginLeft: 5, border: "none", outline: "none", backgroundColor: "lightgray" }}
+                    className="drag-from"
+                    style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                     title="Add using Layout.addTabWithDragAndDrop"
                     onMouseDown={this.onAddDragMouseDown}
                     onTouchStart={this.onAddDragMouseDown}>Add Drag</button>
