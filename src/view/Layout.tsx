@@ -43,11 +43,11 @@ export interface ILayoutProps {
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
         node: TabNode,
-        renderValues: ITabRenderValues,
+        renderValues: ITabRenderValues, // change the values in this object as required
     ) => void;
     onRenderTabSet?: (
         tabSetNode: TabSetNode | BorderNode,
-        renderValues: ITabSetRenderValues,
+        renderValues: ITabSetRenderValues, // change the values in this object as required
     ) => void;
     onModelChange?: (model: Model) => void;
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {

@@ -6,7 +6,7 @@ import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
-import { isSimpleEvent } from "./TabSet";
+import { isAuxMouseEvent } from "./TabSet";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -25,14 +25,16 @@ export const BorderButton = (props: IBorderButtonProps) => {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        if (isSimpleEvent(event)) {
+        if (!isAuxMouseEvent(event)) {
             const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
             props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
         }
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        layout.auxMouseClick(node, event);
+        if (isAuxMouseEvent(event)) {
+            layout.auxMouseClick(node, event);
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

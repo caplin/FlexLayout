@@ -7,7 +7,7 @@ import Rect from "../Rect";
 import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
-import { isSimpleEvent } from "./TabSet";
+import { isAuxMouseEvent } from "./TabSet";
 
 /** @hidden @internal */
 export interface ITabButtonProps {
@@ -30,14 +30,16 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
 
-        if (isSimpleEvent(event) && !layout.getEditingTab()) {
+        if (!isAuxMouseEvent(event) && !layout.getEditingTab()) {
             const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
             layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        layout.auxMouseClick(node, event);
+        if (isAuxMouseEvent(event)) {
+            layout.auxMouseClick(node, event);
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

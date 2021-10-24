@@ -10,6 +10,7 @@ import { I18nLabel } from "../I18nLabel";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
 import { CLASSES } from "../Types";
+import { isAuxMouseEvent } from "./TabSet";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
@@ -31,7 +32,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        layout.auxMouseClick(border, event);
+        if (isAuxMouseEvent(event)) {
+            layout.auxMouseClick(border, event);
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -42,9 +45,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         event.stopPropagation();
     };
 
-    const onOverflowClick = () => {
+    const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const element = overflowbuttonRef.current!;
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        event.stopPropagation();
     };
 
     const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
@@ -52,11 +56,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         userControlledLeft.current = false;
     };
 
-    const onFloatTab = () => {
+    const onFloatTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const selectedTabNode = border.getChildren()[border.getSelected()] as TabNode;
         if (selectedTabNode !== undefined) {
             layout.doAction(Actions.floatTab(selectedTabNode.getId()));
         }
+        event.stopPropagation();
     };
 
     const cm = layout.getClassName;

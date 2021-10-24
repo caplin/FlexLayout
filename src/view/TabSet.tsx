@@ -31,9 +31,10 @@ export const TabSet = (props: ITabSetProps) => {
 
     const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = useTabOverflow(node, Orientation.HORZ, toolbarRef, stickyButtonsRef);
 
-    const onOverflowClick = () => {
+    const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const element = overflowbuttonRef.current!;
         showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        event.stopPropagation();
     };
 
     const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
@@ -43,7 +44,7 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         
-        if (isSimpleEvent(event)) {
+        if (!isAuxMouseEvent(event)) {
             let name = node.getName();
             if (name === undefined) {
                 name = "";
@@ -59,7 +60,9 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        layout.auxMouseClick(node, event);
+        if (isAuxMouseEvent(event)) {
+            layout.auxMouseClick(node, event);
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -70,20 +73,23 @@ export const TabSet = (props: ITabSetProps) => {
         event.stopPropagation();
     };
 
-    const onMaximizeToggle = () => {
+    const onMaximizeToggle = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (node.canMaximize()) {
             layout.maximize(node);
         }
+        event.stopPropagation();
     };
 
-    const onClose = () => {
+    const onClose = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         layout.doAction(Actions.deleteTabset(node.getId()));
+        event.stopPropagation();
     };
 
-    const onFloatTab = () => {
+    const onFloatTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (selectedTabNode !== undefined) {
             layout.doAction(Actions.floatTab(selectedTabNode.getId()));
         }
+        event.stopPropagation();
     };
 
     const onDoubleClick = (event: Event) => {
@@ -329,13 +335,13 @@ export const TabSet = (props: ITabSetProps) => {
 };
 
 /** @hidden @internal */
-export function isSimpleEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
-    let simpleEvent = true;
+export function isAuxMouseEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
+    let auxEvent = false;
     if (event.nativeEvent instanceof MouseEvent) {
         if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
-            simpleEvent = false; 
+            auxEvent = true; 
         }
     }
-    return simpleEvent;
+    return auxEvent;
 }
 
