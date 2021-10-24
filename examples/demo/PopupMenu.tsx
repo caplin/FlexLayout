@@ -1,8 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { DragDrop } from "../../src";
 
 /** @hidden @internal */
 export function showPopup(
+    title: string,
     layoutDiv: HTMLDivElement,
     x: number, y: number,
     items: string[],
@@ -13,34 +15,36 @@ export function showPopup(
 
     const elm = currentDocument.createElement("div");
     elm.className = "popup_menu_container";
-    elm.style.left = x - layoutRect.left - 5 + "px";
-    elm.style.top = y - layoutRect.top - 5 + "px";
+    elm.style.left = x - layoutRect.left + "px";
+    elm.style.top = y - layoutRect.top + "px";
+    DragDrop.instance.addGlass(() => onHide(undefined));
     layoutDiv.appendChild(elm);
 
     const onHide = (item: string | undefined) => {
+        DragDrop.instance.hideGlass();
         onSelect(item);
         layoutDiv.removeChild(elm);
         ReactDOM.unmountComponentAtNode(elm);
-        elm.removeEventListener("mouseup", onElementMouseUp);
-        currentDocument.removeEventListener("mouseup", onDocMouseUp);
+        currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
 
-    const onElementMouseUp = (event: Event) => {
-        event.stopPropagation();
-    };
-
-    const onDocMouseUp = (event: Event) => {
+    const onDocMouseDown = (event: Event) => {
         onHide(undefined);
     };
 
-    elm.addEventListener("mouseup", onElementMouseUp);
-    currentDocument.addEventListener("mouseup", onDocMouseUp);
+    currentDocument.addEventListener("mousedown", onDocMouseDown);
 
-    ReactDOM.render(<PopupMenu currentDocument={currentDocument} onHide={onHide} items={items} />, elm);
+    ReactDOM.render(<PopupMenu
+        currentDocument={currentDocument}
+        onHide={onHide}
+        title={title}
+        items={items} />,
+        elm);
 }
 
 /** @hidden @internal */
 interface IPopupMenuProps {
+    title: string;
     items: string[];
     currentDocument: Document;
     onHide: (item: string | undefined) => void;
@@ -48,7 +52,7 @@ interface IPopupMenuProps {
 
 /** @hidden @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
-    const { items, onHide } = props;
+    const { title, items, onHide } = props;
 
     const onItemClick = (item: string, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         onHide(item);
@@ -61,5 +65,9 @@ const PopupMenu = (props: IPopupMenuProps) => {
         </div>
     ));
 
-    return <div dir="ltr" className="popup_menu">{itemElements}</div>;
+    return (
+        <div dir="ltr" className="popup_menu">
+            <div className="popup_menu_title">{title}</div>
+            {itemElements}
+        </div>);
 };

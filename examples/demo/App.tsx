@@ -163,9 +163,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             event.preventDefault();
             event.stopPropagation();
             console.log(node, event);
-            showPopup((this.refs.layout as FlexLayout.Layout).getRootDiv(),
+            showPopup(
+                node instanceof TabNode? "Tab: " + node.getName() : "Type: " + node.getType(),
+                (this.refs.layout as FlexLayout.Layout).getRootDiv(),
                 event.clientX, event.clientY,
-                ["one", "two"],
+                ["Option 1", "Option 2"],
                 (item: string | undefined) => {
                     console.log("selected: " + item);
                     this.showingPopupMenu = false;
