@@ -13,65 +13,24 @@ $color_drag2: green !default;
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
 
-.flexlayout {
-    &__layout {
-        --color-text: #{$color_text};
-        --color-background: #{$color_background};
-        --color-border: #{$color_background};
-
-        --color-tabset-background: #{$color_background};
-        --color-tabset-background-selected: #{$color_1};
-        --color-tabset-divider-line: #{$color_3};
-
-        --color-tabset-header-background: #{$color_background};
-        --color-tabset-header: #{$color_text};
-
-        --color-border-background: #{$color_background};
-        --color-border-divider-line: #{$color_3};
-
-        --color-tab-selected: #{$color_text};
-        --color-tab-selected-background: #{$color_3};
-        --color-tab-unselected: gray;
-        --color-tab-unselected-background: transparent;
-        --color-tab-textbox: #{$color_text};
-        --color-tab-textbox-background: #{$color_3};
-
-        --color-border-tab-selected: #{$color_text};
-        --color-border-tab-selected-background: #{$color_3};
-        --color-border-tab-unselected: gray;
-        --color-border-tab-unselected-background: #{$color_2};
-
-        --color-splitter: #{$color_1};
-        --color-splitter-hover: #{$color_4};
-        --color-splitter-drag: #{$color_4};
-
-        --color-drag-rect-border: #{$color_4};
-        --color-drag-rect-background: #{$color_1};
-        --color-drag-rect: #{$color_text};
-
-        --color-edge-marker: gray;
-
-        --color-drag1: #{$color_drag1};
-        --color-drag2: #{$color_drag2};
-
-        --font-size: #{$font-size};
-        --font-family: #{$font-family};
-    }
-}
-
 @mixin tabset_mixin {
+    background-color: var(--color-background);
 }
 
 @mixin tabset_tabbar_mixin {
+    background-color: var(--color-background);
 }
 
 @mixin tabset_header_mixin {
+    background-color: var(--color-background);
 }
 
 @mixin tabset_selected_mixin {
+    background-color: var(--color-1);
 }
 
 @mixin tabset_maximized_mixin {
+    background-color: var(--color-6);
 }
 
 @mixin tab_top_mixin {
@@ -84,36 +43,51 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tab_button_selected_mixin {
+    background-color: var(--color-3);
+    color: var(--color-text);
 }
 
 @mixin tab_button_unselected_mixin {
+    color: gray;
 }
 
 @mixin tab_button_hovered_mixin {
+    background-color: var(--color-3);
+    color: var(--color-text);
 }
 
 @mixin border_mixin {
+    background-color: var(--color-background);
 }
 
 @mixin border_button_mixin {
+    background-color: var(--color-2);
 }
 
 @mixin border_button_selected_mixin {
+    background-color: var(--color-3);
+    color: var(--color-text);
 }
 
 @mixin border_button_unselected_mixin {
+    color: gray;
 }
 
 @mixin border_button_hovered_mixin {
+    background-color: var(--color-3);
+    color: var(--color-text);
 }
 
 @mixin splitter_mixin {
+    background-color: var(--color-1);
 }
 
 @mixin splitter_hover_mixin {
+    background-color: var(--color-4);
 }
 
 @mixin splitter_drag_mixin {
+    background-color: var(--color-4);
 }
 
 @mixin splitter_border_mixin {
