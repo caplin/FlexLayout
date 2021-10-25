@@ -21,11 +21,7 @@
 						"type": "tab",
 						"name": "New",
                         "helpText": "this tab has helpText defined",
-						"component": "multitype",
-                        "config": {
-                            "type":"url",
-                            "data":"newfeatures.html"
-                            }
+						"component": "newfeatures"
 					},
 					{
 						"type": "tab",

@@ -1,4 +1,17 @@
 .flexlayout__layout {
+  --color-text: white;
+  --color-background: black;
+  --color-base: black;
+  --color-1: #121212;
+  --color-2: #1a1a1a;
+  --color-3: #262626;
+  --color-4: #333333;
+  --color-5: #404040;
+  --color-6: #4d4d4d;
+  --color-drag1: #cfe8ff;
+  --color-drag2: #b7d1b5;
+  --font-size: medium;
+  --font-family: Roboto, Arial, sans-serif;
   left: 0;
   top: 0;
   right: 0;
@@ -7,11 +20,13 @@
   overflow: hidden;
 }
 .flexlayout__splitter {
-  background-color: #1a1a1a;
+  background-color: var(--color-2);
 }
 @media (hover: hover) {
   .flexlayout__splitter:hover {
-    background-color: #333333;
+    transition: background-color ease-in 0.1s;
+    transition-delay: 0.05s;
+    background-color: var(--color-4);
   }
 }
 .flexlayout__splitter_border {
@@ -20,7 +35,7 @@
 .flexlayout__splitter_drag {
   z-index: 1000;
   border-radius: 5px;
-  background-color: #404040;
+  background-color: var(--color-5);
 }
 .flexlayout__splitter_extra {
   background-color: transparent;
@@ -29,14 +44,14 @@
   position: absolute;
   pointer-events: none;
   box-sizing: border-box;
-  border: 2px solid #cfe8ff;
+  border: 2px solid var(--color-drag1);
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   z-index: 1000;
 }
 .flexlayout__outline_rect_edge {
   pointer-events: none;
-  border: 2px solid #b7d1b5;
+  border: 2px solid var(--color-drag2);
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   z-index: 1000;
@@ -52,9 +67,9 @@
 .flexlayout__drag_rect {
   position: absolute;
   cursor: move;
-  color: white;
-  background-color: #121212;
-  border: 2px solid #333333;
+  color: var(--color-text);
+  background-color: var(--color-1);
+  border: 2px solid var(--color-4);
   box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
   border-radius: 5px;
   z-index: 1000;
@@ -67,16 +82,16 @@
   overflow: hidden;
   padding: 10px;
   word-wrap: break-word;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 .flexlayout__tabset {
   overflow: hidden;
-  background-color: #121212;
+  background-color: var(--color-1);
   box-sizing: border-box;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
-  background-color: #121212;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
+  background-color: var(--color-1);
 }
 .flexlayout__tabset_header {
   position: absolute;
@@ -86,9 +101,9 @@
   right: 0;
   padding: 3px 3px 3px 5px;
   box-sizing: border-box;
-  border-bottom: 1px solid #262626;
-  color: white;
-  background-color: #121212;
+  border-bottom: 1px solid var(--color-3);
+  color: var(--color-text);
+  background-color: var(--color-1);
   box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
 }
 .flexlayout__tabset_header_content {
@@ -96,19 +111,19 @@
 }
 .flexlayout__tabset_tabbar_outer {
   box-sizing: border-box;
-  background-color: #121212;
+  background-color: var(--color-1);
   position: absolute;
   left: 0;
   right: 0;
   overflow: hidden;
   display: flex;
-  background-color: #121212;
+  background-color: var(--color-1);
 }
 .flexlayout__tabset_tabbar_outer_top {
-  border-bottom: 1px solid #262626;
+  border-bottom: 1px solid var(--color-3);
 }
 .flexlayout__tabset_tabbar_outer_bottom {
-  border-top: 1px solid #262626;
+  border-top: 1px solid var(--color-3);
 }
 .flexlayout__tabset_tabbar_inner {
   position: relative;
@@ -132,17 +147,17 @@
   border-bottom: 2px solid transparent;
 }
 .flexlayout__tabset-selected {
-  background-image: linear-gradient(black, #333333);
+  background-image: linear-gradient(var(--color-background), var(--color-4));
 }
 .flexlayout__tabset-maximized {
-  background-image: linear-gradient(#4d4d4d, #1a1a1a);
+  background-image: linear-gradient(var(--color-6), var(--color-2));
 }
 .flexlayout__tab {
   overflow: auto;
   position: absolute;
   box-sizing: border-box;
-  color: white;
-  background-color: black;
+  color: var(--color-text);
+  background-color: var(--color-background);
 }
 .flexlayout__tab_button {
   display: inline-flex;
@@ -153,13 +168,13 @@
   cursor: pointer;
 }
 .flexlayout__tab_button--selected {
-  background-color: #262626;
-  color: white;
+  background-color: var(--color-3);
+  color: var(--color-text);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
-    background-color: #262626;
-    color: white;
+    background-color: var(--color-3);
+    color: var(--color-text);
   }
 }
 .flexlayout__tab_button--unselected {
@@ -183,8 +198,12 @@
 }
 .flexlayout__tab_button_textbox {
   border: none;
-  color: green;
-  background-color: #262626;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  color: var(--color-text);
+  background-color: var(--color-5);
+  border: 1px inset var(--color-1);
+  border-radius: 3px;
 }
 .flexlayout__tab_button_textbox:focus {
   outline: none;
@@ -247,8 +266,8 @@
   overflow: auto;
   position: absolute;
   box-sizing: border-box;
-  color: white;
-  background-color: black;
+  color: var(--color-text);
+  background-color: var(--color-background);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -271,25 +290,25 @@
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
-  background-color: #121212;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
+  background-color: var(--color-1);
 }
 .flexlayout__border_top {
-  border-bottom: 1px solid #262626;
+  border-bottom: 1px solid var(--color-3);
   align-items: center;
 }
 .flexlayout__border_bottom {
-  border-top: 1px solid #262626;
+  border-top: 1px solid var(--color-3);
   align-items: center;
 }
 .flexlayout__border_left {
-  border-right: 1px solid #262626;
+  border-right: 1px solid var(--color-3);
   align-content: center;
   flex-direction: column;
 }
 .flexlayout__border_right {
-  border-left: 1px solid #262626;
+  border-left: 1px solid var(--color-3);
   align-content: center;
   flex-direction: column;
 }
@@ -328,16 +347,16 @@
   white-space: nowrap;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
   border-radius: 3px;
-  background-color: #1a1a1a;
+  background-color: var(--color-2);
 }
 .flexlayout__border_button--selected {
-  background-color: #262626;
-  color: white;
+  background-color: var(--color-3);
+  color: var(--color-text);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover {
-    background-color: #262626;
-    color: white;
+    background-color: var(--color-3);
+    color: var(--color-text);
   }
 }
 .flexlayout__border_button--unselected {
@@ -403,23 +422,26 @@
   margin-top: 5px;
 }
 .flexlayout__popup_menu {
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 .flexlayout__popup_menu_item {
+  margin: 2px;
   padding: 2px 10px 2px 10px;
   white-space: nowrap;
+  cursor: pointer;
+  border-radius: 2px;
 }
 @media (hover: hover) {
   .flexlayout__popup_menu_item:hover {
-    background-color: #4d4d4d;
+    background-color: var(--color-6);
   }
 }
 .flexlayout__popup_menu_container {
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-  border: 1px solid #4d4d4d;
-  color: white;
-  background: black;
+  border: 1px solid var(--color-6);
+  color: var(--color-text);
+  background: var(--color-background);
   border-radius: 3px;
   position: absolute;
   z-index: 1000;
@@ -445,8 +467,8 @@
   bottom: 0;
   position: absolute;
   box-sizing: border-box;
-  background-color: black;
-  color: white;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 .flexlayout__error_boundary_container {
   left: 0;
@@ -464,20 +486,20 @@
 .flexlayout__tabset_sizer {
   padding-top: 5px;
   padding-bottom: 3px;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 .flexlayout__tabset_header_sizer {
   padding-top: 3px;
   padding-bottom: 3px;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 .flexlayout__border_sizer {
   padding-top: 6px;
   padding-bottom: 5px;
-  font-size: medium;
-  font-family: Roboto, Arial, sans-serif;
+  font-size: var(--font-size);
+  font-family: var(--font-family);
 }
 
 /*# sourceMappingURL=dark.css.map */

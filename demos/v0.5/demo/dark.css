@@ -8,6 +8,19 @@ html,body
     font-family: Roboto, Arial, sans-serif;
     background-color:black;
 }
+
+ select, button {
+    color:lightgray;
+    background-color:black;
+    border-radius:3px;
+    border: 1px solid #444;
+}
+
+.drag-from {
+    background-color: #666;
+    color: white;
+}
+
 #container  {
     left:10px;
     top:10px;
@@ -97,4 +110,18 @@ html,body
 
 .tab-storage > .tab-storage-tabs > .tab-storage-entry:last-child {
 	margin-bottom: 0;
+}
+
+small {
+    color: lightgray;
+}
+
+li {
+    color:white
+    ;
+    margin-bottom: 1em;
+}
+
+ul {
+    margin-right: 1em;
 }
