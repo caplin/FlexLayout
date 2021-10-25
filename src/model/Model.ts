@@ -281,13 +281,17 @@ class Model {
                 const node = this._idMap[action.data.node];
 
                 if (node instanceof TabSetNode) {
-                    // first delete all child tabs
+                    // first delete all child tabs that are closeable
                     const children = [...node.getChildren()];
                     children.forEach((child, i) => {
-                        (child as TabNode)._delete();
+                        if ((child as TabNode).isEnableClose()) {
+                            (child as TabNode)._delete();
+                        }
                     });
 
-                    node._delete();
+                    if (node.getChildren().length === 0) {
+                        node._delete();
+                    }
                     this._tidy();
                 }
                 break;

@@ -7,6 +7,7 @@ import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/v
 import { TabStorage } from "./TabStorage";
 import Utils from "./Utils";
 import { showPopup } from "./PopupMenu";
+import { NewFeatures } from "./NewFeatures";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -164,7 +165,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             event.stopPropagation();
             console.log(node, event);
             showPopup(
-                node instanceof TabNode? "Tab: " + node.getName() : "Type: " + node.getType(),
+                node instanceof TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(),
                 (this.refs.layout as FlexLayout.Layout).getRootDiv(),
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
@@ -297,7 +298,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             } catch (e) {
                 console.log(e);
             }
-        }
+        } 
+        else if (component === "newfeatures") {
+            return <NewFeatures />;
+        } 
         else if (component === "multitype") {
             try {
                 const config = node.getConfig();

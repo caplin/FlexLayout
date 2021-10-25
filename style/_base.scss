@@ -229,8 +229,12 @@
 
             &_textbox {
                 border: none;
-                color: green;
-                background-color: var(--color-3);
+                font-family: var(--font-family);
+                font-size: var(--font-size);
+                color: var(--color-text);
+                background-color: var(--color-5);
+                border: 1px inset var(--color-1);
+                border-radius: 3px;
             }
 
             &_textbox:focus {
@@ -494,9 +498,11 @@
         font-family: var(--font-family);
 
         &_item {
+            margin: 2px;
             padding: 2px 10px 2px 10px;
             white-space: nowrap;
             cursor: pointer;
+            border-radius: 2px;
         }
 
         @media (hover: hover) {

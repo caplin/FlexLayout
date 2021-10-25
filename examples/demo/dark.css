@@ -111,3 +111,17 @@ html,body
 .tab-storage > .tab-storage-tabs > .tab-storage-entry:last-child {
 	margin-bottom: 0;
 }
+
+small {
+    color: lightgray;
+}
+
+li {
+    color:white
+    ;
+    margin-bottom: 1em;
+}
+
+ul {
+    margin-right: 1em;
+}

@@ -3,6 +3,7 @@
     font-family: var(--font-family);
 }
 .popup_menu_title {
+    margin: 2px;
     padding: 2px 10px 2px 10px;
     white-space: nowrap;
     color: var(--color-text);
@@ -11,9 +12,11 @@
     cursor: default;
 }
 .popup_menu_item {
+    margin: 2px;
     padding: 2px 10px 2px 10px;
     white-space: nowrap;
     cursor:pointer;
+    border-radius: 2px;
 }
 @media (hover: hover) {
     .popup_menu_item:hover {

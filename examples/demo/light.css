@@ -111,3 +111,16 @@ select, button {
 	margin-bottom: 0;
 }
 
+
+small {
+    color: gray;
+}
+
+li {
+    color: #444;
+    margin-bottom: 1em;
+}
+
+ul {
+    margin-right: 1em;
+}

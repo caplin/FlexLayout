@@ -117,4 +117,9 @@ small {
 
 li {
     color: #444;
+    margin-bottom: 1em;
+}
+
+ul {
+    margin-right: 1em;
 }
