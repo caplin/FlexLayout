@@ -118,31 +118,31 @@ render() {
 
 ```javascript
 var json = {
-    "global": {},
-    "borders": [],
-    "layout": {
-        "type": "row",
-        "weight": 100,
-        "children": [
+    global: {},
+    borders: [],
+    layout: {
+        type: "row",
+        weight: 100,
+        children: [
             {
-                "type": "tabset",
-                "weight": 50,
-                "children": [
+                type: "tabset",
+                weight: 50,
+                children: [
                     {
-                        "type": "tab",
-                        "name": "One",
-                        "component": "button",
+                        type: "tab",
+                        name: "One",
+                        component: "button",
                     }
                 ]
             },
             {
-                "type": "tabset",
-                "weight": 50,
-                "children": [
+                type: "tabset",
+                weight: 50,
+                children: [
                     {
-                        "type": "tab",
-                        "name": "Two",
-                        "component": "button",
+                        type: "tab",
+                        name: "Two",
+                        component: "button",
                     }
                 ]
             }
@@ -219,46 +219,46 @@ existing layouts by dragging/dropping and adding nodes then press the 'Show Layo
 
 example borders section:
 ```
-    "borders": [
+    borders: [
          {
-            "type":"border",
-            "location": "left",
-            "children": [
+            type: "border",
+            location: "left",
+            children: [
                 {
-                    "type": "tab",
-                    "enableClose":false,
-                    "name": "Navigation",
-                    "component": "grid",
+                    type: "tab",
+                    enableClose: false,
+                    name: "Navigation",
+                    component: "grid",
                 }
             ]
         },
         {
-            "type":"border",
-            "location": "right",
-            "children": [
+            type: "border",
+            location: "right",
+            children: [
                 {
-                    "type": "tab",
-                    "enableClose":false,
-                    "name": "Options",
-                    "component": "grid",
+                    type: "tab",
+                    enableClose: false,
+                    name: "Options",
+                    component: "grid",
                 }
             ]
         },
         {
-            "type":"border",
-            "location": "bottom",
-            "children": [
+            type: "border",
+            location: "bottom",
+            children: [
                 {
-                    "type": "tab",
-                    "enableClose":false,
-                    "name": "Activity Blotter",
-                    "component": "grid",
+                    type: "tab",
+                    enableClose: false,
+                    name: "Activity Blotter",
+                    component: "grid",
                 },
                 {
-                    "type": "tab",
-                    "enableClose":false,
-                    "name": "Execution Blotter",
-                    "component": "grid",
+                    type: "tab",
+                    enableClose: false,
+                    name: "Execution Blotter",
+                    component: "grid",
                 }
             ]
         }
