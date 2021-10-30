@@ -118,33 +118,31 @@ render() {
 
 ```javascript
 var json = {
-    global: {},
-    borders: [],
-    layout:{
+    "global": {},
+    "borders": [],
+    "layout": {
         "type": "row",
         "weight": 100,
         "children": [
             {
                 "type": "tabset",
                 "weight": 50,
-                "selected": 0,
                 "children": [
                     {
                         "type": "tab",
-                        "name": "FX",
-                        "component":"grid",
+                        "name": "One",
+                        "component": "button",
                     }
                 ]
             },
             {
                 "type": "tabset",
                 "weight": 50,
-                "selected": 0,
                 "children": [
                     {
                         "type": "tab",
-                        "name": "FI",
-                        "component":"grid",
+                        "name": "Two",
+                        "component": "button",
                     }
                 ]
             }
