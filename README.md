@@ -42,8 +42,9 @@ Features:
 FlexLayout is in the npm repository. Simply install React and FlexLayout from npm:
 
 ```
-yarn add react react-dom
-yarn add flexlayout-react
+npm install react --save
+npm install react-dom --save
+npm install flexlayout-react --save
 ```
 
 Import React and FlexLayout in your modules:
@@ -583,7 +584,8 @@ yarn install
 Install the peer dependencies:
 
 ```
-yarn add react react-dom
+yarn add react
+yarn add react-dom
 ```
 
 Compile the project and run the examples:
