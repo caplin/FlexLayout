@@ -190,7 +190,7 @@
         background-color: var(--color-background);
 
         &_button {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             box-sizing: border-box;
             padding: 3px 8px; // if you change top or bottom update the tabset_sizer above
@@ -220,11 +220,11 @@
             }
 
             &_leading {
-                display: inline-block;
+                display: flex;
             }
 
             &_content {
-                display: inline-block;
+                display: flex;
             }
 
             &_textbox {
@@ -242,7 +242,7 @@
             }
 
             &_trailing {
-                display: inline-block;
+                display: flex;
                 margin-left: 8px;
                 min-width: 8px;
                 min-height: 8px;
@@ -417,15 +417,15 @@
             }
 
             &_leading {
-                display: inline;
+                display: flex;
             }
 
             &_content {
-                display: inline-block;
+                display: flex;
             }
 
             &_trailing {
-                display: inline-block;
+                display: flex;
                 margin-left: 8px;
                 min-width: 8px;
                 min-height: 8px;

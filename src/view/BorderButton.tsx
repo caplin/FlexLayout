@@ -118,7 +118,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
         }
     }
 
-    if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
+    if (leadingContent === undefined && node.getIcon() !== undefined) {
         leadingContent = <img src={node.getIcon()} alt="leadingContent" />;
     }
 
