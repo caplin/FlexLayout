@@ -170,7 +170,7 @@ export const TabButton = (props: ITabButtonProps) => {
         }
     }
 
-    if (typeof leadingContent === undefined && typeof node.getIcon() !== undefined) {
+    if (typeof leadingContent === "undefined" && typeof node.getIcon() !== "undefined") {
         leadingContent = <img src={node.getIcon()} alt="leadingContent" />;
     }
 
