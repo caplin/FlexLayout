@@ -61,6 +61,7 @@ class DragDrop {
             this._glass.style.zIndex = "998";
             this._glass.style.backgroundColor = "transparent";
             this._glass.style.outline = "none";
+            this._glass.className="dragdrop__glass";
         }
 
         this._defaultGlassCursor = "default";

@@ -17,11 +17,12 @@ export interface IBorderButtonProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
+    path: string;
 }
 
 /** @hidden @internal */
 export const BorderButton = (props: IBorderButtonProps) => {
-    const { layout, node, selected, border, iconFactory, titleFactory, icons } = props;
+    const { layout, node, selected, border, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
@@ -135,7 +136,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         buttons.push(
-            <div key="close" title={closeTitle} className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
+            <div 
+                key="close" 
+                data-layout-path={path + "/button/close"}
+                title={closeTitle} 
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)} 
+                onMouseDown={onCloseMouseDown} 
+                onClick={onClose} 
+                onTouchStart={onCloseMouseDown}>
                 {icons?.close}
             </div>
         );
@@ -143,6 +151,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     return (
         <div ref={selfRef} style={{}} className={classNames} 
+        data-layout-path={path}
         onMouseDown={onMouseDown} 
         onClick={onAuxMouseClick}
         onAuxClick={onAuxMouseClick}

@@ -2,7 +2,6 @@ module.exports = {
     mode: "development",
     entry: {
         demo: "./examples/demo/App.tsx",
-        tests: "./spec/main.ts",
     },
 
     output: {

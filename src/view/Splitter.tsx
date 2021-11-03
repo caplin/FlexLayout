@@ -13,11 +13,12 @@ import { ILayoutCallbacks } from "./Layout";
 export interface ISplitterProps {
     layout: ILayoutCallbacks;
     node: SplitterNode;
+    path: string;
 }
 
 /** @hidden @internal */
 export const Splitter = (props: ISplitterProps) => {
-    const { layout, node } = props;
+    const { layout, node, path } = props;
 
     const pBounds = React.useRef<number[]>([]);
     const outlineDiv = React.useRef<HTMLDivElement | undefined>(undefined);
@@ -132,6 +133,7 @@ export const Splitter = (props: ISplitterProps) => {
     if (extra === 0) {
         return (<div
             style={style}
+            data-layout-path={path}
             className={className}
             onTouchStart={onMouseDown}
             onMouseDown={onMouseDown}>
@@ -156,6 +158,7 @@ export const Splitter = (props: ISplitterProps) => {
         return (
             <div
                 style={style}
+                data-layout-path={path}
                 className={className}>
                 <div
                     style={style2}

@@ -599,4 +599,16 @@ Open your browser at http://localhost:8080/examples/ to show the examples direct
 The 'yarn start' command will watch for changes to flexlayout and example source, so you can make changes to the code
 and then refresh the browser to see the result.
 
+To run the tests in the Cypress interactive runner use:
+
+```
+yarn cypress
+```
+
+![FlexLayout Cypress tests](/../screenshots/github_images/CypressTests.png?raw=true "Cypress interactive runner Screenshot")
+
+
 To build the npm distribution run 'yarn build', this will create the artifacts in the dist dir.
+
+
+

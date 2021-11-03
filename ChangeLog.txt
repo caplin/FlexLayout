@@ -1,3 +1,8 @@
+0.6.0
+Added Cypress Tests 
+Fixed bug with tab icon not showing
+
+
 0.5.19
 Added onRenderFloatingTabPlaceholder callback prop for rendering the floating tab placeholder.
 Changed style sheets to use CSS custom properties (variables) for several values.

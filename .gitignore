@@ -11,3 +11,5 @@ typedoc/
 style/dark.css.map
 style/gray.css.map
 style/light.css.map
+cypress/videos/
+cypress/screenshots/

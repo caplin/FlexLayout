@@ -25,6 +25,7 @@ import { FloatingWindow } from "./FloatingWindow";
 import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
+import { Orientation } from "..";
 
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
 export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
@@ -163,8 +164,8 @@ export interface ILayoutCallbacks {
     setEditingTab(tabNode?: TabNode): void;
     getEditingTab(): TabNode | undefined;
     getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
-    showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) : void;
-    auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) : void;
+    showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -465,7 +466,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.centerRect = this.props.model._layout(this.state.rect, metrics);
 
         this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
-        this.renderChildren(this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
+        this.renderChildren("", this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
 
         if (this.edgesShown) {
             this.repositionEdges(this.state.rect)
@@ -543,10 +544,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     renderBorder(borderSet: BorderSet, borderComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
         for (const border of borderSet.getBorders()) {
+            const borderPath = `/border/${border.getLocation().getName()}`;
             if (border.isShowing()) {
                 borderComponents.push(
                     <BorderTabSet
-                        key={"border_" + border.getLocation().getName()}
+                        key={`border_${border.getLocation().getName()}`}
+                        path={borderPath}
                         border={border}
                         layout={this}
                         iconFactory={this.props.iconFactory}
@@ -556,10 +559,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 );
                 const drawChildren = border._getDrawChildren();
                 let i = 0;
+                let tabCount = 0;
                 for (const child of drawChildren) {
                     if (child instanceof SplitterNode) {
-                        splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child} />);
+                        let path = borderPath + "/s";
+                        splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child} path={path} />);
                     } else if (child instanceof TabNode) {
+                        let path = borderPath + "/t" + tabCount++;
                         if (this.supportsPopout && child.isFloating()) {
                             const rect = this._getScreenRect(child);
                             floatingWindows.push(
@@ -575,9 +581,19 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                                     <FloatingWindowTab layout={this} node={child} factory={this.props.factory} />
                                 </FloatingWindow>
                             );
-                            tabComponents[child.getId()] = <TabFloating key={child.getId()} layout={this} node={child} selected={i === border.getSelected()} />;
+                            tabComponents[child.getId()] = <TabFloating key={child.getId()}
+                                layout={this}
+                                path={path}
+                                node={child}
+                                selected={i === border.getSelected()
+                                } />;
                         } else {
-                            tabComponents[child.getId()] = <Tab key={child.getId()} layout={this} node={child} selected={i === border.getSelected()} factory={this.props.factory} />;
+                            tabComponents[child.getId()] = <Tab key={child.getId()}
+                                layout={this}
+                                path={path}
+                                node={child}
+                                selected={i === border.getSelected()}
+                                factory={this.props.factory} />;
                         }
                     }
                     i++;
@@ -587,16 +603,22 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @hidden @internal */
-    renderChildren(node: RowNode | TabSetNode, tabSetComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
+    renderChildren(path: string, node: RowNode | TabSetNode, tabSetComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
         const drawChildren = node._getDrawChildren();
+        let splitterCount = 0;
+        let tabCount = 0;
+        let rowCount = 0;
 
         for (const child of drawChildren!) {
             if (child instanceof SplitterNode) {
-                splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child} />);
+                const newPath = path + "/s" + (splitterCount++);
+                splitterComponents.push(<Splitter key={child.getId()} layout={this} path={newPath} node={child} />);
             } else if (child instanceof TabSetNode) {
-                tabSetComponents.push(<TabSet key={child.getId()} layout={this} node={child} iconFactory={this.props.iconFactory} titleFactory={this.props.titleFactory} icons={this.icons} />);
-                this.renderChildren(child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
+                const newPath = path + "/ts" + (rowCount++);
+                tabSetComponents.push(<TabSet key={child.getId()} layout={this} path={newPath} node={child} iconFactory={this.props.iconFactory} titleFactory={this.props.titleFactory} icons={this.icons} />);
+                this.renderChildren(newPath, child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
             } else if (child instanceof TabNode) {
+                const newPath = path + "/t" + (tabCount++);
                 const selectedTab = child.getParent()!.getChildren()[(child.getParent() as TabSetNode).getSelected()];
                 if (selectedTab === undefined) {
                     // this should not happen!
@@ -617,13 +639,14 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                             <FloatingWindowTab layout={this} node={child} factory={this.props.factory} />
                         </FloatingWindow>
                     );
-                    tabComponents[child.getId()] = <TabFloating key={child.getId()} layout={this} node={child} selected={child === selectedTab} />;
+                    tabComponents[child.getId()] = <TabFloating key={child.getId()} layout={this} path={newPath} node={child} selected={child === selectedTab} />;
                 } else {
-                    tabComponents[child.getId()] = <Tab key={child.getId()} layout={this} node={child} selected={child === selectedTab} factory={this.props.factory} />;
+                    tabComponents[child.getId()] = <Tab key={child.getId()} layout={this} path={newPath} node={child} selected={child === selectedTab} factory={this.props.factory} />;
                 }
             } else {
                 // is row
-                this.renderChildren(child as RowNode, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
+                const newPath = path + ((child.getOrientation() === Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
+                this.renderChildren(newPath, child as RowNode, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
             }
         }
     }
@@ -701,6 +724,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 const domRect = this.dragDiv.getBoundingClientRect();
                 const r = new Rect(0, 0, domRect?.width, domRect?.height);
                 r.centerInRect(this.state.rect);
+                this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
                 this.dragDiv.style.left = r.x + "px";
                 this.dragDiv.style.top = r.y + "px";
             }
@@ -827,6 +851,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         if (this.dragDiv == null) {
             this.dragDiv = this.currentDocument!.createElement("div");
             this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
+            this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
             this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
 
             rootdiv.appendChild(this.dragDiv);

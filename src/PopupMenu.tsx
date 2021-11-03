@@ -81,9 +81,10 @@ const PopupMenu = (props: IPopupMenuProps) => {
         event.stopPropagation();
     };
 
-    const itemElements = items.map((item) => (
+    const itemElements = items.map((item, i) => (
         <div key={item.index}
             className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)}
+            data-layout-path={"/popup-menu/tb" + i}
             onClick={(event) => onItemClick(item, event)}
             title={item.node.getHelpText()}>
             {item.node._getRenderedName()}
@@ -91,7 +92,9 @@ const PopupMenu = (props: IPopupMenuProps) => {
     ));
 
     return (
-        <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}>
+        <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}
+        data-layout-path="/popup-menu"
+        >
             {itemElements}
         </div>);
 };

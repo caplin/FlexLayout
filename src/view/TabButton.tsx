@@ -19,11 +19,12 @@ export interface ITabButtonProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
+    path: string;
 }
 
 /** @hidden @internal */
 export const TabButton = (props: ITabButtonProps) => {
-    const { layout, node, show, selected, iconFactory, titleFactory, icons } = props;
+    const { layout, node, show, selected, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
@@ -55,7 +56,7 @@ export const TabButton = (props: ITabButtonProps) => {
             layout.setEditingTab(node);
             layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
-        } 
+        }
         // else {
         //     const parentNode = node.getParent() as TabSetNode;
         //     if (parentNode.canMaximize()) {
@@ -152,8 +153,8 @@ export const TabButton = (props: ITabButtonProps) => {
     let name = node.getName();
 
     function isTitleObject(obj: any): obj is ITitleObject {
-        return obj.titleContent !== undefined 
-      }
+        return obj.titleContent !== undefined
+    }
 
     if (titleFactory !== undefined) {
         const titleObj = titleFactory(node);
@@ -196,6 +197,7 @@ export const TabButton = (props: ITabButtonProps) => {
                 style={contentStyle}
                 ref={contentRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX)}
+                data-layout-path={path + "/textbox"}
                 type="text"
                 autoFocus={true}
                 defaultValue={node.getName()}
@@ -209,7 +211,13 @@ export const TabButton = (props: ITabButtonProps) => {
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         buttons.push(
-            <div key="close" title={closeTitle} className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)} onMouseDown={onCloseMouseDown} onClick={onClose} onTouchStart={onCloseMouseDown}>
+            <div
+                key="close"
+                data-layout-path={path + "/button/close"}
+                title={closeTitle}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
+                onMouseDown={onCloseMouseDown} onClick={onClose}
+                onTouchStart={onCloseMouseDown}>
                 {icons?.close}
             </div>
         );
@@ -218,6 +226,7 @@ export const TabButton = (props: ITabButtonProps) => {
     return (
         <div
             ref={selfRef}
+            data-layout-path={path}
             style={{
                 visibility: show ? "visible" : "hidden",
             }}

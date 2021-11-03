@@ -11,11 +11,12 @@ export interface ITabFloatingProps {
     layout: ILayoutCallbacks;
     selected: boolean;
     node: TabNode;
+    path: string;
 }
 
 /** @hidden @internal */
 export const TabFloating = (props: ITabFloatingProps) => {
-    const { layout, selected, node } = props;
+    const { layout, selected, node, path } = props;
 
     const showPopout = () => {
         if (node.getWindow()) {
@@ -65,7 +66,11 @@ export const TabFloating = (props: ITabFloatingProps) => {
         );
     } else {
         return (
-            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+            <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING)}
+                data-layout-path={path}
+                onMouseDown={onMouseDown}
+                onTouchStart={onMouseDown}
+                style={style}>
                 <div className={cm(CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER)}>
                     <div>{message}</div>
                     <div>

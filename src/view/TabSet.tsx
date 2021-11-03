@@ -18,11 +18,12 @@ export interface ITabSetProps {
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
     editingTab?: TabNode;
+    path?: string;
 }
 
 /** @hidden @internal */
 export const TabSet = (props: ITabSetProps) => {
-    const { node, layout, iconFactory, titleFactory, icons } = props;
+    const { node, layout, iconFactory, titleFactory, icons, path } = props;
 
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -43,7 +44,6 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        
         if (!isAuxMouseEvent(event)) {
             let name = node.getName();
             if (name === undefined) {
@@ -122,6 +122,7 @@ export const TabSet = (props: ITabSetProps) => {
                 <TabButton
                     layout={layout}
                     node={child}
+                    path={path + "/tb" + i}
                     key={child.getId()}
                     selected={isSelected}
                     show={true}
@@ -170,6 +171,8 @@ export const TabSet = (props: ITabSetProps) => {
         buttons.push(
             <button
                 key="overflowbutton"
+                data-layout-path={path + "/button/overflow"}
+
                 ref={overflowbuttonRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
                 title={overflowTitle}
@@ -188,6 +191,7 @@ export const TabSet = (props: ITabSetProps) => {
         buttons.push(
             <button
                 key="float"
+                data-layout-path={path + "/button/float"}
                 title={floatTitle}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
                 onClick={onFloatTab}
@@ -205,6 +209,7 @@ export const TabSet = (props: ITabSetProps) => {
         btns.push(
             <button
                 key="max"
+                data-layout-path={path + "/button/max"}
                 title={node.isMaximized() ? minTitle : maxTitle}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min"))}
                 onClick={onMaximizeToggle}
@@ -222,6 +227,7 @@ export const TabSet = (props: ITabSetProps) => {
         btns.push(
             <button
                 key="close"
+                data-layout-path={path + "/button/close"}
                 title={title}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
                 onClick={onClose}
@@ -287,6 +293,7 @@ export const TabSet = (props: ITabSetProps) => {
 
         header = (
             <div className={tabHeaderClasses} style={{ height: node.getHeaderHeight() + "px" }}
+                data-layout-path={path + "/header"}
                 onMouseDown={onMouseDown}
                 onContextMenu={onContextMenu}
                 onClick={onAuxMouseClick}
@@ -307,6 +314,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
     tabStrip = (
         <div className={tabStripClasses} style={tabStripStyle}
+            data-layout-path={path + "/tabstrip"}
             onMouseDown={onMouseDown}
             onContextMenu={onContextMenu}
             onClick={onAuxMouseClick}
@@ -327,7 +335,12 @@ export const TabSet = (props: ITabSetProps) => {
     style = layout.styleFont(style);
 
     return (
-        <div ref={selfRef} dir="ltr" style={style} className={cm(CLASSES.FLEXLAYOUT__TABSET)} onWheel={onMouseWheel}>
+        <div ref={selfRef} 
+            dir="ltr" 
+            data-layout-path={path}
+            style={style} 
+            className={cm(CLASSES.FLEXLAYOUT__TABSET)} 
+            onWheel={onMouseWheel}>
             {header}
             {tabStrip}
         </div>

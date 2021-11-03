@@ -15,11 +15,12 @@ export interface ITabProps {
     selected: boolean;
     node: TabNode;
     factory: (node: TabNode) => React.ReactNode;
+    path: string;
 }
 
 /** @hidden @internal */
 export const Tab = (props: ITabProps) => {
-    const { layout, selected, node, factory } = props;
+    const { layout, selected, node, factory, path } = props;
     const [renderComponent, setRenderComponent] = React.useState<boolean>(!props.node.isEnableRenderOnDemand() || props.selected);
 
     React.useLayoutEffect(() => {
@@ -64,7 +65,12 @@ export const Tab = (props: ITabProps) => {
     }
 
     return (
-        <div className={className} onMouseDown={onMouseDown} onTouchStart={onMouseDown} style={style}>
+        <div 
+            className={className} 
+            data-layout-path={path}
+            onMouseDown={onMouseDown} 
+            onTouchStart={onMouseDown} 
+            style={style}>
             <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
                 <Fragment>{child}</Fragment>
             </ErrorBoundary>

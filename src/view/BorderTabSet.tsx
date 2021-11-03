@@ -19,11 +19,12 @@ export interface IBorderTabSetProps {
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons?: IIcons;
+    path: string;
 }
 
 /** @hidden @internal */
 export const BorderTabSet = (props: IBorderTabSetProps) => {
-    const { border, layout, iconFactory, titleFactory, icons } = props;
+    const { border, layout, iconFactory, titleFactory, icons, path } = props;
 
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -78,6 +79,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 layout={layout}
                 border={border.getLocation().getName()}
                 node={child}
+                path={path + "/tb" + i}
                 key={child.getId()}
                 selected={isSelected}
                 iconFactory={iconFactory}
@@ -159,6 +161,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     return (
         <div ref={selfRef} dir="ltr" style={style} className={borderClasses} 
+            data-layout-path={path}
             onClick={onAuxMouseClick}
             onAuxClick={onAuxMouseClick}
             onContextMenu={onContextMenu}
