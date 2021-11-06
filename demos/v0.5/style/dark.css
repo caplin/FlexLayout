@@ -160,7 +160,7 @@
   background-color: var(--color-background);
 }
 .flexlayout__tab_button {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   box-sizing: border-box;
   padding: 3px 8px;
@@ -191,10 +191,10 @@
   border-bottom-right-radius: 3px;
 }
 .flexlayout__tab_button_leading {
-  display: inline-block;
+  display: flex;
 }
 .flexlayout__tab_button_content {
-  display: inline-block;
+  display: flex;
 }
 .flexlayout__tab_button_textbox {
   border: none;
@@ -209,7 +209,7 @@
   outline: none;
 }
 .flexlayout__tab_button_trailing {
-  display: inline-block;
+  display: flex;
   margin-left: 8px;
   min-width: 8px;
   min-height: 8px;
@@ -363,13 +363,13 @@
   color: gray;
 }
 .flexlayout__border_button_leading {
-  display: inline;
+  display: flex;
 }
 .flexlayout__border_button_content {
-  display: inline-block;
+  display: flex;
 }
 .flexlayout__border_button_trailing {
-  display: inline-block;
+  display: flex;
   margin-left: 8px;
   min-width: 8px;
   min-height: 8px;
