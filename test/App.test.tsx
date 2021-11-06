@@ -543,7 +543,7 @@ context("Add methods", () => {
         cy.get('[data-id=add-indirect').click();
         findPath("/drag-rectangle").as('from');
         findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-        drag("@from", "@to", DockLocation.CENTER, "@from");
+        drag("@from", "@to", DockLocation.CENTER);
         findAllTabSets().should("have.length", 3);
         checkTab("/ts1", 0, false, "Two");
         checkTab("/ts1", 1, true, "Text0");
@@ -553,7 +553,7 @@ context("Add methods", () => {
         cy.get('[data-id=add-indirect').click();
         findPath("/drag-rectangle").as('from');
         findPath("/border/right").as('to');
-        drag("@from", "@to", DockLocation.CENTER, "@from");
+        drag("@from", "@to", DockLocation.CENTER);
         findAllTabSets().should("have.length", 3);
         checkBorderTab("/border/right", 0, false, "right1");
         checkBorderTab("/border/right", 1, false, "Text0");
@@ -897,22 +897,18 @@ context("Extended layout2", () => {
 })
 
 
-
 // ---------------------------- helpers ------------------------ 
 
-const glass = '[data-layout-path="glass"]';
-
-function drag(from, to, loc, moveOn=glass) {
+function drag(from, to, loc) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
             const cf = getLocation(fr, DockLocation.CENTER)
-            cy.get(moveOn)
-                .trigger('mousemove', { clientX: cf.x + 10, clientY: cf.y + 10 });
             cy.get(to).then(e => {
                 const tr = e[0].getBoundingClientRect();
                 const ct = getLocation(tr, loc);
-                cy.get(moveOn)
+                cy.document()
+                    .trigger('mousemove', { clientX: cf.x + 10, clientY: cf.y + 10 })
                     .trigger('mousemove', { clientX: (cf.x + ct.x) / 2, clientY: (cf.y + ct.y) / 2 })
                     .trigger('mousemove', { clientX: ct.x, clientY: ct.y })
                     .trigger('mouseup', { clientX: ct.x, clientY: ct.y });
@@ -920,17 +916,18 @@ function drag(from, to, loc, moveOn=glass) {
         });
 }
 
+
 function dragToEdge(from, edgeIndex) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
             const cf = { x: fr.x + fr.width / 2, y: fr.y + fr.height / 2 };
-            cy.get(glass)
+            cy.document() // need to start move for edges to show
                 .trigger('mousemove', { clientX: cf.x + 10, clientY: cf.y + 10 });
             cy.get('.flexlayout__edge_rect').eq(edgeIndex).then(e => {
                 const tr = e[0].getBoundingClientRect();
                 const ct = { x: tr.x + tr.width / 2, y: tr.y + tr.height / 2 };
-                cy.get(glass)
+                cy.document()
                     .trigger('mousemove', { clientX: (cf.x + ct.x) / 2, clientY: (cf.y + ct.y) / 2 })
                     .trigger('mousemove', { clientX: ct.x, clientY: ct.y })
                     .trigger('mouseup', { clientX: ct.x, clientY: ct.y });
@@ -939,18 +936,18 @@ function dragToEdge(from, edgeIndex) {
 }
 
 function dragsplitter(from, upDown, distance) {
-    cy.get(from).then(e => {
-        const fr = e[0].getBoundingClientRect();
-        const cf = { x: fr.x + fr.width / 2, y: fr.y + fr.height / 2 };
-        const ct = { x: cf.x + (upDown ? 0 : distance), y: cf.y + (upDown ? distance : 0) };
-        cy.get(from)
-            .trigger('mousedown', { which: 1 })
-            .get(".flexlayout__splitter_drag")
-            .trigger('mousemove', { clientX: cf.x + 10, clientY: cf.y + 10 })
-            .trigger('mousemove', { clientX: (cf.x + ct.x) / 2, clientY: (cf.y + ct.y) / 2 })
-            .trigger('mousemove', { clientX: ct.x, clientY: ct.y })
-            .trigger('mouseup', { clientX: ct.x, clientY: ct.y });
-    });
+    cy.get(from)
+        .trigger('mousedown', { which: 1 })
+        .then(e => {
+            const fr = e[0].getBoundingClientRect();
+            const cf = { x: fr.x + fr.width / 2, y: fr.y + fr.height / 2 };
+            const ct = { x: cf.x + (upDown ? 0 : distance), y: cf.y + (upDown ? distance : 0) };
+            cy.document()
+                .trigger('mousemove', { clientX: cf.x + 10, clientY: cf.y + 10 })
+                .trigger('mousemove', { clientX: (cf.x + ct.x) / 2, clientY: (cf.y + ct.y) / 2 })
+                .trigger('mousemove', { clientX: ct.x, clientY: ct.y })
+                .trigger('mouseup', { clientX: ct.x, clientY: ct.y });
+        });
 }
 
 beforeEach(() => {
