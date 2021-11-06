@@ -1,7 +1,6 @@
-0.6.0
+0.5.20
 Added Cypress Tests 
 Fixed bug with tab icon not showing
-
 
 0.5.19
 Added onRenderFloatingTabPlaceholder callback prop for rendering the floating tab placeholder.
