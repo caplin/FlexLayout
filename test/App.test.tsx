@@ -3,7 +3,7 @@ import { mount, unmount } from '@cypress/react';
 import { DockLocation } from '../src';
 import { CLASSES } from '../src/Types';
 import { App, twoTabs, threeTabs, withBorders } from './App';
-import { AppEx, layout2, layoutEx } from './AppEx';
+import { AppEx, layoutEx2, layoutEx1 } from './AppEx';
 
 /*
 
@@ -714,7 +714,7 @@ context("Others", () => {
 
 context("Extended App", () => {
     beforeEach(() => {
-        mount(<AppEx json={layoutEx} />);
+        mount(<AppEx json={layoutEx1} />);
     });
 
     it('title factory', () => {
@@ -789,7 +789,7 @@ context("Extended App", () => {
 
 context("Extended layout2", () => {
     beforeEach(() => {
-        mount(<AppEx json={layout2} />);
+        mount(<AppEx json={layoutEx2} />);
     });
 
     it('check tabset min size', () => {
@@ -899,7 +899,7 @@ context("Extended layout2", () => {
 
 // ---------------------------- helpers ------------------------ 
 
-function drag(from, to, loc) {
+function drag(from: string, to: string, loc: DockLocation) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
@@ -916,8 +916,7 @@ function drag(from, to, loc) {
         });
 }
 
-
-function dragToEdge(from, edgeIndex) {
+function dragToEdge(from: string, edgeIndex: number) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
@@ -935,7 +934,7 @@ function dragToEdge(from, edgeIndex) {
         });
 }
 
-function dragsplitter(from, upDown, distance) {
+function dragsplitter(from: string, upDown: boolean, distance: number) {
     cy.get(from)
         .trigger('mousedown', { which: 1 })
         .then(e => {

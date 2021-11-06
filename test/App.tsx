@@ -1,7 +1,7 @@
-import { Layout, Model, TabNode, IJsonModel, TabSetNode, BorderNode } from '../src';
+import React from 'react';
+import { Layout, Model, TabNode, IJsonModel } from '../src';
 import './style/light.css';
 import './style/app.css';
-import React from 'react';
 
 export function App(props) {
     const model = Model.fromJson(props.json);
@@ -125,7 +125,7 @@ export const threeTabs: IJsonModel = {
             {
                 type: "tabset",
                 weight: 50,
-                name:"TheHeader",
+                name: "TheHeader",
                 children: [
                     {
                         type: "tab",

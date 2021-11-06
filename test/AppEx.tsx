@@ -1,8 +1,8 @@
+import React from 'react';
 import { Layout, Model, TabNode, IJsonModel, TabSetNode, BorderNode } from '../src';
+import { ITabRenderValues, ITabSetRenderValues } from '../src/view/Layout';
 import './style/light.css';
 import './style/app.css';
-import React from 'react';
-import { ITabRenderValues, ITabSetRenderValues } from '../src/view/Layout';
 
 export function AppEx(props) {
     const model = Model.fromJson(props.json);
@@ -42,28 +42,28 @@ export function AppEx(props) {
 
     const onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         if (node.getId() === "onRenderTab1") {
-            renderValues.leading = <img src="/test/images/more.png" key="1"/>
+            renderValues.leading = <img src="/test/images/more.png" key="1" />
             renderValues.content = "onRenderTab1";
             renderValues.name = "onRenderTab1 overflow"; // name used in overflow menu
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1"/>);
+            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
         } else if (node.getId() === "onRenderTab2") {
-            renderValues.leading = <img src="/test/images/more.png" key="1"/>
+            renderValues.leading = <img src="/test/images/more.png" key="1" />
             renderValues.content = "onRenderTab2";
             renderValues.name = "onRenderTab2 overflow"; // name used in overflow menu
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1"/>);
+            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
         }
     }
 
     const onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (node.getId() === "onRenderTabSet1") {
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1"/>);
-            renderValues.buttons.push(<img src="/test/images/more.png" key="2"/>);
+            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
         } else if (node.getId() === "onRenderTabSet2") {
             renderValues.headerContent = "onRenderTabSet2";
-            renderValues.headerButtons.push(<img src="/test/images/more.png" key="1"/>);
-            renderValues.headerButtons.push(<img src="/test/images/grey_ball.png" key="2"/>);
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1"/>);
-            renderValues.buttons.push(<img src="/test/images/more.png" key="2"/>);
+            renderValues.headerButtons.push(<img src="/test/images/more.png" key="1" />);
+            renderValues.headerButtons.push(<img src="/test/images/grey_ball.png" key="2" />);
+            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
         } else if (node.getId() === "onRenderTabSet3") {
             renderValues.stickyButtons.push(
                 <img src="/test/images/add.png"
@@ -73,10 +73,10 @@ export function AppEx(props) {
                     style={{ marginLeft: 5, width: 24, height: 24 }}
                     onClick={() => this.onAddFromTabSetButton(node)}
                 />);
-            } else if (node instanceof BorderNode) {
-                renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1"/>);
-                renderValues.buttons.push(<img src="/test/images/more.png" key="2"/>);
-            }
+        } else if (node instanceof BorderNode) {
+            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
+        }
     }
 
     const titleFactory = (node: TabNode) => {
@@ -133,8 +133,7 @@ export function AppEx(props) {
 
 export default AppEx;
 
-
-export const layoutEx: IJsonModel = {
+export const layoutEx1: IJsonModel = {
     global: {},
     borders: [
         {
@@ -237,14 +236,13 @@ export const layoutEx: IJsonModel = {
     }
 };
 
-export const layout2: IJsonModel = {
+export const layoutEx2: IJsonModel = {
     global: {
-        "tabSetMinHeight":100,
-        "tabSetMinWidth":100,
-        "borderMinSize":100,
+        "tabSetMinHeight": 100,
+        "tabSetMinWidth": 100,
+        "borderMinSize": 100,
         "borderEnableAutoHide": true,
-        "tabSetEnableClose":true
-
+        "tabSetEnableClose": true
     },
     borders: [
         {
@@ -328,44 +326,44 @@ export const layout2: IJsonModel = {
                 type: "row",
                 weight: 100,
                 children: [
-                {
-                    type: "tabset",
-                    weight: 50,
-                    children: [
-                        {
-                            type: "tab",
-                            name: "Three",
-                            component: "text",
-                        },
-                        {
-                            type: "tab",
-                            name: "Four",
-                            component: "text",
-                        },
-                        {
-                            type: "tab",
-                            name: "Five",
-                            component: "text",
-                        }
-                    ]
-                },
-                {
-                    type: "tabset",
-                    weight: 50,
-                    children: [
-                        {
-                            type: "tab",
-                            name: "Six",
-                            component: "text",
-                        },
-                        {
-                            type: "tab",
-                            name: "Seven",
-                            component: "text",
-                        }
-                    ]
-                }
-            ]
+                    {
+                        type: "tabset",
+                        weight: 50,
+                        children: [
+                            {
+                                type: "tab",
+                                name: "Three",
+                                component: "text",
+                            },
+                            {
+                                type: "tab",
+                                name: "Four",
+                                component: "text",
+                            },
+                            {
+                                type: "tab",
+                                name: "Five",
+                                component: "text",
+                            }
+                        ]
+                    },
+                    {
+                        type: "tabset",
+                        weight: 50,
+                        children: [
+                            {
+                                type: "tab",
+                                name: "Six",
+                                component: "text",
+                            },
+                            {
+                                type: "tab",
+                                name: "Seven",
+                                component: "text",
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     }
