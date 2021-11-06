@@ -581,13 +581,6 @@ First install dependencies:
 yarn install
 ```
 
-Install the peer dependencies:
-
-```
-yarn add react
-yarn add react-dom
-```
-
 Compile the project and run the examples:
  
 ```
