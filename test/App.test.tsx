@@ -1,9 +1,9 @@
 import React from 'react';
 import { mount, unmount } from '@cypress/react';
-import { App, twoTabs, threeTabs, withBorders } from './App';
 import { DockLocation } from '../src';
 import { CLASSES } from '../src/Types';
-import AppEx, { layout2, layoutEx } from './AppEx';
+import { App, twoTabs, threeTabs, withBorders } from './App';
+import { AppEx, layout2, layoutEx } from './AppEx';
 
 /*
 
@@ -25,8 +25,6 @@ import AppEx, { layout2, layoutEx } from './AppEx';
 
 */
 
-const glass = ".dragdrop__glass";
-
 describe('Drag tests', () => {
     context("two tabs", () => {
         beforeEach(() => {
@@ -39,7 +37,7 @@ describe('Drag tests', () => {
 
         it('esc cancels tab to tabset', () => {
             findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 1);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -47,7 +45,7 @@ describe('Drag tests', () => {
 
         it('tab to tab center', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass); // drag to the center of the @to tabset
+            drag("@from", "@to", DockLocation.CENTER); // drag to the center of the @to tabset
             findAllTabSets().should("have.length", 1);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -55,7 +53,7 @@ describe('Drag tests', () => {
 
         it('tab to tab top', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP, glass);
+            drag("@from", "@to", DockLocation.TOP);
             findAllTabSets().should("have.length", 2);
             checkTab("/c0/ts0", 0, true, "One");
             checkTab("/c0/ts1", 0, true, "Two");
@@ -63,7 +61,7 @@ describe('Drag tests', () => {
 
         it('tab to tab bottom', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM, glass);
+            drag("@from", "@to", DockLocation.BOTTOM);
             findAllTabSets().should("have.length", 2);
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -71,7 +69,7 @@ describe('Drag tests', () => {
 
         it('tab to tab left', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.LEFT, glass);
+            drag("@from", "@to", DockLocation.LEFT);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts1", 0, true, "Two");
@@ -79,7 +77,7 @@ describe('Drag tests', () => {
 
         it('tab to tab right', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.RIGHT, glass);
+            drag("@from", "@to", DockLocation.RIGHT);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts1", 0, true, "One");
@@ -101,7 +99,7 @@ describe('Drag tests', () => {
 
         it('tab to tabset', () => {
             findPath("/ts1/tabstrip").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -110,7 +108,7 @@ describe('Drag tests', () => {
 
         it('tab to tab center', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -119,7 +117,7 @@ describe('Drag tests', () => {
 
         it('tab to tab top', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP, glass);
+            drag("@from", "@to", DockLocation.TOP);
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "One");
             checkTab("/c0/ts1", 0, true, "Two");
@@ -128,7 +126,7 @@ describe('Drag tests', () => {
 
         it('tab to tab bottom', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM, glass);
+            drag("@from", "@to", DockLocation.BOTTOM);
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -137,7 +135,7 @@ describe('Drag tests', () => {
 
         it('tab to tab left', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.LEFT, glass);
+            drag("@from", "@to", DockLocation.LEFT);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts1", 0, true, "Two");
@@ -146,7 +144,7 @@ describe('Drag tests', () => {
 
         it('tab to tab right', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.RIGHT, glass);
+            drag("@from", "@to", DockLocation.RIGHT);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts1", 0, true, "One");
@@ -183,11 +181,11 @@ describe('Drag tests', () => {
 
         it('row to column', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM, glass);
+            drag("@from", "@to", DockLocation.BOTTOM);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/c1/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM, glass);
+            drag("@from", "@to", DockLocation.BOTTOM);
 
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "Three");
@@ -197,11 +195,11 @@ describe('Drag tests', () => {
 
         it('row to single tabset', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/ts1/t1").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
 
             findAllTabSets().should("have.length", 1);
             checkTab("/ts0", 0, false, "Three");
@@ -211,11 +209,11 @@ describe('Drag tests', () => {
 
         it('move tab in tabstrip', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/ts1/t1").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             checkTab("/ts0", 0, false, "Three");
             checkTab("/ts0", 1, false, "One");
             checkTab("/ts0", 2, true, "Two");
@@ -223,7 +221,7 @@ describe('Drag tests', () => {
 
             findTabButton("/ts0", 2).as('from');
             findTabButton("/ts0", 0).as('to');
-            drag("@from", "@to", DockLocation.LEFT, glass);
+            drag("@from", "@to", DockLocation.LEFT);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts0", 1, false, "Three");
             checkTab("/ts0", 2, false, "One");
@@ -232,7 +230,7 @@ describe('Drag tests', () => {
         it('move tabstrip', () => {
             findPath("/ts2/tabstrip").as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
 
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts0", 1, false, "Three");
@@ -240,7 +238,7 @@ describe('Drag tests', () => {
 
             findPath("/ts0/tabstrip").as('from');
             findPath("/ts1/tabstrip").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
 
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts0", 1, false, "One");
@@ -250,7 +248,7 @@ describe('Drag tests', () => {
         it('move using header', () => {
             findPath("/ts1/header").as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP, glass);
+            drag("@from", "@to", DockLocation.TOP);
 
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -268,7 +266,7 @@ describe('Drag tests', () => {
         const borderToTabTest = (border, tabtext, index) => {
             findTabButton(border, 0).as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, false, "One");
             checkTab("/ts0", index, true, tabtext);
@@ -293,7 +291,7 @@ describe('Drag tests', () => {
         const tabToBorderTest = (border, tabtext, index) => {
             findTabButton("/ts0", 0).as('from');
             findTabButton(border, 0).as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, false, "One");
@@ -320,7 +318,7 @@ describe('Drag tests', () => {
             findTabButton("/ts0", 0).as('from');
             findPath(border).as('to');
 
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, true, "One");
@@ -347,7 +345,7 @@ describe('Drag tests', () => {
             findTabButton("/ts0", 0).as('from');
             findPath(border + "/t0").as('to');
 
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, true, "One");
@@ -372,14 +370,14 @@ describe('Drag tests', () => {
         const inBorderTabMoveTest = (border, tabtext, index) => {
             findTabButton("/ts0", 0).as('from');
             findPath(border).as('to');
-            drag("@from", "@to", DockLocation.CENTER, glass);
+            drag("@from", "@to", DockLocation.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, false, "One");
 
             findTabButton(border, 0).as('from');
             findTabButton(border, index).as('to');
-            drag("@from", "@to", DockLocation.RIGHT, glass);
+            drag("@from", "@to", DockLocation.RIGHT);
             checkBorderTab(border, index, false, tabtext);
         };
 
@@ -441,7 +439,7 @@ describe('Drag tests', () => {
             beforeEach(() => {
                 findTabButton("/ts0", 0).as('from');
                 findPath("/ts1/t0").as('to');
-                drag("@from", "@to", DockLocation.BOTTOM, glass);
+                drag("@from", "@to", DockLocation.BOTTOM);
                 findAllTabSets().should("have.length", 2);
                 checkTab("/c0/ts0", 0, true, "Two");
                 checkTab("/c0/ts1", 0, true, "One");
@@ -526,7 +524,7 @@ context("Add methods", () => {
     it('drag to tabset', () => {
         cy.get('[data-id=add-drag').as('from');
         findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-        drag("@from", "@to", DockLocation.CENTER, glass);
+        drag("@from", "@to", DockLocation.CENTER);
         findAllTabSets().should("have.length", 3);
         checkTab("/ts1", 0, false, "Two");
         checkTab("/ts1", 1, true, "Text0");
@@ -535,7 +533,7 @@ context("Add methods", () => {
     it('drag to border', () => {
         cy.get('[data-id=add-drag').as('from');
         findPath("/border/right").as('to');
-        drag("@from", "@to", DockLocation.CENTER, glass);
+        drag("@from", "@to", DockLocation.CENTER);
         findAllTabSets().should("have.length", 3);
         checkBorderTab("/border/right", 0, false, "right1");
         checkBorderTab("/border/right", 1, false, "Text0");
@@ -883,7 +881,7 @@ context("Extended layout2", () => {
 
         findTabButton("/ts0", 0).as('from');
         findTabButton("/ts0", 0).as('to');
-        drag("@from", "@to", DockLocation.TOP, glass);
+        drag("@from", "@to", DockLocation.TOP);
         findPath("/border/top").should("exist");
     });
 
@@ -893,7 +891,7 @@ context("Extended layout2", () => {
 
         findTabButton("/ts0", 0).as('from');
         findTabButton("/ts0", 0).as('to');
-        drag("@from", "@to", DockLocation.LEFT, glass);
+        drag("@from", "@to", DockLocation.LEFT);
         findPath("/border/left").should("exist");
     });
 })
@@ -901,7 +899,10 @@ context("Extended layout2", () => {
 
 
 // ---------------------------- helpers ------------------------ 
-function drag(from, to, loc, moveOn) {
+
+const glass = '[data-layout-path="glass"]';
+
+function drag(from, to, loc, moveOn=glass) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
