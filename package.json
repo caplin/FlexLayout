@@ -42,8 +42,6 @@
         "extends": "react-app"
     },
     "devDependencies": {
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2",
         "@cypress/react": "^5.10.2",
         "@cypress/webpack-dev-server": "^1.7.0",
         "@types/node": "^15.0.2",
@@ -53,6 +51,8 @@
         "awesome-typescript-loader": "^5.2.0",
         "cypress": "^8.7.0",
         "prettier": "^2.3.0",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
         "react-scripts": "4.0.3",
         "sass": "^1.32.12",
         "source-map-loader": "^1.1.2",
