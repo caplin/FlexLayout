@@ -41,15 +41,17 @@ export const Tab = (props: ITabProps) => {
     };
 
     const cm = layout.getClassName;
+    const useVisibility = node.getModel().isUseVisibility();
 
     const parentNode = node.getParent() as TabSetNode | BorderNode;
-    const style: Record<string, any> = node._styleWithPosition({
-        display: selected ? "block" : "none",
-    });
+    const style: Record<string, any> = node._styleWithPosition();
+    if (!selected) {
+        hideElement(style, useVisibility);
+    }
 
     if (parentNode instanceof TabSetNode) {
         if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
-            style.display = "none";
+            hideElement(style, useVisibility);
         }
     }
 
@@ -77,3 +79,11 @@ export const Tab = (props: ITabProps) => {
         </div>
     );
 };
+
+export function hideElement(style: Record<string, any>, useVisibility: ConstrainBoolean ) {
+    if (useVisibility) {
+        style.visibility = "hidden";
+    } else {
+        style.display = "none";
+    }
+}

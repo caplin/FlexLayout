@@ -9,6 +9,7 @@ import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
 import { CLASSES } from "../Types";
+import { hideElement } from "./Tab";
 
 /** @hidden @internal */
 export interface ITabSetProps {
@@ -110,7 +111,7 @@ export const TabSet = (props: ITabSetProps) => {
     let style = node._styleWithPosition();
 
     if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
-        style.display = "none";
+        hideElement(style, node.getModel().isUseVisibility())
     }
 
     const tabs = [];

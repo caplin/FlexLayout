@@ -40,6 +40,7 @@ export interface IGlobalAttributes {
 	borderMinSize?: number; // default: 0
 	borderSize?: number; // default: 200
 	enableEdgeDock?: boolean; // default: true
+	enableUseVisibility?: boolean; // default: false
 	marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	rootOrientationVertical?: boolean; // default: false
 	splitterExtra?: number; // default: 0

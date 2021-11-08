@@ -59,6 +59,7 @@ class Model {
         attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
+        attributeDefinitions.add("enableUseVisibility", false).setType(Attribute.BOOLEAN);
 
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
@@ -199,6 +200,10 @@ class Model {
 
     isRootOrientationVertical() {
         return this._attributes.rootOrientationVertical as boolean;
+    }
+
+    isUseVisibility() {
+        return this._attributes.enableUseVisibility as boolean;
     }
 
     /**

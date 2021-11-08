@@ -5,6 +5,7 @@ import TabSetNode from "../model/TabSetNode";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
+import { hideElement } from "./Tab";
 
 /** @hidden @internal */
 export interface ITabFloatingProps {
@@ -49,9 +50,10 @@ export const TabFloating = (props: ITabFloatingProps) => {
 
     const cm = layout.getClassName;
 
-    const style: Record<string, any> = node._styleWithPosition({
-        display: selected ? "flex" : "none",
-    });
+    const style: Record<string, any> = node._styleWithPosition();
+    if (!selected) {
+        hideElement(style, node.getModel().isUseVisibility());
+    }
 
     const message = layout.i18nName(I18nLabel.Floating_Window_Message);
     const showMessage = layout.i18nName(I18nLabel.Floating_Window_Show_Window);
