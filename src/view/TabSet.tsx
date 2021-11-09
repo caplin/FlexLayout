@@ -125,7 +125,6 @@ export const TabSet = (props: ITabSetProps) => {
                     path={path + "/tb" + i}
                     key={child.getId()}
                     selected={isSelected}
-                    show={true}
                     height={node.getTabStripHeight()}
                     iconFactory={iconFactory}
                     titleFactory={titleFactory}

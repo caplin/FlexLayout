@@ -13,7 +13,6 @@ import { isAuxMouseEvent } from "./TabSet";
 export interface ITabButtonProps {
     layout: ILayoutCallbacks;
     node: TabNode;
-    show: boolean;
     selected: boolean;
     height: number;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
@@ -24,7 +23,7 @@ export interface ITabButtonProps {
 
 /** @hidden @internal */
 export const TabButton = (props: ITabButtonProps) => {
-    const { layout, node, show, selected, iconFactory, titleFactory, icons, path } = props;
+    const { layout, node, selected, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const contentWidth = React.useRef<number>(0);
@@ -227,9 +226,6 @@ export const TabButton = (props: ITabButtonProps) => {
         <div
             ref={selfRef}
             data-layout-path={path}
-            style={{
-                visibility: show ? "visible" : "hidden",
-            }}
             className={classNames}
             onMouseDown={onMouseDown}
             onClick={onAuxMouseClick}
