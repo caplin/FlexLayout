@@ -35,14 +35,6 @@ describe('Drag tests', () => {
             findTabButton("/ts0", 0).as('from');
         });
 
-        it('esc cancels tab to tabset', () => {
-            findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-            drag("@from", "@to", DockLocation.CENTER);
-            findAllTabSets().should("have.length", 1);
-            checkTab("/ts0", 0, false, "Two");
-            checkTab("/ts0", 1, true, "One");
-        })
-
         it('tab to tab center', () => {
             findPath("/ts1/t0").as('to');
             drag("@from", "@to", DockLocation.CENTER); // drag to the center of the @to tabset
