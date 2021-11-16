@@ -33456,6 +33456,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
+        attributeDefinitions.add("enableUseVisibility", false).setType(Attribute_1.default.BOOLEAN);
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute_1.default.BOOLEAN);
         attributeDefinitions.add("tabCloseType", 1).setType("ICloseType");
@@ -33545,6 +33546,9 @@ var Model = /** @class */ (function () {
     };
     Model.prototype.isRootOrientationVertical = function () {
         return this._attributes.rootOrientationVertical;
+    };
+    Model.prototype.isUseVisibility = function () {
+        return this._attributes.enableUseVisibility;
     };
     /**
      * Gets the
@@ -35835,17 +35839,23 @@ var FloatingWindow = function (props) {
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
         var styles = Array.from(window.document.styleSheets).reduce(function (result, styleSheet) {
+            var rules = undefined;
+            try {
+                rules = styleSheet.cssRules;
+            }
+            catch (e) {
+                // styleSheet.cssRules can throw security exception
+            }
             try {
                 return __spreadArray(__spreadArray([], result), [
                     {
                         href: styleSheet.href,
                         type: styleSheet.type,
-                        rules: Array.from(styleSheet.cssRules).map(function (rule) { return rule.cssText; }),
+                        rules: rules ? Array.from(rules).map(function (rule) { return rule.cssText; }) : null,
                     }
                 ]);
             }
             catch (e) {
-                // styleSheet.cssRules can throw security exception
                 return result;
             }
         }, []);
@@ -35913,9 +35923,11 @@ function copyStyles(doc, styleSheets) {
             }));
         }
         else {
-            var style_1 = doc.createElement("style");
-            styleSheet.rules.forEach(function (rule) { return style_1.appendChild(doc.createTextNode(rule)); });
-            head.appendChild(style_1);
+            if (styleSheet.rules) {
+                var style_1 = doc.createElement("style");
+                styleSheet.rules.forEach(function (rule) { return style_1.appendChild(doc.createTextNode(rule)); });
+                head.appendChild(style_1);
+            }
         }
     });
     return Promise.all(promises);
@@ -36999,7 +37011,7 @@ exports.Splitter = Splitter;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Tab = void 0;
+exports.hideElement = exports.Tab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
@@ -37028,13 +37040,15 @@ var Tab = function (props) {
         }
     };
     var cm = layout.getClassName;
+    var useVisibility = node.getModel().isUseVisibility();
     var parentNode = node.getParent();
-    var style = node._styleWithPosition({
-        display: selected ? "block" : "none",
-    });
+    var style = node._styleWithPosition();
+    if (!selected) {
+        hideElement(style, useVisibility);
+    }
     if (parentNode instanceof TabSetNode_1.default) {
         if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
-            style.display = "none";
+            hideElement(style, useVisibility);
         }
     }
     var child;
@@ -37051,6 +37065,15 @@ var Tab = function (props) {
             React.createElement(react_1.Fragment, null, child))));
 };
 exports.Tab = Tab;
+function hideElement(style, useVisibility) {
+    if (useVisibility) {
+        style.visibility = "hidden";
+    }
+    else {
+        style.display = "none";
+    }
+}
+exports.hideElement = hideElement;
 
 
 /***/ }),
@@ -37075,7 +37098,7 @@ var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 /** @hidden @internal */
 var TabButton = function (props) {
-    var layout = props.layout, node = props.node, show = props.show, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
+    var layout = props.layout, node = props.node, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
     var selfRef = React.useRef(null);
     var contentRef = React.useRef(null);
     var contentWidth = React.useRef(0);
@@ -37223,9 +37246,7 @@ var TabButton = function (props) {
         var closeTitle = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tab);
         buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, icons === null || icons === void 0 ? void 0 : icons.close));
     }
-    return (React.createElement("div", { ref: selfRef, "data-layout-path": path, style: {
-            visibility: show ? "visible" : "hidden",
-        }, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
+    return (React.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         buttons));
@@ -37251,6 +37272,7 @@ var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+var Tab_1 = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
 /** @hidden @internal */
 var TabFloating = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node, path = props.path;
@@ -37279,9 +37301,10 @@ var TabFloating = function (props) {
         dockPopout();
     };
     var cm = layout.getClassName;
-    var style = node._styleWithPosition({
-        display: selected ? "flex" : "none",
-    });
+    var style = node._styleWithPosition();
+    if (!selected) {
+        Tab_1.hideElement(style, node.getModel().isUseVisibility());
+    }
     var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
     var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
     var dockMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Dock_Window);
@@ -37484,6 +37507,7 @@ var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.t
 var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+var Tab_1 = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
 /** @hidden @internal */
 var TabSet = function (props) {
     var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
@@ -37558,14 +37582,14 @@ var TabSet = function (props) {
     var selectedTabNode = node.getSelectedNode();
     var style = node._styleWithPosition();
     if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
-        style.display = "none";
+        Tab_1.hideElement(style, node.getModel().isUseVisibility());
     }
     var tabs = [];
     if (node.isEnableTabStrip()) {
         for (var i = 0; i < node.getChildren().length; i++) {
             var child = node.getChildren()[i];
             var isSelected = node.getSelected() === i;
-            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, show: true, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         }
     }
     var showHeader = node.getName() !== undefined;
