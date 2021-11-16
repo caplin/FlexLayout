@@ -16,7 +16,7 @@ export interface IFloatingWindowProps {
 interface IStyleSheet {
     href: string | null;
     type: string;
-    rules: string[];
+    rules: string[] | null;
 }
 
 /** @hidden @internal */
@@ -31,17 +31,23 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
         const styles = Array.from(window.document.styleSheets).reduce((result, styleSheet) => {
+            let rules: CSSRuleList | undefined = undefined;
+            try {
+                rules = styleSheet.cssRules;
+            } catch (e) {
+                // styleSheet.cssRules can throw security exception
+            }
+
             try {
                 return [
                     ...result,
                     {
                         href: styleSheet.href,
                         type: styleSheet.type,
-                        rules: Array.from(styleSheet.cssRules).map(rule => rule.cssText),
+                        rules: rules ? Array.from(rules).map(rule => rule.cssText) : null,
                     }
                 ];
             } catch (e) {
-                // styleSheet.cssRules can throw security exception
                 return result;
             }
         }, [] as IStyleSheet[]);
@@ -113,9 +119,11 @@ function copyStyles(doc: Document, styleSheets: IStyleSheet[]): Promise<boolean[
                 })
             );
         } else {
-            const style = doc.createElement("style");
-            styleSheet.rules.forEach(rule => style.appendChild(doc.createTextNode(rule)));
-            head.appendChild(style);
+            if (styleSheet.rules) {
+                const style = doc.createElement("style");
+                styleSheet.rules.forEach(rule => style.appendChild(doc.createTextNode(rule)));
+                head.appendChild(style);
+            }
         }
     });
     return Promise.all(promises);
