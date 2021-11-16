@@ -1,3 +1,7 @@
+0.5.21
+Fixed copying stylesheet links for popout windows when cssRules throw exception.
+Added option, enableUseVisibility, to allow use of visibility: hidden rather than display:none for hiding elements.
+
 0.5.20
 Added Cypress Tests 
 Fixed bug with tab icon not showing
