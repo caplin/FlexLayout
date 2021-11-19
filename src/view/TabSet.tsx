@@ -9,7 +9,7 @@ import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
 import { CLASSES } from "../Types";
-import { hideElement } from "./Tab";
+import { hideElement, isAuxMouseEvent } from "./Utils";
 
 /** @hidden @internal */
 export interface ITabSetProps {
@@ -35,7 +35,14 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const element = overflowbuttonRef.current!;
-        showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        showPopup(
+            element, 
+            hiddenTabs, 
+            onOverflowItemSelect, 
+            layout,
+            iconFactory,
+            titleFactory,
+            );
         event.stopPropagation();
     };
 
@@ -174,7 +181,7 @@ export const TabSet = (props: ITabSetProps) => {
                 data-layout-path={path + "/button/overflow"}
 
                 ref={overflowbuttonRef}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
                 title={overflowTitle}
                 onClick={onOverflowClick}
                 onMouseDown={onInterceptMouseDown}
@@ -347,14 +354,4 @@ export const TabSet = (props: ITabSetProps) => {
     );
 };
 
-/** @hidden @internal */
-export function isAuxMouseEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
-    let auxEvent = false;
-    if (event.nativeEvent instanceof MouseEvent) {
-        if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
-            auxEvent = true; 
-        }
-    }
-    return auxEvent;
-}
 

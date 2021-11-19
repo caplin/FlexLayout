@@ -68,14 +68,14 @@
 					"type": "tab",
 					"enableDrag": false,
 					"name": "Activity",
-					"icon": "images/grey_ball.png",
+					"icon": "images/folder.svg",
 					"component": "grid",
 					"config": {}
 				}, {
 					"type": "tab",
 					"enableDrag": false,
 					"name": "Execution",
-					"icon": "images/grey_ball.png",
+					"icon": "images/folder.svg",
 					"component": "grid",
 					"config": {
 						"id": "1"
@@ -84,14 +84,14 @@
 					"type": "tab",
 					"enableDrag": false,
 					"name": "Orders",
-					"icon": "images/grey_ball.png",
+					"icon": "images/folder.svg",
 					"component": "grid",
 					"config": {}
 				}, {
 					"type": "tab",
 					"enableDrag": false,
 					"name": "Historic",
-					"icon": "images/grey_ball.png",
+					"icon": "images/folder.svg",
 					"component": "grid",
 					"config": {}
 				}]

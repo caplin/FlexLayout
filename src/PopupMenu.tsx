@@ -3,15 +3,20 @@ import * as ReactDOM from "react-dom";
 import { DragDrop } from ".";
 import TabNode from "./model/TabNode";
 import { CLASSES } from "./Types";
+import { ILayoutCallbacks } from "./view/Layout";
+import { MenuTabButton } from "./view/MenuTabButton";
 
 /** @hidden @internal */
 export function showPopup(
-    layoutDiv: HTMLDivElement,
     triggerElement: Element,
     items: { index: number; node: TabNode }[],
     onSelect: (item: { index: number; node: TabNode }) => void,
-    classNameMapper: (defaultClassName: string) => string
+    layout: ILayoutCallbacks,
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined,
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined,
 ) {
+    const layoutDiv = layout.getRootDiv();
+    const classNameMapper = layout.getClassName;
     const currentDocument = triggerElement.ownerDocument;
     const triggerRect = triggerElement.getBoundingClientRect();
     const layoutRect = layoutDiv.getBoundingClientRect();
@@ -59,6 +64,9 @@ export function showPopup(
         onHide={onHide}
         items={items}
         classNameMapper={classNameMapper}
+        layout={layout}
+        iconFactory={iconFactory}
+        titleFactory={titleFactory}
     />, elm);
 }
 
@@ -69,11 +77,14 @@ interface IPopupMenuProps {
     onHide: () => void;
     onSelect: (item: { index: number; node: TabNode }) => void;
     classNameMapper: (defaultClassName: string) => string;
+    layout: ILayoutCallbacks;
+    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
+    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
 }
 
 /** @hidden @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
-    const { items, onHide, onSelect, classNameMapper } = props;
+    const { items, onHide, onSelect, classNameMapper, layout, iconFactory, titleFactory} = props;
 
     const onItemClick = (item: { index: number; node: TabNode }, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         onSelect(item);
@@ -86,8 +97,15 @@ const PopupMenu = (props: IPopupMenuProps) => {
             className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)}
             data-layout-path={"/popup-menu/tb" + i}
             onClick={(event) => onItemClick(item, event)}
-            title={item.node.getHelpText()}>
-            {item.node._getRenderedName()}
+            title={item.node.getHelpText()} >
+            {item.node.getModel().isLegacyOverflowMenu() ? 
+            item.node._getNameForOverflowMenu() :
+            <MenuTabButton 
+                node={item.node}
+                layout={layout}
+                iconFactory={iconFactory}
+                titleFactory={titleFactory}
+            />}
         </div>
     ));
 

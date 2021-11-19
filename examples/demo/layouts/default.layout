@@ -56,13 +56,15 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Output",
-					"component": "grid"
+					"component": "grid",
+                    "icon":"images/bar_chart.svg"
 				},
 				{
 					"type": "tab",
 					"enableClose":false,
 					"name": "Terminal",
-					"component": "grid"
+					"component": "grid",
+                    "icon":"images/terminal.svg"
 				}
 			]
 		},
@@ -74,7 +76,9 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Navigation",
-					"component": "grid"
+                    "altName": "The Navigation Tab",
+					"component": "grid",
+                    "icon":"images/folder.svg"
 				}
 			]
 		},
@@ -86,7 +90,8 @@
 					"type": "tab",
 					"enableClose":false,
 					"name": "Options",
-					"component": "grid"
+					"component": "grid",
+                    "icon":"images/settings.svg"
 				}
 			]
 		}

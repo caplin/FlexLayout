@@ -70,6 +70,7 @@ export enum CLASSES {
     FLEXLAYOUT__TAB_BUTTON_OVERFLOW = "flexlayout__tab_button_overflow",
     FLEXLAYOUT__TAB_BUTTON_TEXTBOX = "flexlayout__tab_button_textbox",
     FLEXLAYOUT__TAB_BUTTON_TRAILING = "flexlayout__tab_button_trailing",
+    FLEXLAYOUT__TAB_BUTTON_IN_OVERFLOW_MENU = "flexlayout__tab_button_in_overflow_menu",
 
     FLEXLAYOUT__TAB_FLOATING = "flexlayout__tab_floating",
     FLEXLAYOUT__TAB_FLOATING_INNER = "flexlayout__tab_floating_inner",

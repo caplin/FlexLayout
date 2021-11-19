@@ -1,10 +1,14 @@
 import React from 'react';
 import { mount, unmount } from '@cypress/react';
-import { DockLocation } from '../src';
 import { CLASSES } from '../src/Types';
 import { App, twoTabs, threeTabs, withBorders } from './App';
 import { AppEx, layoutEx2, layoutEx1 } from './AppEx';
 
+
+enum Location {
+    TOP, BOTTOM,LEFT,RIGHT,CENTER,
+    LEFTEDGE
+}
 /*
 
     Key elements have data-layout-path attributes:
@@ -37,7 +41,7 @@ describe('Drag tests', () => {
 
         it('tab to tab center', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER); // drag to the center of the @to tabset
+            drag("@from", "@to", Location.CENTER); // drag to the center of the @to tabset
             findAllTabSets().should("have.length", 1);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -45,7 +49,7 @@ describe('Drag tests', () => {
 
         it('tab to tab top', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP);
+            drag("@from", "@to", Location.TOP);
             findAllTabSets().should("have.length", 2);
             checkTab("/c0/ts0", 0, true, "One");
             checkTab("/c0/ts1", 0, true, "Two");
@@ -53,7 +57,7 @@ describe('Drag tests', () => {
 
         it('tab to tab bottom', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM);
+            drag("@from", "@to", Location.BOTTOM);
             findAllTabSets().should("have.length", 2);
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -61,7 +65,7 @@ describe('Drag tests', () => {
 
         it('tab to tab left', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.LEFT);
+            drag("@from", "@to", Location.LEFT);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts1", 0, true, "Two");
@@ -69,7 +73,7 @@ describe('Drag tests', () => {
 
         it('tab to tab right', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.RIGHT);
+            drag("@from", "@to", Location.RIGHT);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts1", 0, true, "One");
@@ -91,7 +95,7 @@ describe('Drag tests', () => {
 
         it('tab to tabset', () => {
             findPath("/ts1/tabstrip").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -100,7 +104,7 @@ describe('Drag tests', () => {
 
         it('tab to tab center', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkTab("/ts0", 0, false, "Two");
             checkTab("/ts0", 1, true, "One");
@@ -109,7 +113,7 @@ describe('Drag tests', () => {
 
         it('tab to tab top', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP);
+            drag("@from", "@to", Location.TOP);
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "One");
             checkTab("/c0/ts1", 0, true, "Two");
@@ -118,7 +122,7 @@ describe('Drag tests', () => {
 
         it('tab to tab bottom', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM);
+            drag("@from", "@to", Location.BOTTOM);
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -127,7 +131,7 @@ describe('Drag tests', () => {
 
         it('tab to tab left', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.LEFT);
+            drag("@from", "@to", Location.LEFT);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts1", 0, true, "Two");
@@ -136,7 +140,7 @@ describe('Drag tests', () => {
 
         it('tab to tab right', () => {
             findPath("/ts1/t0").as('to');
-            drag("@from", "@to", DockLocation.RIGHT);
+            drag("@from", "@to", Location.RIGHT);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts1", 0, true, "One");
@@ -173,11 +177,11 @@ describe('Drag tests', () => {
 
         it('row to column', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM);
+            drag("@from", "@to", Location.BOTTOM);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/c1/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.BOTTOM);
+            drag("@from", "@to", Location.BOTTOM);
 
             findAllTabSets().should("have.length", 3);
             checkTab("/c0/ts0", 0, true, "Three");
@@ -187,11 +191,11 @@ describe('Drag tests', () => {
 
         it('row to single tabset', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/ts1/t1").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
 
             findAllTabSets().should("have.length", 1);
             checkTab("/ts0", 0, false, "Three");
@@ -201,11 +205,11 @@ describe('Drag tests', () => {
 
         it('move tab in tabstrip', () => {
             findPath("/ts2/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
 
             findTabButton("/ts0", 0).as('from');
             findPath("/ts1/t1").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             checkTab("/ts0", 0, false, "Three");
             checkTab("/ts0", 1, false, "One");
             checkTab("/ts0", 2, true, "Two");
@@ -213,7 +217,7 @@ describe('Drag tests', () => {
 
             findTabButton("/ts0", 2).as('from');
             findTabButton("/ts0", 0).as('to');
-            drag("@from", "@to", DockLocation.LEFT);
+            drag("@from", "@to", Location.LEFT);
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts0", 1, false, "Three");
             checkTab("/ts0", 2, false, "One");
@@ -222,7 +226,7 @@ describe('Drag tests', () => {
         it('move tabstrip', () => {
             findPath("/ts2/tabstrip").as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
 
             checkTab("/ts0", 0, true, "One");
             checkTab("/ts0", 1, false, "Three");
@@ -230,7 +234,7 @@ describe('Drag tests', () => {
 
             findPath("/ts0/tabstrip").as('from');
             findPath("/ts1/tabstrip").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
 
             checkTab("/ts0", 0, true, "Two");
             checkTab("/ts0", 1, false, "One");
@@ -240,7 +244,7 @@ describe('Drag tests', () => {
         it('move using header', () => {
             findPath("/ts1/header").as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.TOP);
+            drag("@from", "@to", Location.TOP);
 
             checkTab("/c0/ts0", 0, true, "Two");
             checkTab("/c0/ts1", 0, true, "One");
@@ -258,7 +262,7 @@ describe('Drag tests', () => {
         const borderToTabTest = (border, tabtext, index) => {
             findTabButton(border, 0).as('from');
             findPath("/ts0/t0").as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 3);
             checkTab("/ts0", 0, false, "One");
             checkTab("/ts0", index, true, tabtext);
@@ -283,7 +287,7 @@ describe('Drag tests', () => {
         const tabToBorderTest = (border, tabtext, index) => {
             findTabButton("/ts0", 0).as('from');
             findTabButton(border, 0).as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, false, "One");
@@ -310,7 +314,7 @@ describe('Drag tests', () => {
             findTabButton("/ts0", 0).as('from');
             findPath(border).as('to');
 
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, true, "One");
@@ -337,7 +341,7 @@ describe('Drag tests', () => {
             findTabButton("/ts0", 0).as('from');
             findPath(border + "/t0").as('to');
 
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, true, "One");
@@ -362,14 +366,14 @@ describe('Drag tests', () => {
         const inBorderTabMoveTest = (border, tabtext, index) => {
             findTabButton("/ts0", 0).as('from');
             findPath(border).as('to');
-            drag("@from", "@to", DockLocation.CENTER);
+            drag("@from", "@to", Location.CENTER);
             findAllTabSets().should("have.length", 2);
             checkBorderTab(border, 0, false, tabtext);
             checkBorderTab(border, index, false, "One");
 
             findTabButton(border, 0).as('from');
             findTabButton(border, index).as('to');
-            drag("@from", "@to", DockLocation.RIGHT);
+            drag("@from", "@to", Location.RIGHT);
             checkBorderTab(border, index, false, tabtext);
         };
 
@@ -431,7 +435,7 @@ describe('Drag tests', () => {
             beforeEach(() => {
                 findTabButton("/ts0", 0).as('from');
                 findPath("/ts1/t0").as('to');
-                drag("@from", "@to", DockLocation.BOTTOM);
+                drag("@from", "@to", Location.BOTTOM);
                 findAllTabSets().should("have.length", 2);
                 checkTab("/c0/ts0", 0, true, "Two");
                 checkTab("/c0/ts1", 0, true, "One");
@@ -516,7 +520,7 @@ context("Add methods", () => {
     it('drag to tabset', () => {
         cy.get('[data-id=add-drag').as('from');
         findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-        drag("@from", "@to", DockLocation.CENTER);
+        drag("@from", "@to", Location.CENTER);
         findAllTabSets().should("have.length", 3);
         checkTab("/ts1", 0, false, "Two");
         checkTab("/ts1", 1, true, "Text0");
@@ -525,7 +529,7 @@ context("Add methods", () => {
     it('drag to border', () => {
         cy.get('[data-id=add-drag').as('from');
         findPath("/border/right").as('to');
-        drag("@from", "@to", DockLocation.CENTER);
+        drag("@from", "@to", Location.CENTER);
         findAllTabSets().should("have.length", 3);
         checkBorderTab("/border/right", 0, false, "right1");
         checkBorderTab("/border/right", 1, false, "Text0");
@@ -535,7 +539,7 @@ context("Add methods", () => {
         cy.get('[data-id=add-indirect').click();
         findPath("/drag-rectangle").as('from');
         findPath("/ts1/tabstrip").as('to'); // drag to the second tabset
-        drag("@from", "@to", DockLocation.CENTER);
+        drag("@from", "@to", Location.CENTER);
         findAllTabSets().should("have.length", 3);
         checkTab("/ts1", 0, false, "Two");
         checkTab("/ts1", 1, true, "Text0");
@@ -545,7 +549,7 @@ context("Add methods", () => {
         cy.get('[data-id=add-indirect').click();
         findPath("/drag-rectangle").as('from');
         findPath("/border/right").as('to');
-        drag("@from", "@to", DockLocation.CENTER);
+        drag("@from", "@to", Location.CENTER);
         findAllTabSets().should("have.length", 3);
         checkBorderTab("/border/right", 0, false, "right1");
         checkBorderTab("/border/right", 1, false, "Text0");
@@ -590,7 +594,7 @@ context("Delete methods", () => {
 
     it('delete tab in border', () => {
         checkBorderTab("/border/bottom", 0, false, "bottom1");
-        findPath("/border/bottom/tb0/button/close").click();
+        findPath("/border/bottom/tb0/button/close").click({ force: true });
         checkBorderTab("/border/bottom", 0, false, "bottom2");
     })
 })
@@ -700,7 +704,7 @@ context("Others", () => {
         findPath("/ts1/tb0")
             .find("." + CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)
             .find("img")
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
     })
 })
 
@@ -721,60 +725,60 @@ context("Extended App", () => {
         findPath("/ts1/tb0")
             .find("." + CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)
             .find("img")
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
         findPath("/ts1/tb0")
             .find("img").eq(1)
-            .should("have.attr", "src", "/test/images/grey_ball.png");
+            .should("have.attr", "src", "/test/images/folder.svg");
     })
 
     it('onRenderTab in border', () => {
         findPath("/border/top/tb0")
             .find("." + CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)
             .find("img")
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
         findPath("/ts1/tb0")
             .find("img").eq(1)
-            .should("have.attr", "src", "/test/images/grey_ball.png");
+            .should("have.attr", "src", "/test/images/folder.svg");
     })
 
     it('onRenderTabSet', () => {
         findPath("/ts1/tabstrip")
             .find("." + CLASSES.FLEXLAYOUT__TAB_TOOLBAR)
             .find("img").eq(0)
-            .should("have.attr", "src", "/test/images/grey_ball.png");
+            .should("have.attr", "src", "/test/images/folder.svg");
         findPath("/ts1/tabstrip")
             .find("." + CLASSES.FLEXLAYOUT__TAB_TOOLBAR)
             .find("img").eq(1)
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
     })
 
     it('onRenderTabSet sticky buttons', () => {
         findPath("/ts2/tabstrip")
             .find("." + CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)
             .find("img").eq(0)
-            .should("have.attr", "src", "/test/images/add.png");
+            .should("have.attr", "src", "/test/images/add.svg");
     })
 
     it('onRenderTabSet for header', () => {
         findPath("/ts1/header")
             .find("." + CLASSES.FLEXLAYOUT__TAB_TOOLBAR)
             .find("img").eq(0)
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
         findPath("/ts1/header")
             .find("." + CLASSES.FLEXLAYOUT__TAB_TOOLBAR)
             .find("img").eq(1)
-            .should("have.attr", "src", "/test/images/grey_ball.png");
+            .should("have.attr", "src", "/test/images/folder.svg");
     })
 
     it('onRenderTabSet for border', () => {
         findPath("/border/top")
             .find("." + CLASSES.FLEXLAYOUT__BORDER_TOOLBAR)
             .find("img").eq(0)
-            .should("have.attr", "src", "/test/images/grey_ball.png");
+            .should("have.attr", "src", "/test/images/folder.svg");
         findPath("/border/top")
             .find("." + CLASSES.FLEXLAYOUT__BORDER_TOOLBAR)
             .find("img").eq(1)
-            .should("have.attr", "src", "/test/images/more.png");
+            .should("have.attr", "src", "/test/images/settings.svg");
     })
 
 })
@@ -868,22 +872,22 @@ context("Extended layout2", () => {
     });
 
     it('borders autohide top', () => {
-        findPath("/border/top/tb0/button/close").click();
+        findPath("/border/top/tb0/button/close").click({ force: true });
         findPath("/border/top").should("not.exist");
 
         findTabButton("/ts0", 0).as('from');
         findTabButton("/ts0", 0).as('to');
-        drag("@from", "@to", DockLocation.TOP);
+        drag("@from", "@to", Location.TOP);
         findPath("/border/top").should("exist");
     });
 
     it('borders autohide left', () => {
-        findPath("/border/left/tb0/button/close").click();
+        findPath("/border/left/tb0/button/close").click({ force: true });
         findPath("/border/left").should("not.exist");
 
         findTabButton("/ts0", 0).as('from');
         findTabButton("/ts0", 0).as('to');
-        drag("@from", "@to", DockLocation.LEFT);
+        drag("@from", "@to", Location.LEFTEDGE);
         findPath("/border/left").should("exist");
     });
 })
@@ -891,11 +895,11 @@ context("Extended layout2", () => {
 
 // ---------------------------- helpers ------------------------ 
 
-function drag(from: string, to: string, loc: DockLocation) {
+function drag(from: string, to: string, loc: Location) {
     cy.get(from)
         .trigger('mousedown', { which: 1 }).then(e => {
             const fr = e[0].getBoundingClientRect();
-            const cf = getLocation(fr, DockLocation.CENTER)
+            const cf = getLocation(fr, Location.CENTER)
             cy.get(to).then(e => {
                 const tr = e[0].getBoundingClientRect();
                 const ct = getLocation(tr, loc);
@@ -981,17 +985,19 @@ const checkBorderTab = (path: string, index: number, selected: boolean, text: st
     }
 }
 
-const getLocation = (r: { x: number, y: number, width: number, height: number }, location: DockLocation) => {
+const getLocation = (r: { x: number, y: number, width: number, height: number }, location: Location) => {
     switch (location) {
-        case DockLocation.CENTER:
+        case Location.CENTER:
             return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-        case DockLocation.TOP:
+        case Location.TOP:
             return { x: r.x + r.width / 2, y: r.y + r.height / 8 };
-        case DockLocation.BOTTOM:
+        case Location.BOTTOM:
             return { x: r.x + r.width / 2, y: r.y + (r.height / 8) * 7 };
-        case DockLocation.LEFT:
+        case Location.LEFT:
             return { x: r.x + r.width / 8, y: r.y + r.height / 2 };
-        case DockLocation.RIGHT:
+        case Location.LEFTEDGE:
+            return { x: r.x , y: r.y + r.height / 2 };
+            case Location.RIGHT:
             return { x: r.x + (r.width / 8) * 7, y: r.y + r.height / 2 };
     }
 }

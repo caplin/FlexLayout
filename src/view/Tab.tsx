@@ -8,6 +8,7 @@ import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";
 import { BorderNode } from "..";
+import { hideElement } from "./Utils";
 
 /** @hidden @internal */
 export interface ITabProps {
@@ -80,10 +81,4 @@ export const Tab = (props: ITabProps) => {
     );
 };
 
-export function hideElement(style: Record<string, any>, useVisibility: ConstrainBoolean ) {
-    if (useVisibility) {
-        style.visibility = "hidden";
-    } else {
-        style.display = "none";
-    }
-}
+

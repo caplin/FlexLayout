@@ -372,19 +372,20 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         // renderValues.content += " *";
         // renderValues.name = "tab " + node.getId(); // name used in overflow menu
-        // renderValues.buttons.push(<img src="images/grey_ball.png"/>);
+        // renderValues.buttons.push(<img src="images/folder.svg"/>);
     }
 
     onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (this.state.layoutFile === "default") {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-            //renderValues.buttons.push(<img src="images/grey_ball.png"/>);
+            //renderValues.buttons.push(<img src="images/folder.svg"/>);
             renderValues.stickyButtons.push(
-                <img src="images/add.png"
+                <img src="images/add.svg"
                     alt="Add"
                     key="Add button"
                     title="Add Tab (using onRenderTabSet callback, see Demo)"
-                    style={{ marginLeft: 5, width: 24, height: 24 }}
+                    style={{ width: "1.1em", height: "1.1em" }}
+                    className="flexlayout__tab_toolbar_button"
                     onClick={() => this.onAddFromTabSetButton(node)}
                 />);
         }
@@ -439,7 +440,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
         return <div className="app">
             <div className="toolbar" dir="ltr">
-                <select onChange={this.onSelectLayout}>
+                <select className="toolbar_control" onChange={this.onSelectLayout}>
                     <option value="default">Default</option>
                     <option value="newfeatures">New Features</option>
                     <option value="simple">Simple</option>
@@ -449,7 +450,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="preferred">Using Preferred size</option>
                     <option value="trader">Trader</option>
                 </select>
-                <button onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>reload from file</button>
+                <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>reload from file</button>
                 <div style={{ flexGrow: 1 }}></div>
                 <span style={{ fontSize: "14px" }}>Realtime resize</span>
                 <input
@@ -457,7 +458,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     type="checkbox"
                     checked={this.state.realtimeResize}
                     onChange={this.onRealtimeResize} />
-                <select style={{ marginLeft: 5 }}
+                <select  className="toolbar_control" style={{ marginLeft: 5 }}
                     onChange={this.onSizeChange}
                     defaultValue="medium">
                     <option value="xx-small">Size xx-small</option>
@@ -484,20 +485,19 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="180%">Size 180%</option>
                     <option value="200%">Size 200%</option>
                 </select>
-                <select style={{ marginLeft: 5 }} defaultValue="gray" onChange={this.onThemeChange}>
+                <select  className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="gray" onChange={this.onThemeChange}>
                     <option value="light">Light</option>
                     <option value="gray">Gray</option>
                     <option value="dark">Dark</option>
                 </select>
-                <button style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
-                <button disabled={this.state.adding || maximized}
-                    className="drag-from"
+                <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
+                <button className="toolbar_control drag-from" disabled={this.state.adding || maximized}
                     style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                     title="Add using Layout.addTabWithDragAndDrop"
                     onMouseDown={this.onAddDragMouseDown}
                     onTouchStart={this.onAddDragMouseDown}>Add Drag</button>
-                <button disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
-                <button disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
+                <button className="toolbar_control" disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                <button className="toolbar_control" disabled={this.state.adding || maximized} style={{ marginLeft: 5 }} title="Add using Layout.addTabWithDragAndDropIndirect" onClick={this.onAddIndirectClick}>Add Indirect</button>
             </div>
             <div className="contents">
                 {contents}

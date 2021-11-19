@@ -52,6 +52,9 @@ class Model {
     /** @hidden @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
+
+        attributeDefinitions.add("legacyOverflowMenu", false).setType(Attribute.BOOLEAN);
+
         // splitter
         attributeDefinitions.add("splitterSize", -1).setType(Attribute.NUMBER);
         attributeDefinitions.add("splitterExtra", 0).setType(Attribute.NUMBER);
@@ -446,6 +449,10 @@ class Model {
             splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
         }
         return splitterSize;
+    }
+
+    isLegacyOverflowMenu() {
+        return this._attributes.legacyOverflowMenu as boolean;
     }
 
     getSplitterExtra() {

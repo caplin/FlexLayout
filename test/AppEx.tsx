@@ -42,31 +42,31 @@ export function AppEx(props) {
 
     const onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         if (node.getId() === "onRenderTab1") {
-            renderValues.leading = <img src="/test/images/more.png" key="1" />
+            renderValues.leading = <img src="/test/images/settings.svg" key="1" />
             renderValues.content = "onRenderTab1";
             renderValues.name = "onRenderTab1 overflow"; // name used in overflow menu
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/folder.svg" key="1" />);
         } else if (node.getId() === "onRenderTab2") {
-            renderValues.leading = <img src="/test/images/more.png" key="1" />
+            renderValues.leading = <img src="/test/images/settings.svg" key="1" />
             renderValues.content = "onRenderTab2";
             renderValues.name = "onRenderTab2 overflow"; // name used in overflow menu
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/folder.svg" key="1" />);
         }
     }
 
     const onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (node.getId() === "onRenderTabSet1") {
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
-            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
+            renderValues.buttons.push(<img src="/test/images/folder.svg" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/settings.svg" key="2" />);
         } else if (node.getId() === "onRenderTabSet2") {
             renderValues.headerContent = "onRenderTabSet2";
-            renderValues.headerButtons.push(<img src="/test/images/more.png" key="1" />);
-            renderValues.headerButtons.push(<img src="/test/images/grey_ball.png" key="2" />);
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
-            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
+            renderValues.headerButtons.push(<img src="/test/images/settings.svg" key="1" />);
+            renderValues.headerButtons.push(<img src="/test/images/folder.svg" key="2" />);
+            renderValues.buttons.push(<img src="/test/images/folder.svg" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/settings.svg" key="2" />);
         } else if (node.getId() === "onRenderTabSet3") {
             renderValues.stickyButtons.push(
-                <img src="/test/images/add.png"
+                <img src="/test/images/add.svg"
                     alt="Add"
                     key="Add button"
                     title="Add Tab (using onRenderTabSet callback, see Demo)"
@@ -74,8 +74,8 @@ export function AppEx(props) {
                     onClick={() => this.onAddFromTabSetButton(node)}
                 />);
         } else if (node instanceof BorderNode) {
-            renderValues.buttons.push(<img src="/test/images/grey_ball.png" key="1" />);
-            renderValues.buttons.push(<img src="/test/images/more.png" key="2" />);
+            renderValues.buttons.push(<img src="/test/images/folder.svg" key="1" />);
+            renderValues.buttons.push(<img src="/test/images/settings.svg" key="2" />);
         }
     }
 

@@ -8,10 +8,9 @@ html,body
     font-family: Roboto, Arial, sans-serif; 
 }
 
-select, button {
+.toolbar_control {
     border-radius:3px;
     border: 1px solid lightgray
-
 }
 
 .drag-from {

@@ -4,10 +4,10 @@ import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import TabSetNode from "../model/TabSetNode";
 import Rect from "../Rect";
-import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
+import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
-import { isAuxMouseEvent } from "./TabSet";
+import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
 
 /** @hidden @internal */
 export interface ITabButtonProps {
@@ -31,7 +31,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
 
         if (!isAuxMouseEvent(event) && !layout.getEditingTab()) {
-            const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
+            const message = layout.i18nName(I18nLabel.Move_Tab, node._getNameForOverflowMenu());
             layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
@@ -110,7 +110,7 @@ export const TabButton = (props: ITabButtonProps) => {
         const layoutRect = layout.getDomRect();
         const r = selfRef.current!.getBoundingClientRect();
         node._setTabRect(new Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
-        contentWidth.current = contentRef.current!.getBoundingClientRect().width;
+        contentWidth.current = selfRef.current!.getBoundingClientRect().width;
     };
 
     const onTextBoxMouseDown = (event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
@@ -147,53 +147,21 @@ export const TabButton = (props: ITabButtonProps) => {
         classNames += " " + node.getClassName();
     }
 
-    let leadingContent = iconFactory ? iconFactory(node) : undefined;
-    let titleContent: React.ReactNode = node.getName();
-    let name = node.getName();
+    const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory);
 
-    function isTitleObject(obj: any): obj is ITitleObject {
-        return obj.titleContent !== undefined
-    }
-
-    if (titleFactory !== undefined) {
-        const titleObj = titleFactory(node);
-        if (titleObj !== undefined) {
-            if (typeof titleObj === "string") {
-                titleContent = titleObj as string;
-                name = titleObj as string;
-            } else if (isTitleObject(titleObj)) {
-                titleContent = titleObj.titleContent;
-                name = titleObj.name;
-            } else {
-                titleContent = titleObj;
-            }
-        }
-    }
-
-    if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = <img src={node.getIcon()} alt="leadingContent" />;
-    }
-
-    let buttons: any[] = [];
-
-    // allow customization of leading contents (icon) and contents
-    const renderState = { leading: leadingContent, content: titleContent, name, buttons };
-    layout.customizeTab(node, renderState);
-
-    node._setRenderedName(renderState.name);
-
-    let content = (
-        <div ref={contentRef} className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
+    let content = renderState.content ? (
+        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
             {renderState.content}
-        </div>
-    );
-    const leading = <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>{renderState.leading}</div>;
+        </div>) : null;
+
+    const leading = renderState.leading ? (
+        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
+                {renderState.leading}
+        </div>) : null;
 
     if (layout.getEditingTab() === node) {
-        const contentStyle = { width: contentWidth + "px" };
         content = (
             <input
-                style={contentStyle}
                 ref={contentRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX)}
                 data-layout-path={path + "/textbox"}
@@ -209,7 +177,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
-        buttons.push(
+        renderState.buttons.push(
             <div
                 key="close"
                 data-layout-path={path + "/button/close"}
@@ -236,7 +204,7 @@ export const TabButton = (props: ITabButtonProps) => {
         >
             {leading}
             {content}
-            {buttons}
+            {renderState.buttons}
         </div>
     );
 };

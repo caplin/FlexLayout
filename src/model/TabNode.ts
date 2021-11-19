@@ -26,6 +26,7 @@ class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
+        attributeDefinitions.add("altName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("helpText", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
@@ -84,7 +85,11 @@ class TabNode extends Node implements IDraggable {
     }
 
     /** @hidden @internal */
-    _getRenderedName() {
+    _getNameForOverflowMenu() {
+        const altName = this._getAttr("altName") as string;
+        if (altName !== undefined) {
+            return altName;
+        }
         return this._renderedName;
     }
 

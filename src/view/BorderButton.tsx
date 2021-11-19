@@ -3,10 +3,10 @@ import { I18nLabel } from "..";
 import Actions from "../model/Actions";
 import TabNode from "../model/TabNode";
 import Rect from "../Rect";
-import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
+import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
-import { isAuxMouseEvent } from "./TabSet";
+import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
 
 /** @hidden @internal */
 export interface IBorderButtonProps {
@@ -27,7 +27,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         if (!isAuxMouseEvent(event)) {
-            const message = layout.i18nName(I18nLabel.Move_Tab, node.getName());
+            const message = layout.i18nName(I18nLabel.Move_Tab, node._getNameForOverflowMenu());
             props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
         }
     };
@@ -96,46 +96,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
         classNames += " " + node.getClassName();
     }
 
-    let leadingContent = iconFactory ? iconFactory(node) : undefined;
-    let titleContent: React.ReactNode = node.getName();
-    let name = node.getName();
+    const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory);
 
-    function isTitleObject(obj: any): obj is ITitleObject {
-        return obj.titleContent !== undefined 
-      }
-
-    if (titleFactory !== undefined) {
-        const titleObj = titleFactory(node);
-        if (titleObj !== undefined) {
-            if (typeof titleObj === "string") {
-                titleContent = titleObj as string;
-                name = titleObj as string;
-            } else if (isTitleObject(titleObj)) {
-                titleContent = titleObj.titleContent;
-                name = titleObj.name;
-            } else {
-                titleContent = titleObj;
-            }
-        }
-    }
-
-    if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = <img src={node.getIcon()} alt="leadingContent" />;
-    }
-
-    let buttons: any[] = [];
-
-    // allow customization of leading contents (icon) and contents
-    const renderState = { leading: leadingContent, content: titleContent, name, buttons };
-    layout.customizeTab(node, renderState);
-    node._setRenderedName(renderState.name);
-
-    const content = <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>{renderState.content}</div>;
-    const leading = <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>{renderState.leading}</div>;
+    const content = renderState.content ? (<div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>{renderState.content}</div>) : null;
+    const leading = renderState.leading ? (<div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>{renderState.leading}</div>) : null;
 
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
-        buttons.push(
+        renderState.buttons.push(
             <div 
                 key="close" 
                 data-layout-path={path + "/button/close"}
@@ -160,7 +128,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
         title={node.getHelpText()}>
             {leading}
             {content}
-            {buttons}
+            {renderState.buttons}
         </div>
     );
 };

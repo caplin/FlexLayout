@@ -130,7 +130,7 @@ export const threeTabs: IJsonModel = {
                     {
                         type: "tab",
                         name: "Two",
-                        icon: "/test/images/more.png",
+                        icon: "/test/images/settings.svg",
                         component: "text",
                     }
                 ]

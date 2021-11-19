@@ -26,6 +26,7 @@ import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
 import { Orientation } from "..";
+import { CloseIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
 
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
 export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
@@ -39,7 +40,6 @@ export interface ILayoutProps {
     fontFamily?: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => ITitleObject | React.ReactNode | undefined;
-    closeIcon?: React.ReactNode;
     icons?: IIcons;
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
@@ -119,6 +119,15 @@ export interface IIcons {
     restore?: React.ReactNode;
     more?: React.ReactNode;
 }
+
+const defaultIcons =  {
+    close: <CloseIcon/>,
+    closeTabset: <CloseIcon/>,
+    popout: <PopoutIcon/>,
+    maximize: <MaximizeIcon/>,
+    restore: <RestoreIcon/>,
+    more: <OverflowIcon/>,
+};
 
 export interface ICustomDropDestination {
     rect: Rect;
@@ -264,8 +273,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
-        // For backwards compatibility, prop closeIcon sets prop icons.close:
-        this.icons = props.closeIcon ? Object.assign({ close: props.closeIcon }, props.icons) : props.icons;
+        this.icons = {...defaultIcons, ...props.icons};
         this.firstRender = true;
 
         this.state = {
@@ -459,7 +467,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         const metrics: ILayoutMetrics = {
             headerBarSize: this.state.calculatedHeaderBarSize,
             tabBarSize: this.state.calculatedTabBarSize,
-            borderBarSize: this.state.calculatedBorderBarSize,
+            borderBarSize: this.state.calculatedBorderBarSize
         };
         this.props.model._setShowHiddenBorder(this.state.showHiddenBorder);
 

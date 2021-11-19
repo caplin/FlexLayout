@@ -7,8 +7,10 @@ $color_3: scale_color($color_2, $lightness: -3%) !default;
 $color_4: scale_color($color_3, $lightness: -3%) !default;
 $color_5: scale_color($color_4, $lightness: -3%) !default;
 $color_6: scale_color($color_5, $lightness: -3%) !default;
-$color_drag1: red !default;
-$color_drag2: green !default;
+$color_drag1: #3581d4 !default;
+$color_drag2: #3581d4 !default;
+$color_drag1_background: rgba(33, 150, 243, 0.1) !default;
+$color_drag2_background: rgba(33, 150, 243, 0.1) !default;
 
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
@@ -54,6 +56,14 @@ $font-family: Roboto, Arial, sans-serif !default;
 @mixin tab_button_hovered_mixin {
     background-color: var(--color-3);
     color: var(--color-text);
+}
+
+@mixin close_button_hovered_mixin {
+    background-color:var(--color-5);
+}
+
+@mixin toolbar_button_hovered_mixin {
+    background-color:var(--color-2);
 }
 
 @mixin border_mixin {

@@ -335,6 +335,7 @@ Attributes allowed in the 'global' element
 | ------------- |:-------------:| -----|
 | splitterSize | 8 | width in pixels of all splitters between tabsets/borders |
 | splitterExtra | 0 | additional width in pixels of the splitter hit test area |
+| legacyOverflowMenu | false | use the legacy text only overflow menu |
 | enableEdgeDock | true | |
 | tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |
@@ -395,7 +396,8 @@ Inherited defaults will take their value from the associated global attributes (
 | Attribute | Default | Description  |
 | ------------- |:-------------:| -----|
 | type | tab | |
-| name | *required* | internal unique string identifying tab (for factory) |
+| name | *required* | name of tab to be displayed in the tab button |
+| altName | *optional* | if there is no name specifed then this value will be used in the overflow menu |
 | component | *required* | string identifying which component to run (for factory) |
 | config | null | a place to hold json config for the hosted component |
 | id | auto generated | |

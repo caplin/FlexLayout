@@ -5,7 +5,7 @@ import TabSetNode from "../model/TabSetNode";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
-import { hideElement } from "./Tab";
+import { hideElement } from "./Utils";
 
 /** @hidden @internal */
 export interface ITabFloatingProps {

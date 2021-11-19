@@ -92,7 +92,7 @@ export const useTabOverflow = (
                     return; // nothing to do all tabs are shown in available space
                 }
 
-                endPos -= hiddenTabs.length > 0 ? (orientation === Orientation.HORZ ? 10 : 0) : 45; // will need hidden tabs
+                endPos -= hiddenTabs.length > 0 ? (orientation === Orientation.HORZ ? 16 : 0) : 45; // will need hidden tabs
 
                 let shiftPos = 0;
 

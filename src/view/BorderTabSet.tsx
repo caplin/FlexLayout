@@ -10,7 +10,7 @@ import { I18nLabel } from "../I18nLabel";
 import { useTabOverflow } from "./TabOverflowHook";
 import Orientation from "../Orientation";
 import { CLASSES } from "../Types";
-import { isAuxMouseEvent } from "./TabSet";
+import { isAuxMouseEvent } from "./Utils";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
@@ -48,7 +48,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const element = overflowbuttonRef.current!;
-        showPopup(layout.getRootDiv(), element, hiddenTabs, onOverflowItemSelect, layout.getClassName);
+        showPopup( element, 
+            hiddenTabs, 
+            onOverflowItemSelect, 
+            layout,
+            iconFactory,
+            titleFactory);
         event.stopPropagation();
     };
 
@@ -137,7 +142,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                     onClick={onFloatTab}
                     onMouseDown={onInterceptMouseDown}
                     onTouchStart={onInterceptMouseDown}
-                />
+                >
+                    {icons?.popout}
+                </button>
             );
         }
     }
