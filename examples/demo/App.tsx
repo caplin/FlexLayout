@@ -85,11 +85,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         let dropNode = dropInfo.node;
 
         // prevent non-border tabs dropping into borders
-        if (dropNode.getType() == "border" && (dragNode.getParent() == null || dragNode.getParent()!.getType() != "border"))
+        if (dropNode.getType() === "border" && (dragNode.getParent() == null || dragNode.getParent()!.getType() != "border"))
             return false;
 
         // prevent border tabs dropping into main layout
-        if (dropNode.getType() != "border" && (dragNode.getParent() != null && dragNode.getParent()!.getType() == "border"))
+        if (dropNode.getType() !== "border" && (dragNode.getParent() != null && dragNode.getParent()!.getType() == "border"))
             return false;
 
         return true;
@@ -103,18 +103,20 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         event.stopPropagation();
         event.preventDefault();
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop("Add grid\n(Drag to location)", {
+            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop(undefined, {
                 component: "grid",
+                icon: "images/article.svg",
                 name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
             // this.setState({ adding: true });
-        }
+        }   
     }
 
     onAddActiveClick = (event: React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
             (this.refs.layout as FlexLayout.Layout).addTabToActiveTabSet({
                 component: "grid",
+                icon: "images/article.svg",
                 name: "Grid " + this.nextGridIndex++
             });
         }
@@ -145,14 +147,16 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         });
     }
 
-    onRenderDragRect = (text: String, node?: Node, json?: IJsonTabNode) => {
+    onRenderDragRect = (content: React.ReactElement | undefined, node?: Node, json?: IJsonTabNode) => {
         if (this.state.layoutFile === "newfeatures") {
-            return (
-                <div style={{ whiteSpace: "pre" }}>{text}
-                    <br /><br />
+            return (<>
+                {content}
+                <div style={{ whiteSpace: "pre" }}>
+                    <br />
                     This is a customized<br />
                     drag rectangle
                 </div>
+                </>
             );
         } else {
             return undefined; // use default rendering
@@ -371,14 +375,15 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         // renderValues.content += " *";
+        // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
         // renderValues.name = "tab " + node.getId(); // name used in overflow menu
-        // renderValues.buttons.push(<img src="images/folder.svg"/>);
+        // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
     }
 
     onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (this.state.layoutFile === "default") {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-            //renderValues.buttons.push(<img src="images/folder.svg"/>);
+            //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
             renderValues.stickyButtons.push(
                 <img src="images/add.svg"
                     alt="Add"
@@ -450,7 +455,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="preferred">Using Preferred size</option>
                     <option value="trader">Trader</option>
                 </select>
-                <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>reload from file</button>
+                <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                 <div style={{ flexGrow: 1 }}></div>
                 <span style={{ fontSize: "14px" }}>Realtime resize</span>
                 <input

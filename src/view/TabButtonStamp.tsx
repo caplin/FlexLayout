@@ -5,7 +5,7 @@ import { CLASSES } from "../Types";
 import { getRenderStateEx } from "./Utils";
 
 /** @hidden @internal */
-export interface IMenuTabButtonProps {
+export interface ITabButtonStampProps {
     node: TabNode;
     layout: ILayoutCallbacks;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
@@ -13,13 +13,13 @@ export interface IMenuTabButtonProps {
 }
 
 /** @hidden @internal */
-export const MenuTabButton = (props: IMenuTabButtonProps) => {
+export const TabButtonStamp = (props: ITabButtonStampProps) => {
     const { layout, node, iconFactory, titleFactory } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const cm = layout.getClassName;
 
-    let classNames = cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_IN_OVERFLOW_MENU);
+    let classNames = cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
 
     const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory);
 

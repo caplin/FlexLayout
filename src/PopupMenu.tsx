@@ -4,7 +4,7 @@ import { DragDrop } from ".";
 import TabNode from "./model/TabNode";
 import { CLASSES } from "./Types";
 import { ILayoutCallbacks } from "./view/Layout";
-import { MenuTabButton } from "./view/MenuTabButton";
+import { TabButtonStamp } from "./view/TabButtonStamp";
 
 /** @hidden @internal */
 export function showPopup(
@@ -100,7 +100,7 @@ const PopupMenu = (props: IPopupMenuProps) => {
             title={item.node.getHelpText()} >
             {item.node.getModel().isLegacyOverflowMenu() ? 
             item.node._getNameForOverflowMenu() :
-            <MenuTabButton 
+            <TabButtonStamp 
                 node={item.node}
                 layout={layout}
                 iconFactory={iconFactory}

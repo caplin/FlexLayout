@@ -96,7 +96,7 @@
         justify-content: center;
         flex-direction: column;
         overflow: hidden;
-        padding: 10px;
+        padding: 0.5em 1em;
         word-wrap: break-word;
         font-size: var(--font-size);
         font-family: var(--font-family);
@@ -187,12 +187,11 @@
         }
     }
 
-    &__tab_button_in_overflow_menu {
-        display: flex;
+    &__tab_button_stamp {
+        display: inline-flex;
+        align-items: center;
         gap: 0.3em;
         white-space: nowrap;
-        padding-left: 0.5em;
-        padding-right: 0.5em;
         box-sizing: border-box;
     }
 
@@ -529,7 +528,7 @@
         font-family: var(--font-family);
 
         &_item {
-            padding: 2px 2px;
+            padding: 2px 0.5em;
             white-space: nowrap;
             cursor: pointer;
             border-radius: 2px;

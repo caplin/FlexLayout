@@ -27,9 +27,10 @@ import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
 import { Orientation } from "..";
 import { CloseIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { TabButtonStamp } from "./TabButtonStamp";
 
 export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
-export type DragRectRenderCallback = (text: String, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
+export type DragRectRenderCallback = (content: React.ReactElement | undefined, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
 export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
 export type NodeMouseEvent = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 
@@ -155,7 +156,7 @@ export interface ILayoutCallbacks {
     getRootDiv(): HTMLDivElement;
     dragStart(
         event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
-        dragDivText: string,
+        dragDivText: string | undefined,
         node: Node & IDraggable,
         allowDrag: boolean,
         onClick?: (event: Event) => void,
@@ -224,7 +225,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private dragRectRendered: boolean = true;
     /** @hidden @internal */
-    private dragDivText: string = "";
+    private dragDivText: string | undefined = undefined;
     /** @hidden @internal */
     private dropInfo: DropInfo | undefined;
     /** @hidden @internal */
@@ -291,11 +292,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     styleFont(style: Record<string, string>): Record<string, string> {
         if (this.props.font) {
-            if (this.props.font.size) {
-                style.fontSize = this.props.font.size;
-            }
-            if (this.props.font.family) {
-                style.fontFamily = this.props.font.family;
+            if (this.selfRef.current) {
+                if (this.props.font.size) {
+                    this.selfRef.current.style.setProperty("--font-size", this.props.font.size);
+                }
+                if (this.props.font.family) {
+                    this.selfRef.current.style.setProperty("--font-family", this.props.font.family);
+                }
             }
             if (this.props.font.style) {
                 style.fontStyle = this.props.font.style;
@@ -699,7 +702,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
-    addTabWithDragAndDrop(dragText: string, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
+    addTabWithDragAndDrop(dragText: string | undefined, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
@@ -713,7 +716,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
-    addTabWithDragAndDropIndirect(dragText: string, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
+    addTabWithDragAndDropIndirect(dragText: string | undefined, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
 
@@ -806,7 +809,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     dragStart = (
         event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
-        dragDivText: string,
+        dragDivText: string | undefined,
         node: Node & IDraggable,
         allowDrag: boolean,
         onClick?: (event: Event) => void,
@@ -822,11 +825,24 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     };
 
     /** @hidden @internal */
-    dragRectRender = (text: String, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
-        let content: React.ReactElement | undefined = <div style={{ whiteSpace: "pre" }}>{text.replace("<br>", "\n")}</div>;
+    dragRectRender = (text: String | undefined, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
+        let content: React.ReactElement | undefined;
+        
+        if (text !== undefined) {
+            content = <div style={{ whiteSpace: "pre" }}>{text.replace("<br>", "\n")}</div>;
+        } else {
+            if (node && node instanceof TabNode) {
+                content = (<TabButtonStamp 
+                    node={node}
+                    layout={this}
+                    iconFactory={this.props.iconFactory}
+                    titleFactory={this.props.titleFactory}
+                />);
+            }
+        }
 
         if (this.props.onRenderDragRect !== undefined) {
-            const customContent = this.props.onRenderDragRect(text, node, json);
+            const customContent = this.props.onRenderDragRect(content, node, json);
             if (customContent !== undefined) {
                 content = customContent;
             }

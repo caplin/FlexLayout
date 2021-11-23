@@ -31,8 +31,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
 
         if (!isAuxMouseEvent(event) && !layout.getEditingTab()) {
-            const message = layout.i18nName(I18nLabel.Move_Tab, node._getNameForOverflowMenu());
-            layout.dragStart(event, message, node, node.isEnableDrag(), onClick, onDoubleClick);
+            layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
 

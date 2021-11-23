@@ -1,5 +1,5 @@
 .flexlayout__layout {
-  --color-text: white;
+  --color-text: #eeeeee;
   --color-background: black;
   --color-base: black;
   --color-1: #121212;
@@ -9,9 +9,9 @@
   --color-5: #404040;
   --color-6: #4d4d4d;
   --color-drag1: #cfe8ff;
-  --color-drag2: #cfe8ff;
-  --color-drag1-background: rgba(33, 150, 243, 0.1);
-  --color-drag2-background: rgba(33, 150, 243, 0.1);
+  --color-drag2: #b7d1b5;
+  --color-drag1-background: transparent;
+  --color-drag2-background: transparent;
   --font-size: medium;
   --font-family: Roboto, Arial, sans-serif;
   left: 0;
@@ -82,7 +82,7 @@
   justify-content: center;
   flex-direction: column;
   overflow: hidden;
-  padding: 10px;
+  padding: 0.5em 1em;
   word-wrap: break-word;
   font-size: var(--font-size);
   font-family: var(--font-family);
@@ -157,12 +157,11 @@
 .flexlayout__tabset-maximized {
   background-image: linear-gradient(var(--color-6), var(--color-2));
 }
-.flexlayout__tab_button_in_overflow_menu {
-  display: flex;
+.flexlayout__tab_button_stamp {
+  display: inline-flex;
+  align-items: center;
   gap: 0.3em;
   white-space: nowrap;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
   box-sizing: border-box;
 }
 .flexlayout__tab {
@@ -181,12 +180,12 @@
   cursor: pointer;
 }
 .flexlayout__tab_button--selected {
-  background-color: var(--color-3);
+  background-color: var(--color-4);
   color: var(--color-text);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
   }
 }
@@ -227,7 +226,7 @@
   border-radius: 4px;
 }
 .flexlayout__tab_button_trailing:hover {
-  background-color: var(--color-5);
+  background-color: var(--color-6);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
@@ -364,12 +363,12 @@
   background-color: var(--color-2);
 }
 .flexlayout__border_button--selected {
-  background-color: var(--color-3);
+  background-color: var(--color-4);
   color: var(--color-text);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
   }
 }
@@ -388,7 +387,7 @@
   visibility: hidden;
 }
 .flexlayout__border_button_trailing:hover {
-  background-color: var(--color-5);
+  background-color: var(--color-6);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover .flexlayout__border_button_trailing {
@@ -433,7 +432,7 @@
   font-family: var(--font-family);
 }
 .flexlayout__popup_menu_item {
-  padding: 2px 2px;
+  padding: 2px 0.5em;
   white-space: nowrap;
   cursor: pointer;
   border-radius: 2px;

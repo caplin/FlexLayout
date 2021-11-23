@@ -27,8 +27,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
         if (!isAuxMouseEvent(event)) {
-            const message = layout.i18nName(I18nLabel.Move_Tab, node._getNameForOverflowMenu());
-            props.layout.dragStart(event, message, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
+            props.layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
         }
     };
 

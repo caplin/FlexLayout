@@ -8,10 +8,10 @@
   --color-4: #cccccc;
   --color-5: #bfbfbf;
   --color-6: #b3b3b3;
-  --color-drag1: #3581d4;
-  --color-drag2: #3581d4;
-  --color-drag1-background: rgba(33, 150, 243, 0.1);
-  --color-drag2-background: rgba(33, 150, 243, 0.1);
+  --color-drag1: #5f86c4;
+  --color-drag2: #77a677;
+  --color-drag1-background: rgba(95, 134, 196, 0.1);
+  --color-drag2-background: rgba(119, 166, 119, 0.075);
   --font-size: medium;
   --font-family: Roboto, Arial, sans-serif;
   left: 0;
@@ -82,7 +82,7 @@
   justify-content: center;
   flex-direction: column;
   overflow: hidden;
-  padding: 10px;
+  padding: 0.5em 1em;
   word-wrap: break-word;
   font-size: var(--font-size);
   font-family: var(--font-family);
@@ -157,12 +157,11 @@
 .flexlayout__tabset-maximized {
   background-image: linear-gradient(var(--color-6), var(--color-2));
 }
-.flexlayout__tab_button_in_overflow_menu {
-  display: flex;
+.flexlayout__tab_button_stamp {
+  display: inline-flex;
+  align-items: center;
   gap: 0.3em;
   white-space: nowrap;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
   box-sizing: border-box;
 }
 .flexlayout__tab {
@@ -433,7 +432,7 @@
   font-family: var(--font-family);
 }
 .flexlayout__popup_menu_item {
-  padding: 2px 2px;
+  padding: 2px 0.5em;
   white-space: nowrap;
   cursor: pointer;
   border-radius: 2px;

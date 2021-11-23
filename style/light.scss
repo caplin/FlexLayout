@@ -7,10 +7,10 @@ $color_3: scale_color($color_2, $lightness: -3%) !default;
 $color_4: scale_color($color_3, $lightness: -3%) !default;
 $color_5: scale_color($color_4, $lightness: -3%) !default;
 $color_6: scale_color($color_5, $lightness: -3%) !default;
-$color_drag1: #3581d4 !default;
-$color_drag2: #3581d4 !default;
-$color_drag1_background: rgba(33, 150, 243, 0.1) !default;
-$color_drag2_background: rgba(33, 150, 243, 0.1) !default;
+$color_drag1: rgb(95, 134, 196) !default;
+$color_drag2: rgb(119, 166, 119) !default;
+$color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+$color_drag2_background: rgba(119, 166, 119, 0.075) !default;
 
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
@@ -45,7 +45,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tab_button_selected_mixin {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
 }
 
@@ -54,12 +54,12 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tab_button_hovered_mixin {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
 }
 
 @mixin close_button_hovered_mixin {
-    background-color:var(--color-5);
+    background-color:var(--color-3);
 }
 
 @mixin toolbar_button_hovered_mixin {
@@ -75,7 +75,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin border_button_selected_mixin {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
 }
 
@@ -84,7 +84,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin border_button_hovered_mixin {
-    background-color: var(--color-3);
+    background-color: var(--color-4);
     color: var(--color-text);
 }
 

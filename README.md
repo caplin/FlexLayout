@@ -4,9 +4,9 @@ FlexLayout is a layout manager that arranges React components in multiple tab se
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.5/demo1.png?raw=true "FlexLayout Demo Screenshot")
 
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.5/demo/index.html)
+[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.6/demo/index.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/7oe4q2pc/)
+Try it now using [JSFiddle](https://jsfiddle.net/18zfp0qm/)
 
 <!-- [API Doc](./typedoc/index.html) -->
 
@@ -185,7 +185,7 @@ ReactDOM.render(<Main/>, document.getElementById("container"));
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try it now using [JSFiddle](https://jsfiddle.net/7oe4q2pc/) 
+Try it now using [JSFiddle](https://jsfiddle.net/18zfp0qm/) 
 
 A simple Create React App (CRA) example (using typescript) can be found here:
 
@@ -213,7 +213,7 @@ The model json contains 3 top level elements:
 
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
 
-NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.5/demo/index.html) app, modify one of the 
+NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.6/demo/index.html) app, modify one of the 
 existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
 
 
