@@ -110,6 +110,8 @@ export interface ILayoutState {
     calculatedBorderBarSize: number;
     editingTab?: TabNode;
     showHiddenBorder: DockLocation;
+    portal?: React.ReactNode;
+    portalDiv?: HTMLDivElement;
 }
 
 export interface IIcons {
@@ -176,6 +178,8 @@ export interface ILayoutCallbacks {
     getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
     auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
+    showPortal: (portal: React.ReactNode, portalDiv: HTMLDivElement) => void;
+    hidePortal: () => void;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -514,6 +518,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 {splitterComponents}
                 {floatingWindows}
                 {this.metricsElements()}
+                {this.state.portal && ReactDOM.createPortal(this.state.portal, this.state.portalDiv!)}
             </div>
         );
     }
@@ -750,6 +755,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         const rootdiv = this.selfRef.current;
         rootdiv!.removeChild(this.dragDiv!);
         this.dragDiv = undefined;
+        this.hidePortal();
         if (this.fnNewNodeDropped != null) {
             this.fnNewNodeDropped();
             this.fnNewNodeDropped = undefined;
@@ -780,6 +786,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             } catch (e) { }
 
             this.dragDiv = undefined;
+            this.hidePortal();
             this.hideEdges(rootdiv);
             if (this.fnNewNodeDropped != null) {
                 this.fnNewNodeDropped();
@@ -851,15 +858,24 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         // hide div until the render is complete
         this.dragDiv!.style.visibility = "hidden";
         this.dragRectRendered = false;
-        ReactDOM.render(<DragRectRenderWrapper
-            // wait for it to be rendered
-            onRendered={() => {
-                this.dragRectRendered = true;
-                onRendered?.();
-            }}
-        >
-            {content}
-        </DragRectRenderWrapper>, this.dragDiv!);
+        this.showPortal(
+            <DragRectRenderWrapper
+                // wait for it to be rendered
+                onRendered={() => {
+                    this.dragRectRendered = true;
+                    onRendered?.();
+                }}>
+                {content}
+            </DragRectRenderWrapper>, 
+            this.dragDiv!);
+    };
+
+    showPortal = (portal: React.ReactNode, portalDiv: HTMLDivElement) => {
+        this.setState({portal, portalDiv});
+    };
+
+    hidePortal = () => {
+        this.setState({portal: undefined, portalDiv: undefined});
     };
 
     /** @hidden @internal */
@@ -940,6 +956,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         rootdiv.removeChild(this.outlineDiv!);
         rootdiv.removeChild(this.dragDiv!);
         this.dragDiv = undefined;
+        this.hidePortal();        
+
         this.hideEdges(rootdiv);
         DragDrop.instance.hideGlass();
 

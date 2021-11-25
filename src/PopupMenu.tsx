@@ -1,5 +1,4 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { DragDrop } from ".";
 import TabNode from "./model/TabNode";
 import { CLASSES } from "./Types";
@@ -40,9 +39,9 @@ export function showPopup(
     layoutDiv.appendChild(elm);
 
     const onHide = () => {
+        layout.hidePortal();
         DragDrop.instance.hideGlass();
         layoutDiv.removeChild(elm);
-        ReactDOM.unmountComponentAtNode(elm);
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
@@ -58,7 +57,7 @@ export function showPopup(
     elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
 
-    ReactDOM.render(<PopupMenu
+    layout.showPortal(<PopupMenu
         currentDocument={currentDocument}
         onSelect={onSelect}
         onHide={onHide}
