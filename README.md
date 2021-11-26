@@ -80,7 +80,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | Prop            | Description       |
 | --------------- | ----------------- |
 | font            | the tab font (overrides value in css). Example: font={{size:"12px", style:"italic"}}|
-| icons           | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons |
+| icons           | object mapping keys among `close`, `maximize`, `restore`, `more`, `popout` to React nodes to use in place of the default icons, can alternatively return functions for creating the React nodes |
 | onAction        | function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning `undefined` from the function will halt the action, otherwise return the action to continue |
 | onRenderTab     | function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized |
 | onRenderTabSet  | function called when rendering a tabset, allows header and buttons to be customized |
@@ -96,6 +96,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onRenderFloatingTabPlaceholder | callback for rendering the floating tab placeholder |
 | onContextMenu    | callback for handling context actions on tabs and tabsets |
 | onAuxMouseClick  | callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks |
+| onShowOverflowMenu | callback for handling the display of the tab overflow menu |
 | iconFactory      | a factory function for creating icon components for tab bar buttons. <br/><br/> NOTE: for greater customization of the tab use onRenderTab instead of this callback |
 | titleFactory     | a factory function for creating title components for tab bar buttons. <br /><br /> NOTE: for greater customization of the tab use onRenderTab instead of this callback  |
 

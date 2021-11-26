@@ -419,6 +419,11 @@
   border-radius: 4px;
   padding: 1px;
 }
+@media (hover: hover) {
+  .flexlayout__border_toolbar_button:hover {
+    background-color: var(--color-2);
+  }
+}
 .flexlayout__border_toolbar_button_overflow {
   display: flex;
   align-items: center;

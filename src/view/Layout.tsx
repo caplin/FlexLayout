@@ -33,6 +33,12 @@ export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNod
 export type DragRectRenderCallback = (content: React.ReactElement | undefined, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
 export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
 export type NodeMouseEvent = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+export type ShowOverflowMenuCallback = (
+    node: TabSetNode | BorderNode,
+    mouseEvent: React.MouseEvent<HTMLElement, MouseEvent>,
+    items: { index: number; node: TabNode }[],
+    onSelect: (item: { index: number; node: TabNode }) => void,
+) => void;
 
 export interface ILayoutProps {
     model: Model;
@@ -76,6 +82,7 @@ export interface ILayoutProps {
     onRenderFloatingTabPlaceholder?: FloatingTabPlaceholderRenderCallback;
     onContextMenu?: NodeMouseEvent;
     onAuxMouseClick?: NodeMouseEvent;
+    onShowOverflowMenu?: ShowOverflowMenuCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -114,12 +121,12 @@ export interface ILayoutState {
 }
 
 export interface IIcons {
-    close?: React.ReactNode;
-    closeTabset?: React.ReactNode;
-    popout?: React.ReactNode;
-    maximize?: React.ReactNode;
-    restore?: React.ReactNode;
-    more?: React.ReactNode;
+    close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    restore?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
 }
 
 const defaultIcons =  {
@@ -179,6 +186,7 @@ export interface ILayoutCallbacks {
     auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
     showPortal: (portal: React.ReactNode, portalDiv: HTMLDivElement) => void;
     hidePortal: () => void;
+    getShowOverflowMenu(): ShowOverflowMenuCallback | undefined;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -261,7 +269,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     private popoutURL: string;
     /** @hidden @internal */
-    private icons?: IIcons;
+    private icons: IIcons;
     /** @hidden @internal */
     private firstRender: boolean;
     /** @hidden @internal */
@@ -1221,6 +1229,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         return this.props.onRenderFloatingTabPlaceholder;
     }
 
+    /** @hidden @internal */
+    getShowOverflowMenu() {
+        return this.props.onShowOverflowMenu;
+    }
     /** @hidden @internal */
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
         if (this.props.onContextMenu) {

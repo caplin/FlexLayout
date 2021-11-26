@@ -17,7 +17,7 @@ export interface ITabSetProps {
     node: TabSetNode;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    icons?: IIcons;
+    icons: IIcons;
     editingTab?: TabNode;
     path?: string;
 }
@@ -34,15 +34,20 @@ export const TabSet = (props: ITabSetProps) => {
     const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = useTabOverflow(node, Orientation.HORZ, toolbarRef, stickyButtonsRef);
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        const element = overflowbuttonRef.current!;
-        showPopup(
-            element, 
-            hiddenTabs, 
-            onOverflowItemSelect, 
-            layout,
-            iconFactory,
-            titleFactory,
-            );
+        const callback = layout.getShowOverflowMenu();
+        if (callback !== undefined) {
+            callback( node, event, hiddenTabs, onOverflowItemSelect);
+        } else {
+            const element = overflowbuttonRef.current!;
+            showPopup(
+                element, 
+                hiddenTabs, 
+                onOverflowItemSelect, 
+                layout,
+                iconFactory,
+                titleFactory,
+                );
+        }
         event.stopPropagation();
     };
 
@@ -175,6 +180,15 @@ export const TabSet = (props: ITabSetProps) => {
     let toolbar;
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(node, hiddenTabs);
+        } else {
+            overflowContent = (<>
+                {icons.more}
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+            </>);
+        }
         buttons.push(
             <button
                 key="overflowbutton"
@@ -187,8 +201,7 @@ export const TabSet = (props: ITabSetProps) => {
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
-                {icons?.more}
-                {hiddenTabs.length}
+                {overflowContent}
             </button>
         );
     }
@@ -205,7 +218,7 @@ export const TabSet = (props: ITabSetProps) => {
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
-                {icons?.popout}
+                {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
             </button>
         );
     }
@@ -223,7 +236,9 @@ export const TabSet = (props: ITabSetProps) => {
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
-                {node.isMaximized() ? icons?.restore : icons?.maximize}
+                {node.isMaximized() ? 
+                    (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
+                    (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize }
             </button>
         );
     }
@@ -241,7 +256,7 @@ export const TabSet = (props: ITabSetProps) => {
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
-                {icons?.closeTabset}
+                {(typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset}
             </button>
         );
     }

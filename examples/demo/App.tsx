@@ -423,6 +423,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                 onTabDrag={this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined}
                 onContextMenu={this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined}
                 onAuxMouseClick={this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined}
+                // icons={{
+                //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
+                //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
+                //     }
+                // }}
 
             // classNameMapper={
             //     className => {
@@ -485,15 +490,6 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     <option value="20px">Size 20px</option>
                     <option value="25px">Size 25px</option>
                     <option value="30px">Size 30px</option>
-                    <option value="70%">Size 70%</option>
-                    <option value="80%">Size 80%</option>
-                    <option value="90%">Size 90%</option>
-                    <option value="100%">Size 100%</option>
-                    <option value="120%">Size 120%</option>
-                    <option value="140%">Size 140%</option>
-                    <option value="160%">Size 160%</option>
-                    <option value="180%">Size 180%</option>
-                    <option value="200%">Size 200%</option>
                 </select>
                 <select  className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="gray" onChange={this.onThemeChange}>
                     <option value="light">Light</option>
@@ -512,7 +508,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             <div className="contents">
                 {contents}
             </div>
-        </div>;
+        </div>
         </ContextExample.Provider>);
     }
 

@@ -17,7 +17,7 @@ export interface ITabButtonProps {
     height: number;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    icons?: IIcons;
+    icons: IIcons;
     path: string;
 }
 
@@ -184,7 +184,7 @@ export const TabButton = (props: ITabButtonProps) => {
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
                 onMouseDown={onCloseMouseDown} onClick={onClose}
                 onTouchStart={onCloseMouseDown}>
-                {icons?.close}
+                {(typeof icons.close === "function") ? icons.close(node) : icons.close}
             </div>
         );
     }
