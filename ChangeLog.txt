@@ -1,3 +1,6 @@
+0.6.1
+Use portal for drag rectangle to preserve React context in onRenderTab.
+
 0.6.0
 Changed icons to use svg images, these will now scale with the font size.
 Improved element spacing, removed most margin/padding spacers.
