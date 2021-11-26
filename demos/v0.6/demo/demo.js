@@ -121,6 +121,7 @@ var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
 var PopupMenu_1 = __webpack_require__(/*! ./PopupMenu */ "./examples/demo/PopupMenu.tsx");
 var NewFeatures_1 = __webpack_require__(/*! ./NewFeatures */ "./examples/demo/NewFeatures.tsx");
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
+var ContextExample = React.createContext('');
 var App = /** @class */ (function (_super) {
     __extends(App, _super);
     function App(props) {
@@ -389,6 +390,7 @@ var App = /** @class */ (function (_super) {
             _this.setState({ fontSize: target.value });
         };
         _this.onRenderTab = function (node, renderValues) {
+            // renderValues.content = (<InnerComponent/>);
             // renderValues.content += " *";
             // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
             // renderValues.name = "tab " + node.getId(); // name used in overflow menu
@@ -447,54 +449,56 @@ var App = /** @class */ (function (_super) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
             contents = React.createElement(FlexLayout.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined });
         }
-        return React.createElement("div", { className: "app" },
-            React.createElement("div", { className: "toolbar", dir: "ltr" },
-                React.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
-                    React.createElement("option", { value: "default" }, "Default"),
-                    React.createElement("option", { value: "newfeatures" }, "New Features"),
-                    React.createElement("option", { value: "simple" }, "Simple"),
-                    React.createElement("option", { value: "justsplitters" }, "Just Splitters"),
-                    React.createElement("option", { value: "sub" }, "SubLayout"),
-                    React.createElement("option", { value: "complex" }, "Complex"),
-                    React.createElement("option", { value: "preferred" }, "Using Preferred size"),
-                    React.createElement("option", { value: "trader" }, "Trader")),
-                React.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
-                React.createElement("div", { style: { flexGrow: 1 } }),
-                React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
-                React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
-                React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
-                    React.createElement("option", { value: "xx-small" }, "Size xx-small"),
-                    React.createElement("option", { value: "x-small" }, "Size x-small"),
-                    React.createElement("option", { value: "small" }, "Size small"),
-                    React.createElement("option", { value: "medium" }, "Size medium"),
-                    React.createElement("option", { value: "large" }, "Size large"),
-                    React.createElement("option", { value: "8px" }, "Size 8px"),
-                    React.createElement("option", { value: "10px" }, "Size 10px"),
-                    React.createElement("option", { value: "12px" }, "Size 12px"),
-                    React.createElement("option", { value: "14px" }, "Size 14px"),
-                    React.createElement("option", { value: "16px" }, "Size 16px"),
-                    React.createElement("option", { value: "18px" }, "Size 18px"),
-                    React.createElement("option", { value: "20px" }, "Size 20px"),
-                    React.createElement("option", { value: "25px" }, "Size 25px"),
-                    React.createElement("option", { value: "30px" }, "Size 30px"),
-                    React.createElement("option", { value: "70%" }, "Size 70%"),
-                    React.createElement("option", { value: "80%" }, "Size 80%"),
-                    React.createElement("option", { value: "90%" }, "Size 90%"),
-                    React.createElement("option", { value: "100%" }, "Size 100%"),
-                    React.createElement("option", { value: "120%" }, "Size 120%"),
-                    React.createElement("option", { value: "140%" }, "Size 140%"),
-                    React.createElement("option", { value: "160%" }, "Size 160%"),
-                    React.createElement("option", { value: "180%" }, "Size 180%"),
-                    React.createElement("option", { value: "200%" }, "Size 200%")),
-                React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
-                    React.createElement("option", { value: "light" }, "Light"),
-                    React.createElement("option", { value: "gray" }, "Gray"),
-                    React.createElement("option", { value: "dark" }, "Dark")),
-                React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
-                React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
-                React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
-            React.createElement("div", { className: "contents" }, contents));
+        return (React.createElement(ContextExample.Provider, { value: "from context" },
+            React.createElement("div", { className: "app" },
+                React.createElement("div", { className: "toolbar", dir: "ltr" },
+                    React.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
+                        React.createElement("option", { value: "default" }, "Default"),
+                        React.createElement("option", { value: "newfeatures" }, "New Features"),
+                        React.createElement("option", { value: "simple" }, "Simple"),
+                        React.createElement("option", { value: "justsplitters" }, "Just Splitters"),
+                        React.createElement("option", { value: "sub" }, "SubLayout"),
+                        React.createElement("option", { value: "complex" }, "Complex"),
+                        React.createElement("option", { value: "preferred" }, "Using Preferred size"),
+                        React.createElement("option", { value: "trader" }, "Trader")),
+                    React.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
+                    React.createElement("div", { style: { flexGrow: 1 } }),
+                    React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
+                    React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
+                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
+                        React.createElement("option", { value: "xx-small" }, "Size xx-small"),
+                        React.createElement("option", { value: "x-small" }, "Size x-small"),
+                        React.createElement("option", { value: "small" }, "Size small"),
+                        React.createElement("option", { value: "medium" }, "Size medium"),
+                        React.createElement("option", { value: "large" }, "Size large"),
+                        React.createElement("option", { value: "8px" }, "Size 8px"),
+                        React.createElement("option", { value: "10px" }, "Size 10px"),
+                        React.createElement("option", { value: "12px" }, "Size 12px"),
+                        React.createElement("option", { value: "14px" }, "Size 14px"),
+                        React.createElement("option", { value: "16px" }, "Size 16px"),
+                        React.createElement("option", { value: "18px" }, "Size 18px"),
+                        React.createElement("option", { value: "20px" }, "Size 20px"),
+                        React.createElement("option", { value: "25px" }, "Size 25px"),
+                        React.createElement("option", { value: "30px" }, "Size 30px"),
+                        React.createElement("option", { value: "70%" }, "Size 70%"),
+                        React.createElement("option", { value: "80%" }, "Size 80%"),
+                        React.createElement("option", { value: "90%" }, "Size 90%"),
+                        React.createElement("option", { value: "100%" }, "Size 100%"),
+                        React.createElement("option", { value: "120%" }, "Size 120%"),
+                        React.createElement("option", { value: "140%" }, "Size 140%"),
+                        React.createElement("option", { value: "160%" }, "Size 160%"),
+                        React.createElement("option", { value: "180%" }, "Size 180%"),
+                        React.createElement("option", { value: "200%" }, "Size 200%")),
+                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
+                        React.createElement("option", { value: "light" }, "Light"),
+                        React.createElement("option", { value: "gray" }, "Gray"),
+                        React.createElement("option", { value: "dark" }, "Dark")),
+                    React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
+                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
+                React.createElement("div", { className: "contents" }, contents)),
+            ";"));
     };
     App.prototype.makeFakeData = function () {
         var data = [];
@@ -544,6 +548,10 @@ var SimpleTable = /** @class */ (function (_super) {
     };
     return SimpleTable;
 }(React.Component));
+// function InnerComponent() {
+//     const value = React.useContext(ContextExample);
+//     return <span>{value}</span>;
+// }
 ReactDOM.render(React.createElement(App, null), document.getElementById("container"));
 
 
@@ -32311,7 +32319,6 @@ exports.default = Orientation;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.showPopup = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var _1 = __webpack_require__(/*! . */ "./src/index.ts");
 var Types_1 = __webpack_require__(/*! ./Types */ "./src/Types.ts");
 var TabButtonStamp_1 = __webpack_require__(/*! ./view/TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
@@ -32340,9 +32347,9 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     _1.DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
     var onHide = function () {
+        layout.hidePortal();
         _1.DragDrop.instance.hideGlass();
         layoutDiv.removeChild(elm);
-        ReactDOM.unmountComponentAtNode(elm);
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
@@ -32354,7 +32361,7 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     };
     elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
-    ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }), elm);
+    layout.showPortal(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }), elm);
 }
 exports.showPopup = showPopup;
 /** @hidden @internal */
@@ -36166,6 +36173,7 @@ var Layout = /** @class */ (function (_super) {
             var rootdiv = _this.selfRef.current;
             rootdiv.removeChild(_this.dragDiv);
             _this.dragDiv = undefined;
+            _this.hidePortal();
             if (_this.fnNewNodeDropped != null) {
                 _this.fnNewNodeDropped();
                 _this.fnNewNodeDropped = undefined;
@@ -36194,6 +36202,7 @@ var Layout = /** @class */ (function (_super) {
                 }
                 catch (e) { }
                 _this.dragDiv = undefined;
+                _this.hidePortal();
                 _this.hideEdges(rootdiv);
                 if (_this.fnNewNodeDropped != null) {
                     _this.fnNewNodeDropped();
@@ -36247,7 +36256,7 @@ var Layout = /** @class */ (function (_super) {
             // hide div until the render is complete
             _this.dragDiv.style.visibility = "hidden";
             _this.dragRectRendered = false;
-            ReactDOM.render(React.createElement(DragRectRenderWrapper
+            _this.showPortal(React.createElement(DragRectRenderWrapper
             // wait for it to be rendered
             , { 
                 // wait for it to be rendered
@@ -36255,6 +36264,13 @@ var Layout = /** @class */ (function (_super) {
                     _this.dragRectRendered = true;
                     onRendered === null || onRendered === void 0 ? void 0 : onRendered();
                 } }, content), _this.dragDiv);
+        };
+        _this.showPortal = function (control, element) {
+            var portal = ReactDOM.createPortal(control, element);
+            _this.setState({ portal: portal });
+        };
+        _this.hidePortal = function () {
+            _this.setState({ portal: undefined });
         };
         /** @hidden @internal */
         _this.onDragStart = function () {
@@ -36325,6 +36341,7 @@ var Layout = /** @class */ (function (_super) {
             rootdiv.removeChild(_this.outlineDiv);
             rootdiv.removeChild(_this.dragDiv);
             _this.dragDiv = undefined;
+            _this.hidePortal();
             _this.hideEdges(rootdiv);
             DragDrop_1.default.instance.hideGlass();
             if (_this.dropInfo) {
@@ -36534,7 +36551,8 @@ var Layout = /** @class */ (function (_super) {
             borderComponents,
             splitterComponents,
             floatingWindows,
-            this.metricsElements()));
+            this.metricsElements(),
+            this.state.portal));
     };
     /** @hidden @internal */
     Layout.prototype.metricsElements = function () {
