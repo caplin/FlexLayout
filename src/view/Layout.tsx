@@ -111,7 +111,6 @@ export interface ILayoutState {
     editingTab?: TabNode;
     showHiddenBorder: DockLocation;
     portal?: React.ReactNode;
-    portalDiv?: HTMLDivElement;
 }
 
 export interface IIcons {
@@ -518,7 +517,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 {splitterComponents}
                 {floatingWindows}
                 {this.metricsElements()}
-                {this.state.portal && ReactDOM.createPortal(this.state.portal, this.state.portalDiv!)}
+                {this.state.portal}
             </div>
         );
     }
@@ -870,12 +869,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.dragDiv!);
     };
 
-    showPortal = (portal: React.ReactNode, portalDiv: HTMLDivElement) => {
-        this.setState({portal, portalDiv});
+    showPortal = (control: React.ReactNode, element: HTMLElement) => {
+        const portal = ReactDOM.createPortal(control, element);
+        this.setState({portal});
     };
 
     hidePortal = () => {
-        this.setState({portal: undefined, portalDiv: undefined});
+        this.setState({portal: undefined});
     };
 
     /** @hidden @internal */
