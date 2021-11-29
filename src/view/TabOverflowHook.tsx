@@ -20,6 +20,7 @@ export const useTabOverflow = (
     const [position, setPosition] = React.useState<number>(0);
     const userControlledLeft = React.useRef<boolean>(false);
     const [hiddenTabs, setHiddenTabs] = React.useState<{ node: TabNode; index: number }[]>([]);
+    const lastHiddenCount = React.useRef<number>(0);
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useLayoutEffect(() => {
@@ -78,9 +79,11 @@ export const useTabOverflow = (
 
         if (
             firstRender.current === true ||
+            (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) || 
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height
         ) {
+            lastHiddenCount.current = hiddenTabs.length;
             lastRect.current = nodeRect;
             const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
             let endPos = getFar(nodeRect) - stickyButtonsSize;
@@ -91,8 +94,6 @@ export const useTabOverflow = (
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
                 }
-
-                endPos -= hiddenTabs.length > 0 ? (orientation === Orientation.HORZ ? 16 : 0) : 45; // will need hidden tabs
 
                 let shiftPos = 0;
 
