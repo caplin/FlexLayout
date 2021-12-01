@@ -1,3 +1,7 @@
+0.6.2
+Extended icons prop to allow use of functions to set icons.
+Added onShowOverflowMenu callback for handling the display of the tab overflow menu.
+
 0.6.1
 Use portal for drag rectangle to preserve React context in onRenderTab.
 
