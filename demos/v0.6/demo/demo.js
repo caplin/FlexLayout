@@ -479,16 +479,7 @@ var App = /** @class */ (function (_super) {
                         React.createElement("option", { value: "18px" }, "Size 18px"),
                         React.createElement("option", { value: "20px" }, "Size 20px"),
                         React.createElement("option", { value: "25px" }, "Size 25px"),
-                        React.createElement("option", { value: "30px" }, "Size 30px"),
-                        React.createElement("option", { value: "70%" }, "Size 70%"),
-                        React.createElement("option", { value: "80%" }, "Size 80%"),
-                        React.createElement("option", { value: "90%" }, "Size 90%"),
-                        React.createElement("option", { value: "100%" }, "Size 100%"),
-                        React.createElement("option", { value: "120%" }, "Size 120%"),
-                        React.createElement("option", { value: "140%" }, "Size 140%"),
-                        React.createElement("option", { value: "160%" }, "Size 160%"),
-                        React.createElement("option", { value: "180%" }, "Size 180%"),
-                        React.createElement("option", { value: "200%" }, "Size 200%")),
+                        React.createElement("option", { value: "30px" }, "Size 30px")),
                     React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
                         React.createElement("option", { value: "light" }, "Light"),
                         React.createElement("option", { value: "gray" }, "Gray"),
@@ -497,8 +488,7 @@ var App = /** @class */ (function (_super) {
                     React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
                     React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
                     React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
-                React.createElement("div", { className: "contents" }, contents)),
-            ";"));
+                React.createElement("div", { className: "contents" }, contents))));
     };
     App.prototype.makeFakeData = function () {
         var data = [];
@@ -32538,6 +32528,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TAB_BUTTON_CONTENT"] = "flexlayout__tab_button_content";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_LEADING"] = "flexlayout__tab_button_leading";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_OVERFLOW"] = "flexlayout__tab_button_overflow";
+    CLASSES["FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT"] = "flexlayout__tab_button_overflow_count";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_TEXTBOX"] = "flexlayout__tab_button_textbox";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_TRAILING"] = "flexlayout__tab_button_trailing";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_STAMP"] = "flexlayout__tab_button_stamp";
@@ -35674,8 +35665,14 @@ var BorderTabSet = function (props) {
         event.stopPropagation();
     };
     var onOverflowClick = function (event) {
-        var element = overflowbuttonRef.current;
-        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+        var callback = layout.getShowOverflowMenu();
+        if (callback !== undefined) {
+            callback(border, event, hiddenTabs, onOverflowItemSelect);
+        }
+        else {
+            var element = overflowbuttonRef.current;
+            PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+        }
         event.stopPropagation();
     };
     var onOverflowItemSelect = function (item) {
@@ -35712,16 +35709,23 @@ var BorderTabSet = function (props) {
     var toolbar;
     if (hiddenTabs.length > 0) {
         var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
-        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
-            icons.more,
-            hiddenTabs.length));
+        var overflowContent = void 0;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(border, hiddenTabs);
+        }
+        else {
+            overflowContent = (React.createElement(React.Fragment, null,
+                icons.more,
+                React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
+        }
+        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
     var selectedIndex = border.getSelected();
     if (selectedIndex !== -1) {
         var selectedTabNode = border.getChildren()[selectedIndex];
         if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
             var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.popout));
+            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
         }
     }
     toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName()) }, buttons));
@@ -36910,6 +36914,10 @@ var Layout = /** @class */ (function (_super) {
         return this.props.onRenderFloatingTabPlaceholder;
     };
     /** @hidden @internal */
+    Layout.prototype.getShowOverflowMenu = function () {
+        return this.props.onShowOverflowMenu;
+    };
+    /** @hidden @internal */
     Layout.prototype.showContextMenu = function (node, event) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
@@ -37288,7 +37296,7 @@ var TabButton = function (props) {
     }
     if (node.isEnableClose()) {
         var closeTitle = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tab);
-        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, icons === null || icons === void 0 ? void 0 : icons.close));
+        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
     }
     return (React.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
@@ -37428,6 +37436,7 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
     var _a = React.useState(0), position = _a[0], setPosition = _a[1];
     var userControlledLeft = React.useRef(false);
     var _b = React.useState([]), hiddenTabs = _b[0], setHiddenTabs = _b[1];
+    var lastHiddenCount = React.useRef(0);
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useLayoutEffect(function () {
         userControlledLeft.current = false;
@@ -37479,8 +37488,10 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
         var lastChild = node.getChildren()[node.getChildren().length - 1];
         var stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current.getBoundingClientRect());
         if (firstRender.current === true ||
+            (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) ||
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height) {
+            lastHiddenCount.current = hiddenTabs.length;
             lastRect.current = nodeRect;
             var enabled = node instanceof TabSetNode_1.default ? node.isEnableTabStrip() === true : true;
             var endPos = getFar(nodeRect) - stickyButtonsSize;
@@ -37491,7 +37502,6 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
                 }
-                endPos -= hiddenTabs.length > 0 ? (orientation === Orientation_1.default.HORZ ? 16 : 0) : 45; // will need hidden tabs
                 var shiftPos = 0;
                 var selectedTab = node.getSelectedNode();
                 if (selectedTab && !userControlledLeft.current) {
@@ -37594,8 +37604,14 @@ var TabSet = function (props) {
     var stickyButtonsRef = React.useRef(null);
     var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.default.HORZ, toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel, tabsTruncated = _a.tabsTruncated;
     var onOverflowClick = function (event) {
-        var element = overflowbuttonRef.current;
-        PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+        var callback = layout.getShowOverflowMenu();
+        if (callback !== undefined) {
+            callback(node, event, hiddenTabs, onOverflowItemSelect);
+        }
+        else {
+            var element = overflowbuttonRef.current;
+            PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+        }
         event.stopPropagation();
     };
     var onOverflowItemSelect = function (item) {
@@ -37691,24 +37707,33 @@ var TabSet = function (props) {
     var toolbar;
     if (hiddenTabs.length > 0) {
         var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
-        buttons.push(React.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 :
-            icons.more,
-            hiddenTabs.length));
+        var overflowContent = void 0;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(node, hiddenTabs);
+        }
+        else {
+            overflowContent = (React.createElement(React.Fragment, null,
+                icons.more,
+                React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
+        }
+        buttons.push(React.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
         var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-        buttons.push(React.createElement("button", { key: "float", "data-layout-path": path + "/button/float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.popout));
+        buttons.push(React.createElement("button", { key: "float", "data-layout-path": path + "/button/float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
     }
     if (node.canMaximize()) {
         var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
         var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
         var btns = showHeader ? headerButtons : buttons;
-        btns.push(React.createElement("button", { key: "max", "data-layout-path": path + "/button/max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ? icons === null || icons === void 0 ? void 0 : icons.restore : icons === null || icons === void 0 ? void 0 : icons.maximize));
+        btns.push(React.createElement("button", { key: "max", "data-layout-path": path + "/button/max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ?
+            (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
+            (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize));
     }
     if (!node.isMaximized() && node.isEnableClose()) {
         var title = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tabset);
         var btns = showHeader ? headerButtons : buttons;
-        btns.push(React.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, icons === null || icons === void 0 ? void 0 : icons.closeTabset));
+        btns.push(React.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
     }
     toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, buttons));
     var header;
