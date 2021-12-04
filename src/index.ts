@@ -12,7 +12,7 @@ import RowNode from "./model/RowNode";
 import SplitterNode from "./model/SplitterNode";
 import TabNode from "./model/TabNode";
 import TabSetNode from "./model/TabSetNode";
-import {IJsonModel, IJsonTabNode} from "./model/IJsonModel";
+import type {IJsonModel, IJsonTabNode} from "./model/IJsonModel";
 import Orientation from "./Orientation";
 import Rect from "./Rect";
 import Layout from "./view/Layout";
