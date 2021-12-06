@@ -1,8 +1,8 @@
 # FlexLayout
 
-![GitHub](https://img.shields.io/github/license/Caplin/FlexLayout)
+[![GitHub](https://img.shields.io/github/license/Caplin/FlexLayout)](https://github.com/caplin/FlexLayout/blob/master/LICENSE)
 ![npm](https://img.shields.io/npm/dw/flexlayout-react)
-![npm](https://img.shields.io/npm/v/flexlayout-react)
+[![npm](https://img.shields.io/npm/v/flexlayout-react)](https://www.npmjs.com/package/flexlayout-react)
 
 FlexLayout is a layout manager that arranges React components in multiple tab sets, tabs can be resized and moved.
 
