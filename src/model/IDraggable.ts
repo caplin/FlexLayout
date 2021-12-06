@@ -5,5 +5,3 @@ export interface IDraggable {
     getName(): string | undefined;
 }
 
-// export default interface IDraggable;
-

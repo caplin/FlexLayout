@@ -76,5 +76,3 @@ export class SplitterNode extends Node {
         return undefined;
     }
 }
-
-export default SplitterNode;

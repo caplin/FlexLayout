@@ -26,5 +26,3 @@ export class Orientation {
         return this._name;
     }
 }
-
-export default Orientation;

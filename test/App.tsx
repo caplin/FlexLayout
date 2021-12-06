@@ -68,8 +68,6 @@ export function App(props) {
     );
 }
 
-export default App;
-
 export const twoTabs: IJsonModel = {
     global: {},
     borders: [],

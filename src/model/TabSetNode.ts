@@ -497,5 +497,3 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     }
 
 }
-
-export default TabSetNode;

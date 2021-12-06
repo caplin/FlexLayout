@@ -130,8 +130,6 @@ export function AppEx(props) {
     );
 }
 
-export default AppEx;
-
 export const layoutEx1: IJsonModel = {
     global: {},
     borders: [

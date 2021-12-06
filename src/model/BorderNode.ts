@@ -449,5 +449,3 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
 }
-
-export default BorderNode;

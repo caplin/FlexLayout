@@ -134,5 +134,3 @@ export class BorderSet {
         return undefined;
     }
 }
-
-export default BorderSet;

@@ -131,5 +131,3 @@ export class DockLocation {
         return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
     }
 }
-
-export default DockLocation;

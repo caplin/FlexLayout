@@ -224,5 +224,3 @@ export class TabNode extends Node implements IDraggable {
     }
 
 }
-
-export default TabNode;

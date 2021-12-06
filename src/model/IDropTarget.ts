@@ -12,5 +12,3 @@ export interface IDropTarget {
     isEnableDrop(): boolean;
 }
 
-// export default interface IDropTarget;
-

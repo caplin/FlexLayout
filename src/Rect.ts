@@ -89,5 +89,3 @@ export class Rect {
         return "(Rect: x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
     }
 }
-
-export default Rect;

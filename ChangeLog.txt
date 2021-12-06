@@ -1,3 +1,13 @@
+0.6.3
+Changed to using named rather than default import/exports, 
+this will require changing top level imports 
+  from:
+    import FlexLayout from 'flexlayout-react'; 
+  to
+    import * as FlexLayout from 'flexlayout-react';
+
+Added typedoc link to readme
+
 0.6.2
 Extended icons prop to allow use of functions to set icons.
 Added onShowOverflowMenu callback for handling the display of the tab overflow menu.

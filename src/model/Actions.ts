@@ -166,5 +166,3 @@ export class Actions {
         return new Action(Actions.UNFLOAT_TAB, { node: nodeId });
     }
 }
-
-export default Actions;

@@ -115,7 +115,7 @@ The model can be created using the Model.fromJson(jsonObject) static method, and
 this.state = {model: FlexLayout.Model.fromJson(json)};
 
 render() {
-	<Layout model={this.state.model} factory={factory}/>
+	<FlexLayout.Layout model={this.state.model} factory={factory}/>
 }
 ```
 

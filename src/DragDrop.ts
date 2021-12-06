@@ -386,5 +386,3 @@ export class DragDrop {
         return false;
     }
 }
-
-export default DragDrop;

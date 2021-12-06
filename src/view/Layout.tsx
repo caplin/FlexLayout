@@ -1269,4 +1269,3 @@ const DragRectRenderWrapper = (props: IDragRectRenderWrapper) => {
         {props.children}
     </React.Fragment>)
 }
-export default Layout;

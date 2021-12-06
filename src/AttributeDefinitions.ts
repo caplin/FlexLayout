@@ -115,6 +115,3 @@ export class AttributeDefinitions {
         return lines.join("\n");
     }
 }
-
-/** @hidden @internal */
-export default AttributeDefinitions;

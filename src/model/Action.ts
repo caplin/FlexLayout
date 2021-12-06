@@ -7,5 +7,3 @@ export class Action {
         this.data = data;
     }
 }
-
-export default Action;

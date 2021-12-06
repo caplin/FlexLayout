@@ -551,5 +551,3 @@ export class RowNode extends Node implements IDropTarget {
     }
 
 }
-
-export default RowNode;

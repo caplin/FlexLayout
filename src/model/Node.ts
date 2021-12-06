@@ -287,5 +287,3 @@ export abstract class Node {
     /** @hidden @internal */
     abstract _getAttributeDefinitions(): AttributeDefinitions;
 }
-
-export default Node;

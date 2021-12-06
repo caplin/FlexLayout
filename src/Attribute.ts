@@ -39,6 +39,3 @@ export class Attribute {
     }
 
 }
-
-/** @hidden @internal */
-export default Attribute;

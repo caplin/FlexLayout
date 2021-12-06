@@ -18,4 +18,3 @@ export class DropInfo {
         this.className = className;
     }
 }
-export default DropInfo;
