@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
-import Rect from "../Rect";
+import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
 
 /** @hidden @internal */

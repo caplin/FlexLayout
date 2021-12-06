@@ -20,7 +20,7 @@
     ],
     "scripts": {
         "start": "webpack serve",
-        "build": " npm run css && npm run test && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
+        "build": "npm run createIndex && npm run css && npm run test && npm run doc && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
         "build:commonjs": "tsc -p tsconfig2.json",
         "build:umd": "webpack --mode=development --config webpack_build.config.js",
         "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
@@ -29,7 +29,8 @@
         "css": "sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/light.scss test/style/light.css && sass style/dark.scss style/dark.css",
         "cypress": "cypress open-ct",
         "cypress-firefox": "cypress open-ct --browser firefox",
-        "test": "cypress run-ct"
+        "test": "cypress run-ct",
+        "createIndex": "cti create -b ./src"
     },
     "author": "Caplin Systems Ltd",
     "repository": "https://github.com/caplin/FlexLayout",
@@ -48,6 +49,7 @@
         "@types/react": "^17.0.5",
         "@types/react-dom": "^17.0.4",
         "@types/uuid": "^8.3.1",
+        "create-ts-index": "^1.13.6",
         "cypress": "^8.7.0",
         "prettier": "^2.3.0",
         "react": "^17.0.2",
@@ -56,7 +58,7 @@
         "sass": "^1.32.12",
         "source-map-loader": "^1.1.2",
         "ts-loader": "~8.2.0",
-        "typedoc": "^0.20.36",
+        "typedoc": "^0.22.10",
         "typescript": "^4.2.4",
         "webpack-cli": "^4.7.0"
     },

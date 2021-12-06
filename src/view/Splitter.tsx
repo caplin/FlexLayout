@@ -1,11 +1,11 @@
 import * as React from "react";
-import DragDrop from "../DragDrop";
-import Actions from "../model/Actions";
-import BorderNode from "../model/BorderNode";
-import Node from "../model/Node";
-import RowNode from "../model/RowNode";
-import SplitterNode from "../model/SplitterNode";
-import Orientation from "../Orientation";
+import { DragDrop } from "../DragDrop";
+import { Actions } from "../model/Actions";
+import { BorderNode } from "../model/BorderNode";
+import { Node } from "../model/Node";
+import { RowNode } from "../model/RowNode";
+import { SplitterNode } from "../model/SplitterNode";
+import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 

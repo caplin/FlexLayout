@@ -1,7 +1,7 @@
-import TabSetNode from "./TabSetNode";
-import BorderNode from "./BorderNode";
-import RowNode from "./RowNode";
-import TabNode from "./TabNode";
+import { TabSetNode } from "./TabSetNode";
+import { BorderNode } from "./BorderNode";
+import { RowNode } from "./RowNode";
+import { TabNode } from "./TabNode";
 
 /** @hidden @internal */
 export function adjustSelectedIndexAfterFloat(node: TabNode) {

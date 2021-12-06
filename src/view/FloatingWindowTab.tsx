@@ -1,5 +1,5 @@
 import * as React from "react";
-import TabNode from "../model/TabNode";
+import { TabNode } from "../model/TabNode";
 import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";

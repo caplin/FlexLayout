@@ -1,9 +1,9 @@
 import * as React from "react";
 import { I18nLabel } from "../I18nLabel";
-import Actions from "../model/Actions";
-import TabNode from "../model/TabNode";
-import TabSetNode from "../model/TabSetNode";
-import Rect from "../Rect";
+import { Actions } from "../model/Actions";
+import { TabNode } from "../model/TabNode";
+import { TabSetNode } from "../model/TabSetNode";
+import { Rect } from "../Rect";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
@@ -155,7 +155,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const leading = renderState.leading ? (
         <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
-                {renderState.leading}
+            {renderState.leading}
         </div>) : null;
 
     if (layout.getEditingTab() === node) {

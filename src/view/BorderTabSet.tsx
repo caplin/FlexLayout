@@ -1,20 +1,20 @@
 import * as React from "react";
-import DockLocation from "../DockLocation";
-import Border from "../model/BorderNode";
-import TabNode from "../model/TabNode";
+import { DockLocation } from "../DockLocation";
+import { BorderNode } from "../model/BorderNode";
+import { TabNode } from "../model/TabNode";
 import { BorderButton } from "./BorderButton";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { showPopup } from "../PopupMenu";
-import Actions from "../model/Actions";
+import { Actions } from "../model/Actions";
 import { I18nLabel } from "../I18nLabel";
 import { useTabOverflow } from "./TabOverflowHook";
-import Orientation from "../Orientation";
+import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
 
 /** @hidden @internal */
 export interface IBorderTabSetProps {
-    border: Border;
+    border: BorderNode;
     layout: ILayoutCallbacks;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
@@ -49,12 +49,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = layout.getShowOverflowMenu();
         if (callback !== undefined) {
-            callback( border, event, hiddenTabs, onOverflowItemSelect);
+            callback(border, event, hiddenTabs, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
-            showPopup( element, 
-                hiddenTabs, 
-                onOverflowItemSelect, 
+            showPopup(element,
+                hiddenTabs,
+                onOverflowItemSelect,
                 layout,
                 iconFactory,
                 titleFactory);
@@ -180,7 +180,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     }
 
     return (
-        <div ref={selfRef} dir="ltr" style={style} className={borderClasses} 
+        <div ref={selfRef} dir="ltr" style={style} className={borderClasses}
             data-layout-path={path}
             onClick={onAuxMouseClick}
             onAuxClick={onAuxMouseClick}

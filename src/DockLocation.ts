@@ -1,7 +1,7 @@
-import Orientation from "./Orientation";
-import Rect from "./Rect";
+import { Orientation } from "./Orientation";
+import { Rect } from "./Rect";
 
-class DockLocation {
+export class DockLocation {
     static values: Record<string, DockLocation> = {};
     static TOP = new DockLocation("top", Orientation.VERT, 0);
     static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);

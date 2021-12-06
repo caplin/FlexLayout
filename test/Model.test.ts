@@ -1,8 +1,5 @@
 import { } from '@cypress/react';
-import Model from "../src/model/Model";
-import Actions from "../src/model/Actions";
-import DockLocation from "../src/DockLocation"
-import { Action, BorderNode, IJsonModel, Node, Orientation, Rect, RowNode, SplitterNode, TabNode, TabSetNode } from "../src";
+import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Orientation, Rect, RowNode, SplitterNode, TabNode, TabSetNode } from "../src";
 
 /*
 * The textRendered tabs: a representation of the model 'rendered' to a list of tab paths 

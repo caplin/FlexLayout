@@ -1,7 +1,7 @@
 import { ICloseType } from './ICloseType';
-type IBorderLocation = "top" | "bottom" | "left" | "right";
-type ITabLocation = "top" | "bottom";
-type IInsets = { "top": number, "right": number, "bottom": number, "left": number };
+export type IBorderLocation = "top" | "bottom" | "left" | "right";
+export type ITabLocation = "top" | "bottom";
+export type IInsets = { "top": number, "right": number, "bottom": number, "left": number };
 
 export interface IJsonModel {
     global?: IGlobalAttributes;

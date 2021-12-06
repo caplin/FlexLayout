@@ -1,21 +1,21 @@
 import { TabNode } from "..";
-import Attribute from "../Attribute";
-import AttributeDefinitions from "../AttributeDefinitions";
-import DockLocation from "../DockLocation";
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
+import { Attribute } from "../Attribute";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { DockLocation } from "../DockLocation";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
-import BorderNode from "./BorderNode";
-import IDraggable from "./IDraggable";
-import IDropTarget from "./IDropTarget";
+import { BorderNode } from "./BorderNode";
+import { IDraggable } from "./IDraggable";
+import { IDropTarget } from "./IDropTarget";
 import { IJsonRowNode } from "./IJsonModel";
-import Model, { ILayoutMetrics } from "./Model";
-import Node from "./Node";
-import SplitterNode from "./SplitterNode";
-import TabSetNode from "./TabSetNode";
+import { Model, ILayoutMetrics } from "./Model";
+import { Node } from "./Node";
+import { SplitterNode } from "./SplitterNode";
+import { TabSetNode } from "./TabSetNode";
 
-class RowNode extends Node implements IDropTarget {
+export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
 
     /** @hidden @internal */
@@ -383,7 +383,7 @@ class RowNode extends Node implements IDropTarget {
         if (this === this._model.getRoot() && this._children.length === 0) {
             const callback = this._model._getOnCreateTabSet();
             let attrs = callback ? callback() : {};
-            attrs = {...attrs, selected: -1};
+            attrs = { ...attrs, selected: -1 };
             const child = new TabSetNode(this._model, attrs);
             this._model._setActiveTabset(child);
             this._addChild(child);

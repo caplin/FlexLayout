@@ -1,13 +1,13 @@
-import AttributeDefinitions from "../AttributeDefinitions";
-import DockLocation from "../DockLocation";
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
-import IDraggable from "./IDraggable";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { DockLocation } from "../DockLocation";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
+import { IDraggable } from "./IDraggable";
 import { IJsonBorderNode, IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from "./IJsonModel";
-import Model, { ILayoutMetrics } from "./Model";
+import { Model, ILayoutMetrics } from "./Model";
 
-abstract class Node {
+export abstract class Node {
     /** @hidden @internal */
     protected _model: Model;
     /** @hidden @internal */

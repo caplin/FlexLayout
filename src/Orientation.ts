@@ -1,4 +1,4 @@
-class Orientation {
+export class Orientation {
     static HORZ = new Orientation("horz");
     static VERT = new Orientation("vert");
 

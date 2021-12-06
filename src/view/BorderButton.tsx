@@ -1,8 +1,8 @@
 import * as React from "react";
 import { I18nLabel } from "..";
-import Actions from "../model/Actions";
-import TabNode from "../model/TabNode";
-import Rect from "../Rect";
+import { Actions } from "../model/Actions";
+import { TabNode } from "../model/TabNode";
+import { Rect } from "../Rect";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
@@ -103,13 +103,13 @@ export const BorderButton = (props: IBorderButtonProps) => {
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         renderState.buttons.push(
-            <div 
-                key="close" 
+            <div
+                key="close"
                 data-layout-path={path + "/button/close"}
-                title={closeTitle} 
-                className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)} 
-                onMouseDown={onCloseMouseDown} 
-                onClick={onClose} 
+                title={closeTitle}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)}
+                onMouseDown={onCloseMouseDown}
+                onClick={onClose}
                 onTouchStart={onCloseMouseDown}>
                 {icons?.close}
             </div>
@@ -117,14 +117,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
     }
 
     return (
-        <div ref={selfRef} style={{}} className={classNames} 
-        data-layout-path={path}
-        onMouseDown={onMouseDown} 
-        onClick={onAuxMouseClick}
-        onAuxClick={onAuxMouseClick}
-        onContextMenu={onContextMenu}
-        onTouchStart={onMouseDown} 
-        title={node.getHelpText()}>
+        <div ref={selfRef} style={{}} className={classNames}
+            data-layout-path={path}
+            onMouseDown={onMouseDown}
+            onClick={onAuxMouseClick}
+            onAuxClick={onAuxMouseClick}
+            onContextMenu={onContextMenu}
+            onTouchStart={onMouseDown}
+            title={node.getHelpText()}>
             {leading}
             {content}
             {renderState.buttons}

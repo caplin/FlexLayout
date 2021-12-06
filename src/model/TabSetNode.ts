@@ -1,21 +1,21 @@
-import Attribute from "../Attribute";
-import AttributeDefinitions from "../AttributeDefinitions";
-import DockLocation from "../DockLocation";
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
+import { Attribute } from "../Attribute";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { DockLocation } from "../DockLocation";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
-import BorderNode from "./BorderNode";
-import IDraggable from "./IDraggable";
-import IDropTarget from "./IDropTarget";
+import { BorderNode } from "./BorderNode";
+import { IDraggable } from "./IDraggable";
+import { IDropTarget } from "./IDropTarget";
 import { IJsonTabSetNode } from "./IJsonModel";
-import Model, { ILayoutMetrics } from "./Model";
-import Node from "./Node";
-import RowNode from "./RowNode";
-import TabNode from "./TabNode";
+import { Model, ILayoutMetrics } from "./Model";
+import { Node } from "./Node";
+import { RowNode } from "./RowNode";
+import { TabNode } from "./TabNode";
 import { adjustSelectedIndex } from "./Utils";
 
-class TabSetNode extends Node implements IDraggable, IDropTarget {
+export class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
 
     /** @hidden @internal */

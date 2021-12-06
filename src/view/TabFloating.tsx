@@ -1,7 +1,7 @@
 import * as React from "react";
-import Actions from "../model/Actions";
-import TabNode from "../model/TabNode";
-import TabSetNode from "../model/TabSetNode";
+import { Actions } from "../model/Actions";
+import { TabNode } from "../model/TabNode";
+import { TabSetNode } from "../model/TabSetNode";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";

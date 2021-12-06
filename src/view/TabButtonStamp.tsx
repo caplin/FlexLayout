@@ -1,5 +1,5 @@
 import * as React from "react";
-import TabNode from "../model/TabNode";
+import { TabNode } from "../model/TabNode";
 import { ILayoutCallbacks } from "./Layout";
 import { CLASSES } from "../Types";
 import { getRenderStateEx } from "./Utils";

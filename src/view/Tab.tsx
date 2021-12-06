@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Fragment } from "react";
-import Actions from "../model/Actions";
-import TabNode from "../model/TabNode";
-import TabSetNode from "../model/TabSetNode";
+import { Actions } from "../model/Actions";
+import { TabNode } from "../model/TabNode";
+import { TabSetNode } from "../model/TabSetNode";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
@@ -68,11 +68,11 @@ export const Tab = (props: ITabProps) => {
     }
 
     return (
-        <div 
-            className={className} 
+        <div
+            className={className}
             data-layout-path={path}
-            onMouseDown={onMouseDown} 
-            onTouchStart={onMouseDown} 
+            onMouseDown={onMouseDown}
+            onTouchStart={onMouseDown}
             style={style}>
             <ErrorBoundary message={props.layout.i18nName(I18nLabel.Error_rendering_component)}>
                 <Fragment>{child}</Fragment>

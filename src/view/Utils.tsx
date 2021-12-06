@@ -1,9 +1,9 @@
 import * as React from "react";
-import TabNode from "../model/TabNode";
+import { TabNode } from "../model/TabNode";
 import { ILayoutCallbacks, ITitleObject } from "./Layout";
 
 /** @hidden @internal */
-export function getRenderStateEx (
+export function getRenderStateEx(
     layout: ILayoutCallbacks,
     node: TabNode,
     iconFactory?: (node: TabNode) => React.ReactNode | undefined,
@@ -33,7 +33,7 @@ export function getRenderStateEx (
     }
 
     if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = <img style={{width:"1em", height:"1em"}} src={node.getIcon()} alt="leadingContent" />;
+        leadingContent = <img style={{ width: "1em", height: "1em" }} src={node.getIcon()} alt="leadingContent" />;
     }
 
     let buttons: any[] = [];
@@ -49,7 +49,7 @@ export function getRenderStateEx (
 }
 
 /** @hidden @internal */
-export function hideElement(style: Record<string, any>, useVisibility: ConstrainBoolean ) {
+export function hideElement(style: Record<string, any>, useVisibility: ConstrainBoolean) {
     if (useVisibility) {
         style.visibility = "hidden";
     } else {
@@ -63,7 +63,7 @@ export function isAuxMouseEvent(event: React.MouseEvent<HTMLDivElement, MouseEve
     let auxEvent = false;
     if (event.nativeEvent instanceof MouseEvent) {
         if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
-            auxEvent = true; 
+            auxEvent = true;
         }
     }
     return auxEvent;

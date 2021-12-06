@@ -1,21 +1,21 @@
-import Attribute from "../Attribute";
-import AttributeDefinitions from "../AttributeDefinitions";
-import DockLocation from "../DockLocation";
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
-import Action from "./Action";
-import Actions from "./Actions";
-import BorderNode from "./BorderNode";
-import BorderSet from "./BorderSet";
-import IDraggable from "./IDraggable";
-import IDropTarget from "./IDropTarget";
+import { Attribute } from "../Attribute";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { DockLocation } from "../DockLocation";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
+import { Action } from "./Action";
+import { Actions } from "./Actions";
+import { BorderNode } from "./BorderNode";
+import { BorderSet } from "./BorderSet";
+import { IDraggable } from "./IDraggable";
+import { IDropTarget } from "./IDropTarget";
 import { IJsonModel } from "./IJsonModel";
-import Node from "./Node";
-import RowNode from "./RowNode";
-import TabNode from "./TabNode";
-import TabSetNode from "./TabSetNode";
-import {ITabSetAttributes} from "./IJsonModel";
+import { Node } from "./Node";
+import { RowNode } from "./RowNode";
+import { TabNode } from "./TabNode";
+import { TabSetNode } from "./TabSetNode";
+import { ITabSetAttributes } from "./IJsonModel";
 import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat } from "./Utils";
 import * as uuid from "uuid";
 
@@ -29,7 +29,7 @@ export interface ILayoutMetrics {
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
-class Model {
+export class Model {
     /**
      * Loads the model from the given json object
      * @param json the json model to load
@@ -132,7 +132,7 @@ class Model {
     /** @hidden @internal */
     private _pointerFine: boolean;
     /** @hidden @internal */
-    private _onCreateTabSet? : (tabNode?: TabNode) => ITabSetAttributes;
+    private _onCreateTabSet?: (tabNode?: TabNode) => ITabSetAttributes;
     /** @hidden @internal */
     private _showHiddenBorder: DockLocation;
 

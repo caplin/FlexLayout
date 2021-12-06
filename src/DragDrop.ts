@@ -1,10 +1,10 @@
 import * as React from "react";
-import Rect from "./Rect";
+import { Rect } from "./Rect";
 
 /** @hidden @internal */
 const canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
 
-class DragDrop {
+export class DragDrop {
     static instance = new DragDrop();
 
     /** @hidden @internal */

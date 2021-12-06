@@ -1,4 +1,4 @@
-class Action {
+export class Action {
     type: string;
     data: Record<string, any>;
 

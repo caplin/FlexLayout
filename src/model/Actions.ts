@@ -1,10 +1,10 @@
-import DockLocation from "../DockLocation";
-import Action from "./Action";
+import { DockLocation } from "../DockLocation";
+import { Action } from "./Action";
 
 /**
  * The Action creator class for FlexLayout model actions
  */
-class Actions {
+export class Actions {
     static ADD_NODE = "FlexLayout_AddNode";
     static MOVE_NODE = "FlexLayout_MoveNode";
     static DELETE_TAB = "FlexLayout_DeleteTab";
@@ -72,7 +72,7 @@ class Actions {
      * @param tabsetNodeId the id of the tabset node to delete
      * @returns {Action} the action
      */
-     static deleteTabset(tabsetNodeId: string): Action {
+    static deleteTabset(tabsetNodeId: string): Action {
         return new Action(Actions.DELETE_TABSET, { node: tabsetNodeId });
     }
 

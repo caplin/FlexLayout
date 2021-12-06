@@ -1,13 +1,13 @@
 import * as React from "react";
 import { I18nLabel } from "../I18nLabel";
-import Actions from "../model/Actions";
-import TabNode from "../model/TabNode";
-import TabSetNode from "../model/TabSetNode";
+import { Actions } from "../model/Actions";
+import { TabNode } from "../model/TabNode";
+import { TabSetNode } from "../model/TabSetNode";
 import { showPopup } from "../PopupMenu";
 import { IIcons, ILayoutCallbacks } from "./Layout";
 import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
-import Orientation from "../Orientation";
+import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { hideElement, isAuxMouseEvent } from "./Utils";
 
@@ -36,17 +36,17 @@ export const TabSet = (props: ITabSetProps) => {
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = layout.getShowOverflowMenu();
         if (callback !== undefined) {
-            callback( node, event, hiddenTabs, onOverflowItemSelect);
+            callback(node, event, hiddenTabs, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             showPopup(
-                element, 
-                hiddenTabs, 
-                onOverflowItemSelect, 
+                element,
+                hiddenTabs,
+                onOverflowItemSelect,
                 layout,
                 iconFactory,
                 titleFactory,
-                );
+            );
         }
         event.stopPropagation();
     };
@@ -236,9 +236,9 @@ export const TabSet = (props: ITabSetProps) => {
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
-                {node.isMaximized() ? 
+                {node.isMaximized() ?
                     (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
-                    (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize }
+                    (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize}
             </button>
         );
     }
@@ -357,11 +357,11 @@ export const TabSet = (props: ITabSetProps) => {
     style = layout.styleFont(style);
 
     return (
-        <div ref={selfRef} 
-            dir="ltr" 
+        <div ref={selfRef}
+            dir="ltr"
             data-layout-path={path}
-            style={style} 
-            className={cm(CLASSES.FLEXLAYOUT__TABSET)} 
+            style={style}
+            className={cm(CLASSES.FLEXLAYOUT__TABSET)}
             onWheel={onMouseWheel}>
             {header}
             {tabStrip}

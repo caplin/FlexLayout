@@ -1,17 +1,17 @@
 import * as React from "react";
-import TabNode from "../model/TabNode";
-import Rect from "../Rect";
-import TabSetNode from "../model/TabSetNode";
-import BorderNode from "../model/BorderNode";
-import Orientation from "../Orientation";
+import { TabNode } from "../model/TabNode";
+import { Rect } from "../Rect";
+import { TabSetNode } from "../model/TabSetNode";
+import { BorderNode } from "../model/BorderNode";
+import { Orientation } from "../Orientation";
 
 /** @hidden @internal */
 export const useTabOverflow = (
-    node: TabSetNode | BorderNode, 
-    orientation: Orientation, 
-    toolbarRef: React.MutableRefObject<HTMLDivElement | null>, 
+    node: TabSetNode | BorderNode,
+    orientation: Orientation,
+    toolbarRef: React.MutableRefObject<HTMLDivElement | null>,
     stickyButtonsRef: React.MutableRefObject<HTMLDivElement | null>
-    ) => {
+) => {
     const firstRender = React.useRef<boolean>(true);
     const tabsTruncated = React.useRef<boolean>(false);
     const lastRect = React.useRef<Rect>(new Rect(0, 0, 0, 0));
@@ -33,7 +33,7 @@ export const useTabOverflow = (
 
     React.useEffect(() => {
         const instance = selfRef.current!;
-        instance .addEventListener('wheel', onWheel);
+        instance.addEventListener('wheel', onWheel);
         return () => {
             instance.removeEventListener('wheel', onWheel);
         }
@@ -70,7 +70,7 @@ export const useTabOverflow = (
 
     const updateVisibleTabs = () => {
         const tabMargin = 2;
-        if (firstRender.current === true ) {
+        if (firstRender.current === true) {
             tabsTruncated.current = false;
         }
         const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
@@ -79,7 +79,7 @@ export const useTabOverflow = (
 
         if (
             firstRender.current === true ||
-            (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) || 
+            (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) ||
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height
         ) {
@@ -89,7 +89,7 @@ export const useTabOverflow = (
             let endPos = getFar(nodeRect) - stickyButtonsSize;
             if (toolbarRef.current !== null) {
                 endPos -= getSize(toolbarRef.current.getBoundingClientRect());
-            } 
+            }
             if (enabled && node.getChildren().length > 0) {
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
@@ -104,7 +104,7 @@ export const useTabOverflow = (
                     const selectedEnd = getFar(selectedRect) + tabMargin;
 
                     // when selected tab is larger than available space then align left
-                    if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect) ) {
+                    if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect)) {
                         shiftPos = getNear(nodeRect) - selectedStart;
                     } else {
                         if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {

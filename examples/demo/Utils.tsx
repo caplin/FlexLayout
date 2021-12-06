@@ -1,4 +1,4 @@
-class Utils {
+export class Utils {
     
         static downloadFile(downloadUrl:any, onSuccess:any, onError:any) {
             console.log("DownloadFile: " + downloadUrl);
@@ -37,4 +37,4 @@ class Utils {
         }
     }
     
-    export default Utils;
+    // export default Utils;

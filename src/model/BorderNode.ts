@@ -1,21 +1,21 @@
-import Attribute from "../Attribute";
-import AttributeDefinitions from "../AttributeDefinitions";
-import DockLocation from "../DockLocation";
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
+import { Attribute } from "../Attribute";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { DockLocation } from "../DockLocation";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
-import IDraggable from "./IDraggable";
-import IDropTarget from "./IDropTarget";
+import { IDraggable } from "./IDraggable";
+import { IDropTarget } from "./IDropTarget";
 import { IJsonBorderNode } from "./IJsonModel";
-import Model, { ILayoutMetrics } from "./Model";
-import Node from "./Node";
-import SplitterNode from "./SplitterNode";
-import TabNode from "./TabNode";
-import TabSetNode from "./TabSetNode";
+import { Model, ILayoutMetrics } from "./Model";
+import { Node } from "./Node";
+import { SplitterNode } from "./SplitterNode";
+import { TabNode } from "./TabNode";
+import { TabSetNode } from "./TabSetNode";
 import { adjustSelectedIndex } from "./Utils";
 
-class BorderNode extends Node implements IDropTarget {
+export class BorderNode extends Node implements IDropTarget {
     static readonly TYPE = "border";
 
     /** @hidden @internal */
@@ -184,7 +184,7 @@ class BorderNode extends Node implements IDropTarget {
         if (show) {
             if (this._model._getShowHiddenBorder() !== this._location && this.isAutoHide() && this._children.length === 0) {
                 return false;
-            } 
+            }
             return true;
         } else {
             return false;

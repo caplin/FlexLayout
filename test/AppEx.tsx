@@ -1,8 +1,7 @@
 import React from 'react';
-import { Layout, Model, TabNode, IJsonModel, TabSetNode, BorderNode } from '../src';
-import { ITabRenderValues, ITabSetRenderValues } from '../src/view/Layout';
-import './style/light.css';
+import { BorderNode, IJsonModel, ITabRenderValues, ITabSetRenderValues, Layout, Model, TabNode, TabSetNode } from '../src';
 import './style/app.css';
+import './style/light.css';
 
 export function AppEx(props) {
     const model = Model.fromJson(props.json);

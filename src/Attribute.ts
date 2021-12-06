@@ -1,5 +1,5 @@
 /** @hidden @internal */
-class Attribute {
+export class Attribute {
     static NUMBER = "number";
     static STRING = "string";
     static BOOLEAN = "boolean";

@@ -1,19 +1,16 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as FlexLayout from "../../src/index";
-import { Action, BorderNode, DockLocation, DropInfo, IJsonTabNode, Node, TabNode, TabSetNode } from "../../src/index";
-import { CLASSES } from "../../src/Types";
-import { ILayoutProps, ITabRenderValues, ITabSetRenderValues } from "../../src/view/Layout";
-import { TabStorage } from "./TabStorage";
-import Utils from "./Utils";
-import { showPopup } from "./PopupMenu";
+import { Action, Actions, BorderNode, CLASSES, DockLocation, DragDrop, DropInfo, IJsonTabNode, ILayoutProps, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode } from "../../src/index";
 import { NewFeatures } from "./NewFeatures";
+import { showPopup } from "./PopupMenu";
+import { TabStorage } from "./TabStorage";
+import { Utils } from "./Utils";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
 const ContextExample = React.createContext('');
 
-class App extends React.Component<any, { layoutFile: string | null, model: FlexLayout.Model | null, adding: boolean, fontSize: string, realtimeResize: boolean }> {
+class App extends React.Component<any, { layoutFile: string | null, model: Model | null, adding: boolean, fontSize: string, realtimeResize: boolean }> {
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
@@ -30,7 +27,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
     }
 
     preventIOSScrollingWhenDragging(e: Event) {
-        if (FlexLayout.DragDrop.instance.isActive()) {
+        if (DragDrop.instance.isActive()) {
             e.preventDefault();
         }
     }
@@ -70,7 +67,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     load = (jsonText: string) => {
         let json = JSON.parse(jsonText);
-        let model = FlexLayout.Model.fromJson(json);
+        let model = Model.fromJson(json);
         // model.setOnCreateTabSet((tabNode?: TabNode) => {
         //     console.log("onCreateTabSet " + tabNode);
         //     // return { type: "tabset", name: "Header Text" };
@@ -105,7 +102,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         event.stopPropagation();
         event.preventDefault();
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDrop(undefined, {
+            (this.refs.layout as Layout).addTabWithDragAndDrop(undefined, {
                 component: "grid",
                 icon: "images/article.svg",
                 name: "Grid " + this.nextGridIndex++
@@ -116,7 +113,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onAddActiveClick = (event: React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabToActiveTabSet({
+            (this.refs.layout as Layout).addTabToActiveTabSet({
                 component: "grid",
                 icon: "images/article.svg",
                 name: "Grid " + this.nextGridIndex++
@@ -126,7 +123,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
         // if (this.state.model!.getMaximizedTabset() == null) {
-        (this.refs.layout as FlexLayout.Layout).addTabToTabSet(node.getId(), {
+        (this.refs.layout as Layout).addTabToTabSet(node.getId(), {
             component: "grid",
             name: "Grid " + this.nextGridIndex++
         });
@@ -135,7 +132,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
 
     onAddIndirectClick = (event: React.MouseEvent) => {
         if (this.state.model!.getMaximizedTabset() == null) {
-            (this.refs.layout as FlexLayout.Layout).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
+            (this.refs.layout as Layout).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
                 component: "grid",
                 name: "Grid " + this.nextGridIndex++
             }, this.onAdded);
@@ -172,7 +169,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             console.log(node, event);
             showPopup(
                 node instanceof TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(),
-                (this.refs.layout as FlexLayout.Layout).getRootDiv(),
+                (this.refs.layout as Layout).getRootDiv(),
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
                 (item: string | undefined) => {
@@ -226,15 +223,15 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
                     if (dragEvent.dataTransfer) {
                         if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
                             const data = dragEvent.dataTransfer!.getData("text/uri-list");
-                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data, type: "url" } }));
+                            this.state.model!.doAction(Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data, type: "url" } }));
                         }
                         else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
                             const data = dragEvent.dataTransfer!.getData("text/html");
-                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data, type: "html" } }));
+                            this.state.model!.doAction(Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data, type: "html" } }));
                         }
                         else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
                             const data = dragEvent.dataTransfer!.getData("text/plain");
-                            this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data, type: "text" } }));
+                            this.state.model!.doAction(Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data, type: "text" } }));
                         }
                     }
                 }
@@ -286,17 +283,17 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         else if (component === "sub") {
             var model = node.getExtraData().model;
             if (model == null) {
-                node.getExtraData().model = FlexLayout.Model.fromJson(node.getConfig().model);
+                node.getExtraData().model = Model.fromJson(node.getConfig().model);
                 model = node.getExtraData().model;
                 // save submodel on save event
                 node.setEventListener("save", (p: any) => {
-                    this.state.model!.doAction(FlexLayout.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                    this.state.model!.doAction(Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
                 }
                 );
             }
 
-            return <FlexLayout.Layout model={model} factory={this.factory} />;
+            return <Layout model={model} factory={this.factory} />;
         }
         else if (component === "text") {
             try {
@@ -326,7 +323,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             }
         }
         else if (component === "tabstorage") {
-            return <TabStorage tab={node} layout={this.refs.layout as FlexLayout.Layout} />
+            return <TabStorage tab={node} layout={this.refs.layout as Layout} />
         }
 
         return null;
@@ -406,7 +403,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
         let maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = <FlexLayout.Layout
+            contents = <Layout
                 ref="layout"
                 model={this.state.model}
                 factory={this.factory}
@@ -440,9 +437,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: FlexL
             // }
             // i18nMapper = {
             //     (id, param?) => {
-            //         if (id === FlexLayout.I18nLabel.Move_Tab) {
+            //         if (id === I18nLabel.Move_Tab) {
             //             return `move this tab: ${param}`;
-            //         } else if (id === FlexLayout.I18nLabel.Move_Tabset) {
+            //         } else if (id === I18nLabel.Move_Tabset) {
             //             return `move this tabset`
             //         }
             //         return undefined;

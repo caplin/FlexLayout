@@ -1,14 +1,14 @@
-import Attribute from "../Attribute";
-import AttributeDefinitions from "../AttributeDefinitions";
-import Rect from "../Rect";
-import BorderNode from "./BorderNode";
-import IDraggable from "./IDraggable";
+import { Attribute } from "../Attribute";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { Rect } from "../Rect";
+import { BorderNode } from "./BorderNode";
+import { IDraggable } from "./IDraggable";
 import { IJsonTabNode } from "./IJsonModel";
-import Model, { ILayoutMetrics } from "./Model";
-import Node from "./Node";
-import TabSetNode from "./TabSetNode";
+import { Model, ILayoutMetrics } from "./Model";
+import { Node } from "./Node";
+import { TabSetNode } from "./TabSetNode";
 
-class TabNode extends Node implements IDraggable {
+export class TabNode extends Node implements IDraggable {
     static readonly TYPE = "tab";
 
     /** @hidden @internal */
@@ -207,7 +207,7 @@ class TabNode extends Node implements IDraggable {
     _setWindow(window: Window | undefined) {
         this._window = window;
     }
-    
+
     /** @hidden @internal */
     _setBorderWidth(width: number) {
         this._attributes.borderWidth = width;

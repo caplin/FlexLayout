@@ -1,21 +1,21 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import DockLocation from "../DockLocation";
-import DragDrop from "../DragDrop";
-import DropInfo from "../DropInfo";
+import { DockLocation } from "../DockLocation";
+import { DragDrop } from "../DragDrop";
+import { DropInfo } from "../DropInfo";
 import { I18nLabel } from "../I18nLabel";
-import Action from "../model/Action";
-import Actions from "../model/Actions";
-import BorderNode from "../model/BorderNode";
-import BorderSet from "../model/BorderSet";
-import IDraggable from "../model/IDraggable";
-import Model, { ILayoutMetrics } from "../model/Model";
-import Node from "../model/Node";
-import RowNode from "../model/RowNode";
-import SplitterNode from "../model/SplitterNode";
-import TabNode from "../model/TabNode";
-import TabSetNode from "../model/TabSetNode";
-import Rect from "../Rect";
+import { Action } from "../model/Action";
+import { Actions } from "../model/Actions";
+import { BorderNode } from "../model/BorderNode";
+import { BorderSet } from "../model/BorderSet";
+import { IDraggable } from "../model/IDraggable";
+import { Model, ILayoutMetrics } from "../model/Model";
+import { Node } from "../model/Node";
+import { RowNode } from "../model/RowNode";
+import { SplitterNode } from "../model/SplitterNode";
+import { TabNode } from "../model/TabNode";
+import { TabSetNode } from "../model/TabSetNode";
+import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
 import { BorderTabSet } from "./BorderTabSet";
 import { Splitter } from "./Splitter";
@@ -129,13 +129,13 @@ export interface IIcons {
     more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
 }
 
-const defaultIcons =  {
-    close: <CloseIcon/>,
-    closeTabset: <CloseIcon/>,
-    popout: <PopoutIcon/>,
-    maximize: <MaximizeIcon/>,
-    restore: <RestoreIcon/>,
-    more: <OverflowIcon/>,
+const defaultIcons = {
+    close: <CloseIcon />,
+    closeTabset: <CloseIcon />,
+    popout: <PopoutIcon />,
+    maximize: <MaximizeIcon />,
+    restore: <RestoreIcon />,
+    more: <OverflowIcon />,
 };
 
 export interface ICustomDropDestination {
@@ -285,7 +285,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
-        this.icons = {...defaultIcons, ...props.icons};
+        this.icons = { ...defaultIcons, ...props.icons };
         this.firstRender = true;
 
         this.state = {
@@ -841,12 +841,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @hidden @internal */
     dragRectRender = (text: String | undefined, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
         let content: React.ReactElement | undefined;
-        
+
         if (text !== undefined) {
             content = <div style={{ whiteSpace: "pre" }}>{text.replace("<br>", "\n")}</div>;
         } else {
             if (node && node instanceof TabNode) {
-                content = (<TabButtonStamp 
+                content = (<TabButtonStamp
                     node={node}
                     layout={this}
                     iconFactory={this.props.iconFactory}
@@ -873,17 +873,19 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                     onRendered?.();
                 }}>
                 {content}
-            </DragRectRenderWrapper>, 
+            </DragRectRenderWrapper>,
             this.dragDiv!);
     };
 
+    /** @hidden @internal */
     showPortal = (control: React.ReactNode, element: HTMLElement) => {
         const portal = ReactDOM.createPortal(control, element);
-        this.setState({portal});
+        this.setState({ portal });
     };
 
+    /** @hidden @internal */
     hidePortal = () => {
-        this.setState({portal: undefined});
+        this.setState({ portal: undefined });
     };
 
     /** @hidden @internal */
@@ -964,7 +966,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         rootdiv.removeChild(this.outlineDiv!);
         rootdiv.removeChild(this.dragDiv!);
         this.dragDiv = undefined;
-        this.hidePortal();        
+        this.hidePortal();
 
         this.hideEdges(rootdiv);
         DragDrop.instance.hideGlass();

@@ -1,12 +1,12 @@
-import DropInfo from "../DropInfo";
-import Orientation from "../Orientation";
-import Rect from "../Rect";
-import BorderNode from "./BorderNode";
-import IDraggable from "./IDraggable";
-import Model, { ILayoutMetrics } from "./Model";
-import Node from "./Node";
+import { DropInfo } from "../DropInfo";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
+import { BorderNode } from "./BorderNode";
+import { IDraggable } from "./IDraggable";
+import { Model, ILayoutMetrics } from "./Model";
+import { Node } from "./Node";
 
-class BorderSet {
+export class BorderSet {
     /** @hidden @internal */
     static _fromJson(json: any, model: Model) {
         const borderSet = new BorderSet(model);
@@ -61,7 +61,7 @@ class BorderSet {
             border._setAdjustedSize(border.getSize());
             const visible = border.getSelected() !== -1;
             if (border.getLocation().getOrientation() === Orientation.HORZ) {
-                sumWidth += border.getBorderBarSize() ;
+                sumWidth += border.getBorderBarSize();
                 if (visible) {
                     width -= this._model.getSplitterSize();
                     sumWidth += border.getSize();
@@ -86,13 +86,13 @@ class BorderSet {
                 // visible
                 const size = border._getAdjustedSize();
                 if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation.HORZ && size > 0
-                 && size > border.getMinSize()) {
+                    && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumWidth--;
                     adjustableWidth--;
                     adjusted = true;
                 } else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation.VERT && size > 0
-                && size > border.getMinSize()) {
+                    && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumHeight--;
                     adjustableHeight--;
@@ -100,7 +100,7 @@ class BorderSet {
                 }
             }
             j = (j + 1) % showingBorders.length;
-            if (j===0) {
+            if (j === 0) {
                 if (adjusted) {
                     adjusted = false;
                 } else {

@@ -1,6 +1,6 @@
-import Orientation from "./Orientation";
+import { Orientation } from "./Orientation";
 
-class Rect {
+export class Rect {
     static empty() {
         return new Rect(0, 0, 0, 0);
     }

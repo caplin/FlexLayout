@@ -1,9 +1,9 @@
-import AttributeDefinitions from "../AttributeDefinitions";
-import Orientation from "../Orientation";
-import Model from "./Model";
-import Node from "./Node";
+import { AttributeDefinitions } from "../AttributeDefinitions";
+import { Orientation } from "../Orientation";
+import { Model } from "./Model";
+import { Node } from "./Node";
 
-class SplitterNode extends Node {
+export class SplitterNode extends Node {
     static readonly TYPE: string = "splitter";
 
     /** @hidden @internal */
@@ -57,7 +57,7 @@ class SplitterNode extends Node {
     }
 
     /** @hidden @internal */
-    _setWeight(value: number): void {}
+    _setWeight(value: number): void { }
 
     /** @hidden @internal */
     _getPrefSize(orientation: Orientation): number {
@@ -65,7 +65,7 @@ class SplitterNode extends Node {
     }
 
     /** @hidden @internal */
-    _updateAttrs(json: any): void {}
+    _updateAttrs(json: any): void { }
 
     /** @hidden @internal */
     _getAttributeDefinitions(): AttributeDefinitions {

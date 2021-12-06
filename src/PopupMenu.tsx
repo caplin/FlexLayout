@@ -1,6 +1,6 @@
 import * as React from "react";
 import { DragDrop } from ".";
-import TabNode from "./model/TabNode";
+import { TabNode } from "./model/TabNode";
 import { CLASSES } from "./Types";
 import { ILayoutCallbacks } from "./view/Layout";
 import { TabButtonStamp } from "./view/TabButtonStamp";
