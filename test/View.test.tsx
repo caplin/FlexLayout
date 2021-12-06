@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { mount, unmount } from '@cypress/react';
 import { CLASSES } from '../src/Types';
 import { App, twoTabs, threeTabs, withBorders } from './App';

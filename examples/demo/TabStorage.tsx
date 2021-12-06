@@ -1,11 +1,9 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { v4 } from "uuid";
-import * as FlexLayout from "../../src/index";
-import { Actions, IJsonTabNode, TabNode } from "../../src/index";
-import { ILayoutProps } from "../../src/view/Layout";
+import { Actions, IJsonTabNode, ILayoutProps, Layout, TabNode } from "../../src/index";
 
-export function TabStorage({ tab, layout }: { tab: TabNode; layout: FlexLayout.Layout; }) {
+export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
     const [storedTabs, setStoredTabs] = useState<IJsonTabNode[]>(tab.getConfig()?.storedTabs ?? []);
 
     useEffect(() => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { BorderNode, IJsonModel, ITabRenderValues, ITabSetRenderValues, Layout, Model, TabNode, TabSetNode } from '../src';
 import './style/app.css';
 import './style/light.css';

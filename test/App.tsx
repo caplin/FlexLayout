@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Layout, Model, TabNode, IJsonModel } from '../src';
 import './style/light.css';
 import './style/app.css';

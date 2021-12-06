@@ -1,5 +1,9 @@
 # FlexLayout
 
+![GitHub](https://img.shields.io/github/license/Caplin/FlexLayout)
+![npm](https://img.shields.io/npm/dw/flexlayout-react)
+![npm](https://img.shields.io/npm/v/flexlayout-react)
+
 FlexLayout is a layout manager that arranges React components in multiple tab sets, tabs can be resized and moved.
 
 ![FlexLayout Demo Screenshot](/../screenshots/github_images/v0.5/demo1.png?raw=true "FlexLayout Demo Screenshot")
@@ -42,17 +46,17 @@ Features:
 FlexLayout is in the npm repository. Simply install React and FlexLayout from npm:
 
 ```
-npm install react --save
-npm install react-dom --save
-npm install flexlayout-react --save
+npm install react
+npm install react-dom
+npm install flexlayout-react
 ```
 
 Import React and FlexLayout in your modules:
 
 ```
-import React from "react";
-import ReactDOM from "react-dom";
-import FlexLayout from "flexlayout-react";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import * as FlexLayout from "flexlayout-react";
 ```
 
 Include the light, gray or dark style in your html:
@@ -155,9 +159,9 @@ var json = {
 ## Example Code
 
 ```
-import React from "react";
-import ReactDOM from "react-dom";
-import FlexLayout from "flexlayout-react";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import * as FlexLayout from "flexlayout-react";
 
 class Main extends React.Component {
 
