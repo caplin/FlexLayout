@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
 
-/** @hidden @internal */
+/** @internal */
 export interface IFloatingWindowProps {
     title: string;
     id: string;
@@ -19,7 +19,7 @@ interface IStyleSheet {
     rules: string[] | null;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowProps>) => {
     const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
     const popoutWindow = React.useRef<Window | null>(null);
@@ -101,11 +101,11 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
     }
 };
 
-/** @hidden @internal */
+/** @internal */
 function copyStyles(doc: Document, styleSheets: IStyleSheet[]): Promise<boolean[]> {
     const head = doc.head;
     const promises: Promise<boolean>[] = [];
-    styleSheets.forEach((styleSheet) => {
+    for (const styleSheet of styleSheets) {
         if (styleSheet.href) {
             // prefer links since they will keep paths to images etc
             const styleElement = doc.createElement("link");
@@ -121,10 +121,12 @@ function copyStyles(doc: Document, styleSheets: IStyleSheet[]): Promise<boolean[
         } else {
             if (styleSheet.rules) {
                 const style = doc.createElement("style");
-                styleSheet.rules.forEach(rule => style.appendChild(doc.createTextNode(rule)));
+                for (const rule of styleSheet.rules) {
+                    style.appendChild(doc.createTextNode(rule));
+                }
                 head.appendChild(style);
             }
         }
-    });
+    }
     return Promise.all(promises);
 }

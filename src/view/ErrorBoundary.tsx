@@ -2,16 +2,16 @@ import * as React from "react";
 import { ErrorInfo } from "react";
 import { CLASSES } from "../Types";
 
-/** @hidden @internal */
+/** @internal */
 export interface IErrorBoundaryProps {
     message: string;
 }
-/** @hidden @internal */
+/** @internal */
 export interface IErrorBoundaryState {
     hasError: boolean;
 }
 
-/** @hidden @internal */
+/** @internal */
 export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
     constructor(props: IErrorBoundaryProps) {
         super(props);

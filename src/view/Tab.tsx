@@ -10,7 +10,7 @@ import { I18nLabel } from "../I18nLabel";
 import { BorderNode } from "..";
 import { hideElement } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface ITabProps {
     layout: ILayoutCallbacks;
     selected: boolean;
@@ -19,7 +19,7 @@ export interface ITabProps {
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const Tab = (props: ITabProps) => {
     const { layout, selected, node, factory, path } = props;
     const [renderComponent, setRenderComponent] = React.useState<boolean>(!props.node.isEnableRenderOnDemand() || props.selected);

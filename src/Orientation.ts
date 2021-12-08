@@ -10,10 +10,10 @@ export class Orientation {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _name: string;
 
-    /** @hidden @internal */
+    /** @internal */
     private constructor(name: string) {
         this._name = name;
     }

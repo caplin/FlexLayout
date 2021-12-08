@@ -11,7 +11,7 @@ import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { hideElement, isAuxMouseEvent } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface ITabSetProps {
     layout: ILayoutCallbacks;
     node: TabSetNode;
@@ -22,7 +22,7 @@ export interface ITabSetProps {
     path?: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const TabSet = (props: ITabSetProps) => {
     const { node, layout, iconFactory, titleFactory, icons, path } = props;
 

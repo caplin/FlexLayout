@@ -9,12 +9,12 @@ export class DockLocation {
     static RIGHT = new DockLocation("right", Orientation.HORZ, 1);
     static CENTER = new DockLocation("center", Orientation.VERT, 0);
 
-    /** @hidden @internal */
+    /** @internal */
     static getByName(name: string): DockLocation {
         return DockLocation.values[name];
     }
 
-    /** @hidden @internal */
+    /** @internal */
     static getLocation(rect: Rect, x: number, y: number) {
         x = (x - rect.x) / rect.width;
         y = (y - rect.y) / rect.height;
@@ -50,14 +50,14 @@ export class DockLocation {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _name: string;
-    /** @hidden @internal */
+    /** @internal */
     _orientation: Orientation;
-    /** @hidden @internal */
+    /** @internal */
     _indexPlus: number;
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(name: string, orientation: Orientation, indexPlus: number) {
         this._name = name;
         this._orientation = orientation;
@@ -73,7 +73,7 @@ export class DockLocation {
         return this._orientation;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getDockRect(r: Rect) {
         if (this === DockLocation.TOP) {
             return new Rect(r.x, r.y, r.width, r.height / 2);
@@ -89,7 +89,7 @@ export class DockLocation {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     split(rect: Rect, size: number) {
         if (this === DockLocation.TOP) {
             const r1 = new Rect(rect.x, rect.y, rect.width, size);
@@ -112,7 +112,7 @@ export class DockLocation {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     reflect() {
         if (this === DockLocation.TOP) {
             return DockLocation.BOTTOM;

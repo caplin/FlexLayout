@@ -8,7 +8,7 @@ import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
 import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface IBorderButtonProps {
     layout: ILayoutCallbacks;
     node: TabNode;
@@ -20,7 +20,7 @@ export interface IBorderButtonProps {
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const BorderButton = (props: IBorderButtonProps) => {
     const { layout, node, selected, border, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);

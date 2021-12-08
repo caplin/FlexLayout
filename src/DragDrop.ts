@@ -1,59 +1,59 @@
 import * as React from "react";
 import { Rect } from "./Rect";
 
-/** @hidden @internal */
+/** @internal */
 const canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
 
 export class DragDrop {
     static instance = new DragDrop();
 
-    /** @hidden @internal */
+    /** @internal */
     private _fDblClick: ((event: Event) => void) | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _fClick: ((event: Event) => void) | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _fDragEnd: ((event: Event) => void) | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _fDragMove: ((event: React.MouseEvent<Element>) => void) | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _fDragStart: ((pos: { clientX: number; clientY: number }) => boolean) | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _fDragCancel: ((wasDragging: boolean) => void) | undefined;
 
-    /** @hidden @internal */
+    /** @internal */
     private _glass: HTMLDivElement | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _defaultGlassCursor: string;
-    /** @hidden @internal */
+    /** @internal */
     private _glassCursorOverride: string | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _manualGlassManagement: boolean = false;
-    /** @hidden @internal */
+    /** @internal */
     private _lastClick: number;
-    /** @hidden @internal */
+    /** @internal */
     private _clickX: number;
-    /** @hidden @internal */
+    /** @internal */
     private _clickY: number;
-    /** @hidden @internal */
+    /** @internal */
     private _startX: number = 0;
-    /** @hidden @internal */
+    /** @internal */
     private _startY: number = 0;
-    /** @hidden @internal */
+    /** @internal */
     private _dragDepth: number = 0;
-    /** @hidden @internal */
+    /** @internal */
     private _glassShowing: boolean = false;
-    /** @hidden @internal */
+    /** @internal */
     private _dragging: boolean = false;
-    /** @hidden @internal */
+    /** @internal */
     private _active: boolean = false; // drag and drop is in progress, can be used on ios to prevent body scrolling (see demo)
-    /** @hidden @internal */
+    /** @internal */
     private _document?: HTMLDocument;
-    /** @hidden @internal */
+    /** @internal */
     private _rootElement?: HTMLElement | undefined;
-    /** @hidden @internal */
+    /** @internal */
     private _lastEvent?: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<Element> | undefined;
 
-    /** @hidden @internal */
+    /** @internal */
     private constructor() {
         if (canUseDOM) {
             // check for serverside rendering
@@ -121,12 +121,12 @@ export class DragDrop {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateGlassCursor() {
         this._glass!.style.cursor = this._glassCursorOverride ?? this._defaultGlassCursor;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setDefaultGlassCursor(cursor: string) {
         this._defaultGlassCursor = cursor;
         this._updateGlassCursor()
@@ -226,7 +226,7 @@ export class DragDrop {
         return rtn;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onKeyPress(event: KeyboardEvent) {
         if (event.keyCode === 27) {
             // esc
@@ -234,7 +234,7 @@ export class DragDrop {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onDragCancel() {
         this._rootElement!.removeEventListener("dragenter", this._onDragEnter);
         this._rootElement!.removeEventListener("dragover", this._onMouseMove);
@@ -253,7 +253,7 @@ export class DragDrop {
         this._active = false;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _getLocationEvent(event: any) {
         let posEvent: any = event;
         if (event && event.touches) {
@@ -262,7 +262,7 @@ export class DragDrop {
         return posEvent;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _getLocationEventEnd(event: any) {
         let posEvent: any = event;
         if (event.changedTouches) {
@@ -271,14 +271,14 @@ export class DragDrop {
         return posEvent;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _stopPropagation(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<Element>) {
         if (event.stopPropagation) {
             event.stopPropagation();
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _preventDefault(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<Element>) {
         if (event.preventDefault && event.cancelable) {
             event.preventDefault();
@@ -286,7 +286,7 @@ export class DragDrop {
         return event;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onMouseMove(event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<Element>) {
         this._lastEvent = event;
 
@@ -310,7 +310,7 @@ export class DragDrop {
         return false;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onMouseUp(event: Event) {
         this._lastEvent = event;
 
@@ -367,7 +367,7 @@ export class DragDrop {
         return false;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onDragEnter(event: DragEvent) {
         this._preventDefault(event);
         this._stopPropagation(event);
@@ -375,7 +375,7 @@ export class DragDrop {
         return false;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _onDragLeave(event: DragEvent) {
         this._preventDefault(event);
         this._stopPropagation(event);

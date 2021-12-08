@@ -5,7 +5,7 @@ import { TabSetNode } from "../model/TabSetNode";
 import { BorderNode } from "../model/BorderNode";
 import { Orientation } from "../Orientation";
 
-/** @hidden @internal */
+/** @internal */
 export const useTabOverflow = (
     node: TabSetNode | BorderNode,
     orientation: Orientation,

@@ -1,4 +1,4 @@
-/** @hidden @internal */
+/** @internal */
 export class Attribute {
     static NUMBER = "number";
     static STRING = "string";

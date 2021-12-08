@@ -5,7 +5,7 @@ import { CLASSES } from "./Types";
 import { ILayoutCallbacks } from "./view/Layout";
 import { TabButtonStamp } from "./view/TabButtonStamp";
 
-/** @hidden @internal */
+/** @internal */
 export function showPopup(
     triggerElement: Element,
     items: { index: number; node: TabNode }[],
@@ -69,7 +69,7 @@ export function showPopup(
     />, elm);
 }
 
-/** @hidden @internal */
+/** @internal */
 interface IPopupMenuProps {
     items: { index: number; node: TabNode }[];
     currentDocument: Document;
@@ -81,7 +81,7 @@ interface IPopupMenuProps {
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
 }
 
-/** @hidden @internal */
+/** @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
     const { items, onHide, onSelect, classNameMapper, layout, iconFactory, titleFactory} = props;
 

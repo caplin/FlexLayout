@@ -9,14 +9,14 @@ import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 
-/** @hidden @internal */
+/** @internal */
 export interface ISplitterProps {
     layout: ILayoutCallbacks;
     node: SplitterNode;
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const Splitter = (props: ISplitterProps) => {
     const { layout, node, path } = props;
 

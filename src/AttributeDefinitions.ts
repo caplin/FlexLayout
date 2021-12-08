@@ -1,6 +1,6 @@
 import { Attribute } from "./Attribute";
 
-/** @hidden @internal */
+/** @internal */
 export class AttributeDefinitions {
     attributes: Attribute[];
     nameToAttribute: Record<string, Attribute>;
@@ -38,38 +38,38 @@ export class AttributeDefinitions {
     }
 
     toJson(jsonObj: any, obj: any) {
-        this.attributes.forEach((attr) => {
+        for (const attr of this.attributes) {
             const fromValue = obj[attr.name];
             if (attr.alwaysWriteJson || fromValue !== attr.defaultValue) {
                 jsonObj[attr.name] = fromValue;
             }
-        });
+        }
     }
 
     fromJson(jsonObj: any, obj: any) {
-        this.attributes.forEach((attr) => {
+        for (const attr of this.attributes) {
             const fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
                 obj[attr.name] = attr.defaultValue;
             } else {
                 obj[attr.name] = fromValue;
             }
-        });
+        }
     }
 
     update(jsonObj: any, obj: any) {
-        this.attributes.forEach((attr) => {
+        for (const attr of this.attributes) {
             const fromValue = jsonObj[attr.name];
             if (fromValue !== undefined) {
                 obj[attr.name] = fromValue;
             }
-        });
+        }
     }
 
     setDefaults(obj: any) {
-        this.attributes.forEach((attr) => {
+        for (const attr of this.attributes) {
             obj[attr.name] = attr.defaultValue;
-        });
+        }
     }
 
     toTypescriptInterface(name: string, parentAttributes: AttributeDefinitions | undefined) {

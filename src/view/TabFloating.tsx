@@ -7,7 +7,7 @@ import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
 import { hideElement } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface ITabFloatingProps {
     layout: ILayoutCallbacks;
     selected: boolean;
@@ -15,7 +15,7 @@ export interface ITabFloatingProps {
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const TabFloating = (props: ITabFloatingProps) => {
     const { layout, selected, node, path } = props;
 

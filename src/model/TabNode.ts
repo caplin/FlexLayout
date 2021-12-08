@@ -11,15 +11,15 @@ import { TabSetNode } from "./TabSetNode";
 export class TabNode extends Node implements IDraggable {
     static readonly TYPE = "tab";
 
-    /** @hidden @internal */
+    /** @internal */
     static _fromJson(json: any, model: Model, addToModel: boolean = true) {
         const newLayoutNode = new TabNode(model, json, addToModel);
         return newLayoutNode;
     }
-    /** @hidden @internal */
+    /** @internal */
     private static _attributeDefinitions: AttributeDefinitions = TabNode._createAttributeDefinitions();
 
-    /** @hidden @internal */
+    /** @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute.STRING);
@@ -45,16 +45,16 @@ export class TabNode extends Node implements IDraggable {
         return attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _tabRect?: Rect;
-    /** @hidden @internal */
+    /** @internal */
     private _renderedName?: string;
-    /** @hidden @internal */
+    /** @internal */
     private _extra: Record<string, any>;
-    /** @hidden @internal */
+    /** @internal */
     private _window?: Window;
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(model: Model, json: any, addToModel: boolean = true) {
         super(model);
 
@@ -74,17 +74,17 @@ export class TabNode extends Node implements IDraggable {
         return this._tabRect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setTabRect(rect: Rect) {
         this._tabRect = rect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setRenderedName(name: string) {
         this._renderedName = name;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getNameForOverflowMenu() {
         const altName = this._getAttr("altName") as string;
         if (altName !== undefined) {
@@ -160,7 +160,7 @@ export class TabNode extends Node implements IDraggable {
         return this._getAttr("enableRenderOnDemand") as boolean;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setName(name: string) {
         this._attributes.name = name;
         if (this._window && this._window.document) {
@@ -168,12 +168,12 @@ export class TabNode extends Node implements IDraggable {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setFloating(float: boolean) {
         this._attributes.floating = float;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layout(rect: Rect, metrics: ILayoutMetrics) {
         if (!rect.equals(this._rect)) {
             this._fireEvent("resize", { rect });
@@ -181,7 +181,7 @@ export class TabNode extends Node implements IDraggable {
         this._rect = rect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _delete() {
         (this._parent as TabSetNode | BorderNode)._remove(this);
         this._fireEvent("close", {});
@@ -193,32 +193,32 @@ export class TabNode extends Node implements IDraggable {
         return json;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateAttrs(json: any) {
         TabNode._attributeDefinitions.update(json, this._attributes);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttributeDefinitions() {
         return TabNode._attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setWindow(window: Window | undefined) {
         this._window = window;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setBorderWidth(width: number) {
         this._attributes.borderWidth = width;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setBorderHeight(height: number) {
         this._attributes.borderHeight = height;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     static getAttributeDefinitions() {
         return TabNode._attributeDefinitions;
     }

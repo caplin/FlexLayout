@@ -18,7 +18,7 @@ import { adjustSelectedIndex } from "./Utils";
 export class BorderNode extends Node implements IDropTarget {
     static readonly TYPE = "border";
 
-    /** @hidden @internal */
+    /** @internal */
     static _fromJson(json: any, model: Model) {
         const location = DockLocation.getByName(json.location);
         const border = new BorderNode(location, json, model);
@@ -32,10 +32,10 @@ export class BorderNode extends Node implements IDropTarget {
 
         return border;
     }
-    /** @hidden @internal */
+    /** @internal */
     private static _attributeDefinitions: AttributeDefinitions = BorderNode._createAttributeDefinitions();
 
-    /** @hidden @internal */
+    /** @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute.STRING).setFixed();
@@ -55,20 +55,20 @@ export class BorderNode extends Node implements IDropTarget {
         return attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _contentRect?: Rect;
-    /** @hidden @internal */
+    /** @internal */
     private _tabHeaderRect?: Rect;
-    /** @hidden @internal */
+    /** @internal */
     private _location: DockLocation;
-    /** @hidden @internal */
+    /** @internal */
     private _drawChildren: Node[];
-    /** @hidden @internal */
+    /** @internal */
     private _adjustedSize: number = 0;
-    /** @hidden @internal */
+    /** @internal */
     private _calculatedBorderBarSize: number = 0;
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(location: DockLocation, json: any, model: Model) {
         super(model);
 
@@ -114,7 +114,7 @@ export class BorderNode extends Node implements IDropTarget {
         return this._getAttr("className") as string | undefined;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     calcBorderBarSize(metrics: ILayoutMetrics) {
         const barSize = this._getAttr("barSize") as number;
         if (barSize !== 0) {
@@ -195,12 +195,12 @@ export class BorderNode extends Node implements IDropTarget {
         return this._getAttr("enableAutoHide") as boolean;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setSelected(index: number) {
         this._attributes.selected = index;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setSize(pos: number) {
         const selected = this.getSelected();
         if (selected === -1) {
@@ -220,27 +220,27 @@ export class BorderNode extends Node implements IDropTarget {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateAttrs(json: any) {
         BorderNode._attributeDefinitions.update(json, this._attributes);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getDrawChildren() {
         return this._drawChildren;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setAdjustedSize(size: number) {
         this._adjustedSize = size;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAdjustedSize() {
         return this._adjustedSize;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layoutBorderOuter(outer: Rect, metrics: ILayoutMetrics) {
         this.calcBorderBarSize(metrics);
         const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
@@ -248,7 +248,7 @@ export class BorderNode extends Node implements IDropTarget {
         return split1.end;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layoutBorderInner(inner: Rect, metrics: ILayoutMetrics) {
         this._drawChildren = [];
         const location = this._location;
@@ -258,11 +258,12 @@ export class BorderNode extends Node implements IDropTarget {
 
         this._contentRect = split2.end;
 
-        this._children.forEach((child, i) => {
+        for (let i = 0; i< this._children.length; i++) {
+            const child = this._children[i];
             child._layout(this._contentRect!, metrics);
             child._setVisible(i === this.getSelected());
             this._drawChildren.push(child);
-        });
+        }
 
         if (this.getSelected() === -1) {
             return inner;
@@ -276,7 +277,7 @@ export class BorderNode extends Node implements IDropTarget {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _remove(node: TabNode) {
         const removedIndex = this._removeChild(node);
         if (this.getSelected() !== -1) {
@@ -284,7 +285,7 @@ export class BorderNode extends Node implements IDropTarget {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         if (dragNode.getType() !== TabNode.TYPE) {
             return undefined;
@@ -366,7 +367,7 @@ export class BorderNode extends Node implements IDropTarget {
         return dropInfo;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     drop(dragNode: Node & IDraggable, location: DockLocation, index: number, select?: boolean): void {
         let fromIndex = 0;
         const dragParent = dragNode.getParent() as BorderNode | TabSetNode;
@@ -405,7 +406,7 @@ export class BorderNode extends Node implements IDropTarget {
         return json;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getSplitterBounds(splitter: SplitterNode, useMinSize: boolean = false) {
         const pBounds = [0, 0];
         const minSize = useMinSize ? this.getMinSize() : 0;
@@ -428,7 +429,7 @@ export class BorderNode extends Node implements IDropTarget {
         return pBounds;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _calculateSplit(splitter: SplitterNode, splitterPos: number) {
         const pBounds = this._getSplitterBounds(splitter);
         if (this._location === DockLocation.BOTTOM || this._location === DockLocation.RIGHT) {
@@ -438,12 +439,12 @@ export class BorderNode extends Node implements IDropTarget {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttributeDefinitions() {
         return BorderNode._attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     static getAttributeDefinitions() {
         return BorderNode._attributeDefinitions;
     }

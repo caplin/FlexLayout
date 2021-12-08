@@ -1,3 +1,4 @@
+import { v4 as getUUID } from "uuid";
 import { Attribute } from "../Attribute";
 import { AttributeDefinitions } from "../AttributeDefinitions";
 import { DockLocation } from "../DockLocation";
@@ -10,16 +11,14 @@ import { BorderNode } from "./BorderNode";
 import { BorderSet } from "./BorderSet";
 import { IDraggable } from "./IDraggable";
 import { IDropTarget } from "./IDropTarget";
-import { IJsonModel } from "./IJsonModel";
+import { IJsonModel, ITabSetAttributes } from "./IJsonModel";
 import { Node } from "./Node";
 import { RowNode } from "./RowNode";
 import { TabNode } from "./TabNode";
 import { TabSetNode } from "./TabSetNode";
-import { ITabSetAttributes } from "./IJsonModel";
 import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat } from "./Utils";
-import * as uuid from "uuid";
 
-/** @hidden @internal */
+/** @internal */
 export interface ILayoutMetrics {
     headerBarSize: number;
     tabBarSize: number;
@@ -46,10 +45,10 @@ export class Model {
         model._tidy(); // initial tidy of node tree
         return model;
     }
-    /** @hidden @internal */
+    /** @internal */
     private static _attributeDefinitions: AttributeDefinitions = Model._createAttributeDefinitions();
 
-    /** @hidden @internal */
+    /** @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
 
@@ -111,35 +110,35 @@ export class Model {
         return attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     private _attributes: Record<string, any>;
-    /** @hidden @internal */
+    /** @internal */
     private _idMap: Record<string, Node>;
-    /** @hidden @internal */
+    /** @internal */
     private _changeListener?: () => void;
-    /** @hidden @internal */
+    /** @internal */
     private _root?: RowNode;
-    /** @hidden @internal */
+    /** @internal */
     private _borders: BorderSet;
-    /** @hidden @internal */
+    /** @internal */
     private _onAllowDrop?: (dragNode: Node, dropInfo: DropInfo) => boolean;
-    /** @hidden @internal */
+    /** @internal */
     private _maximizedTabSet?: TabSetNode;
-    /** @hidden @internal */
+    /** @internal */
     private _activeTabSet?: TabSetNode;
-    /** @hidden @internal */
+    /** @internal */
     private _borderRects: { inner: Rect; outer: Rect } = { inner: Rect.empty(), outer: Rect.empty() };
-    /** @hidden @internal */
+    /** @internal */
     private _pointerFine: boolean;
-    /** @hidden @internal */
+    /** @internal */
     private _onCreateTabSet?: (tabNode?: TabNode) => ITabSetAttributes;
-    /** @hidden @internal */
+    /** @internal */
     private _showHiddenBorder: DockLocation;
 
 
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
-     *  @hidden @internal
+     *  @internal
      */
 
     private constructor() {
@@ -150,7 +149,7 @@ export class Model {
         this._showHiddenBorder = DockLocation.CENTER;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setChangeListener(listener: (() => void) | undefined) {
         this._changeListener = listener;
     }
@@ -166,17 +165,17 @@ export class Model {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getShowHiddenBorder() {
         return this._showHiddenBorder;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setShowHiddenBorder(location: DockLocation) {
         this._showHiddenBorder = location;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setActiveTabset(tabsetNode: TabSetNode | undefined) {
         this._activeTabSet = tabsetNode;
     }
@@ -188,7 +187,7 @@ export class Model {
         return this._maximizedTabSet;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setMaximizedTabset(tabsetNode: (TabSetNode | undefined)) {
         this._maximizedTabSet = tabsetNode;
     }
@@ -217,17 +216,17 @@ export class Model {
         return this._borders;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getOuterInnerRects() {
         return this._borderRects;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getPointerFine() {
         return this._pointerFine;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setPointerFine(pointerFine: boolean) {
         this._pointerFine = pointerFine;
     }
@@ -291,11 +290,12 @@ export class Model {
                 if (node instanceof TabSetNode) {
                     // first delete all child tabs that are closeable
                     const children = [...node.getChildren()];
-                    children.forEach((child, i) => {
+                    for (let i = 0; i < children.length; i++) {
+                        const child = children[i];
                         if ((child as TabNode).isEnableClose()) {
                             (child as TabNode)._delete();
                         }
-                    });
+                    }
 
                     if (node.getChildren().length === 0) {
                         node._delete();
@@ -408,7 +408,7 @@ export class Model {
         return returnVal;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateIdMap() {
         // regenerate idMap to stop it building up
         this._idMap = {};
@@ -416,7 +416,7 @@ export class Model {
         // console.log(JSON.stringify(Object.keys(this._idMap)));
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _adjustSplitSide(node: TabSetNode | RowNode, weight: number, pixels: number) {
         node._setWeight(weight);
         if (node.getWidth() != null && node.getOrientation() === Orientation.VERT) {
@@ -463,7 +463,7 @@ export class Model {
         return this._attributes.enableEdgeDock as boolean;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _addNode(node: Node) {
         const id = node.getId();
         if (this._idMap[id] !== undefined) {
@@ -475,7 +475,7 @@ export class Model {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layout(rect: Rect, metrics: ILayoutMetrics) {
         // let start = Date.now();
         this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, metrics);
@@ -487,7 +487,7 @@ export class Model {
         return rect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number) {
         let node = (this._root as RowNode)._findDropTargetNode(dragNode, x, y);
         if (node === undefined) {
@@ -496,24 +496,24 @@ export class Model {
         return node;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _tidy() {
         // console.log("before _tidy", this.toString());
         (this._root as RowNode)._tidy();
         // console.log("after _tidy", this.toString());
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateAttrs(json: any) {
         Model._attributeDefinitions.update(json, this._attributes);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _nextUniqueId() {
-        return '#' + uuid.v4();
+        return '#' + getUUID();
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttribute(name: string): any {
         return this._attributes[name];
     }
@@ -526,7 +526,7 @@ export class Model {
         this._onAllowDrop = onAllowDrop;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getOnAllowDrop() {
         return this._onAllowDrop;
     }
@@ -541,7 +541,7 @@ export class Model {
         this._onCreateTabSet = onCreateTabSet;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getOnCreateTabSet() {
         return this._onCreateTabSet;
     }

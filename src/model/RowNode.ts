@@ -18,7 +18,7 @@ import { TabSetNode } from "./TabSetNode";
 export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
 
-    /** @hidden @internal */
+    /** @internal */
     static _fromJson(json: any, model: Model) {
         const newLayoutNode = new RowNode(model, json);
 
@@ -36,10 +36,10 @@ export class RowNode extends Node implements IDropTarget {
 
         return newLayoutNode;
     }
-    /** @hidden @internal */
+    /** @internal */
     private static _attributeDefinitions: AttributeDefinitions = RowNode._createAttributeDefinitions();
 
-    /** @hidden @internal */
+    /** @internal */
     private static _createAttributeDefinitions(): AttributeDefinitions {
         const attributeDefinitions = new AttributeDefinitions();
         attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
@@ -51,12 +51,12 @@ export class RowNode extends Node implements IDropTarget {
 
         return attributeDefinitions;
     }
-    /** @hidden @internal */
+    /** @internal */
     private _drawChildren: (TabSetNode | RowNode | SplitterNode)[];
     private minHeight: number;
     private minWidth: number;
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(model: Model, json: any) {
         super(model);
 
@@ -80,12 +80,12 @@ export class RowNode extends Node implements IDropTarget {
         return this._getAttr("height") as number | undefined;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setWeight(weight: number) {
         this._attributes.weight = weight;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layout(rect: Rect, metrics: ILayoutMetrics) {
         super._layout(rect, metrics);
 
@@ -215,7 +215,7 @@ export class RowNode extends Node implements IDropTarget {
         return true;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getSplitterBounds(splitterNode: SplitterNode, useMinSize: boolean = false) {
         const pBounds = [0, 0];
         const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
@@ -236,7 +236,7 @@ export class RowNode extends Node implements IDropTarget {
         return pBounds;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _calculateSplit(splitter: SplitterNode, splitterPos: number) {
         let rtn;
         const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
@@ -265,7 +265,7 @@ export class RowNode extends Node implements IDropTarget {
         return rtn;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getDrawChildren(): Node[] | undefined {
         if (this._dirty) {
             this._drawChildren = [];
@@ -285,7 +285,7 @@ export class RowNode extends Node implements IDropTarget {
         return this._drawChildren;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinSize(orientation: Orientation) {
         if (orientation === Orientation.HORZ) {
             return this.getMinWidth();
@@ -294,22 +294,22 @@ export class RowNode extends Node implements IDropTarget {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinWidth() {
         return this.minWidth;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinHeight() {
         return this.minHeight;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     calcMinSize() {
         this.minHeight = 0;
         this.minWidth = 0;
         let first = true;
-        this._children.forEach((child) => {
+        for (const child of this._children) {
             const c = child as RowNode | TabSetNode;
             if (c instanceof RowNode) {
                 c.calcMinSize();
@@ -328,10 +328,10 @@ export class RowNode extends Node implements IDropTarget {
                 this.minHeight = Math.max(this.minHeight, c.getMinHeight());
             }
             first = false;
-        });
+        }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _tidy() {
         let i = 0;
         while (i < this._children.length) {
@@ -391,7 +391,7 @@ export class RowNode extends Node implements IDropTarget {
 
     }
 
-    /** @hidden @internal */
+    /** @internal */
     canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         const yy = y - this._rect.y;
         const xx = x - this._rect.x;
@@ -437,7 +437,7 @@ export class RowNode extends Node implements IDropTarget {
         return dropInfo;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     drop(dragNode: Node & IDraggable, location: DockLocation, index: number): void {
         const dockLocation = location;
 
@@ -484,9 +484,9 @@ export class RowNode extends Node implements IDropTarget {
             const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);
             tabSet._setWeight(25);
-            this._children.forEach((child) => {
+            for (const child of this._children) {
                 hrow._addChild(child);
-            });
+            }
             this._removeAll();
             vrow._addChild(tabSet);
             vrow._addChild(hrow);
@@ -496,9 +496,9 @@ export class RowNode extends Node implements IDropTarget {
             const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);
             tabSet._setWeight(25);
-            this._children.forEach((child) => {
+            for (const child of this._children) {
                 hrow._addChild(child);
-            });
+            }
             this._removeAll();
             vrow._addChild(hrow);
             vrow._addChild(tabSet);
@@ -515,9 +515,9 @@ export class RowNode extends Node implements IDropTarget {
         RowNode._attributeDefinitions.toJson(json, this._attributes);
 
         json.children = [];
-        this._children.forEach((child) => {
+        for (const child of this._children) {
             json.children.push(child.toJson());
-        });
+        }
 
         return json;
     }
@@ -526,7 +526,7 @@ export class RowNode extends Node implements IDropTarget {
         return true;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getPrefSize(orientation: Orientation) {
         let prefSize = this.getWidth();
         if (orientation === Orientation.VERT) {
@@ -535,17 +535,17 @@ export class RowNode extends Node implements IDropTarget {
         return prefSize;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttributeDefinitions() {
         return RowNode._attributeDefinitions;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateAttrs(json: any) {
         RowNode._attributeDefinitions.update(json, this._attributes);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     static getAttributeDefinitions() {
         return RowNode._attributeDefinitions;
     }

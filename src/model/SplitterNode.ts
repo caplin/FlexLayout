@@ -6,7 +6,7 @@ import { Node } from "./Node";
 export class SplitterNode extends Node {
     static readonly TYPE: string = "splitter";
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(model: Model) {
         super(model);
         this._fixed = true;
@@ -14,12 +14,12 @@ export class SplitterNode extends Node {
         model._addNode(this);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getWidth() {
         return this._model.getSplitterSize();
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinWidth() {
         if (this.getOrientation() === Orientation.VERT) {
             return this._model.getSplitterSize();
@@ -28,12 +28,12 @@ export class SplitterNode extends Node {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getHeight() {
         return this._model.getSplitterSize();
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinHeight() {
         if (this.getOrientation() === Orientation.HORZ) {
             return this._model.getSplitterSize();
@@ -42,7 +42,7 @@ export class SplitterNode extends Node {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getMinSize(orientation: Orientation) {
         if (orientation === Orientation.HORZ) {
             return this.getMinWidth();
@@ -51,23 +51,23 @@ export class SplitterNode extends Node {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     getWeight(): number {
         return 0;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setWeight(value: number): void { }
 
-    /** @hidden @internal */
+    /** @internal */
     _getPrefSize(orientation: Orientation): number {
         return this._model.getSplitterSize();
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _updateAttrs(json: any): void { }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttributeDefinitions(): AttributeDefinitions {
         return new AttributeDefinitions();
     }

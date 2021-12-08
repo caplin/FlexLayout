@@ -8,28 +8,28 @@ import { IJsonBorderNode, IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from "./
 import { Model, ILayoutMetrics } from "./Model";
 
 export abstract class Node {
-    /** @hidden @internal */
+    /** @internal */
     protected _model: Model;
-    /** @hidden @internal */
+    /** @internal */
     protected _attributes: Record<string, any>;
-    /** @hidden @internal */
+    /** @internal */
     protected _parent?: Node;
-    /** @hidden @internal */
+    /** @internal */
     protected _children: Node[];
-    /** @hidden @internal */
+    /** @internal */
     protected _fixed: boolean;
-    /** @hidden @internal */
+    /** @internal */
     protected _rect: Rect;
-    /** @hidden @internal */
+    /** @internal */
     protected _visible: boolean;
-    /** @hidden @internal */
+    /** @internal */
     protected _listeners: Record<string, (params: any) => void>;
-    /** @hidden @internal */
+    /** @internal */
     protected _dirty: boolean = false;
-    /** @hidden @internal */
+    /** @internal */
     protected _tempSize: number = 0;
 
-    /** @hidden @internal */
+    /** @internal */
     protected constructor(model: Model) {
         this._model = model;
         this._attributes = {};
@@ -95,12 +95,12 @@ export abstract class Node {
 
     abstract toJson(): IJsonRowNode | IJsonBorderNode | IJsonTabSetNode | IJsonTabNode | undefined;
 
-    /** @hidden @internal */
+    /** @internal */
     _setId(id: string) {
         this._attributes.id = id;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _fireEvent(event: string, params: any) {
         // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this._listeners[event] !== undefined) {
@@ -108,7 +108,7 @@ export abstract class Node {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getAttr(name: string) {
         let val = this._attributes[name];
 
@@ -123,16 +123,16 @@ export abstract class Node {
         return val;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _forEachNode(fn: (node: Node, level: number) => void, level: number) {
         fn(this, level);
         level++;
-        this._children.forEach((node) => {
+        for (const node of this._children) {
             node._forEachNode(fn, level);
-        });
+        }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setVisible(visible: boolean) {
         if (visible !== this._visible) {
             this._fireEvent("visibility", { visible });
@@ -140,42 +140,42 @@ export abstract class Node {
         }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getDrawChildren(): Node[] | undefined {
         return this._children;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setParent(parent: Node) {
         this._parent = parent;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setRect(rect: Rect) {
         this._rect = rect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setWeight(weight: number) {
         this._attributes.weight = weight;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setSelected(index: number) {
         this._attributes.selected = index;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _isFixed() {
         return this._fixed;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layout(rect: Rect, metrics: ILayoutMetrics) {
         this._rect = rect;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         let rtn: DropInfo | undefined;
         if (this._rect.contains(x, y)) {
@@ -195,12 +195,12 @@ export abstract class Node {
         return rtn;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         return undefined;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _canDockInto(dragNode: Node & IDraggable, dropInfo: DropInfo | undefined): boolean {
         if (dropInfo != null) {
             if (dropInfo.location === DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
@@ -224,7 +224,7 @@ export abstract class Node {
         return true;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _removeChild(childNode: Node) {
         const pos = this._children.indexOf(childNode);
         if (pos !== -1) {
@@ -234,7 +234,7 @@ export abstract class Node {
         return pos;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _addChild(childNode: Node, pos?: number) {
         if (pos != null) {
             this._children.splice(pos, 0, childNode);
@@ -247,13 +247,13 @@ export abstract class Node {
         return pos;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _removeAll() {
         this._children = [];
         this._dirty = true;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _styleWithPosition(style?: Record<string, any>) {
         if (style == null) {
             style = {};
@@ -261,29 +261,29 @@ export abstract class Node {
         return this._rect.styleWithPosition(style);
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getTempSize() {
         return this._tempSize;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _setTempSize(value: number) {
         this._tempSize = value;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     isEnableDivide() {
         return true;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _toAttributeString() {
         return JSON.stringify(this._attributes, undefined, "\t");
     }
 
     // implemented by subclasses
-    /** @hidden @internal */
+    /** @internal */
     abstract _updateAttrs(json: any): void;
-    /** @hidden @internal */
+    /** @internal */
     abstract _getAttributeDefinitions(): AttributeDefinitions;
 }

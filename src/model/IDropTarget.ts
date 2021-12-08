@@ -4,11 +4,11 @@ import { IDraggable } from "./IDraggable";
 import { Node } from "./Node";
 
 export interface IDropTarget {
-    /** @hidden @internal */
+    /** @internal */
     canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined;
-    /** @hidden @internal */
+    /** @internal */
     drop(dragNode: Node & IDraggable, location: DockLocation, index: number, select?: boolean): void;
-    /** @hidden @internal */
+    /** @internal */
     isEnableDrop(): boolean;
 }
 

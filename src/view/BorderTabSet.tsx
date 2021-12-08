@@ -12,7 +12,7 @@ import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface IBorderTabSetProps {
     border: BorderNode;
     layout: ILayoutCallbacks;
@@ -22,7 +22,7 @@ export interface IBorderTabSetProps {
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const BorderTabSet = (props: IBorderTabSetProps) => {
     const { border, layout, iconFactory, titleFactory, icons, path } = props;
 

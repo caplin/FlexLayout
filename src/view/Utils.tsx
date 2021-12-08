@@ -2,7 +2,7 @@ import * as React from "react";
 import { TabNode } from "../model/TabNode";
 import { ILayoutCallbacks, ITitleObject } from "./Layout";
 
-/** @hidden @internal */
+/** @internal */
 export function getRenderStateEx(
     layout: ILayoutCallbacks,
     node: TabNode,
@@ -48,7 +48,7 @@ export function getRenderStateEx(
 
 }
 
-/** @hidden @internal */
+/** @internal */
 export function hideElement(style: Record<string, any>, useVisibility: ConstrainBoolean) {
     if (useVisibility) {
         style.visibility = "hidden";
@@ -58,7 +58,7 @@ export function hideElement(style: Record<string, any>, useVisibility: Constrain
 }
 
 
-/** @hidden @internal */
+/** @internal */
 export function isAuxMouseEvent(event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) {
     let auxEvent = false;
     if (event.nativeEvent instanceof MouseEvent) {

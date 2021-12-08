@@ -4,7 +4,7 @@ import { ILayoutCallbacks } from "./Layout";
 import { CLASSES } from "../Types";
 import { getRenderStateEx } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface ITabButtonStampProps {
     node: TabNode;
     layout: ILayoutCallbacks;
@@ -12,7 +12,7 @@ export interface ITabButtonStampProps {
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const TabButtonStamp = (props: ITabButtonStampProps) => {
     const { layout, node, iconFactory, titleFactory } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);

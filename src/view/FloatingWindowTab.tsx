@@ -6,14 +6,14 @@ import { I18nLabel } from "../I18nLabel";
 import { Fragment } from "react";
 import { CLASSES } from "../Types";
 
-/** @hidden @internal */
+/** @internal */
 export interface IFloatingWindowTabProps {
     layout: ILayoutCallbacks;
     node: TabNode;
     factory: (node: TabNode) => React.ReactNode;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const FloatingWindowTab = (props: IFloatingWindowTabProps) => {
     const { layout, node, factory } = props;
     const cm = layout.getClassName;

@@ -7,18 +7,18 @@ import { Model, ILayoutMetrics } from "./Model";
 import { Node } from "./Node";
 
 export class BorderSet {
-    /** @hidden @internal */
+    /** @internal */
     static _fromJson(json: any, model: Model) {
         const borderSet = new BorderSet(model);
         borderSet._borders = json.map((borderJson: any) => BorderNode._fromJson(borderJson, model));
         return borderSet;
     }
-    /** @hidden @internal */
+    /** @internal */
     private _model: Model;
-    /** @hidden @internal */
+    /** @internal */
     private _borders: BorderNode[];
 
-    /** @hidden @internal */
+    /** @internal */
     constructor(model: Model) {
         this._model = model;
         this._borders = [];
@@ -28,22 +28,22 @@ export class BorderSet {
         return this._borders;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _forEachNode(fn: (node: Node, level: number) => void) {
-        this._borders.forEach((borderNode) => {
+        for (const borderNode of this._borders) {
             fn(borderNode, 0);
-            borderNode.getChildren().forEach((node) => {
+            for (const node of borderNode.getChildren()) {
                 node._forEachNode(fn, 1);
-            });
-        });
+            }
+        }
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _toJson() {
         return this._borders.map((borderNode) => borderNode.toJson());
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _layoutBorder(outerInnerRects: { inner: Rect; outer: Rect }, metrics: ILayoutMetrics) {
         const rect = outerInnerRects.outer;
         const rootRow = this._model.getRoot();
@@ -109,19 +109,19 @@ export class BorderSet {
             }
         }
 
-        showingBorders.forEach((border) => {
+        for (const border of showingBorders) {
             outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
-        });
+        }
 
         outerInnerRects.inner = outerInnerRects.outer;
 
-        showingBorders.forEach((border) => {
+        for (const border of showingBorders) {
             outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, metrics);
-        });
+        }
         return outerInnerRects;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         for (const border of this._borders) {
             if (border.isShowing()) {

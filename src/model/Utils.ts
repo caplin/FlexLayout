@@ -3,7 +3,7 @@ import { BorderNode } from "./BorderNode";
 import { RowNode } from "./RowNode";
 import { TabNode } from "./TabNode";
 
-/** @hidden @internal */
+/** @internal */
 export function adjustSelectedIndexAfterFloat(node: TabNode) {
     const parent = node.getParent();
     if (parent !== null) {
@@ -29,7 +29,7 @@ export function adjustSelectedIndexAfterFloat(node: TabNode) {
     }
 }
 
-/** @hidden @internal */
+/** @internal */
 export function adjustSelectedIndexAfterDock(node: TabNode) {
     const parent = node.getParent();
     if (parent !== null && (parent instanceof TabSetNode || parent instanceof BorderNode)) {
@@ -44,7 +44,7 @@ export function adjustSelectedIndexAfterDock(node: TabNode) {
     }
 }
 
-/** @hidden @internal */
+/** @internal */
 export function adjustSelectedIndex(parent: TabSetNode | BorderNode | RowNode, removedIndex: number) {
     // for the tabset/border being removed from set the selected index
     if (parent !== undefined && (parent.getType() === TabSetNode.TYPE || parent.getType() === BorderNode.TYPE)) {

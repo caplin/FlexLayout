@@ -9,7 +9,7 @@ import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
 import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
 
-/** @hidden @internal */
+/** @internal */
 export interface ITabButtonProps {
     layout: ILayoutCallbacks;
     node: TabNode;
@@ -21,7 +21,7 @@ export interface ITabButtonProps {
     path: string;
 }
 
-/** @hidden @internal */
+/** @internal */
 export const TabButton = (props: ITabButtonProps) => {
     const { layout, node, selected, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);

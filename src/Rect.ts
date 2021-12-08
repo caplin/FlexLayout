@@ -76,7 +76,7 @@ export class Rect {
         this.y = (outerRect.height - this.height) / 2;
     }
 
-    /** @hidden @internal */
+    /** @internal */
     _getSize(orientation: Orientation) {
         let prefSize = this.width;
         if (orientation === Orientation.VERT) {
