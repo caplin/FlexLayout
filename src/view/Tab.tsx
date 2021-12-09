@@ -7,7 +7,7 @@ import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "../I18nLabel";
-import { BorderNode } from "..";
+import { BorderNode } from "../model/BorderNode";
 import { hideElement } from "./Utils";
 
 /** @internal */

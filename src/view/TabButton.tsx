@@ -14,7 +14,6 @@ export interface ITabButtonProps {
     layout: ILayoutCallbacks;
     node: TabNode;
     selected: boolean;
-    height: number;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
     icons: IIcons;
@@ -26,7 +25,6 @@ export const TabButton = (props: ITabButtonProps) => {
     const { layout, node, selected, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
-    const contentWidth = React.useRef<number>(0);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
 
@@ -51,16 +49,14 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const onDoubleClick = (event: Event) => {
         if (node.isEnableRename()) {
-            layout.setEditingTab(node);
-            layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
-            layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
+            onRename();
         }
-        // else {
-        //     const parentNode = node.getParent() as TabSetNode;
-        //     if (parentNode.canMaximize()) {
-        //         layout.maximize(parentNode);
-        //     }
-        // }
+    };
+
+    const onRename = () => {
+        layout.setEditingTab(node);
+        layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
+        layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
     };
 
     const onEndEdit = (event: Event) => {
@@ -109,7 +105,6 @@ export const TabButton = (props: ITabButtonProps) => {
         const layoutRect = layout.getDomRect();
         const r = selfRef.current!.getBoundingClientRect();
         node._setTabRect(new Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
-        contentWidth.current = selfRef.current!.getBoundingClientRect().width;
     };
 
     const onTextBoxMouseDown = (event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
@@ -182,7 +177,8 @@ export const TabButton = (props: ITabButtonProps) => {
                 data-layout-path={path + "/button/close"}
                 title={closeTitle}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
-                onMouseDown={onCloseMouseDown} onClick={onClose}
+                onMouseDown={onCloseMouseDown}
+                onClick={onClose}
                 onTouchStart={onCloseMouseDown}>
                 {(typeof icons.close === "function") ? icons.close(node) : icons.close}
             </div>

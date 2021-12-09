@@ -25,7 +25,7 @@ import { FloatingWindow } from "./FloatingWindow";
 import { FloatingWindowTab } from "./FloatingWindowTab";
 import { TabFloating } from "./TabFloating";
 import { IJsonTabNode } from "../model/IJsonModel";
-import { Orientation } from "..";
+import { Orientation } from "../Orientation";
 import { CloseIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
 import { TabButtonStamp } from "./TabButtonStamp";
 

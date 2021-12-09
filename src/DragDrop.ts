@@ -346,19 +346,23 @@ export class DragDrop {
                 this._fDragCancel(this._dragging);
             }
             if (Math.abs(this._startX - posEvent.clientX) <= 5 && Math.abs(this._startY - posEvent.clientY) <= 5) {
+
+                let isDoubleClick = false;
                 const clickTime = new Date().getTime();
                 // check for double click
                 if (Math.abs(this._clickX - posEvent.clientX) <= 5 && Math.abs(this._clickY - posEvent.clientY) <= 5) {
                     if (clickTime - this._lastClick < 500) {
                         if (this._fDblClick) {
                             this._fDblClick(event);
+                            isDoubleClick = true;
                         }
                     }
                 }
-
-                if (this._fClick) {
+ 
+                if (!isDoubleClick && this._fClick) {
                     this._fClick(event);
                 }
+
                 this._lastClick = clickTime;
                 this._clickX = posEvent.clientX;
                 this._clickY = posEvent.clientY;

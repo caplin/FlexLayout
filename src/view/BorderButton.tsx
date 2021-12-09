@@ -1,5 +1,5 @@
 import * as React from "react";
-import { I18nLabel } from "..";
+import { I18nLabel } from "../I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { Rect } from "../Rect";
@@ -16,7 +16,7 @@ export interface IBorderButtonProps {
     border: string;
     iconFactory?: (node: TabNode) => React.ReactNode | undefined;
     titleFactory?: (node: TabNode) => React.ReactNode | undefined;
-    icons?: IIcons;
+    icons: IIcons;
     path: string;
 }
 
@@ -24,10 +24,12 @@ export interface IBorderButtonProps {
 export const BorderButton = (props: IBorderButtonProps) => {
     const { layout, node, selected, border, iconFactory, titleFactory, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const contentRef = React.useRef<HTMLInputElement | null>(null);
 
     const onMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        if (!isAuxMouseEvent(event)) {
-            props.layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, (event2: Event) => undefined);
+
+        if (!isAuxMouseEvent(event) && !layout.getEditingTab()) {
+            layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
 
@@ -43,6 +45,26 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const onClick = () => {
         layout.doAction(Actions.selectTab(node.getId()));
+    };
+
+    const onDoubleClick = (event: Event) => {
+        // if (node.isEnableRename()) {
+        //     onRename();
+        // }
+    };
+
+    // const onRename = () => {
+    //     layout.setEditingTab(node);
+    //     layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
+    //     layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
+    // };
+
+    const onEndEdit = (event: Event) => {
+        if (event.target !== contentRef.current!) {
+            layout.getCurrentDocument()!.body.removeEventListener("mousedown", onEndEdit);
+            layout.getCurrentDocument()!.body.removeEventListener("touchstart", onEndEdit);
+            layout.setEditingTab(undefined);
+        }
     };
 
     const isClosable = () => {
@@ -73,13 +95,33 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     React.useLayoutEffect(() => {
         updateRect();
+        if (layout.getEditingTab() === node) {
+            (contentRef.current! as HTMLInputElement).select();
+        }
     });
 
     const updateRect = () => {
-        // record position of tab in border
-        const clientRect = layout.getDomRect();
+        // record position of tab in node
+        const layoutRect = layout.getDomRect();
         const r = selfRef.current!.getBoundingClientRect();
-        node._setTabRect(new Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        node._setTabRect(new Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+    };
+
+    const onTextBoxMouseDown = (event: React.MouseEvent<HTMLInputElement> | React.TouchEvent<HTMLInputElement>) => {
+        // console.log("onTextBoxMouseDown");
+        event.stopPropagation();
+    };
+
+    const onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        // console.log(event, event.keyCode);
+        if (event.keyCode === 27) {
+            // esc
+            layout.setEditingTab(undefined);
+        } else if (event.keyCode === 13) {
+            // enter
+            layout.setEditingTab(undefined);
+            layout.doAction(Actions.renameTab(node.getId(), (event.target as HTMLInputElement).value));
+        }
     };
 
     const cm = layout.getClassName;
@@ -97,8 +139,31 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory);
 
-    const content = renderState.content ? (<div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>{renderState.content}</div>) : null;
-    const leading = renderState.leading ? (<div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>{renderState.leading}</div>) : null;
+    let content = renderState.content ? (
+        <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>
+            {renderState.content}
+        </div>) : null;
+
+    const leading = renderState.leading ? (
+        <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>
+            {renderState.leading}
+        </div>) : null;
+
+    if (layout.getEditingTab() === node) {
+        content = (
+            <input
+                ref={contentRef}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX)}
+                data-layout-path={path + "/textbox"}
+                type="text"
+                autoFocus={true}
+                defaultValue={node.getName()}
+                onKeyDown={onTextBoxKeyPress}
+                onMouseDown={onTextBoxMouseDown}
+                onTouchStart={onTextBoxMouseDown}
+            />
+        );
+    }
 
     if (node.isEnableClose()) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
@@ -111,20 +176,23 @@ export const BorderButton = (props: IBorderButtonProps) => {
                 onMouseDown={onCloseMouseDown}
                 onClick={onClose}
                 onTouchStart={onCloseMouseDown}>
-                {icons?.close}
+                {(typeof icons.close === "function") ? icons.close(node) : icons.close}
             </div>
         );
     }
 
     return (
-        <div ref={selfRef} style={{}} className={classNames}
+        <div
+            ref={selfRef}
             data-layout-path={path}
+            className={classNames}
             onMouseDown={onMouseDown}
             onClick={onAuxMouseClick}
             onAuxClick={onAuxMouseClick}
             onContextMenu={onContextMenu}
             onTouchStart={onMouseDown}
-            title={node.getHelpText()}>
+            title={node.getHelpText()}
+        >
             {leading}
             {content}
             {renderState.buttons}

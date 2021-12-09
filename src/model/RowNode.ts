@@ -1,4 +1,4 @@
-import { TabNode } from "..";
+import { TabNode } from "./TabNode";
 import { Attribute } from "../Attribute";
 import { AttributeDefinitions } from "../AttributeDefinitions";
 import { DockLocation } from "../DockLocation";
