@@ -53,8 +53,10 @@ export class RowNode extends Node implements IDropTarget {
     }
     /** @internal */
     private _drawChildren: (TabSetNode | RowNode | SplitterNode)[];
-    private minHeight: number;
-    private minWidth: number;
+    /** @internal */
+    private _minHeight: number;
+    /** @internal */
+    private _minWidth: number;
 
     /** @internal */
     constructor(model: Model, json: any) {
@@ -62,8 +64,8 @@ export class RowNode extends Node implements IDropTarget {
 
         this._dirty = true;
         this._drawChildren = [];
-        this.minHeight = 0;
-        this.minWidth = 0;
+        this._minHeight = 0;
+        this._minWidth = 0;
         RowNode._attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
     }
@@ -296,18 +298,18 @@ export class RowNode extends Node implements IDropTarget {
 
     /** @internal */
     getMinWidth() {
-        return this.minWidth;
+        return this._minWidth;
     }
 
     /** @internal */
     getMinHeight() {
-        return this.minHeight;
+        return this._minHeight;
     }
 
     /** @internal */
     calcMinSize() {
-        this.minHeight = 0;
-        this.minWidth = 0;
+        this._minHeight = 0;
+        this._minWidth = 0;
         let first = true;
         for (const child of this._children) {
             const c = child as RowNode | TabSetNode;
@@ -315,17 +317,17 @@ export class RowNode extends Node implements IDropTarget {
                 c.calcMinSize();
             }
             if (this.getOrientation() === Orientation.VERT) {
-                this.minHeight += c.getMinHeight();
+                this._minHeight += c.getMinHeight();
                 if (!first) {
-                    this.minHeight += this._model.getSplitterSize();
+                    this._minHeight += this._model.getSplitterSize();
                 }
-                this.minWidth = Math.max(this.minWidth, c.getMinWidth());
+                this._minWidth = Math.max(this._minWidth, c.getMinWidth());
             } else {
-                this.minWidth += c.getMinWidth();
+                this._minWidth += c.getMinWidth();
                 if (!first) {
-                    this.minWidth += this._model.getSplitterSize();
+                    this._minWidth += this._model.getSplitterSize();
                 }
-                this.minHeight = Math.max(this.minHeight, c.getMinHeight());
+                this._minHeight = Math.max(this._minHeight, c.getMinHeight());
             }
             first = false;
         }

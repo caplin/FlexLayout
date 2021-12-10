@@ -84,9 +84,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     /** @internal */
     private _tabHeaderRect?: Rect;
     /** @internal */
-    private calculatedTabBarHeight: number;
+    private _calculatedTabBarHeight: number;
     /** @internal */
-    private calculatedHeaderBarHeight: number;
+    private _calculatedHeaderBarHeight: number;
 
     /** @internal */
     constructor(model: Model, json: any) {
@@ -94,8 +94,8 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
         TabSetNode._attributeDefinitions.fromJson(json, this._attributes);
         model._addNode(this);
-        this.calculatedTabBarHeight = 0;
-        this.calculatedHeaderBarHeight = 0;
+        this._calculatedTabBarHeight = 0;
+        this._calculatedHeaderBarHeight = 0;
     }
 
     getName() {
@@ -226,9 +226,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         const headerBarHeight = this._getAttr("headerHeight") as number;
         if (headerBarHeight !== 0) {
             // its defined
-            this.calculatedHeaderBarHeight = headerBarHeight;
+            this._calculatedHeaderBarHeight = headerBarHeight;
         } else {
-            this.calculatedHeaderBarHeight = metrics.headerBarSize;
+            this._calculatedHeaderBarHeight = metrics.headerBarSize;
         }
     }
 
@@ -237,18 +237,18 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         const tabBarHeight = this._getAttr("tabStripHeight") as number;
         if (tabBarHeight !== 0) {
             // its defined
-            this.calculatedTabBarHeight = tabBarHeight;
+            this._calculatedTabBarHeight = tabBarHeight;
         } else {
-            this.calculatedTabBarHeight = metrics.tabBarSize;
+            this._calculatedTabBarHeight = metrics.tabBarSize;
         }
     }
 
     getHeaderHeight() {
-        return this.calculatedHeaderBarHeight;
+        return this._calculatedHeaderBarHeight;
     }
 
     getTabStripHeight() {
-        return this.calculatedTabBarHeight;
+        return this._calculatedTabBarHeight;
     }
 
     getTabLocation() {
@@ -337,18 +337,18 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         let y = 0;
         let h = 0;
         if (showHeader) {
-            y += this.calculatedHeaderBarHeight;
-            h += this.calculatedHeaderBarHeight;
+            y += this._calculatedHeaderBarHeight;
+            h += this._calculatedHeaderBarHeight;
         }
         if (this.isEnableTabStrip()) {
             if (this.getTabLocation() === "top") {
-                this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this.calculatedTabBarHeight);
+                this._tabHeaderRect = new Rect(rect.x, rect.y + y, rect.width, this._calculatedTabBarHeight);
             } else {
-                this._tabHeaderRect = new Rect(rect.x, rect.y + rect.height - this.calculatedTabBarHeight, rect.width, this.calculatedTabBarHeight);
+                this._tabHeaderRect = new Rect(rect.x, rect.y + rect.height - this._calculatedTabBarHeight, rect.width, this._calculatedTabBarHeight);
             }
-            h += this.calculatedTabBarHeight;
+            h += this._calculatedTabBarHeight;
             if (this.getTabLocation() === "top") {
-                y += this.calculatedTabBarHeight;
+                y += this._calculatedTabBarHeight;
             }
         }
         this._contentRect = new Rect(rect.x, rect.y + y, rect.width, rect.height - h);
