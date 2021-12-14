@@ -14,10 +14,8 @@ module.exports = {
         extensions: [".ts", ".tsx", ".js", ".json"],
     },
 
-    watch: true,
-
     devServer: {
-        contentBase: ".",
+        static: "./",
     },
 
     devtool: "source-map",
@@ -29,6 +27,10 @@ module.exports = {
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+            {
+                test: /\.css$/i,
+                use: [ "style-loader", "css-loader"],
+              },
         ],
     },
 };
