@@ -216,6 +216,7 @@
   background-color: var(--color-5);
   border: 1px inset var(--color-1);
   border-radius: 3px;
+  width: 10em;
 }
 .flexlayout__tab_button_textbox:focus {
   outline: none;

@@ -1,927 +1,13 @@
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./examples/demo/App.tsx");
-/******/ })
-/************************************************************************/
-/******/ ({
-
-/***/ "./examples/demo/App.tsx":
-/*!*******************************!*\
-  !*** ./examples/demo/App.tsx ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
-var NewFeatures_1 = __webpack_require__(/*! ./NewFeatures */ "./examples/demo/NewFeatures.tsx");
-var PopupMenu_1 = __webpack_require__(/*! ./PopupMenu */ "./examples/demo/PopupMenu.tsx");
-var TabStorage_1 = __webpack_require__(/*! ./TabStorage */ "./examples/demo/TabStorage.tsx");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
-var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
-var ContextExample = React.createContext('');
-var App = /** @class */ (function (_super) {
-    __extends(App, _super);
-    function App(props) {
-        var _this = _super.call(this, props) || this;
-        _this.nextGridIndex = 1;
-        _this.showingPopupMenu = false;
-        _this.load = function (jsonText) {
-            var json = JSON.parse(jsonText);
-            var model = index_1.Model.fromJson(json);
-            // model.setOnCreateTabSet((tabNode?: TabNode) => {
-            //     console.log("onCreateTabSet " + tabNode);
-            //     // return { type: "tabset", name: "Header Text" };
-            //     return { type: "tabset" };
-            // });
-            // you can control where nodes can be dropped
-            //model.setOnAllowDrop(this.allowDrop);
-            _this.setState({ layoutFile: _this.loadingLayoutName, model: model });
-        };
-        _this.allowDrop = function (dragNode, dropInfo) {
-            var dropNode = dropInfo.node;
-            // prevent non-border tabs dropping into borders
-            if (dropNode.getType() === "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
-                return false;
-            // prevent border tabs dropping into main layout
-            if (dropNode.getType() !== "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
-                return false;
-            return true;
-        };
-        _this.error = function (reason) {
-            alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
-        };
-        _this.onAddDragMouseDown = function (event) {
-            event.stopPropagation();
-            event.preventDefault();
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDrop(undefined, {
-                    component: "grid",
-                    icon: "images/article.svg",
-                    name: "Grid " + _this.nextGridIndex++
-                }, _this.onAdded);
-                // this.setState({ adding: true });
-            }
-        };
-        _this.onAddActiveClick = function (event) {
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabToActiveTabSet({
-                    component: "grid",
-                    icon: "images/article.svg",
-                    name: "Grid " + _this.nextGridIndex++
-                });
-            }
-        };
-        _this.onAddFromTabSetButton = function (node) {
-            // if (this.state.model!.getMaximizedTabset() == null) {
-            _this.refs.layout.addTabToTabSet(node.getId(), {
-                component: "grid",
-                name: "Grid " + _this.nextGridIndex++
-            });
-            // }
-        };
-        _this.onAddIndirectClick = function (event) {
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
-                    component: "grid",
-                    name: "Grid " + _this.nextGridIndex++
-                }, _this.onAdded);
-                _this.setState({ adding: true });
-            }
-        };
-        _this.onRealtimeResize = function (event) {
-            _this.setState({
-                realtimeResize: event.target.checked
-            });
-        };
-        _this.onRenderDragRect = function (content, node, json) {
-            if (_this.state.layoutFile === "newfeatures") {
-                return (React.createElement(React.Fragment, null,
-                    content,
-                    React.createElement("div", { style: { whiteSpace: "pre" } },
-                        React.createElement("br", null),
-                        "This is a customized",
-                        React.createElement("br", null),
-                        "drag rectangle")));
-            }
-            else {
-                return undefined; // use default rendering
-            }
-        };
-        _this.onContextMenu = function (node, event) {
-            if (!_this.showingPopupMenu) {
-                event.preventDefault();
-                event.stopPropagation();
-                console.log(node, event);
-                PopupMenu_1.showPopup(node instanceof index_1.TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(), _this.refs.layout.getRootDiv(), event.clientX, event.clientY, ["Option 1", "Option 2"], function (item) {
-                    console.log("selected: " + item);
-                    _this.showingPopupMenu = false;
-                });
-                _this.showingPopupMenu = true;
-            }
-        };
-        _this.onAuxMouseClick = function (node, event) {
-            console.log(node, event);
-        };
-        _this.onRenderFloatingTabPlaceholder = function (dockPopout, showPopout) {
-            return (React.createElement("div", { className: index_1.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER },
-                React.createElement("div", null, "Custom renderer for floating tab placeholder"),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: showPopout }, "show the tab")),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: dockPopout }, "dock the tab"))));
-        };
-        _this.onExternalDrag = function (e) {
-            // console.log("onExternaldrag ", e.dataTransfer.types);
-            // Check for supported content type
-            var validTypes = ["text/uri-list", "text/html", "text/plain"];
-            if (e.dataTransfer.types.find(function (t) { return validTypes.indexOf(t) !== -1; }) === undefined)
-                return;
-            // Set dropEffect (icon)
-            e.dataTransfer.dropEffect = "link";
-            return {
-                dragText: "Drag To New Tab",
-                json: {
-                    type: "tab",
-                    component: "multitype"
-                },
-                onDrop: function (node, event) {
-                    if (!node || !event)
-                        return; // aborted drag
-                    if (node instanceof index_1.TabNode && event instanceof DragEvent) {
-                        var dragEvent = event;
-                        if (dragEvent.dataTransfer) {
-                            if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/uri-list");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data: data, type: "url" } }));
-                            }
-                            else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/html");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data: data, type: "html" } }));
-                            }
-                            else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/plain");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data: data, type: "text" } }));
-                            }
-                        }
-                    }
-                }
-            };
-        };
-        _this.onTabDrag = function (dragging, over, x, y, location, refresh) {
-            var tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
-            if (tabStorageImpl) {
-                return tabStorageImpl(dragging, over, x, y, location, refresh);
-            }
-            return undefined;
-        };
-        _this.onShowLayoutClick = function (event) {
-            console.log(JSON.stringify(_this.state.model.toJson(), null, "\t"));
-        };
-        _this.onAdded = function () {
-            _this.setState({ adding: false });
-        };
-        _this.onTableClick = function (node, event) {
-            // console.log("tab: \n" + node._toAttributeString());
-            // console.log("tabset: \n" + node.getParent()!._toAttributeString());
-        };
-        _this.onAction = function (action) {
-            return action;
-        };
-        _this.factory = function (node) {
-            // log lifecycle events
-            //node.setEventListener("resize", function(p){console.log("resize", node);});
-            //node.setEventListener("visibility", function(p){console.log("visibility", node);});
-            //node.setEventListener("close", function(p){console.log("close", node);});
-            var component = node.getComponent();
-            if (component === "grid") {
-                if (node.getExtraData().data == null) {
-                    // create data in node extra data first time accessed
-                    node.getExtraData().data = _this.makeFakeData();
-                }
-                return React.createElement(SimpleTable, { fields: fields, onClick: _this.onTableClick.bind(_this, node), data: node.getExtraData().data });
-            }
-            else if (component === "sub") {
-                var model = node.getExtraData().model;
-                if (model == null) {
-                    node.getExtraData().model = index_1.Model.fromJson(node.getConfig().model);
-                    model = node.getExtraData().model;
-                    // save submodel on save event
-                    node.setEventListener("save", function (p) {
-                        _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
-                        //  node.getConfig().model = node.getExtraData().model.toJson();
-                    });
-                }
-                return React.createElement(index_1.Layout, { model: model, factory: _this.factory });
-            }
-            else if (component === "text") {
-                try {
-                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
-            else if (component === "newfeatures") {
-                return React.createElement(NewFeatures_1.NewFeatures, null);
-            }
-            else if (component === "multitype") {
-                try {
-                    var config = node.getConfig();
-                    if (config.type === "url") {
-                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", border: "none", boxSizing: "border-box" }, width: "100%", height: "100%" });
-                    }
-                    else if (config.type === "html") {
-                        return (React.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
-                    }
-                    else if (config.type === "text") {
-                        return (React.createElement("textarea", { style: { position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }, defaultValue: config.data }));
-                    }
-                }
-                catch (e) {
-                    return (React.createElement("div", null, String(e)));
-                }
-            }
-            else if (component === "tabstorage") {
-                return React.createElement(TabStorage_1.TabStorage, { tab: node, layout: _this.refs.layout });
-            }
-            return null;
-        };
-        _this.titleFactory = function (node) {
-            if (node.getId() === "custom-tab") {
-                // return "(Added by titleFactory) " + node.getName();
-                return {
-                    titleContent: React.createElement("div", null,
-                        "(Added by titleFactory) ",
-                        node.getName()),
-                    name: "the name for custom tab"
-                };
-            }
-            return;
-        };
-        _this.iconFactory = function (node) {
-            if (node.getId() === "custom-tab") {
-                return React.createElement(React.Fragment, null,
-                    React.createElement("span", { style: { marginRight: 3 } }, ":)"));
-            }
-            return;
-        };
-        _this.onSelectLayout = function (event) {
-            var target = event.target;
-            _this.loadLayout(target.value);
-        };
-        _this.onReloadFromFile = function (event) {
-            _this.loadLayout(_this.state.layoutFile, true);
-        };
-        _this.onThemeChange = function (event) {
-            var target = event.target;
-            var flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
-            var index = flexlayout_stylesheet.href.lastIndexOf("/");
-            var newAddress = flexlayout_stylesheet.href.substr(0, index);
-            flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
-            var page_stylesheet = window.document.getElementById("page-stylesheet");
-            page_stylesheet.setAttribute("href", target.value + ".css");
-            _this.forceUpdate();
-        };
-        _this.onSizeChange = function (event) {
-            var target = event.target;
-            _this.setState({ fontSize: target.value });
-        };
-        _this.onRenderTab = function (node, renderValues) {
-            // renderValues.content = (<InnerComponent/>);
-            // renderValues.content += " *";
-            // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
-            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
-            // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-        };
-        _this.onRenderTabSet = function (node, renderValues) {
-            if (_this.state.layoutFile === "default") {
-                //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-                //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: function () { return _this.onAddFromTabSetButton(node); } }));
-            }
-        };
-        _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
-        // save layout when unloading page
-        window.onbeforeunload = function (event) {
-            _this.save();
-        };
-        return _this;
-    }
-    App.prototype.preventIOSScrollingWhenDragging = function (e) {
-        if (index_1.DragDrop.instance.isActive()) {
-            e.preventDefault();
-        }
-    };
-    App.prototype.componentDidMount = function () {
-        this.loadLayout("default", false);
-        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
-        // use to generate json typescript interfaces 
-        // Model.toTypescriptInterfaces();
-    };
-    App.prototype.save = function () {
-        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
-        localStorage.setItem(this.state.layoutFile, jsonStr);
-    };
-    App.prototype.loadLayout = function (layoutName, reload) {
-        if (this.state.layoutFile !== null) {
-            this.save();
-        }
-        this.loadingLayoutName = layoutName;
-        var loaded = false;
-        if (!reload) {
-            var json = localStorage.getItem(layoutName);
-            if (json != null) {
-                this.load(json);
-                loaded = true;
-            }
-        }
-        if (!loaded) {
-            Utils_1.Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
-        }
-    };
-    App.prototype.render = function () {
-        var contents = "loading ...";
-        var maximized = false;
-        if (this.state.model !== null) {
-            maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined });
-        }
-        return (React.createElement(ContextExample.Provider, { value: "from context" },
-            React.createElement("div", { className: "app" },
-                React.createElement("div", { className: "toolbar", dir: "ltr" },
-                    React.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
-                        React.createElement("option", { value: "default" }, "Default"),
-                        React.createElement("option", { value: "newfeatures" }, "New Features"),
-                        React.createElement("option", { value: "simple" }, "Simple"),
-                        React.createElement("option", { value: "justsplitters" }, "Just Splitters"),
-                        React.createElement("option", { value: "sub" }, "SubLayout"),
-                        React.createElement("option", { value: "complex" }, "Complex"),
-                        React.createElement("option", { value: "preferred" }, "Using Preferred size"),
-                        React.createElement("option", { value: "trader" }, "Trader")),
-                    React.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
-                    React.createElement("div", { style: { flexGrow: 1 } }),
-                    React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
-                    React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
-                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
-                        React.createElement("option", { value: "xx-small" }, "Size xx-small"),
-                        React.createElement("option", { value: "x-small" }, "Size x-small"),
-                        React.createElement("option", { value: "small" }, "Size small"),
-                        React.createElement("option", { value: "medium" }, "Size medium"),
-                        React.createElement("option", { value: "large" }, "Size large"),
-                        React.createElement("option", { value: "8px" }, "Size 8px"),
-                        React.createElement("option", { value: "10px" }, "Size 10px"),
-                        React.createElement("option", { value: "12px" }, "Size 12px"),
-                        React.createElement("option", { value: "14px" }, "Size 14px"),
-                        React.createElement("option", { value: "16px" }, "Size 16px"),
-                        React.createElement("option", { value: "18px" }, "Size 18px"),
-                        React.createElement("option", { value: "20px" }, "Size 20px"),
-                        React.createElement("option", { value: "25px" }, "Size 25px"),
-                        React.createElement("option", { value: "30px" }, "Size 30px")),
-                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
-                        React.createElement("option", { value: "light" }, "Light"),
-                        React.createElement("option", { value: "gray" }, "Gray"),
-                        React.createElement("option", { value: "dark" }, "Dark")),
-                    React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
-                React.createElement("div", { className: "contents" }, contents))));
-    };
-    App.prototype.makeFakeData = function () {
-        var data = [];
-        var r = Math.random() * 50;
-        for (var i = 0; i < r; i++) {
-            var rec = {};
-            rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            for (var j = 1; j < fields.length; j++) {
-                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
-            }
-            data.push(rec);
-        }
-        return data;
-    };
-    App.prototype.randomString = function (len, chars) {
-        var a = [];
-        for (var i = 0; i < len; i++) {
-            a.push(chars[Math.floor(Math.random() * chars.length)]);
-        }
-        return a.join("");
-    };
-    return App;
-}(React.Component));
-var SimpleTable = /** @class */ (function (_super) {
-    __extends(SimpleTable, _super);
-    function SimpleTable() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    SimpleTable.prototype.shouldComponentUpdate = function () {
-        return true;
-    };
-    SimpleTable.prototype.render = function () {
-        var _this = this;
-        // if (Math.random()>0.8) throw Error("oppps I crashed");
-        var headercells = this.props.fields.map(function (field) {
-            return React.createElement("th", { key: field }, field);
-        });
-        var rows = [];
-        for (var i = 0; i < this.props.data.length; i++) {
-            var row = this.props.fields.map(function (field) { return React.createElement("td", { key: field }, _this.props.data[i][field]); });
-            rows.push(React.createElement("tr", { key: i }, row));
-        }
-        return React.createElement("table", { className: "simple_table", onClick: this.props.onClick },
-            React.createElement("tbody", null,
-                React.createElement("tr", null, headercells),
-                rows));
-    };
-    return SimpleTable;
-}(React.Component));
-// function InnerComponent() {
-//     const value = React.useContext(ContextExample);
-//     return <span>{value}</span>;
-// }
-ReactDOM.render(React.createElement(App, null), document.getElementById("container"));
-
-
-/***/ }),
-
-/***/ "./examples/demo/NewFeatures.tsx":
-/*!***************************************!*\
-  !*** ./examples/demo/NewFeatures.tsx ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NewFeatures = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-function NewFeatures() {
-    return (React.createElement("ul", null,
-        React.createElement("li", null,
-            "Help text (tooltip) option on tabs: ",
-            React.createElement("br", null),
-            React.createElement("small", null, "Hover over this tab button")),
-        React.createElement("li", null,
-            "Action to close tabset:",
-            React.createElement("br", null),
-            React.createElement("small", null, "See added x button in this tabset")),
-        React.createElement("li", null,
-            "Intercept drag drop to allow dropping tabs into custom areas:",
-            React.createElement("br", null),
-            React.createElement("small", null, "See Tab Storage tab")),
-        React.createElement("li", null,
-            "Allow narrow splitters with extended hit test areas:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Uses the splitterExtra global attribute")),
-        React.createElement("li", null,
-            "Tab attributes: borderWidth, borderHeight to allow tabs to have individual sizes in borders:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Try the 'With border sizes' tab")),
-        React.createElement("li", null,
-            "Customize the drag rectangle using the callback property: onRenderDragRect ",
-            React.createElement("br", null),
-            React.createElement("small", null, "In this layout all drag rectangles are custom rendered")),
-        React.createElement("li", null,
-            "New border attribute: enableAutoHide, to hide border if it has zero tabs:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Try moving all tabs from any of the borders")),
-        React.createElement("li", null,
-            "New onRenderFloatingTabPlaceholder prop:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Popout one of the tabs to see the custom rendered placeholder")),
-        React.createElement("li", null,
-            "New onContextMenu prop:",
-            React.createElement("br", null),
-            React.createElement("small", null, "All tabs and tabsets in this layout have a custom context menu"))));
-}
-exports.NewFeatures = NewFeatures;
-
-
-/***/ }),
-
-/***/ "./examples/demo/PopupMenu.tsx":
-/*!*************************************!*\
-  !*** ./examples/demo/PopupMenu.tsx ***!
-  \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.showPopup = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var src_1 = __webpack_require__(/*! ../../src */ "./src/index.ts");
-/** @hidden @internal */
-function showPopup(title, layoutDiv, x, y, items, onSelect) {
-    var currentDocument = layoutDiv.ownerDocument;
-    var layoutRect = layoutDiv.getBoundingClientRect();
-    var elm = currentDocument.createElement("div");
-    elm.className = "popup_menu_container";
-    if (x < layoutRect.left + layoutRect.width / 2) {
-        elm.style.left = x - layoutRect.left + "px";
-    }
-    else {
-        elm.style.right = layoutRect.right - x + "px";
-    }
-    if (y < layoutRect.top + layoutRect.height / 2) {
-        elm.style.top = y - layoutRect.top + "px";
-    }
-    else {
-        elm.style.bottom = layoutRect.bottom - y + "px";
-    }
-    src_1.DragDrop.instance.addGlass(function () { return onHide(undefined); });
-    src_1.DragDrop.instance.setGlassCursorOverride("default");
-    layoutDiv.appendChild(elm);
-    var onHide = function (item) {
-        src_1.DragDrop.instance.hideGlass();
-        onSelect(item);
-        layoutDiv.removeChild(elm);
-        ReactDOM.unmountComponentAtNode(elm);
-        elm.removeEventListener("mousedown", onElementMouseDown);
-        currentDocument.removeEventListener("mousedown", onDocMouseDown);
-    };
-    var onElementMouseDown = function (event) {
-        event.stopPropagation();
-    };
-    var onDocMouseDown = function (event) {
-        onHide(undefined);
-    };
-    elm.addEventListener("mousedown", onElementMouseDown);
-    currentDocument.addEventListener("mousedown", onDocMouseDown);
-    ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onHide: onHide, title: title, items: items }), elm);
-}
-exports.showPopup = showPopup;
-/** @hidden @internal */
-var PopupMenu = function (props) {
-    var title = props.title, items = props.items, onHide = props.onHide;
-    var onItemClick = function (item, event) {
-        onHide(item);
-        event.stopPropagation();
-    };
-    var itemElements = items.map(function (item) { return (React.createElement("div", { key: item, className: "popup_menu_item", onClick: function (event) { return onItemClick(item, event); } }, item)); });
-    return (React.createElement("div", { className: "popup_menu" },
-        React.createElement("div", { className: "popup_menu_title" }, title),
-        itemElements));
-};
-
-
-/***/ }),
-
-/***/ "./examples/demo/TabStorage.tsx":
-/*!**************************************!*\
-  !*** ./examples/demo/TabStorage.tsx ***!
-  \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TabStorage = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
-var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
-function TabStorage(_a) {
-    var _b, _c;
-    var tab = _a.tab, layout = _a.layout;
-    var _d = react_1.useState((_c = (_b = tab.getConfig()) === null || _b === void 0 ? void 0 : _b.storedTabs) !== null && _c !== void 0 ? _c : []), storedTabs = _d[0], setStoredTabs = _d[1];
-    react_1.useEffect(function () {
-        var _a;
-        tab.getModel().doAction(index_1.Actions.updateNodeAttributes(tab.getId(), { config: __assign(__assign({}, ((_a = tab.getConfig()) !== null && _a !== void 0 ? _a : {})), { storedTabs: storedTabs }) }));
-    }, [storedTabs]);
-    var _e = react_1.useState(null), contents = _e[0], setContents = _e[1];
-    var _f = react_1.useState(null), list = _f[0], setList = _f[1];
-    var refs = react_1.useRef(new Map()).current;
-    var _g = react_1.useState(null), emptyElem = _g[0], setEmptyElem = _g[1];
-    // true = down, false = up, null = none
-    var _h = react_1.useState(null), scrollDown = _h[0], setScrollDown = _h[1];
-    var scrollInvalidateRef = react_1.useRef();
-    var scroller = react_1.useCallback(function (isDown) {
-        var _a;
-        contents === null || contents === void 0 ? void 0 : contents.scrollBy(0, isDown ? 10 : -10);
-        (_a = scrollInvalidateRef.current) === null || _a === void 0 ? void 0 : _a.call(scrollInvalidateRef);
-    }, [contents]);
-    var scrollerRef = react_1.useRef(scroller);
-    scrollerRef.current = scroller;
-    react_1.useEffect(function () {
-        if (scrollDown !== null) {
-            var scrollInterval_1;
-            var scrollTimeout_1 = setTimeout(function () {
-                scrollerRef.current(scrollDown);
-                scrollInterval_1 = setInterval(function () { return scrollerRef.current(scrollDown); }, 50);
-            }, 500);
-            return function () {
-                clearTimeout(scrollTimeout_1);
-                clearInterval(scrollInterval_1);
-            };
-        }
-        return;
-    }, [scrollDown]);
-    var kickstartingCallback = react_1.useCallback(function (dragging) {
-        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
-        if (json.id === undefined) {
-            json.id = "#" + uuid_1.v4();
-        }
-        setStoredTabs(function (tabs) { return __spreadArray(__spreadArray([], tabs), [json]); });
-        if (dragging instanceof index_1.TabNode) {
-            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
-        }
-    }, [tab]);
-    var calculateInsertion = react_1.useCallback(function (absoluteY) {
-        var rects = storedTabs.map(function (json) { return refs.get(json.id).getBoundingClientRect(); });
-        var splits = [rects[0].top];
-        for (var i = 1; i < rects.length; i++) {
-            splits.push((rects[i - 1].bottom + rects[i].top) / 2);
-        }
-        splits.push(rects[rects.length - 1].bottom);
-        var insertionIndex = 0;
-        for (var i = 1; i < splits.length; i++) {
-            if (Math.abs(splits[i] - absoluteY) <= Math.abs(splits[insertionIndex] - absoluteY)) {
-                insertionIndex = i;
-            }
-        }
-        return {
-            insertionIndex: insertionIndex,
-            split: splits[insertionIndex]
-        };
-    }, [storedTabs]);
-    var insertionCallback = react_1.useCallback(function (dragging, _, __, y) {
-        var absoluteY = y + tab.getRect().y + layout.getDomRect().top;
-        var insertionIndex = calculateInsertion(absoluteY).insertionIndex;
-        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
-        if (json.id === undefined) {
-            json.id = "#" + uuid_1.v4();
-        }
-        setStoredTabs(function (tabs) {
-            var newTabs = __spreadArray([], tabs);
-            var foundAt = newTabs.indexOf(json);
-            if (foundAt > -1) {
-                newTabs.splice(foundAt, 1);
-                newTabs.splice(insertionIndex > foundAt ? insertionIndex - 1 : insertionIndex, 0, json);
-            }
-            else {
-                newTabs.splice(insertionIndex, 0, json);
-            }
-            return newTabs;
-        });
-        setScrollDown(null);
-        if (dragging instanceof index_1.TabNode) {
-            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
-        }
-    }, [calculateInsertion, tab, layout]);
-    tab.getExtraData().tabStorage_onTabDrag = react_1.useCallback((function (dragging, over, x, y, _, refresh) {
-        if (contents && list) {
-            var layoutDomRect = layout.getDomRect();
-            var tabRect = tab.getRect();
-            var rootX = tabRect.x + layoutDomRect.left;
-            var rootY = tabRect.y + layoutDomRect.top;
-            var absX = x + rootX;
-            var absY = y + rootY;
-            var listBounds = list.getBoundingClientRect();
-            if (absX < listBounds.left || absX >= listBounds.right ||
-                absY < listBounds.top || absY >= listBounds.bottom)
-                return;
-            if (emptyElem) {
-                return {
-                    x: listBounds.left - rootX,
-                    y: listBounds.top - rootY,
-                    width: listBounds.width,
-                    height: listBounds.height,
-                    callback: kickstartingCallback,
-                    cursor: 'copy'
-                };
-            }
-            else {
-                var insertion = calculateInsertion(absY);
-                scrollInvalidateRef.current = refresh;
-                if (absY - rootY < tabRect.height / 5) {
-                    setScrollDown(false);
-                }
-                else if (absY - rootY > tabRect.height * 4 / 5) {
-                    setScrollDown(true);
-                }
-                else {
-                    setScrollDown(null);
-                }
-                return {
-                    x: listBounds.left - rootX,
-                    y: insertion.split - rootY - 2,
-                    width: listBounds.width,
-                    height: 0,
-                    callback: insertionCallback,
-                    invalidated: function () { return setScrollDown(null); },
-                    cursor: 'row-resize'
-                };
-            }
-        }
-        return undefined;
-    }), [storedTabs, contents, list, refs, emptyElem]);
-    return React.createElement("div", { ref: setContents, className: "tab-storage" },
-        React.createElement("p", null, "This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list. You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!"),
-        React.createElement("div", { ref: setList, className: "tab-storage-tabs" },
-            storedTabs.length === 0 && React.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
-            storedTabs.map(function (stored, i) {
-                var _a;
-                return (React.createElement("div", { ref: function (ref) { return ref ? refs.set(stored.id, ref) : refs.delete(stored.id); }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
-                        var _a;
-                        e.preventDefault();
-                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
-                    }, onTouchStart: function (e) {
-                        var _a;
-                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
-                    } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed'));
-            })));
-}
-exports.TabStorage = TabStorage;
-
-
-/***/ }),
-
-/***/ "./examples/demo/Utils.tsx":
-/*!*********************************!*\
-  !*** ./examples/demo/Utils.tsx ***!
-  \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Utils = void 0;
-var Utils = /** @class */ (function () {
-    function Utils() {
-    }
-    Utils.downloadFile = function (downloadUrl, onSuccess, onError) {
-        console.log("DownloadFile: " + downloadUrl);
-        if (downloadUrl) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', downloadUrl);
-            xhr.onload = function () {
-                if (xhr.status == 200) {
-                    onSuccess(xhr.responseText);
-                }
-                else {
-                    onError(xhr.status + " " + xhr.statusText);
-                }
-            };
-            xhr.onerror = function (e) {
-                console.log(e);
-                onError(e);
-            };
-            xhr.send();
-        }
-    };
-    Utils.getQueryParams = function () {
-        var a = window.location.search.substr(1);
-        if (a == "")
-            return {};
-        var params = a.split('&');
-        var b = {};
-        for (var i = 0; i < params.length; ++i) {
-            var p = params[i].split('=', 2);
-            if (p.length == 1)
-                b[p[0]] = "";
-            else
-                b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-        }
-        return b;
-    };
-    return Utils;
-}());
-exports.Utils = Utils;
-
-
-/***/ }),
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
 
 /***/ "./node_modules/object-assign/index.js":
 /*!*********************************************!*\
   !*** ./node_modules/object-assign/index.js ***!
   \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((module) => {
 
-"use strict";
 /*
 object-assign
 (c) Sindre Sorhus
@@ -1020,10 +106,8 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 /*!*************************************************************!*\
   !*** ./node_modules/react-dom/cjs/react-dom.development.js ***!
   \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 /** @license React v17.0.2
  * react-dom.development.js
  *
@@ -27289,10 +26373,8 @@ exports.version = ReactVersion;
 /*!*****************************************!*\
   !*** ./node_modules/react-dom/index.js ***!
   \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 function checkDCE() {
@@ -27334,10 +26416,8 @@ if (false) {} else {
 /*!*****************************************************!*\
   !*** ./node_modules/react/cjs/react.development.js ***!
   \*****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 /** @license React v17.0.2
  * react.development.js
  *
@@ -29679,10 +28759,8 @@ exports.version = ReactVersion;
 /*!*************************************!*\
   !*** ./node_modules/react/index.js ***!
   \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 if (false) {} else {
@@ -29696,10 +28774,8 @@ if (false) {} else {
 /*!*********************************************************************!*\
   !*** ./node_modules/scheduler/cjs/scheduler-tracing.development.js ***!
   \*********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 /** @license React v0.20.2
  * scheduler-tracing.development.js
  *
@@ -30055,10 +29131,8 @@ exports.unstable_wrap = unstable_wrap;
 /*!*************************************************************!*\
   !*** ./node_modules/scheduler/cjs/scheduler.development.js ***!
   \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 /** @license React v0.20.2
  * scheduler.development.js
  *
@@ -30713,10 +29787,8 @@ exports.unstable_wrapCallback = unstable_wrapCallback;
 /*!*****************************************!*\
   !*** ./node_modules/scheduler/index.js ***!
   \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 if (false) {} else {
@@ -30730,10 +29802,8 @@ if (false) {} else {
 /*!*******************************************!*\
   !*** ./node_modules/scheduler/tracing.js ***!
   \*******************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
 
 
 if (false) {} else {
@@ -30747,38 +29817,29 @@ if (false) {} else {
 /*!*****************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/index.js ***!
   \*****************************************************/
-/*! exports provided: v1, v3, v4, v5, NIL, version, validate, stringify, parse */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "v1": () => (/* reexport safe */ _v1_js__WEBPACK_IMPORTED_MODULE_0__["default"]),
+/* harmony export */   "v3": () => (/* reexport safe */ _v3_js__WEBPACK_IMPORTED_MODULE_1__["default"]),
+/* harmony export */   "v4": () => (/* reexport safe */ _v4_js__WEBPACK_IMPORTED_MODULE_2__["default"]),
+/* harmony export */   "v5": () => (/* reexport safe */ _v5_js__WEBPACK_IMPORTED_MODULE_3__["default"]),
+/* harmony export */   "NIL": () => (/* reexport safe */ _nil_js__WEBPACK_IMPORTED_MODULE_4__["default"]),
+/* harmony export */   "version": () => (/* reexport safe */ _version_js__WEBPACK_IMPORTED_MODULE_5__["default"]),
+/* harmony export */   "validate": () => (/* reexport safe */ _validate_js__WEBPACK_IMPORTED_MODULE_6__["default"]),
+/* harmony export */   "stringify": () => (/* reexport safe */ _stringify_js__WEBPACK_IMPORTED_MODULE_7__["default"]),
+/* harmony export */   "parse": () => (/* reexport safe */ _parse_js__WEBPACK_IMPORTED_MODULE_8__["default"])
+/* harmony export */ });
 /* harmony import */ var _v1_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v1.js */ "./node_modules/uuid/dist/esm-browser/v1.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v1", function() { return _v1_js__WEBPACK_IMPORTED_MODULE_0__["default"]; });
-
 /* harmony import */ var _v3_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./v3.js */ "./node_modules/uuid/dist/esm-browser/v3.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v3", function() { return _v3_js__WEBPACK_IMPORTED_MODULE_1__["default"]; });
-
 /* harmony import */ var _v4_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./v4.js */ "./node_modules/uuid/dist/esm-browser/v4.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v4", function() { return _v4_js__WEBPACK_IMPORTED_MODULE_2__["default"]; });
-
 /* harmony import */ var _v5_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./v5.js */ "./node_modules/uuid/dist/esm-browser/v5.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v5", function() { return _v5_js__WEBPACK_IMPORTED_MODULE_3__["default"]; });
-
 /* harmony import */ var _nil_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./nil.js */ "./node_modules/uuid/dist/esm-browser/nil.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NIL", function() { return _nil_js__WEBPACK_IMPORTED_MODULE_4__["default"]; });
-
 /* harmony import */ var _version_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./version.js */ "./node_modules/uuid/dist/esm-browser/version.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "version", function() { return _version_js__WEBPACK_IMPORTED_MODULE_5__["default"]; });
-
 /* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "validate", function() { return _validate_js__WEBPACK_IMPORTED_MODULE_6__["default"]; });
-
 /* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "stringify", function() { return _stringify_js__WEBPACK_IMPORTED_MODULE_7__["default"]; });
-
 /* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./parse.js */ "./node_modules/uuid/dist/esm-browser/parse.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return _parse_js__WEBPACK_IMPORTED_MODULE_8__["default"]; });
-
 
 
 
@@ -30795,11 +29856,12 @@ __webpack_require__.r(__webpack_exports__);
 /*!***************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/md5.js ***!
   \***************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /*
  * Browser-compatible JavaScript MD5
  *
@@ -31014,7 +30076,7 @@ function md5ii(a, b, c, d, x, s, t) {
   return md5cmn(c ^ (b | ~d), a, b, x, s, t);
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (md5);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (md5);
 
 /***/ }),
 
@@ -31022,12 +30084,13 @@ function md5ii(a, b, c, d, x, s, t) {
 /*!***************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/nil.js ***!
   \***************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = ('00000000-0000-0000-0000-000000000000');
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ('00000000-0000-0000-0000-000000000000');
 
 /***/ }),
 
@@ -31035,16 +30098,17 @@ __webpack_require__.r(__webpack_exports__);
 /*!*****************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/parse.js ***!
   \*****************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
 
 
 function parse(uuid) {
-  if (!Object(_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
+  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
     throw TypeError('Invalid UUID');
   }
 
@@ -31075,7 +30139,7 @@ function parse(uuid) {
   return arr;
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (parse);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (parse);
 
 /***/ }),
 
@@ -31083,12 +30147,13 @@ function parse(uuid) {
 /*!*****************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/regex.js ***!
   \*****************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony default export */ __webpack_exports__["default"] = (/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i);
 
 /***/ }),
 
@@ -31096,12 +30161,12 @@ __webpack_require__.r(__webpack_exports__);
 /*!***************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/rng.js ***!
   \***************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return rng; });
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ rng)
+/* harmony export */ });
 // Unique ID creation requires a high quality random # generator. In the browser we therefore
 // require the crypto API and do not support built-in fallback to lower quality random number
 // generators (like Math.random()).
@@ -31128,11 +30193,12 @@ function rng() {
 /*!****************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/sha1.js ***!
   \****************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 // Adapted from Chris Veness' SHA1 code at
 // http://www.movable-type.co.uk/scripts/sha1.html
 function f(s, x, y, z) {
@@ -31228,7 +30294,7 @@ function sha1(bytes) {
   return [H[0] >> 24 & 0xff, H[0] >> 16 & 0xff, H[0] >> 8 & 0xff, H[0] & 0xff, H[1] >> 24 & 0xff, H[1] >> 16 & 0xff, H[1] >> 8 & 0xff, H[1] & 0xff, H[2] >> 24 & 0xff, H[2] >> 16 & 0xff, H[2] >> 8 & 0xff, H[2] & 0xff, H[3] >> 24 & 0xff, H[3] >> 16 & 0xff, H[3] >> 8 & 0xff, H[3] & 0xff, H[4] >> 24 & 0xff, H[4] >> 16 & 0xff, H[4] >> 8 & 0xff, H[4] & 0xff];
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (sha1);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (sha1);
 
 /***/ }),
 
@@ -31236,11 +30302,12 @@ function sha1(bytes) {
 /*!*********************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/stringify.js ***!
   \*********************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
 
 /**
@@ -31264,14 +30331,14 @@ function stringify(arr) {
   // "undefined" in the uuid)
   // - Invalid input values for the RFC `version` or `variant` fields
 
-  if (!Object(_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
+  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
     throw TypeError('Stringified UUID is invalid');
   }
 
   return uuid;
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (stringify);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (stringify);
 
 /***/ }),
 
@@ -31279,11 +30346,12 @@ function stringify(arr) {
 /*!**************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v1.js ***!
   \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rng.js */ "./node_modules/uuid/dist/esm-browser/rng.js");
 /* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
 
@@ -31377,10 +30445,10 @@ function v1(options, buf, offset) {
     b[i + n] = node[n];
   }
 
-  return buf || Object(_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(b);
+  return buf || (0,_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(b);
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (v1);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v1);
 
 /***/ }),
 
@@ -31388,17 +30456,18 @@ function v1(options, buf, offset) {
 /*!**************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v3.js ***!
   \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v35.js */ "./node_modules/uuid/dist/esm-browser/v35.js");
 /* harmony import */ var _md5_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./md5.js */ "./node_modules/uuid/dist/esm-browser/md5.js");
 
 
-var v3 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v3', 0x30, _md5_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
-/* harmony default export */ __webpack_exports__["default"] = (v3);
+var v3 = (0,_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v3', 0x30, _md5_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v3);
 
 /***/ }),
 
@@ -31406,15 +30475,16 @@ var v3 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v3', 0x30, _md
 /*!***************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v35.js ***!
   \***************************************************/
-/*! exports provided: DNS, URL, default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DNS", function() { return DNS; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "URL", function() { return URL; });
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
-/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./parse.js */ "./node_modules/uuid/dist/esm-browser/parse.js");
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DNS": () => (/* binding */ DNS),
+/* harmony export */   "URL": () => (/* binding */ URL),
+/* harmony export */   "default": () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
+/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./parse.js */ "./node_modules/uuid/dist/esm-browser/parse.js");
 
 
 
@@ -31432,14 +30502,14 @@ function stringToBytes(str) {
 
 var DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
-/* harmony default export */ __webpack_exports__["default"] = (function (name, version, hashfunc) {
+/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, version, hashfunc) {
   function generateUUID(value, namespace, buf, offset) {
     if (typeof value === 'string') {
       value = stringToBytes(value);
     }
 
     if (typeof namespace === 'string') {
-      namespace = Object(_parse_js__WEBPACK_IMPORTED_MODULE_1__["default"])(namespace);
+      namespace = (0,_parse_js__WEBPACK_IMPORTED_MODULE_0__["default"])(namespace);
     }
 
     if (namespace.length !== 16) {
@@ -31466,7 +30536,7 @@ var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
       return buf;
     }
 
-    return Object(_stringify_js__WEBPACK_IMPORTED_MODULE_0__["default"])(bytes);
+    return (0,_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(bytes);
   } // Function#name is not settable on some platforms (#270)
 
 
@@ -31478,7 +30548,7 @@ var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
   generateUUID.DNS = DNS;
   generateUUID.URL = URL;
   return generateUUID;
-});
+}
 
 /***/ }),
 
@@ -31486,11 +30556,12 @@ var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 /*!**************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v4.js ***!
   \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rng.js */ "./node_modules/uuid/dist/esm-browser/rng.js");
 /* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
 
@@ -31513,10 +30584,10 @@ function v4(options, buf, offset) {
     return buf;
   }
 
-  return Object(_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(rnds);
+  return (0,_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(rnds);
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (v4);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v4);
 
 /***/ }),
 
@@ -31524,17 +30595,18 @@ function v4(options, buf, offset) {
 /*!**************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v5.js ***!
   \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v35.js */ "./node_modules/uuid/dist/esm-browser/v35.js");
 /* harmony import */ var _sha1_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sha1.js */ "./node_modules/uuid/dist/esm-browser/sha1.js");
 
 
-var v5 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v5', 0x50, _sha1_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
-/* harmony default export */ __webpack_exports__["default"] = (v5);
+var v5 = (0,_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v5', 0x50, _sha1_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v5);
 
 /***/ }),
 
@@ -31542,11 +30614,12 @@ var v5 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v5', 0x50, _sh
 /*!********************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/validate.js ***!
   \********************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _regex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./regex.js */ "./node_modules/uuid/dist/esm-browser/regex.js");
 
 
@@ -31554,7 +30627,7 @@ function validate(uuid) {
   return typeof uuid === 'string' && _regex_js__WEBPACK_IMPORTED_MODULE_0__["default"].test(uuid);
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (validate);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (validate);
 
 /***/ }),
 
@@ -31562,23 +30635,846 @@ function validate(uuid) {
 /*!*******************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/version.js ***!
   \*******************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-"use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
 
 
 function version(uuid) {
-  if (!Object(_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
+  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
     throw TypeError('Invalid UUID');
   }
 
   return parseInt(uuid.substr(14, 1), 16);
 }
 
-/* harmony default export */ __webpack_exports__["default"] = (version);
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (version);
+
+/***/ }),
+
+/***/ "./examples/demo/App.tsx":
+/*!*******************************!*\
+  !*** ./examples/demo/App.tsx ***!
+  \*******************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
+var NewFeatures_1 = __webpack_require__(/*! ./NewFeatures */ "./examples/demo/NewFeatures.tsx");
+var PopupMenu_1 = __webpack_require__(/*! ./PopupMenu */ "./examples/demo/PopupMenu.tsx");
+var TabStorage_1 = __webpack_require__(/*! ./TabStorage */ "./examples/demo/TabStorage.tsx");
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
+var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
+var ContextExample = React.createContext('');
+var App = /** @class */ (function (_super) {
+    __extends(App, _super);
+    function App(props) {
+        var _this = _super.call(this, props) || this;
+        _this.nextGridIndex = 1;
+        _this.showingPopupMenu = false;
+        _this.load = function (jsonText) {
+            var json = JSON.parse(jsonText);
+            var model = index_1.Model.fromJson(json);
+            // model.setOnCreateTabSet((tabNode?: TabNode) => {
+            //     console.log("onCreateTabSet " + tabNode);
+            //     // return { type: "tabset", name: "Header Text" };
+            //     return { type: "tabset" };
+            // });
+            // you can control where nodes can be dropped
+            //model.setOnAllowDrop(this.allowDrop);
+            _this.setState({ layoutFile: _this.loadingLayoutName, model: model });
+        };
+        _this.allowDrop = function (dragNode, dropInfo) {
+            var dropNode = dropInfo.node;
+            // prevent non-border tabs dropping into borders
+            if (dropNode.getType() === "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
+                return false;
+            // prevent border tabs dropping into main layout
+            if (dropNode.getType() !== "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
+                return false;
+            return true;
+        };
+        _this.error = function (reason) {
+            alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
+        };
+        _this.onAddDragMouseDown = function (event) {
+            event.stopPropagation();
+            event.preventDefault();
+            if (_this.state.model.getMaximizedTabset() == null) {
+                _this.refs.layout.addTabWithDragAndDrop(undefined, {
+                    component: "grid",
+                    icon: "images/article.svg",
+                    name: "Grid " + _this.nextGridIndex++
+                }, _this.onAdded);
+                // this.setState({ adding: true });
+            }
+        };
+        _this.onAddActiveClick = function (event) {
+            if (_this.state.model.getMaximizedTabset() == null) {
+                _this.refs.layout.addTabToActiveTabSet({
+                    component: "grid",
+                    icon: "images/article.svg",
+                    name: "Grid " + _this.nextGridIndex++
+                });
+            }
+        };
+        _this.onAddFromTabSetButton = function (node) {
+            // if (this.state.model!.getMaximizedTabset() == null) {
+            _this.refs.layout.addTabToTabSet(node.getId(), {
+                component: "grid",
+                name: "Grid " + _this.nextGridIndex++
+            });
+            // }
+        };
+        _this.onAddIndirectClick = function (event) {
+            if (_this.state.model.getMaximizedTabset() == null) {
+                _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
+                    component: "grid",
+                    name: "Grid " + _this.nextGridIndex++
+                }, _this.onAdded);
+                _this.setState({ adding: true });
+            }
+        };
+        _this.onRealtimeResize = function (event) {
+            _this.setState({
+                realtimeResize: event.target.checked
+            });
+        };
+        _this.onRenderDragRect = function (content, node, json) {
+            if (_this.state.layoutFile === "newfeatures") {
+                return (React.createElement(React.Fragment, null,
+                    content,
+                    React.createElement("div", { style: { whiteSpace: "pre" } },
+                        React.createElement("br", null),
+                        "This is a customized",
+                        React.createElement("br", null),
+                        "drag rectangle")));
+            }
+            else {
+                return undefined; // use default rendering
+            }
+        };
+        _this.onContextMenu = function (node, event) {
+            if (!_this.showingPopupMenu) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log(node, event);
+                (0, PopupMenu_1.showPopup)(node instanceof index_1.TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(), _this.refs.layout.getRootDiv(), event.clientX, event.clientY, ["Option 1", "Option 2"], function (item) {
+                    console.log("selected: " + item);
+                    _this.showingPopupMenu = false;
+                });
+                _this.showingPopupMenu = true;
+            }
+        };
+        _this.onAuxMouseClick = function (node, event) {
+            console.log(node, event);
+        };
+        _this.onRenderFloatingTabPlaceholder = function (dockPopout, showPopout) {
+            return (React.createElement("div", { className: index_1.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER },
+                React.createElement("div", null, "Custom renderer for floating tab placeholder"),
+                React.createElement("div", null,
+                    React.createElement("a", { href: "#", onClick: showPopout }, "show the tab")),
+                React.createElement("div", null,
+                    React.createElement("a", { href: "#", onClick: dockPopout }, "dock the tab"))));
+        };
+        _this.onExternalDrag = function (e) {
+            // console.log("onExternaldrag ", e.dataTransfer.types);
+            // Check for supported content type
+            var validTypes = ["text/uri-list", "text/html", "text/plain"];
+            if (e.dataTransfer.types.find(function (t) { return validTypes.indexOf(t) !== -1; }) === undefined)
+                return;
+            // Set dropEffect (icon)
+            e.dataTransfer.dropEffect = "link";
+            return {
+                dragText: "Drag To New Tab",
+                json: {
+                    type: "tab",
+                    component: "multitype"
+                },
+                onDrop: function (node, event) {
+                    if (!node || !event)
+                        return; // aborted drag
+                    if (node instanceof index_1.TabNode && event instanceof DragEvent) {
+                        var dragEvent = event;
+                        if (dragEvent.dataTransfer) {
+                            if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/uri-list");
+                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data: data, type: "url" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/html");
+                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data: data, type: "html" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
+                                var data = dragEvent.dataTransfer.getData("text/plain");
+                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data: data, type: "text" } }));
+                            }
+                        }
+                    }
+                }
+            };
+        };
+        _this.onTabDrag = function (dragging, over, x, y, location, refresh) {
+            var tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
+            if (tabStorageImpl) {
+                return tabStorageImpl(dragging, over, x, y, location, refresh);
+            }
+            return undefined;
+        };
+        _this.onShowLayoutClick = function (event) {
+            console.log(JSON.stringify(_this.state.model.toJson(), null, "\t"));
+        };
+        _this.onAdded = function () {
+            _this.setState({ adding: false });
+        };
+        _this.onTableClick = function (node, event) {
+            // console.log("tab: \n" + node._toAttributeString());
+            // console.log("tabset: \n" + node.getParent()!._toAttributeString());
+        };
+        _this.onAction = function (action) {
+            return action;
+        };
+        _this.factory = function (node) {
+            // log lifecycle events
+            //node.setEventListener("resize", function(p){console.log("resize", node);});
+            //node.setEventListener("visibility", function(p){console.log("visibility", node);});
+            //node.setEventListener("close", function(p){console.log("close", node);});
+            var component = node.getComponent();
+            if (component === "grid") {
+                if (node.getExtraData().data == null) {
+                    // create data in node extra data first time accessed
+                    node.getExtraData().data = _this.makeFakeData();
+                }
+                return React.createElement(SimpleTable, { fields: fields, onClick: _this.onTableClick.bind(_this, node), data: node.getExtraData().data });
+            }
+            else if (component === "sub") {
+                var model = node.getExtraData().model;
+                if (model == null) {
+                    node.getExtraData().model = index_1.Model.fromJson(node.getConfig().model);
+                    model = node.getExtraData().model;
+                    // save submodel on save event
+                    node.setEventListener("save", function (p) {
+                        _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                        //  node.getConfig().model = node.getExtraData().model.toJson();
+                    });
+                }
+                return React.createElement(index_1.Layout, { model: model, factory: _this.factory });
+            }
+            else if (component === "text") {
+                try {
+                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+            else if (component === "newfeatures") {
+                return React.createElement(NewFeatures_1.NewFeatures, null);
+            }
+            else if (component === "multitype") {
+                try {
+                    var config = node.getConfig();
+                    if (config.type === "url") {
+                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", border: "none", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                    }
+                    else if (config.type === "html") {
+                        return (React.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
+                    }
+                    else if (config.type === "text") {
+                        return (React.createElement("textarea", { style: { position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }, defaultValue: config.data }));
+                    }
+                }
+                catch (e) {
+                    return (React.createElement("div", null, String(e)));
+                }
+            }
+            else if (component === "tabstorage") {
+                return React.createElement(TabStorage_1.TabStorage, { tab: node, layout: _this.refs.layout });
+            }
+            return null;
+        };
+        _this.titleFactory = function (node) {
+            if (node.getId() === "custom-tab") {
+                // return "(Added by titleFactory) " + node.getName();
+                return {
+                    titleContent: React.createElement("div", null,
+                        "(Added by titleFactory) ",
+                        node.getName()),
+                    name: "the name for custom tab"
+                };
+            }
+            return;
+        };
+        _this.iconFactory = function (node) {
+            if (node.getId() === "custom-tab") {
+                return React.createElement(React.Fragment, null,
+                    React.createElement("span", { style: { marginRight: 3 } }, ":)"));
+            }
+            return;
+        };
+        _this.onSelectLayout = function (event) {
+            var target = event.target;
+            _this.loadLayout(target.value);
+        };
+        _this.onReloadFromFile = function (event) {
+            _this.loadLayout(_this.state.layoutFile, true);
+        };
+        _this.onThemeChange = function (event) {
+            var target = event.target;
+            var flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
+            var index = flexlayout_stylesheet.href.lastIndexOf("/");
+            var newAddress = flexlayout_stylesheet.href.substr(0, index);
+            flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
+            var page_stylesheet = window.document.getElementById("page-stylesheet");
+            page_stylesheet.setAttribute("href", target.value + ".css");
+            _this.forceUpdate();
+        };
+        _this.onSizeChange = function (event) {
+            var target = event.target;
+            _this.setState({ fontSize: target.value });
+        };
+        _this.onRenderTab = function (node, renderValues) {
+            // renderValues.content = (<InnerComponent/>);
+            // renderValues.content += " *";
+            // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
+            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+            // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+        };
+        _this.onRenderTabSet = function (node, renderValues) {
+            if (_this.state.layoutFile === "default") {
+                //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
+                //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: function () { return _this.onAddFromTabSetButton(node); } }));
+            }
+        };
+        _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
+        // save layout when unloading page
+        window.onbeforeunload = function (event) {
+            _this.save();
+        };
+        return _this;
+    }
+    App.prototype.preventIOSScrollingWhenDragging = function (e) {
+        if (index_1.DragDrop.instance.isActive()) {
+            e.preventDefault();
+        }
+    };
+    App.prototype.componentDidMount = function () {
+        this.loadLayout("default", false);
+        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
+        // use to generate json typescript interfaces 
+        // Model.toTypescriptInterfaces();
+    };
+    App.prototype.save = function () {
+        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
+        localStorage.setItem(this.state.layoutFile, jsonStr);
+    };
+    App.prototype.loadLayout = function (layoutName, reload) {
+        if (this.state.layoutFile !== null) {
+            this.save();
+        }
+        this.loadingLayoutName = layoutName;
+        var loaded = false;
+        if (!reload) {
+            var json = localStorage.getItem(layoutName);
+            if (json != null) {
+                this.load(json);
+                loaded = true;
+            }
+        }
+        if (!loaded) {
+            Utils_1.Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
+        }
+    };
+    App.prototype.render = function () {
+        var contents = "loading ...";
+        var maximized = false;
+        if (this.state.model !== null) {
+            maximized = this.state.model.getMaximizedTabset() !== undefined;
+            contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined });
+        }
+        return (React.createElement(ContextExample.Provider, { value: "from context" },
+            React.createElement("div", { className: "app" },
+                React.createElement("div", { className: "toolbar", dir: "ltr" },
+                    React.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
+                        React.createElement("option", { value: "default" }, "Default"),
+                        React.createElement("option", { value: "newfeatures" }, "New Features"),
+                        React.createElement("option", { value: "simple" }, "Simple"),
+                        React.createElement("option", { value: "justsplitters" }, "Just Splitters"),
+                        React.createElement("option", { value: "sub" }, "SubLayout"),
+                        React.createElement("option", { value: "complex" }, "Complex"),
+                        React.createElement("option", { value: "preferred" }, "Using Preferred size"),
+                        React.createElement("option", { value: "trader" }, "Trader")),
+                    React.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
+                    React.createElement("div", { style: { flexGrow: 1 } }),
+                    React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
+                    React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
+                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
+                        React.createElement("option", { value: "xx-small" }, "Size xx-small"),
+                        React.createElement("option", { value: "x-small" }, "Size x-small"),
+                        React.createElement("option", { value: "small" }, "Size small"),
+                        React.createElement("option", { value: "medium" }, "Size medium"),
+                        React.createElement("option", { value: "large" }, "Size large"),
+                        React.createElement("option", { value: "8px" }, "Size 8px"),
+                        React.createElement("option", { value: "10px" }, "Size 10px"),
+                        React.createElement("option", { value: "12px" }, "Size 12px"),
+                        React.createElement("option", { value: "14px" }, "Size 14px"),
+                        React.createElement("option", { value: "16px" }, "Size 16px"),
+                        React.createElement("option", { value: "18px" }, "Size 18px"),
+                        React.createElement("option", { value: "20px" }, "Size 20px"),
+                        React.createElement("option", { value: "25px" }, "Size 25px"),
+                        React.createElement("option", { value: "30px" }, "Size 30px")),
+                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
+                        React.createElement("option", { value: "light" }, "Light"),
+                        React.createElement("option", { value: "gray" }, "Gray"),
+                        React.createElement("option", { value: "dark" }, "Dark")),
+                    React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
+                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
+                React.createElement("div", { className: "contents" }, contents))));
+    };
+    App.prototype.makeFakeData = function () {
+        var data = [];
+        var r = Math.random() * 50;
+        for (var i = 0; i < r; i++) {
+            var rec = {};
+            rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            for (var j = 1; j < fields.length; j++) {
+                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
+            }
+            data.push(rec);
+        }
+        return data;
+    };
+    App.prototype.randomString = function (len, chars) {
+        var a = [];
+        for (var i = 0; i < len; i++) {
+            a.push(chars[Math.floor(Math.random() * chars.length)]);
+        }
+        return a.join("");
+    };
+    return App;
+}(React.Component));
+var SimpleTable = /** @class */ (function (_super) {
+    __extends(SimpleTable, _super);
+    function SimpleTable() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    SimpleTable.prototype.shouldComponentUpdate = function () {
+        return true;
+    };
+    SimpleTable.prototype.render = function () {
+        var _this = this;
+        // if (Math.random()>0.8) throw Error("oppps I crashed");
+        var headercells = this.props.fields.map(function (field) {
+            return React.createElement("th", { key: field }, field);
+        });
+        var rows = [];
+        for (var i = 0; i < this.props.data.length; i++) {
+            var row = this.props.fields.map(function (field) { return React.createElement("td", { key: field }, _this.props.data[i][field]); });
+            rows.push(React.createElement("tr", { key: i }, row));
+        }
+        return React.createElement("table", { className: "simple_table", onClick: this.props.onClick },
+            React.createElement("tbody", null,
+                React.createElement("tr", null, headercells),
+                rows));
+    };
+    return SimpleTable;
+}(React.Component));
+// function InnerComponent() {
+//     const value = React.useContext(ContextExample);
+//     return <span>{value}</span>;
+// }
+ReactDOM.render(React.createElement(App, null), document.getElementById("container"));
+
+
+/***/ }),
+
+/***/ "./examples/demo/NewFeatures.tsx":
+/*!***************************************!*\
+  !*** ./examples/demo/NewFeatures.tsx ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NewFeatures = void 0;
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+function NewFeatures() {
+    return (React.createElement("ul", null,
+        React.createElement("li", null,
+            "Help text (tooltip) option on tabs: ",
+            React.createElement("br", null),
+            React.createElement("small", null, "Hover over this tab button")),
+        React.createElement("li", null,
+            "Action to close tabset:",
+            React.createElement("br", null),
+            React.createElement("small", null, "See added x button in this tabset")),
+        React.createElement("li", null,
+            "Intercept drag drop to allow dropping tabs into custom areas:",
+            React.createElement("br", null),
+            React.createElement("small", null, "See Tab Storage tab")),
+        React.createElement("li", null,
+            "Allow narrow splitters with extended hit test areas:",
+            React.createElement("br", null),
+            React.createElement("small", null, "Uses the splitterExtra global attribute")),
+        React.createElement("li", null,
+            "Tab attributes: borderWidth, borderHeight to allow tabs to have individual sizes in borders:",
+            React.createElement("br", null),
+            React.createElement("small", null, "Try the 'With border sizes' tab")),
+        React.createElement("li", null,
+            "Customize the drag rectangle using the callback property: onRenderDragRect ",
+            React.createElement("br", null),
+            React.createElement("small", null, "In this layout all drag rectangles are custom rendered")),
+        React.createElement("li", null,
+            "New border attribute: enableAutoHide, to hide border if it has zero tabs:",
+            React.createElement("br", null),
+            React.createElement("small", null, "Try moving all tabs from any of the borders")),
+        React.createElement("li", null,
+            "New onRenderFloatingTabPlaceholder prop:",
+            React.createElement("br", null),
+            React.createElement("small", null, "Popout one of the tabs to see the custom rendered placeholder")),
+        React.createElement("li", null,
+            "New onContextMenu prop:",
+            React.createElement("br", null),
+            React.createElement("small", null, "All tabs and tabsets in this layout have a custom context menu"))));
+}
+exports.NewFeatures = NewFeatures;
+
+
+/***/ }),
+
+/***/ "./examples/demo/PopupMenu.tsx":
+/*!*************************************!*\
+  !*** ./examples/demo/PopupMenu.tsx ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.showPopup = void 0;
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+var src_1 = __webpack_require__(/*! ../../src */ "./src/index.ts");
+/** @hidden @internal */
+function showPopup(title, layoutDiv, x, y, items, onSelect) {
+    var currentDocument = layoutDiv.ownerDocument;
+    var layoutRect = layoutDiv.getBoundingClientRect();
+    var elm = currentDocument.createElement("div");
+    elm.className = "popup_menu_container";
+    if (x < layoutRect.left + layoutRect.width / 2) {
+        elm.style.left = x - layoutRect.left + "px";
+    }
+    else {
+        elm.style.right = layoutRect.right - x + "px";
+    }
+    if (y < layoutRect.top + layoutRect.height / 2) {
+        elm.style.top = y - layoutRect.top + "px";
+    }
+    else {
+        elm.style.bottom = layoutRect.bottom - y + "px";
+    }
+    src_1.DragDrop.instance.addGlass(function () { return onHide(undefined); });
+    src_1.DragDrop.instance.setGlassCursorOverride("default");
+    layoutDiv.appendChild(elm);
+    var onHide = function (item) {
+        src_1.DragDrop.instance.hideGlass();
+        onSelect(item);
+        layoutDiv.removeChild(elm);
+        ReactDOM.unmountComponentAtNode(elm);
+        elm.removeEventListener("mousedown", onElementMouseDown);
+        currentDocument.removeEventListener("mousedown", onDocMouseDown);
+    };
+    var onElementMouseDown = function (event) {
+        event.stopPropagation();
+    };
+    var onDocMouseDown = function (event) {
+        onHide(undefined);
+    };
+    elm.addEventListener("mousedown", onElementMouseDown);
+    currentDocument.addEventListener("mousedown", onDocMouseDown);
+    ReactDOM.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onHide: onHide, title: title, items: items }), elm);
+}
+exports.showPopup = showPopup;
+/** @hidden @internal */
+var PopupMenu = function (props) {
+    var title = props.title, items = props.items, onHide = props.onHide;
+    var onItemClick = function (item, event) {
+        onHide(item);
+        event.stopPropagation();
+    };
+    var itemElements = items.map(function (item) { return (React.createElement("div", { key: item, className: "popup_menu_item", onClick: function (event) { return onItemClick(item, event); } }, item)); });
+    return (React.createElement("div", { className: "popup_menu" },
+        React.createElement("div", { className: "popup_menu_title" }, title),
+        itemElements));
+};
+
+
+/***/ }),
+
+/***/ "./examples/demo/TabStorage.tsx":
+/*!**************************************!*\
+  !*** ./examples/demo/TabStorage.tsx ***!
+  \**************************************/
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TabStorage = void 0;
+var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
+var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
+function TabStorage(_a) {
+    var _b, _c;
+    var tab = _a.tab, layout = _a.layout;
+    var _d = (0, react_1.useState)((_c = (_b = tab.getConfig()) === null || _b === void 0 ? void 0 : _b.storedTabs) !== null && _c !== void 0 ? _c : []), storedTabs = _d[0], setStoredTabs = _d[1];
+    (0, react_1.useEffect)(function () {
+        var _a;
+        tab.getModel().doAction(index_1.Actions.updateNodeAttributes(tab.getId(), { config: __assign(__assign({}, ((_a = tab.getConfig()) !== null && _a !== void 0 ? _a : {})), { storedTabs: storedTabs }) }));
+    }, [storedTabs]);
+    var _e = (0, react_1.useState)(null), contents = _e[0], setContents = _e[1];
+    var _f = (0, react_1.useState)(null), list = _f[0], setList = _f[1];
+    var refs = (0, react_1.useRef)(new Map()).current;
+    var _g = (0, react_1.useState)(null), emptyElem = _g[0], setEmptyElem = _g[1];
+    // true = down, false = up, null = none
+    var _h = (0, react_1.useState)(null), scrollDown = _h[0], setScrollDown = _h[1];
+    var scrollInvalidateRef = (0, react_1.useRef)();
+    var scroller = (0, react_1.useCallback)(function (isDown) {
+        var _a;
+        contents === null || contents === void 0 ? void 0 : contents.scrollBy(0, isDown ? 10 : -10);
+        (_a = scrollInvalidateRef.current) === null || _a === void 0 ? void 0 : _a.call(scrollInvalidateRef);
+    }, [contents]);
+    var scrollerRef = (0, react_1.useRef)(scroller);
+    scrollerRef.current = scroller;
+    (0, react_1.useEffect)(function () {
+        if (scrollDown !== null) {
+            var scrollInterval_1;
+            var scrollTimeout_1 = setTimeout(function () {
+                scrollerRef.current(scrollDown);
+                scrollInterval_1 = setInterval(function () { return scrollerRef.current(scrollDown); }, 50);
+            }, 500);
+            return function () {
+                clearTimeout(scrollTimeout_1);
+                clearInterval(scrollInterval_1);
+            };
+        }
+        return;
+    }, [scrollDown]);
+    var kickstartingCallback = (0, react_1.useCallback)(function (dragging) {
+        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+        if (json.id === undefined) {
+            json.id = "#".concat((0, uuid_1.v4)());
+        }
+        setStoredTabs(function (tabs) { return __spreadArray(__spreadArray([], tabs, true), [json], false); });
+        if (dragging instanceof index_1.TabNode) {
+            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        }
+    }, [tab]);
+    var calculateInsertion = (0, react_1.useCallback)(function (absoluteY) {
+        var rects = storedTabs.map(function (json) { return refs.get(json.id).getBoundingClientRect(); });
+        var splits = [rects[0].top];
+        for (var i = 1; i < rects.length; i++) {
+            splits.push((rects[i - 1].bottom + rects[i].top) / 2);
+        }
+        splits.push(rects[rects.length - 1].bottom);
+        var insertionIndex = 0;
+        for (var i = 1; i < splits.length; i++) {
+            if (Math.abs(splits[i] - absoluteY) <= Math.abs(splits[insertionIndex] - absoluteY)) {
+                insertionIndex = i;
+            }
+        }
+        return {
+            insertionIndex: insertionIndex,
+            split: splits[insertionIndex]
+        };
+    }, [storedTabs]);
+    var insertionCallback = (0, react_1.useCallback)(function (dragging, _, __, y) {
+        var absoluteY = y + tab.getRect().y + layout.getDomRect().top;
+        var insertionIndex = calculateInsertion(absoluteY).insertionIndex;
+        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+        if (json.id === undefined) {
+            json.id = "#".concat((0, uuid_1.v4)());
+        }
+        setStoredTabs(function (tabs) {
+            var newTabs = __spreadArray([], tabs, true);
+            var foundAt = newTabs.indexOf(json);
+            if (foundAt > -1) {
+                newTabs.splice(foundAt, 1);
+                newTabs.splice(insertionIndex > foundAt ? insertionIndex - 1 : insertionIndex, 0, json);
+            }
+            else {
+                newTabs.splice(insertionIndex, 0, json);
+            }
+            return newTabs;
+        });
+        setScrollDown(null);
+        if (dragging instanceof index_1.TabNode) {
+            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        }
+    }, [calculateInsertion, tab, layout]);
+    tab.getExtraData().tabStorage_onTabDrag = (0, react_1.useCallback)((function (dragging, over, x, y, _, refresh) {
+        if (contents && list) {
+            var layoutDomRect = layout.getDomRect();
+            var tabRect = tab.getRect();
+            var rootX = tabRect.x + layoutDomRect.left;
+            var rootY = tabRect.y + layoutDomRect.top;
+            var absX = x + rootX;
+            var absY = y + rootY;
+            var listBounds = list.getBoundingClientRect();
+            if (absX < listBounds.left || absX >= listBounds.right ||
+                absY < listBounds.top || absY >= listBounds.bottom)
+                return;
+            if (emptyElem) {
+                return {
+                    x: listBounds.left - rootX,
+                    y: listBounds.top - rootY,
+                    width: listBounds.width,
+                    height: listBounds.height,
+                    callback: kickstartingCallback,
+                    cursor: 'copy'
+                };
+            }
+            else {
+                var insertion = calculateInsertion(absY);
+                scrollInvalidateRef.current = refresh;
+                if (absY - rootY < tabRect.height / 5) {
+                    setScrollDown(false);
+                }
+                else if (absY - rootY > tabRect.height * 4 / 5) {
+                    setScrollDown(true);
+                }
+                else {
+                    setScrollDown(null);
+                }
+                return {
+                    x: listBounds.left - rootX,
+                    y: insertion.split - rootY - 2,
+                    width: listBounds.width,
+                    height: 0,
+                    callback: insertionCallback,
+                    invalidated: function () { return setScrollDown(null); },
+                    cursor: 'row-resize'
+                };
+            }
+        }
+        return undefined;
+    }), [storedTabs, contents, list, refs, emptyElem]);
+    return React.createElement("div", { ref: setContents, className: "tab-storage" },
+        React.createElement("p", null, "This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list. You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!"),
+        React.createElement("div", { ref: setList, className: "tab-storage-tabs" },
+            storedTabs.length === 0 && React.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
+            storedTabs.map(function (stored, i) {
+                var _a;
+                return (React.createElement("div", { ref: function (ref) { return ref ? refs.set(stored.id, ref) : refs.delete(stored.id); }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
+                        var _a;
+                        e.preventDefault();
+                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
+                    }, onTouchStart: function (e) {
+                        var _a;
+                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
+                    } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed'));
+            })));
+}
+exports.TabStorage = TabStorage;
+
+
+/***/ }),
+
+/***/ "./examples/demo/Utils.tsx":
+/*!*********************************!*\
+  !*** ./examples/demo/Utils.tsx ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Utils = void 0;
+var Utils = /** @class */ (function () {
+    function Utils() {
+    }
+    Utils.downloadFile = function (downloadUrl, onSuccess, onError) {
+        console.log("DownloadFile: " + downloadUrl);
+        if (downloadUrl) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', downloadUrl);
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    onSuccess(xhr.responseText);
+                }
+                else {
+                    onError(xhr.status + " " + xhr.statusText);
+                }
+            };
+            xhr.onerror = function (e) {
+                console.log(e);
+                onError(e);
+            };
+            xhr.send();
+        }
+    };
+    Utils.getQueryParams = function () {
+        var a = window.location.search.substr(1);
+        if (a == "")
+            return {};
+        var params = a.split('&');
+        var b = {};
+        for (var i = 0; i < params.length; ++i) {
+            var p = params[i].split('=', 2);
+            if (p.length == 1)
+                b[p[0]] = "";
+            else
+                b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    };
+    return Utils;
+}());
+exports.Utils = Utils;
+
 
 /***/ }),
 
@@ -31586,14 +31482,12 @@ function version(uuid) {
 /*!**************************!*\
   !*** ./src/Attribute.ts ***!
   \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Attribute = void 0;
-/** @hidden @internal */
+/** @internal */
 var Attribute = /** @class */ (function () {
     function Attribute(name, modelName, defaultValue, alwaysWriteJson) {
         this.name = name;
@@ -31630,15 +31524,13 @@ exports.Attribute = Attribute;
 /*!*************************************!*\
   !*** ./src/AttributeDefinitions.ts ***!
   \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AttributeDefinitions = void 0;
 var Attribute_1 = __webpack_require__(/*! ./Attribute */ "./src/Attribute.ts");
-/** @hidden @internal */
+/** @internal */
 var AttributeDefinitions = /** @class */ (function () {
     function AttributeDefinitions() {
         this.attributes = [];
@@ -31667,15 +31559,17 @@ var AttributeDefinitions = /** @class */ (function () {
         return undefined;
     };
     AttributeDefinitions.prototype.toJson = function (jsonObj, obj) {
-        this.attributes.forEach(function (attr) {
+        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
+            var attr = _a[_i];
             var fromValue = obj[attr.name];
             if (attr.alwaysWriteJson || fromValue !== attr.defaultValue) {
                 jsonObj[attr.name] = fromValue;
             }
-        });
+        }
     };
     AttributeDefinitions.prototype.fromJson = function (jsonObj, obj) {
-        this.attributes.forEach(function (attr) {
+        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
+            var attr = _a[_i];
             var fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
                 obj[attr.name] = attr.defaultValue;
@@ -31683,20 +31577,22 @@ var AttributeDefinitions = /** @class */ (function () {
             else {
                 obj[attr.name] = fromValue;
             }
-        });
+        }
     };
     AttributeDefinitions.prototype.update = function (jsonObj, obj) {
-        this.attributes.forEach(function (attr) {
+        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
+            var attr = _a[_i];
             var fromValue = jsonObj[attr.name];
             if (fromValue !== undefined) {
                 obj[attr.name] = fromValue;
             }
-        });
+        }
     };
     AttributeDefinitions.prototype.setDefaults = function (obj) {
-        this.attributes.forEach(function (attr) {
+        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
+            var attr = _a[_i];
             obj[attr.name] = attr.defaultValue;
-        });
+        }
     };
     AttributeDefinitions.prototype.toTypescriptInterface = function (name, parentAttributes) {
         var lines = [];
@@ -31746,28 +31642,26 @@ exports.AttributeDefinitions = AttributeDefinitions;
 /*!*****************************!*\
   !*** ./src/DockLocation.ts ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DockLocation = void 0;
 var Orientation_1 = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
 var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
 var DockLocation = /** @class */ (function () {
-    /** @hidden @internal */
+    /** @internal */
     function DockLocation(name, orientation, indexPlus) {
         this._name = name;
         this._orientation = orientation;
         this._indexPlus = indexPlus;
         DockLocation.values[this._name] = this;
     }
-    /** @hidden @internal */
+    /** @internal */
     DockLocation.getByName = function (name) {
         return DockLocation.values[name];
     };
-    /** @hidden @internal */
+    /** @internal */
     DockLocation.getLocation = function (rect, x, y) {
         x = (x - rect.x) / rect.width;
         y = (y - rect.y) / rect.height;
@@ -31805,7 +31699,7 @@ var DockLocation = /** @class */ (function () {
     DockLocation.prototype.getOrientation = function () {
         return this._orientation;
     };
-    /** @hidden @internal */
+    /** @internal */
     DockLocation.prototype.getDockRect = function (r) {
         if (this === DockLocation.TOP) {
             return new Rect_1.Rect(r.x, r.y, r.width, r.height / 2);
@@ -31823,7 +31717,7 @@ var DockLocation = /** @class */ (function () {
             return r.clone();
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     DockLocation.prototype.split = function (rect, size) {
         if (this === DockLocation.TOP) {
             var r1 = new Rect_1.Rect(rect.x, rect.y, rect.width, size);
@@ -31847,7 +31741,7 @@ var DockLocation = /** @class */ (function () {
             return { start: r1, end: r2 };
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     DockLocation.prototype.reflect = function () {
         if (this === DockLocation.TOP) {
             return DockLocation.BOTTOM;
@@ -31883,32 +31777,30 @@ exports.DockLocation = DockLocation;
 /*!*************************!*\
   !*** ./src/DragDrop.ts ***!
   \*************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DragDrop = void 0;
 var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
-/** @hidden @internal */
+/** @internal */
 var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
 var DragDrop = /** @class */ (function () {
-    /** @hidden @internal */
+    /** @internal */
     function DragDrop() {
-        /** @hidden @internal */
+        /** @internal */
         this._manualGlassManagement = false;
-        /** @hidden @internal */
+        /** @internal */
         this._startX = 0;
-        /** @hidden @internal */
+        /** @internal */
         this._startY = 0;
-        /** @hidden @internal */
+        /** @internal */
         this._dragDepth = 0;
-        /** @hidden @internal */
+        /** @internal */
         this._glassShowing = false;
-        /** @hidden @internal */
+        /** @internal */
         this._dragging = false;
-        /** @hidden @internal */
+        /** @internal */
         this._active = false; // drag and drop is in progress, can be used on ios to prevent body scrolling (see demo)
         if (canUseDOM) {
             // check for serverside rendering
@@ -31972,12 +31864,12 @@ var DragDrop = /** @class */ (function () {
             this.setGlassCursorOverride(undefined);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._updateGlassCursor = function () {
         var _a;
         this._glass.style.cursor = (_a = this._glassCursorOverride) !== null && _a !== void 0 ? _a : this._defaultGlassCursor;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._setDefaultGlassCursor = function (cursor) {
         this._defaultGlassCursor = cursor;
         this._updateGlassCursor();
@@ -32056,14 +31948,14 @@ var DragDrop = /** @class */ (function () {
         var rtn = "(DragDrop: " + "startX=" + this._startX + ", startY=" + this._startY + ", dragging=" + this._dragging + ")";
         return rtn;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onKeyPress = function (event) {
         if (event.keyCode === 27) {
             // esc
             this._onDragCancel();
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onDragCancel = function () {
         this._rootElement.removeEventListener("dragenter", this._onDragEnter);
         this._rootElement.removeEventListener("dragover", this._onMouseMove);
@@ -32081,7 +31973,7 @@ var DragDrop = /** @class */ (function () {
         this._dragging = false;
         this._active = false;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._getLocationEvent = function (event) {
         var posEvent = event;
         if (event && event.touches) {
@@ -32089,7 +31981,7 @@ var DragDrop = /** @class */ (function () {
         }
         return posEvent;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._getLocationEventEnd = function (event) {
         var posEvent = event;
         if (event.changedTouches) {
@@ -32097,20 +31989,20 @@ var DragDrop = /** @class */ (function () {
         }
         return posEvent;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._stopPropagation = function (event) {
         if (event.stopPropagation) {
             event.stopPropagation();
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._preventDefault = function (event) {
         if (event.preventDefault && event.cancelable) {
             event.preventDefault();
         }
         return event;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onMouseMove = function (event) {
         this._lastEvent = event;
         var posEvent = this._getLocationEvent(event);
@@ -32130,7 +32022,7 @@ var DragDrop = /** @class */ (function () {
         }
         return false;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onMouseUp = function (event) {
         this._lastEvent = event;
         var posEvent = this._getLocationEventEnd(event);
@@ -32161,16 +32053,18 @@ var DragDrop = /** @class */ (function () {
                 this._fDragCancel(this._dragging);
             }
             if (Math.abs(this._startX - posEvent.clientX) <= 5 && Math.abs(this._startY - posEvent.clientY) <= 5) {
+                var isDoubleClick = false;
                 var clickTime = new Date().getTime();
                 // check for double click
                 if (Math.abs(this._clickX - posEvent.clientX) <= 5 && Math.abs(this._clickY - posEvent.clientY) <= 5) {
                     if (clickTime - this._lastClick < 500) {
                         if (this._fDblClick) {
                             this._fDblClick(event);
+                            isDoubleClick = true;
                         }
                     }
                 }
-                if (this._fClick) {
+                if (!isDoubleClick && this._fClick) {
                     this._fClick(event);
                 }
                 this._lastClick = clickTime;
@@ -32180,14 +32074,14 @@ var DragDrop = /** @class */ (function () {
         }
         return false;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onDragEnter = function (event) {
         this._preventDefault(event);
         this._stopPropagation(event);
         this._dragDepth++;
         return false;
     };
-    /** @hidden @internal */
+    /** @internal */
     DragDrop.prototype._onDragLeave = function (event) {
         this._preventDefault(event);
         this._stopPropagation(event);
@@ -32209,12 +32103,10 @@ exports.DragDrop = DragDrop;
 /*!*************************!*\
   !*** ./src/DropInfo.ts ***!
   \*************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DropInfo = void 0;
 var DropInfo = /** @class */ (function () {
     function DropInfo(node, rect, location, index, className) {
@@ -32235,12 +32127,10 @@ exports.DropInfo = DropInfo;
 /*!**************************!*\
   !*** ./src/I18nLabel.ts ***!
   \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.I18nLabel = void 0;
 var I18nLabel;
 (function (I18nLabel) {
@@ -32265,15 +32155,13 @@ var I18nLabel;
 /*!****************************!*\
   !*** ./src/Orientation.ts ***!
   \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Orientation = void 0;
 var Orientation = /** @class */ (function () {
-    /** @hidden @internal */
+    /** @internal */
     function Orientation(name) {
         this._name = name;
     }
@@ -32304,18 +32192,16 @@ exports.Orientation = Orientation;
 /*!***************************!*\
   !*** ./src/PopupMenu.tsx ***!
   \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.showPopup = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var _1 = __webpack_require__(/*! . */ "./src/index.ts");
+var DragDrop_1 = __webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts");
 var Types_1 = __webpack_require__(/*! ./Types */ "./src/Types.ts");
 var TabButtonStamp_1 = __webpack_require__(/*! ./view/TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
-/** @hidden @internal */
+/** @internal */
 function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFactory) {
     var layoutDiv = layout.getRootDiv();
     var classNameMapper = layout.getClassName;
@@ -32336,12 +32222,12 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     else {
         elm.style.bottom = layoutRect.bottom - triggerRect.bottom + "px";
     }
-    _1.DragDrop.instance.addGlass(function () { return onHide(); });
-    _1.DragDrop.instance.setGlassCursorOverride("default");
+    DragDrop_1.DragDrop.instance.addGlass(function () { return onHide(); });
+    DragDrop_1.DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
     var onHide = function () {
         layout.hidePortal();
-        _1.DragDrop.instance.hideGlass();
+        DragDrop_1.DragDrop.instance.hideGlass();
         layoutDiv.removeChild(elm);
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
@@ -32357,7 +32243,7 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     layout.showPortal(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }), elm);
 }
 exports.showPopup = showPopup;
-/** @hidden @internal */
+/** @internal */
 var PopupMenu = function (props) {
     var items = props.items, onHide = props.onHide, onSelect = props.onSelect, classNameMapper = props.classNameMapper, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory;
     var onItemClick = function (item, event) {
@@ -32378,12 +32264,10 @@ var PopupMenu = function (props) {
 /*!*********************!*\
   !*** ./src/Rect.ts ***!
   \*********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Rect = void 0;
 var Orientation_1 = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
 var Rect = /** @class */ (function () {
@@ -32447,7 +32331,7 @@ var Rect = /** @class */ (function () {
         this.x = (outerRect.width - this.width) / 2;
         this.y = (outerRect.height - this.height) / 2;
     };
-    /** @hidden @internal */
+    /** @internal */
     Rect.prototype._getSize = function (orientation) {
         var prefSize = this.width;
         if (orientation === Orientation_1.Orientation.VERT) {
@@ -32469,12 +32353,10 @@ exports.Rect = Rect;
 /*!**********************!*\
   !*** ./src/Types.ts ***!
   \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.CLASSES = void 0;
 var CLASSES;
 (function (CLASSES) {
@@ -32556,10 +32438,8 @@ var CLASSES;
 /*!**********************!*\
   !*** ./src/index.ts ***!
   \**********************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -32571,7 +32451,7 @@ var __createBinding = (this && this.__createBinding) || (Object.create ? (functi
 var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 __exportStar(__webpack_require__(/*! ./view/Layout */ "./src/view/Layout.tsx"), exports);
 __exportStar(__webpack_require__(/*! ./model/Action */ "./src/model/Action.ts"), exports);
 __exportStar(__webpack_require__(/*! ./model/Actions */ "./src/model/Actions.ts"), exports);
@@ -32602,12 +32482,10 @@ __exportStar(__webpack_require__(/*! ./Types */ "./src/Types.ts"), exports);
 /*!*****************************!*\
   !*** ./src/model/Action.ts ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Action = void 0;
 var Action = /** @class */ (function () {
     function Action(type, data) {
@@ -32625,12 +32503,10 @@ exports.Action = Action;
 /*!******************************!*\
   !*** ./src/model/Actions.ts ***!
   \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Actions = void 0;
 var Action_1 = __webpack_require__(/*! ./Action */ "./src/model/Action.ts");
 /**
@@ -32795,10 +32671,8 @@ exports.Actions = Actions;
 /*!*********************************!*\
   !*** ./src/model/BorderNode.ts ***!
   \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -32815,7 +32689,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BorderNode = void 0;
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
@@ -32830,21 +32704,21 @@ var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 var BorderNode = /** @class */ (function (_super) {
     __extends(BorderNode, _super);
-    /** @hidden @internal */
+    /** @internal */
     function BorderNode(location, json, model) {
         var _this = _super.call(this, model) || this;
-        /** @hidden @internal */
+        /** @internal */
         _this._adjustedSize = 0;
-        /** @hidden @internal */
+        /** @internal */
         _this._calculatedBorderBarSize = 0;
         _this._location = location;
         _this._drawChildren = [];
-        _this._attributes.id = "border_" + location.getName();
+        _this._attributes.id = "border_".concat(location.getName());
         BorderNode._attributeDefinitions.fromJson(json, _this._attributes);
         model._addNode(_this);
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     BorderNode._fromJson = function (json, model) {
         var location = DockLocation_1.DockLocation.getByName(json.location);
         var border = new BorderNode(location, json, model);
@@ -32857,7 +32731,7 @@ var BorderNode = /** @class */ (function (_super) {
         }
         return border;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
         attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
@@ -32903,7 +32777,7 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype.getClassName = function () {
         return this._getAttr("className");
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype.calcBorderBarSize = function (metrics) {
         var barSize = this._getAttr("barSize");
         if (barSize !== 0) {
@@ -32977,11 +32851,11 @@ var BorderNode = /** @class */ (function (_super) {
     BorderNode.prototype.isAutoHide = function () {
         return this._getAttr("enableAutoHide");
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._setSelected = function (index) {
         this._attributes.selected = index;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._setSize = function (pos) {
         var selected = this.getSelected();
         if (selected === -1) {
@@ -33003,42 +32877,42 @@ var BorderNode = /** @class */ (function (_super) {
             }
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._updateAttrs = function (json) {
         BorderNode._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._getDrawChildren = function () {
         return this._drawChildren;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._setAdjustedSize = function (size) {
         this._adjustedSize = size;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._getAdjustedSize = function () {
         return this._adjustedSize;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._layoutBorderOuter = function (outer, metrics) {
         this.calcBorderBarSize(metrics);
         var split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
         this._tabHeaderRect = split1.start;
         return split1.end;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._layoutBorderInner = function (inner, metrics) {
-        var _this = this;
         this._drawChildren = [];
         var location = this._location;
         var split1 = location.split(inner, this._adjustedSize + this._model.getSplitterSize()); // split off tab contents
         var split2 = location.reflect().split(split1.start, this._model.getSplitterSize()); // split contents into content and splitter
         this._contentRect = split2.end;
-        this._children.forEach(function (child, i) {
-            child._layout(_this._contentRect, metrics);
-            child._setVisible(i === _this.getSelected());
-            _this._drawChildren.push(child);
-        });
+        for (var i = 0; i < this._children.length; i++) {
+            var child = this._children[i];
+            child._layout(this._contentRect, metrics);
+            child._setVisible(i === this.getSelected());
+            this._drawChildren.push(child);
+        }
         if (this.getSelected() === -1) {
             return inner;
         }
@@ -33050,14 +32924,14 @@ var BorderNode = /** @class */ (function (_super) {
             return split1.end;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._remove = function (node) {
         var removedIndex = this._removeChild(node);
         if (this.getSelected() !== -1) {
-            Utils_1.adjustSelectedIndex(this, removedIndex);
+            (0, Utils_1.adjustSelectedIndex)(this, removedIndex);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype.canDrop = function (dragNode, x, y) {
         if (dragNode.getType() !== TabNode_1.TabNode.TYPE) {
             return undefined;
@@ -33136,13 +33010,13 @@ var BorderNode = /** @class */ (function (_super) {
         }
         return dropInfo;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype.drop = function (dragNode, location, index, select) {
         var fromIndex = 0;
         var dragParent = dragNode.getParent();
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            Utils_1.adjustSelectedIndex(dragParent, fromIndex);
+            (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
@@ -33168,7 +33042,7 @@ var BorderNode = /** @class */ (function (_super) {
         json.children = this._children.map(function (child) { return child.toJson(); });
         return json;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._getSplitterBounds = function (splitter, useMinSize) {
         if (useMinSize === void 0) { useMinSize = false; }
         var pBounds = [0, 0];
@@ -33194,7 +33068,7 @@ var BorderNode = /** @class */ (function (_super) {
         }
         return pBounds;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._calculateSplit = function (splitter, splitterPos) {
         var pBounds = this._getSplitterBounds(splitter);
         if (this._location === DockLocation_1.DockLocation.BOTTOM || this._location === DockLocation_1.DockLocation.RIGHT) {
@@ -33204,16 +33078,16 @@ var BorderNode = /** @class */ (function (_super) {
             return Math.max(0, splitterPos - pBounds[0]);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.prototype._getAttributeDefinitions = function () {
         return BorderNode._attributeDefinitions;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderNode.getAttributeDefinitions = function () {
         return BorderNode._attributeDefinitions;
     };
     BorderNode.TYPE = "border";
-    /** @hidden @internal */
+    /** @internal */
     BorderNode._attributeDefinitions = BorderNode._createAttributeDefinitions();
     return BorderNode;
 }(Node_1.Node));
@@ -33226,22 +33100,20 @@ exports.BorderNode = BorderNode;
 /*!********************************!*\
   !*** ./src/model/BorderSet.ts ***!
   \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BorderSet = void 0;
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
 var BorderSet = /** @class */ (function () {
-    /** @hidden @internal */
+    /** @internal */
     function BorderSet(model) {
         this._model = model;
         this._borders = [];
     }
-    /** @hidden @internal */
+    /** @internal */
     BorderSet._fromJson = function (json, model) {
         var borderSet = new BorderSet(model);
         borderSet._borders = json.map(function (borderJson) { return BorderNode_1.BorderNode._fromJson(borderJson, model); });
@@ -33250,20 +33122,22 @@ var BorderSet = /** @class */ (function () {
     BorderSet.prototype.getBorders = function () {
         return this._borders;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderSet.prototype._forEachNode = function (fn) {
-        this._borders.forEach(function (borderNode) {
+        for (var _i = 0, _a = this._borders; _i < _a.length; _i++) {
+            var borderNode = _a[_i];
             fn(borderNode, 0);
-            borderNode.getChildren().forEach(function (node) {
+            for (var _b = 0, _c = borderNode.getChildren(); _b < _c.length; _b++) {
+                var node = _c[_b];
                 node._forEachNode(fn, 1);
-            });
-        });
+            }
+        }
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderSet.prototype._toJson = function () {
         return this._borders.map(function (borderNode) { return borderNode.toJson(); });
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderSet.prototype._layoutBorder = function (outerInnerRects, metrics) {
         var rect = outerInnerRects.outer;
         var rootRow = this._model.getRoot();
@@ -33329,16 +33203,18 @@ var BorderSet = /** @class */ (function () {
                 }
             }
         }
-        showingBorders.forEach(function (border) {
+        for (var _a = 0, showingBorders_2 = showingBorders; _a < showingBorders_2.length; _a++) {
+            var border = showingBorders_2[_a];
             outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
-        });
+        }
         outerInnerRects.inner = outerInnerRects.outer;
-        showingBorders.forEach(function (border) {
+        for (var _b = 0, showingBorders_3 = showingBorders; _b < showingBorders_3.length; _b++) {
+            var border = showingBorders_3[_b];
             outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, metrics);
-        });
+        }
         return outerInnerRects;
     };
-    /** @hidden @internal */
+    /** @internal */
     BorderSet.prototype._findDropTargetNode = function (dragNode, x, y) {
         for (var _i = 0, _a = this._borders; _i < _a.length; _i++) {
             var border = _a[_i];
@@ -33362,12 +33238,10 @@ exports.BorderSet = BorderSet;
 /*!*********************************!*\
   !*** ./src/model/ICloseType.ts ***!
   \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ICloseType = void 0;
 var ICloseType;
 (function (ICloseType) {
@@ -33383,12 +33257,10 @@ var ICloseType;
 /*!*********************************!*\
   !*** ./src/model/IDraggable.ts ***!
   \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -33397,12 +33269,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /*!**********************************!*\
   !*** ./src/model/IDropTarget.ts ***!
   \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -33411,12 +33281,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /*!*********************************!*\
   !*** ./src/model/IJsonModel.ts ***!
   \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -33425,18 +33293,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /*!****************************!*\
   !*** ./src/model/Model.ts ***!
   \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Model = void 0;
+var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
@@ -33449,17 +33320,16 @@ var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
-var uuid = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
 var Model = /** @class */ (function () {
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
-     *  @hidden @internal
+     *  @internal
      */
     function Model() {
-        /** @hidden @internal */
+        /** @internal */
         this._borderRects = { inner: Rect_1.Rect.empty(), outer: Rect_1.Rect.empty() };
         this._attributes = {};
         this._idMap = {};
@@ -33482,7 +33352,7 @@ var Model = /** @class */ (function () {
         model._tidy(); // initial tidy of node tree
         return model;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
         attributeDefinitions.add("legacyOverflowMenu", false).setType(Attribute_1.Attribute.BOOLEAN);
@@ -33537,7 +33407,7 @@ var Model = /** @class */ (function () {
         attributeDefinitions.add("borderEnableAutoHide", false).setType(Attribute_1.Attribute.BOOLEAN);
         return attributeDefinitions;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._setChangeListener = function (listener) {
         this._changeListener = listener;
     };
@@ -33552,15 +33422,15 @@ var Model = /** @class */ (function () {
             return undefined;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getShowHiddenBorder = function () {
         return this._showHiddenBorder;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._setShowHiddenBorder = function (location) {
         this._showHiddenBorder = location;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._setActiveTabset = function (tabsetNode) {
         this._activeTabSet = tabsetNode;
     };
@@ -33570,7 +33440,7 @@ var Model = /** @class */ (function () {
     Model.prototype.getMaximizedTabset = function () {
         return this._maximizedTabSet;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._setMaximizedTabset = function (tabsetNode) {
         this._maximizedTabSet = tabsetNode;
     };
@@ -33594,15 +33464,15 @@ var Model = /** @class */ (function () {
     Model.prototype.getBorderSet = function () {
         return this._borders;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getOuterInnerRects = function () {
         return this._borderRects;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getPointerFine = function () {
         return this._pointerFine;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._setPointerFine = function (pointerFine) {
         this._pointerFine = pointerFine;
     };
@@ -33661,12 +33531,13 @@ var Model = /** @class */ (function () {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabSetNode_1.TabSetNode) {
                     // first delete all child tabs that are closeable
-                    var children = __spreadArray([], node.getChildren());
-                    children.forEach(function (child, i) {
+                    var children = __spreadArray([], node.getChildren(), true);
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
                         if (child.isEnableClose()) {
                             child._delete();
                         }
-                    });
+                    }
                     if (node.getChildren().length === 0) {
                         node._delete();
                     }
@@ -33678,7 +33549,7 @@ var Model = /** @class */ (function () {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabNode_1.TabNode) {
                     node._setFloating(true);
-                    Utils_1.adjustSelectedIndexAfterFloat(node);
+                    (0, Utils_1.adjustSelectedIndexAfterFloat)(node);
                 }
                 break;
             }
@@ -33686,7 +33557,7 @@ var Model = /** @class */ (function () {
                 var node = this._idMap[action.data.node];
                 if (node instanceof TabNode_1.TabNode) {
                     node._setFloating(false);
-                    Utils_1.adjustSelectedIndexAfterDock(node);
+                    (0, Utils_1.adjustSelectedIndexAfterDock)(node);
                 }
                 break;
             }
@@ -33773,7 +33644,7 @@ var Model = /** @class */ (function () {
         }
         return returnVal;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._updateIdMap = function () {
         var _this = this;
         // regenerate idMap to stop it building up
@@ -33781,7 +33652,7 @@ var Model = /** @class */ (function () {
         this.visitNodes(function (node) { return (_this._idMap[node.getId()] = node); });
         // console.log(JSON.stringify(Object.keys(this._idMap)));
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._adjustSplitSide = function (node, weight, pixels) {
         node._setWeight(weight);
         if (node.getWidth() != null && node.getOrientation() === Orientation_1.Orientation.VERT) {
@@ -33821,17 +33692,17 @@ var Model = /** @class */ (function () {
     Model.prototype.isEnableEdgeDock = function () {
         return this._attributes.enableEdgeDock;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._addNode = function (node) {
         var id = node.getId();
         if (this._idMap[id] !== undefined) {
-            throw new Error("Error: each node must have a unique id, duplicate id:" + node.getId());
+            throw new Error("Error: each node must have a unique id, duplicate id:".concat(node.getId()));
         }
         if (node.getType() !== "splitter") {
             this._idMap[id] = node;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._layout = function (rect, metrics) {
         var _a;
         // let start = Date.now();
@@ -33842,7 +33713,7 @@ var Model = /** @class */ (function () {
         // console.log("layout time: " + (Date.now() - start));
         return rect;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._findDropTargetNode = function (dragNode, x, y) {
         var node = this._root._findDropTargetNode(dragNode, x, y);
         if (node === undefined) {
@@ -33850,21 +33721,21 @@ var Model = /** @class */ (function () {
         }
         return node;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._tidy = function () {
         // console.log("before _tidy", this.toString());
         this._root._tidy();
         // console.log("after _tidy", this.toString());
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._updateAttrs = function (json) {
         Model._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._nextUniqueId = function () {
-        return '#' + uuid.v4();
+        return '#' + (0, uuid_1.v4)();
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getAttribute = function (name) {
         return this._attributes[name];
     };
@@ -33875,7 +33746,7 @@ var Model = /** @class */ (function () {
     Model.prototype.setOnAllowDrop = function (onAllowDrop) {
         this._onAllowDrop = onAllowDrop;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getOnAllowDrop = function () {
         return this._onAllowDrop;
     };
@@ -33888,7 +33759,7 @@ var Model = /** @class */ (function () {
     Model.prototype.setOnCreateTabSet = function (onCreateTabSet) {
         this._onCreateTabSet = onCreateTabSet;
     };
-    /** @hidden @internal */
+    /** @internal */
     Model.prototype._getOnCreateTabSet = function () {
         return this._onCreateTabSet;
     };
@@ -33902,7 +33773,7 @@ var Model = /** @class */ (function () {
     Model.prototype.toString = function () {
         return JSON.stringify(this.toJson());
     };
-    /** @hidden @internal */
+    /** @internal */
     Model._attributeDefinitions = Model._createAttributeDefinitions();
     return Model;
 }());
@@ -33915,22 +33786,20 @@ exports.Model = Model;
 /*!***************************!*\
   !*** ./src/model/Node.ts ***!
   \***************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Node = void 0;
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var Node = /** @class */ (function () {
-    /** @hidden @internal */
+    /** @internal */
     function Node(model) {
-        /** @hidden @internal */
+        /** @internal */
         this._dirty = false;
-        /** @hidden @internal */
+        /** @internal */
         this._tempSize = 0;
         this._model = model;
         this._attributes = {};
@@ -33982,18 +33851,18 @@ var Node = /** @class */ (function () {
     Node.prototype.removeEventListener = function (event) {
         delete this._listeners[event];
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setId = function (id) {
         this._attributes.id = id;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._fireEvent = function (event, params) {
         // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this._listeners[event] !== undefined) {
             this._listeners[event](params);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._getAttr = function (name) {
         var val = this._attributes[name];
         if (val === undefined) {
@@ -34005,50 +33874,51 @@ var Node = /** @class */ (function () {
         // console.log(name + "=" + val);
         return val;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._forEachNode = function (fn, level) {
         fn(this, level);
         level++;
-        this._children.forEach(function (node) {
+        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            var node = _a[_i];
             node._forEachNode(fn, level);
-        });
+        }
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setVisible = function (visible) {
         if (visible !== this._visible) {
             this._fireEvent("visibility", { visible: visible });
             this._visible = visible;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._getDrawChildren = function () {
         return this._children;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setParent = function (parent) {
         this._parent = parent;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setRect = function (rect) {
         this._rect = rect;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setWeight = function (weight) {
         this._attributes.weight = weight;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setSelected = function (index) {
         this._attributes.selected = index;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._isFixed = function () {
         return this._fixed;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._layout = function (rect, metrics) {
         this._rect = rect;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._findDropTargetNode = function (dragNode, x, y) {
         var rtn;
         if (this._rect.contains(x, y)) {
@@ -34067,11 +33937,11 @@ var Node = /** @class */ (function () {
         }
         return rtn;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype.canDrop = function (dragNode, x, y) {
         return undefined;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._canDockInto = function (dragNode, dropInfo) {
         if (dropInfo != null) {
             if (dropInfo.location === DockLocation_1.DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
@@ -34091,7 +33961,7 @@ var Node = /** @class */ (function () {
         }
         return true;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._removeChild = function (childNode) {
         var pos = this._children.indexOf(childNode);
         if (pos !== -1) {
@@ -34100,7 +33970,7 @@ var Node = /** @class */ (function () {
         this._dirty = true;
         return pos;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._addChild = function (childNode, pos) {
         if (pos != null) {
             this._children.splice(pos, 0, childNode);
@@ -34113,31 +33983,31 @@ var Node = /** @class */ (function () {
         this._dirty = true;
         return pos;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._removeAll = function () {
         this._children = [];
         this._dirty = true;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._styleWithPosition = function (style) {
         if (style == null) {
             style = {};
         }
         return this._rect.styleWithPosition(style);
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._getTempSize = function () {
         return this._tempSize;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._setTempSize = function (value) {
         this._tempSize = value;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype.isEnableDivide = function () {
         return true;
     };
-    /** @hidden @internal */
+    /** @internal */
     Node.prototype._toAttributeString = function () {
         return JSON.stringify(this._attributes, undefined, "\t");
     };
@@ -34152,10 +34022,8 @@ exports.Node = Node;
 /*!******************************!*\
   !*** ./src/model/RowNode.ts ***!
   \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -34183,7 +34051,7 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RowNode = void 0;
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
@@ -34198,18 +34066,18 @@ var SplitterNode_1 = __webpack_require__(/*! ./SplitterNode */ "./src/model/Spli
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
 var RowNode = /** @class */ (function (_super) {
     __extends(RowNode, _super);
-    /** @hidden @internal */
+    /** @internal */
     function RowNode(model, json) {
         var _this = _super.call(this, model) || this;
         _this._dirty = true;
         _this._drawChildren = [];
-        _this.minHeight = 0;
-        _this.minWidth = 0;
+        _this._minHeight = 0;
+        _this._minWidth = 0;
         RowNode._attributeDefinitions.fromJson(json, _this._attributes);
         model._addNode(_this);
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     RowNode._fromJson = function (json, model) {
         var newLayoutNode = new RowNode(model, json);
         if (json.children != null) {
@@ -34227,7 +34095,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return newLayoutNode;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
         attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
@@ -34246,11 +34114,11 @@ var RowNode = /** @class */ (function (_super) {
     RowNode.prototype.getHeight = function () {
         return this._getAttr("height");
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._setWeight = function (weight) {
         this._attributes.weight = weight;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._layout = function (rect, metrics) {
         _super.prototype._layout.call(this, rect, metrics);
         var pixelSize = this._rect._getSize(this.getOrientation());
@@ -34381,7 +34249,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return true;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._getSplitterBounds = function (splitterNode, useMinSize) {
         if (useMinSize === void 0) { useMinSize = false; }
         var pBounds = [0, 0];
@@ -34403,7 +34271,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return pBounds;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._calculateSplit = function (splitter, splitterPos) {
         var rtn;
         var drawChildren = this._getDrawChildren();
@@ -34426,7 +34294,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return rtn;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._getDrawChildren = function () {
         if (this._dirty) {
             this._drawChildren = [];
@@ -34443,7 +34311,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return this._drawChildren;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.getMinSize = function (orientation) {
         if (orientation === Orientation_1.Orientation.HORZ) {
             return this.getMinWidth();
@@ -34452,43 +34320,43 @@ var RowNode = /** @class */ (function (_super) {
             return this.getMinHeight();
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.getMinWidth = function () {
-        return this.minWidth;
+        return this._minWidth;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.getMinHeight = function () {
-        return this.minHeight;
+        return this._minHeight;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.calcMinSize = function () {
-        var _this = this;
-        this.minHeight = 0;
-        this.minWidth = 0;
+        this._minHeight = 0;
+        this._minWidth = 0;
         var first = true;
-        this._children.forEach(function (child) {
+        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            var child = _a[_i];
             var c = child;
             if (c instanceof RowNode) {
                 c.calcMinSize();
             }
-            if (_this.getOrientation() === Orientation_1.Orientation.VERT) {
-                _this.minHeight += c.getMinHeight();
+            if (this.getOrientation() === Orientation_1.Orientation.VERT) {
+                this._minHeight += c.getMinHeight();
                 if (!first) {
-                    _this.minHeight += _this._model.getSplitterSize();
+                    this._minHeight += this._model.getSplitterSize();
                 }
-                _this.minWidth = Math.max(_this.minWidth, c.getMinWidth());
+                this._minWidth = Math.max(this._minWidth, c.getMinWidth());
             }
             else {
-                _this.minWidth += c.getMinWidth();
+                this._minWidth += c.getMinWidth();
                 if (!first) {
-                    _this.minWidth += _this._model.getSplitterSize();
+                    this._minWidth += this._model.getSplitterSize();
                 }
-                _this.minHeight = Math.max(_this.minHeight, c.getMinHeight());
+                this._minHeight = Math.max(this._minHeight, c.getMinHeight());
             }
             first = false;
-        });
+        }
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._tidy = function () {
         var i = 0;
         while (i < this._children.length) {
@@ -34551,7 +34419,7 @@ var RowNode = /** @class */ (function (_super) {
             this._addChild(child);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.canDrop = function (dragNode, x, y) {
         var yy = y - this._rect.y;
         var xx = x - this._rect.x;
@@ -34596,7 +34464,7 @@ var RowNode = /** @class */ (function (_super) {
         }
         return dropInfo;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype.drop = function (dragNode, location, index) {
         var dockLocation = location;
         var parent = dragNode.getParent();
@@ -34634,27 +34502,29 @@ var RowNode = /** @class */ (function (_super) {
         }
         else if (horz && dockLocation === DockLocation_1.DockLocation.TOP || !horz && dockLocation === DockLocation_1.DockLocation.LEFT) {
             var vrow = new RowNode(this._model, {});
-            var hrow_1 = new RowNode(this._model, {});
-            hrow_1._setWeight(75);
+            var hrow = new RowNode(this._model, {});
+            hrow._setWeight(75);
             tabSet._setWeight(25);
-            this._children.forEach(function (child) {
-                hrow_1._addChild(child);
-            });
+            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                var child = _a[_i];
+                hrow._addChild(child);
+            }
             this._removeAll();
             vrow._addChild(tabSet);
-            vrow._addChild(hrow_1);
+            vrow._addChild(hrow);
             this._addChild(vrow);
         }
         else if (horz && dockLocation === DockLocation_1.DockLocation.BOTTOM || !horz && dockLocation === DockLocation_1.DockLocation.RIGHT) {
             var vrow = new RowNode(this._model, {});
-            var hrow_2 = new RowNode(this._model, {});
-            hrow_2._setWeight(75);
+            var hrow = new RowNode(this._model, {});
+            hrow._setWeight(75);
             tabSet._setWeight(25);
-            this._children.forEach(function (child) {
-                hrow_2._addChild(child);
-            });
+            for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
+                var child = _c[_b];
+                hrow._addChild(child);
+            }
             this._removeAll();
-            vrow._addChild(hrow_2);
+            vrow._addChild(hrow);
             vrow._addChild(tabSet);
             this._addChild(vrow);
         }
@@ -34665,15 +34535,16 @@ var RowNode = /** @class */ (function (_super) {
         var json = {};
         RowNode._attributeDefinitions.toJson(json, this._attributes);
         json.children = [];
-        this._children.forEach(function (child) {
+        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+            var child = _a[_i];
             json.children.push(child.toJson());
-        });
+        }
         return json;
     };
     RowNode.prototype.isEnableDrop = function () {
         return true;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._getPrefSize = function (orientation) {
         var prefSize = this.getWidth();
         if (orientation === Orientation_1.Orientation.VERT) {
@@ -34681,20 +34552,20 @@ var RowNode = /** @class */ (function (_super) {
         }
         return prefSize;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._getAttributeDefinitions = function () {
         return RowNode._attributeDefinitions;
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.prototype._updateAttrs = function (json) {
         RowNode._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @internal */
+    /** @internal */
     RowNode.getAttributeDefinitions = function () {
         return RowNode._attributeDefinitions;
     };
     RowNode.TYPE = "row";
-    /** @hidden @internal */
+    /** @internal */
     RowNode._attributeDefinitions = RowNode._createAttributeDefinitions();
     return RowNode;
 }(Node_1.Node));
@@ -34707,10 +34578,8 @@ exports.RowNode = RowNode;
 /*!***********************************!*\
   !*** ./src/model/SplitterNode.ts ***!
   \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -34727,14 +34596,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SplitterNode = void 0;
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var SplitterNode = /** @class */ (function (_super) {
     __extends(SplitterNode, _super);
-    /** @hidden @internal */
+    /** @internal */
     function SplitterNode(model) {
         var _this = _super.call(this, model) || this;
         _this._fixed = true;
@@ -34742,11 +34611,11 @@ var SplitterNode = /** @class */ (function (_super) {
         model._addNode(_this);
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getWidth = function () {
         return this._model.getSplitterSize();
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getMinWidth = function () {
         if (this.getOrientation() === Orientation_1.Orientation.VERT) {
             return this._model.getSplitterSize();
@@ -34755,11 +34624,11 @@ var SplitterNode = /** @class */ (function (_super) {
             return 0;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getHeight = function () {
         return this._model.getSplitterSize();
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getMinHeight = function () {
         if (this.getOrientation() === Orientation_1.Orientation.HORZ) {
             return this._model.getSplitterSize();
@@ -34768,7 +34637,7 @@ var SplitterNode = /** @class */ (function (_super) {
             return 0;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getMinSize = function (orientation) {
         if (orientation === Orientation_1.Orientation.HORZ) {
             return this.getMinWidth();
@@ -34777,19 +34646,19 @@ var SplitterNode = /** @class */ (function (_super) {
             return this.getMinHeight();
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype.getWeight = function () {
         return 0;
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype._setWeight = function (value) { };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype._getPrefSize = function (orientation) {
         return this._model.getSplitterSize();
     };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype._updateAttrs = function (json) { };
-    /** @hidden @internal */
+    /** @internal */
     SplitterNode.prototype._getAttributeDefinitions = function () {
         return new AttributeDefinitions_1.AttributeDefinitions();
     };
@@ -34808,10 +34677,8 @@ exports.SplitterNode = SplitterNode;
 /*!******************************!*\
   !*** ./src/model/TabNode.ts ***!
   \******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -34828,14 +34695,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabNode = void 0;
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var TabNode = /** @class */ (function (_super) {
     __extends(TabNode, _super);
-    /** @hidden @internal */
+    /** @internal */
     function TabNode(model, json, addToModel) {
         if (addToModel === void 0) { addToModel = true; }
         var _this = _super.call(this, model) || this;
@@ -34846,13 +34713,13 @@ var TabNode = /** @class */ (function (_super) {
         }
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     TabNode._fromJson = function (json, model, addToModel) {
         if (addToModel === void 0) { addToModel = true; }
         var newLayoutNode = new TabNode(model, json, addToModel);
         return newLayoutNode;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
         attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute_1.Attribute.STRING);
@@ -34881,15 +34748,15 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype.getTabRect = function () {
         return this._tabRect;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setTabRect = function (rect) {
         this._tabRect = rect;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setRenderedName = function (name) {
         this._renderedName = name;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._getNameForOverflowMenu = function () {
         var altName = this._getAttr("altName");
         if (altName !== undefined) {
@@ -34950,25 +34817,25 @@ var TabNode = /** @class */ (function (_super) {
     TabNode.prototype.isEnableRenderOnDemand = function () {
         return this._getAttr("enableRenderOnDemand");
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setName = function (name) {
         this._attributes.name = name;
         if (this._window && this._window.document) {
             this._window.document.title = name;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setFloating = function (float) {
         this._attributes.floating = float;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._layout = function (rect, metrics) {
         if (!rect.equals(this._rect)) {
             this._fireEvent("resize", { rect: rect });
         }
         this._rect = rect;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._delete = function () {
         this._parent._remove(this);
         this._fireEvent("close", {});
@@ -34978,32 +34845,32 @@ var TabNode = /** @class */ (function (_super) {
         TabNode._attributeDefinitions.toJson(json, this._attributes);
         return json;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._updateAttrs = function (json) {
         TabNode._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._getAttributeDefinitions = function () {
         return TabNode._attributeDefinitions;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setWindow = function (window) {
         this._window = window;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setBorderWidth = function (width) {
         this._attributes.borderWidth = width;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.prototype._setBorderHeight = function (height) {
         this._attributes.borderHeight = height;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabNode.getAttributeDefinitions = function () {
         return TabNode._attributeDefinitions;
     };
     TabNode.TYPE = "tab";
-    /** @hidden @internal */
+    /** @internal */
     TabNode._attributeDefinitions = TabNode._createAttributeDefinitions();
     return TabNode;
 }(Node_1.Node));
@@ -35016,10 +34883,8 @@ exports.TabNode = TabNode;
 /*!*********************************!*\
   !*** ./src/model/TabSetNode.ts ***!
   \*********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -35036,7 +34901,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabSetNode = void 0;
 var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
 var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
@@ -35051,23 +34916,24 @@ var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 var TabSetNode = /** @class */ (function (_super) {
     __extends(TabSetNode, _super);
-    /** @hidden @internal */
+    /** @internal */
     function TabSetNode(model, json) {
         var _this = _super.call(this, model) || this;
         TabSetNode._attributeDefinitions.fromJson(json, _this._attributes);
         model._addNode(_this);
-        _this.calculatedTabBarHeight = 0;
-        _this.calculatedHeaderBarHeight = 0;
+        _this._calculatedTabBarHeight = 0;
+        _this._calculatedHeaderBarHeight = 0;
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode._fromJson = function (json, model) {
         var newLayoutNode = new TabSetNode(model, json);
         if (json.children != null) {
-            json.children.forEach(function (jsonChild) {
+            for (var _i = 0, _a = json.children; _i < _a.length; _i++) {
+                var jsonChild = _a[_i];
                 var child = TabNode_1.TabNode._fromJson(jsonChild, model);
                 newLayoutNode._addChild(child);
-            });
+            }
         }
         if (newLayoutNode._children.length === 0) {
             newLayoutNode._setSelected(-1);
@@ -35080,7 +34946,7 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         return newLayoutNode;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode._createAttributeDefinitions = function () {
         var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
         attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
@@ -35142,7 +35008,7 @@ var TabSetNode = /** @class */ (function (_super) {
     TabSetNode.prototype.getMinHeight = function () {
         return this._getAttr("minHeight");
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype.getMinSize = function (orientation) {
         if (orientation === Orientation_1.Orientation.HORZ) {
             return this.getMinWidth();
@@ -35211,46 +35077,46 @@ var TabSetNode = /** @class */ (function (_super) {
     TabSetNode.prototype.getClassNameHeader = function () {
         return this._getAttr("classNameHeader");
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype.calculateHeaderBarHeight = function (metrics) {
         var headerBarHeight = this._getAttr("headerHeight");
         if (headerBarHeight !== 0) {
             // its defined
-            this.calculatedHeaderBarHeight = headerBarHeight;
+            this._calculatedHeaderBarHeight = headerBarHeight;
         }
         else {
-            this.calculatedHeaderBarHeight = metrics.headerBarSize;
+            this._calculatedHeaderBarHeight = metrics.headerBarSize;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype.calculateTabBarHeight = function (metrics) {
         var tabBarHeight = this._getAttr("tabStripHeight");
         if (tabBarHeight !== 0) {
             // its defined
-            this.calculatedTabBarHeight = tabBarHeight;
+            this._calculatedTabBarHeight = tabBarHeight;
         }
         else {
-            this.calculatedTabBarHeight = metrics.tabBarSize;
+            this._calculatedTabBarHeight = metrics.tabBarSize;
         }
     };
     TabSetNode.prototype.getHeaderHeight = function () {
-        return this.calculatedHeaderBarHeight;
+        return this._calculatedHeaderBarHeight;
     };
     TabSetNode.prototype.getTabStripHeight = function () {
-        return this.calculatedTabBarHeight;
+        return this._calculatedTabBarHeight;
     };
     TabSetNode.prototype.getTabLocation = function () {
         return this._getAttr("tabLocation");
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._setWeight = function (weight) {
         this._attributes.weight = weight;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._setSelected = function (index) {
         this._attributes.selected = index;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype.canDrop = function (dragNode, x, y) {
         var dropInfo;
         if (dragNode === this) {
@@ -35304,9 +35170,8 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         return dropInfo;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._layout = function (rect, metrics) {
-        var _this = this;
         this.calculateHeaderBarHeight(metrics);
         this.calculateTabBarHeight(metrics);
         if (this.isMaximized()) {
@@ -35319,40 +35184,40 @@ var TabSetNode = /** @class */ (function (_super) {
         var y = 0;
         var h = 0;
         if (showHeader) {
-            y += this.calculatedHeaderBarHeight;
-            h += this.calculatedHeaderBarHeight;
+            y += this._calculatedHeaderBarHeight;
+            h += this._calculatedHeaderBarHeight;
         }
         if (this.isEnableTabStrip()) {
             if (this.getTabLocation() === "top") {
-                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + y, rect.width, this.calculatedTabBarHeight);
+                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + y, rect.width, this._calculatedTabBarHeight);
             }
             else {
-                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + rect.height - this.calculatedTabBarHeight, rect.width, this.calculatedTabBarHeight);
+                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + rect.height - this._calculatedTabBarHeight, rect.width, this._calculatedTabBarHeight);
             }
-            h += this.calculatedTabBarHeight;
+            h += this._calculatedTabBarHeight;
             if (this.getTabLocation() === "top") {
-                y += this.calculatedTabBarHeight;
+                y += this._calculatedTabBarHeight;
             }
         }
         this._contentRect = new Rect_1.Rect(rect.x, rect.y + y, rect.width, rect.height - h);
-        this._children.forEach(function (child, i) {
-            child._layout(_this._contentRect, metrics);
-            child._setVisible(i === _this.getSelected());
-        });
+        for (var i = 0; i < this._children.length; i++) {
+            var child = this._children[i];
+            child._layout(this._contentRect, metrics);
+            child._setVisible(i === this.getSelected());
+        }
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._delete = function () {
         this._parent._removeChild(this);
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._remove = function (node) {
         var removedIndex = this._removeChild(node);
         this._model._tidy();
-        Utils_1.adjustSelectedIndex(this, removedIndex);
+        (0, Utils_1.adjustSelectedIndex)(this, removedIndex);
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype.drop = function (dragNode, location, index, select) {
-        var _this = this;
         var dockLocation = location;
         if (this === dragNode) {
             // tabset drop into itself
@@ -35362,7 +35227,7 @@ var TabSetNode = /** @class */ (function (_super) {
         var fromIndex = 0;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            Utils_1.adjustSelectedIndex(dragParent, fromIndex);
+            (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
@@ -35370,23 +35235,24 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         // simple_bundled dock to existing tabset
         if (dockLocation === DockLocation_1.DockLocation.CENTER) {
-            var insertPos_1 = index;
-            if (insertPos_1 === -1) {
-                insertPos_1 = this._children.length;
+            var insertPos = index;
+            if (insertPos === -1) {
+                insertPos = this._children.length;
             }
             if (dragNode.getType() === TabNode_1.TabNode.TYPE) {
-                this._addChild(dragNode, insertPos_1);
+                this._addChild(dragNode, insertPos);
                 if (select || (select !== false && this.isAutoSelectTab())) {
-                    this._setSelected(insertPos_1);
+                    this._setSelected(insertPos);
                 }
                 // console.log("added child at : " + insertPos);
             }
             else {
-                dragNode.getChildren().forEach(function (child, i) {
-                    _this._addChild(child, insertPos_1);
+                for (var i = 0; i < dragNode.getChildren().length; i++) {
+                    var child = dragNode.getChildren()[i];
+                    this._addChild(child, insertPos);
                     // console.log("added child at : " + insertPos);
-                    insertPos_1++;
-                });
+                    insertPos++;
+                }
             }
             this._model._setActiveTabset(this);
         }
@@ -35441,15 +35307,15 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         return json;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._updateAttrs = function (json) {
         TabSetNode._attributeDefinitions.update(json, this._attributes);
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._getAttributeDefinitions = function () {
         return TabSetNode._attributeDefinitions;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.prototype._getPrefSize = function (orientation) {
         var prefSize = this.getWidth();
         if (orientation === Orientation_1.Orientation.VERT) {
@@ -35457,12 +35323,12 @@ var TabSetNode = /** @class */ (function (_super) {
         }
         return prefSize;
     };
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode.getAttributeDefinitions = function () {
         return TabSetNode._attributeDefinitions;
     };
     TabSetNode.TYPE = "tabset";
-    /** @hidden @internal */
+    /** @internal */
     TabSetNode._attributeDefinitions = TabSetNode._createAttributeDefinitions();
     return TabSetNode;
 }(Node_1.Node));
@@ -35475,16 +35341,14 @@ exports.TabSetNode = TabSetNode;
 /*!****************************!*\
   !*** ./src/model/Utils.ts ***!
   \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.adjustSelectedIndex = exports.adjustSelectedIndexAfterDock = exports.adjustSelectedIndexAfterFloat = void 0;
 var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
 var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
-/** @hidden @internal */
+/** @internal */
 function adjustSelectedIndexAfterFloat(node) {
     var parent = node.getParent();
     if (parent !== null) {
@@ -35513,7 +35377,7 @@ function adjustSelectedIndexAfterFloat(node) {
     }
 }
 exports.adjustSelectedIndexAfterFloat = adjustSelectedIndexAfterFloat;
-/** @hidden @internal */
+/** @internal */
 function adjustSelectedIndexAfterDock(node) {
     var parent = node.getParent();
     if (parent !== null && (parent instanceof TabSetNode_1.TabSetNode || parent instanceof BorderNode_1.BorderNode)) {
@@ -35528,7 +35392,7 @@ function adjustSelectedIndexAfterDock(node) {
     }
 }
 exports.adjustSelectedIndexAfterDock = adjustSelectedIndexAfterDock;
-/** @hidden @internal */
+/** @internal */
 function adjustSelectedIndex(parent, removedIndex) {
     // for the tabset/border being removed from set the selected index
     if (parent !== undefined && (parent.getType() === TabSetNode_1.TabSetNode.TYPE || parent.getType() === BorderNode_1.BorderNode.TYPE)) {
@@ -35564,31 +35428,30 @@ exports.adjustSelectedIndex = adjustSelectedIndex;
 /*!***********************************!*\
   !*** ./src/view/BorderButton.tsx ***!
   \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BorderButton = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
+var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var BorderButton = function (props) {
     var layout = props.layout, node = props.node, selected = props.selected, border = props.border, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
     var selfRef = React.useRef(null);
+    var contentRef = React.useRef(null);
     var onMouseDown = function (event) {
-        if (!Utils_1.isAuxMouseEvent(event)) {
-            props.layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, function (event2) { return undefined; });
+        if (!(0, Utils_1.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
+            layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
     var onAuxMouseClick = function (event) {
-        if (Utils_1.isAuxMouseEvent(event)) {
+        if ((0, Utils_1.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
@@ -35597,6 +35460,23 @@ var BorderButton = function (props) {
     };
     var onClick = function () {
         layout.doAction(Actions_1.Actions.selectTab(node.getId()));
+    };
+    var onDoubleClick = function (event) {
+        // if (node.isEnableRename()) {
+        //     onRename();
+        // }
+    };
+    // const onRename = () => {
+    //     layout.setEditingTab(node);
+    //     layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
+    //     layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
+    // };
+    var onEndEdit = function (event) {
+        if (event.target !== contentRef.current) {
+            layout.getCurrentDocument().body.removeEventListener("mousedown", onEndEdit);
+            layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
+            layout.setEditingTab(undefined);
+        }
     };
     var isClosable = function () {
         var closeType = node.getCloseType();
@@ -35624,12 +35504,31 @@ var BorderButton = function (props) {
     };
     React.useLayoutEffect(function () {
         updateRect();
+        if (layout.getEditingTab() === node) {
+            contentRef.current.select();
+        }
     });
     var updateRect = function () {
-        // record position of tab in border
-        var clientRect = layout.getDomRect();
+        // record position of tab in node
+        var layoutRect = layout.getDomRect();
         var r = selfRef.current.getBoundingClientRect();
-        node._setTabRect(new Rect_1.Rect(r.left - clientRect.left, r.top - clientRect.top, r.width, r.height));
+        node._setTabRect(new Rect_1.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+    };
+    var onTextBoxMouseDown = function (event) {
+        // console.log("onTextBoxMouseDown");
+        event.stopPropagation();
+    };
+    var onTextBoxKeyPress = function (event) {
+        // console.log(event, event.keyCode);
+        if (event.keyCode === 27) {
+            // esc
+            layout.setEditingTab(undefined);
+        }
+        else if (event.keyCode === 13) {
+            // enter
+            layout.setEditingTab(undefined);
+            layout.doAction(Actions_1.Actions.renameTab(node.getId(), event.target.value));
+        }
     };
     var cm = layout.getClassName;
     var classNames = cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_ + border);
@@ -35642,14 +35541,17 @@ var BorderButton = function (props) {
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
     }
-    var renderState = Utils_1.getRenderStateEx(layout, node, iconFactory, titleFactory);
+    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
     var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT) }, renderState.content)) : null;
     var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING) }, renderState.leading)) : null;
-    if (node.isEnableClose()) {
-        var closeTitle = layout.i18nName(__1.I18nLabel.Close_Tab);
-        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, icons === null || icons === void 0 ? void 0 : icons.close));
+    if (layout.getEditingTab() === node) {
+        content = (React.createElement("input", { ref: contentRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
     }
-    return (React.createElement("div", { ref: selfRef, style: {}, className: classNames, "data-layout-path": path, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
+    if (node.isEnableClose()) {
+        var closeTitle = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tab);
+        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
+    }
+    return (React.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         renderState.buttons));
@@ -35663,12 +35565,10 @@ exports.BorderButton = BorderButton;
 /*!***********************************!*\
   !*** ./src/view/BorderTabSet.tsx ***!
   \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BorderTabSet = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
@@ -35680,15 +35580,15 @@ var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var BorderTabSet = function (props) {
     var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
     var stickyButtonsRef = React.useRef(null);
-    var _a = TabOverflowHook_1.useTabOverflow(border, Orientation_1.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
+    var _a = (0, TabOverflowHook_1.useTabOverflow)(border, Orientation_1.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
     var onAuxMouseClick = function (event) {
-        if (Utils_1.isAuxMouseEvent(event)) {
+        if ((0, Utils_1.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(border, event);
         }
     };
@@ -35705,7 +35605,7 @@ var BorderTabSet = function (props) {
         }
         else {
             var element = overflowbuttonRef.current;
-            PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+            (0, PopupMenu_1.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
         }
         event.stopPropagation();
     };
@@ -35789,10 +35689,8 @@ exports.BorderTabSet = BorderTabSet;
 /*!************************************!*\
   !*** ./src/view/ErrorBoundary.tsx ***!
   \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -35809,11 +35707,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ErrorBoundary = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-/** @hidden @internal */
+/** @internal */
 var ErrorBoundary = /** @class */ (function (_super) {
     __extends(ErrorBoundary, _super);
     function ErrorBoundary(props) {
@@ -35846,22 +35744,24 @@ exports.ErrorBoundary = ErrorBoundary;
 /*!*************************************!*\
   !*** ./src/view/FloatingWindow.tsx ***!
   \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.FloatingWindow = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_dom_1 = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-/** @hidden @internal */
+/** @internal */
 var FloatingWindow = function (props) {
     var title = props.title, id = props.id, url = props.url, rect = props.rect, onCloseWindow = props.onCloseWindow, onSetWindow = props.onSetWindow, children = props.children;
     var popoutWindow = React.useRef(null);
@@ -35880,19 +35780,19 @@ var FloatingWindow = function (props) {
                 // styleSheet.cssRules can throw security exception
             }
             try {
-                return __spreadArray(__spreadArray([], result), [
+                return __spreadArray(__spreadArray([], result, true), [
                     {
                         href: styleSheet.href,
                         type: styleSheet.type,
                         rules: rules ? Array.from(rules).map(function (rule) { return rule.cssText; }) : null,
                     }
-                ]);
+                ], false);
             }
             catch (e) {
                 return result;
             }
         }, []);
-        popoutWindow.current = window.open(url, id, "left=" + r.x + ",top=" + r.y + ",width=" + r.width + ",height=" + r.height);
+        popoutWindow.current = window.open(url, id, "left=".concat(r.x, ",top=").concat(r.y, ",width=").concat(r.width, ",height=").concat(r.height));
         if (popoutWindow.current !== null) {
             onSetWindow(id, popoutWindow.current);
             // listen for parent unloading to remove all popouts
@@ -35918,7 +35818,7 @@ var FloatingWindow = function (props) {
             });
         }
         else {
-            console.warn("Unable to open window " + url);
+            console.warn("Unable to open window ".concat(url));
             onCloseWindow(id);
         }
         return function () {
@@ -35932,18 +35832,18 @@ var FloatingWindow = function (props) {
         };
     }, []);
     if (content !== undefined) {
-        return react_dom_1.createPortal(children, content);
+        return (0, react_dom_1.createPortal)(children, content);
     }
     else {
         return null;
     }
 };
 exports.FloatingWindow = FloatingWindow;
-/** @hidden @internal */
+/** @internal */
 function copyStyles(doc, styleSheets) {
     var head = doc.head;
     var promises = [];
-    styleSheets.forEach(function (styleSheet) {
+    var _loop_1 = function (styleSheet) {
         if (styleSheet.href) {
             // prefer links since they will keep paths to images etc
             var styleElement_1 = doc.createElement("link");
@@ -35957,12 +35857,19 @@ function copyStyles(doc, styleSheets) {
         }
         else {
             if (styleSheet.rules) {
-                var style_1 = doc.createElement("style");
-                styleSheet.rules.forEach(function (rule) { return style_1.appendChild(doc.createTextNode(rule)); });
-                head.appendChild(style_1);
+                var style = doc.createElement("style");
+                for (var _a = 0, _b = styleSheet.rules; _a < _b.length; _a++) {
+                    var rule = _b[_a];
+                    style.appendChild(doc.createTextNode(rule));
+                }
+                head.appendChild(style);
             }
         }
-    });
+    };
+    for (var _i = 0, styleSheets_1 = styleSheets; _i < styleSheets_1.length; _i++) {
+        var styleSheet = styleSheets_1[_i];
+        _loop_1(styleSheet);
+    }
     return Promise.all(promises);
 }
 
@@ -35973,19 +35880,17 @@ function copyStyles(doc, styleSheets) {
 /*!****************************************!*\
   !*** ./src/view/FloatingWindowTab.tsx ***!
   \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.FloatingWindowTab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-/** @hidden @internal */
+/** @internal */
 var FloatingWindowTab = function (props) {
     var layout = props.layout, node = props.node, factory = props.factory;
     var cm = layout.getClassName;
@@ -36003,12 +35908,10 @@ exports.FloatingWindowTab = FloatingWindowTab;
 /*!****************************!*\
   !*** ./src/view/Icons.tsx ***!
   \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.RestoreIcon = exports.PopoutIcon = exports.OverflowIcon = exports.MaximizeIcon = exports.CloseIcon = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var style = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
@@ -36050,10 +35953,8 @@ exports.RestoreIcon = RestoreIcon;
 /*!*****************************!*\
   !*** ./src/view/Layout.tsx ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -36081,12 +35982,16 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Layout = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
@@ -36106,7 +36011,7 @@ var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
 var FloatingWindow_1 = __webpack_require__(/*! ./FloatingWindow */ "./src/view/FloatingWindow.tsx");
 var FloatingWindowTab_1 = __webpack_require__(/*! ./FloatingWindowTab */ "./src/view/FloatingWindowTab.tsx");
 var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
-var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
+var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Icons_1 = __webpack_require__(/*! ./Icons */ "./src/view/Icons.tsx");
 var TabButtonStamp_1 = __webpack_require__(/*! ./TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
 var defaultIcons = {
@@ -36120,12 +36025,12 @@ var defaultIcons = {
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
 // Assume any recent desktop browser not IE or original Edge will work
-/** @hidden @internal */
+/** @internal */
 // @ts-ignore
 var isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
-/** @hidden @internal */
+/** @internal */
 var isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-/** @hidden @internal */
+/** @internal */
 var defaultSupportsPopout = isDesktop && !isIEorEdge;
 /**
  * A React component that hosts a multi-tabbed layout
@@ -36134,26 +36039,26 @@ var Layout = /** @class */ (function (_super) {
     __extends(Layout, _super);
     function Layout(props) {
         var _this = _super.call(this, props) || this;
-        /** @hidden @internal */
+        /** @internal */
         _this.firstMove = false;
-        /** @hidden @internal */
+        /** @internal */
         _this.dragRectRendered = true;
-        /** @hidden @internal */
+        /** @internal */
         _this.dragDivText = undefined;
-        /** @hidden @internal */
+        /** @internal */
         _this.edgeRectLength = 100;
-        /** @hidden @internal */
+        /** @internal */
         _this.edgeRectWidth = 10;
-        /** @hidden @internal */
+        /** @internal */
         _this.edgesShown = false;
-        /** @hidden @internal */
+        /** @internal */
         _this.onModelChange = function () {
             _this.forceUpdate();
             if (_this.props.onModelChange) {
                 _this.props.onModelChange(_this.props.model);
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.updateRect = function (domRect) {
             if (domRect === void 0) { domRect = _this.getDomRect(); }
             var rect = new Rect_1.Rect(0, 0, domRect.width, domRect.height);
@@ -36161,7 +36066,7 @@ var Layout = /** @class */ (function (_super) {
                 _this.setState({ rect: rect });
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.updateLayoutMetrics = function () {
             if (_this.findHeaderBarSizeRef.current) {
                 var headerBarSize = _this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
@@ -36182,7 +36087,7 @@ var Layout = /** @class */ (function (_super) {
                 }
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.getClassName = function (defaultClassName) {
             if (_this.props.classNameMapper === undefined) {
                 return defaultClassName;
@@ -36191,7 +36096,7 @@ var Layout = /** @class */ (function (_super) {
                 return _this.props.classNameMapper(defaultClassName);
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onCloseWindow = function (id) {
             _this.doAction(Actions_1.Actions.unFloatTab(id));
             try {
@@ -36201,11 +36106,11 @@ var Layout = /** @class */ (function (_super) {
                 // catch incase it was a model change
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onSetWindow = function (id, window) {
             _this.props.model.getNodeById(id)._setWindow(window);
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onCancelAdd = function () {
             var _a, _b;
             var rootdiv = _this.selfRef.current;
@@ -36226,7 +36131,7 @@ var Layout = /** @class */ (function (_super) {
             _this.newTabJson = undefined;
             _this.customDrop = undefined;
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onCancelDrag = function (wasDragging) {
             var _a, _b;
             if (wasDragging) {
@@ -36258,12 +36163,12 @@ var Layout = /** @class */ (function (_super) {
             }
             _this.setState({ showHiddenBorder: DockLocation_1.DockLocation.CENTER });
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onDragDivMouseDown = function (event) {
             event.preventDefault();
             _this.dragStart(event, _this.dragDivText, TabNode_1.TabNode._fromJson(_this.newTabJson, _this.props.model, false), true, undefined, undefined);
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
             if (_this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
                 DragDrop_1.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
@@ -36274,7 +36179,7 @@ var Layout = /** @class */ (function (_super) {
                 DragDrop_1.DragDrop.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.dragRectRender = function (text, node, json, onRendered) {
             var content;
             if (text !== undefined) {
@@ -36303,16 +36208,16 @@ var Layout = /** @class */ (function (_super) {
                     onRendered === null || onRendered === void 0 ? void 0 : onRendered();
                 } }, content), _this.dragDiv);
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.showPortal = function (control, element) {
             var portal = ReactDOM.createPortal(control, element);
             _this.setState({ portal: portal });
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.hidePortal = function () {
             _this.setState({ portal: undefined });
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onDragStart = function () {
             _this.dropInfo = undefined;
             _this.customDrop = undefined;
@@ -36336,11 +36241,11 @@ var Layout = /** @class */ (function (_super) {
             _this.firstMove = true;
             return true;
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onDragMove = function (event) {
             if (_this.firstMove === false) {
                 var speed = _this.props.model._getAttribute("tabDragSpeed");
-                _this.outlineDiv.style.transition = "top " + speed + "s, left " + speed + "s, width " + speed + "s, height " + speed + "s";
+                _this.outlineDiv.style.transition = "top ".concat(speed, "s, left ").concat(speed, "s, width ").concat(speed, "s, height ").concat(speed, "s");
             }
             _this.firstMove = false;
             var clientRect = _this.selfRef.current.getBoundingClientRect();
@@ -36375,7 +36280,7 @@ var Layout = /** @class */ (function (_super) {
                 }
             }
         };
-        /** @hidden @internal */
+        /** @internal */
         _this.onDragEnd = function (event) {
             var rootdiv = _this.selfRef.current;
             rootdiv.removeChild(_this.outlineDiv);
@@ -36434,7 +36339,7 @@ var Layout = /** @class */ (function (_super) {
         _this.onDragEnter = _this.onDragEnter.bind(_this);
         return _this;
     }
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.styleFont = function (style) {
         if (this.props.font) {
             if (this.selfRef.current) {
@@ -36454,7 +36359,7 @@ var Layout = /** @class */ (function (_super) {
         }
         return style;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.doAction = function (action) {
         if (this.props.onAction !== undefined) {
             var outcome = this.props.onAction(action);
@@ -36467,7 +36372,7 @@ var Layout = /** @class */ (function (_super) {
             return this.props.model.doAction(action);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.componentDidMount = function () {
         var _this = this;
         this.updateRect();
@@ -36480,7 +36385,7 @@ var Layout = /** @class */ (function (_super) {
         });
         this.resizeObserver.observe(this.selfRef.current);
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.componentDidUpdate = function () {
         this.updateLayoutMetrics();
         if (this.props.model !== this.previousModel) {
@@ -36492,56 +36397,55 @@ var Layout = /** @class */ (function (_super) {
         }
         // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getCurrentDocument = function () {
         return this.currentDocument;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getDomRect = function () {
         return this.selfRef.current.getBoundingClientRect();
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getRootDiv = function () {
         return this.selfRef.current;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.isSupportsPopout = function () {
         return this.supportsPopout;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.isRealtimeResize = function () {
         var _a;
         return (_a = this.props.realtimeResize) !== null && _a !== void 0 ? _a : false;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.onTabDrag = function () {
         var _a, _b;
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call.apply(_b, __spreadArray([_a], args));
+        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call.apply(_b, __spreadArray([_a], args, false));
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getPopoutURL = function () {
         return this.popoutURL;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.componentWillUnmount = function () {
         var _a;
         (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.selfRef.current);
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.setEditingTab = function (tabNode) {
         this.setState({ editingTab: tabNode });
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getEditingTab = function () {
         return this.state.editingTab;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.render = function () {
-        var _this = this;
         // first render will be used to find the size (via selfRef)
         if (this.firstRender) {
             this.firstRender = false;
@@ -36569,19 +36473,21 @@ var Layout = /** @class */ (function (_super) {
         var nextTopIds = [];
         var nextTopIdsMap = {};
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
-        this.tabIds.forEach(function (t) {
+        for (var _i = 0, _a = this.tabIds; _i < _a.length; _i++) {
+            var t = _a[_i];
             if (tabComponents[t]) {
                 nextTopIds.push(t);
                 nextTopIdsMap[t] = t;
             }
-        });
+        }
         this.tabIds = nextTopIds;
         // Add tabs that have been added to the DOM
-        Object.keys(tabComponents).forEach(function (t) {
+        for (var _b = 0, _c = Object.keys(tabComponents); _b < _c.length; _b++) {
+            var t = _c[_b];
             if (!nextTopIdsMap[t]) {
-                _this.tabIds.push(t);
+                this.tabIds.push(t);
             }
-        });
+        }
         // this.layoutTime = (Date.now() - this.start);
         return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
             tabSetComponents,
@@ -36594,7 +36500,7 @@ var Layout = /** @class */ (function (_super) {
             this.metricsElements(),
             this.state.portal));
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.metricsElements = function () {
         // used to measure the tab and border tab sizes
         var fontStyle = this.styleFont({ visibility: "hidden" });
@@ -36603,13 +36509,13 @@ var Layout = /** @class */ (function (_super) {
             React.createElement("div", { key: "findTabBarSize", ref: this.findTabBarSizeRef, style: fontStyle, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__TABSET_SIZER) }, "FindTabBarSize"),
             React.createElement("div", { key: "findBorderBarSize", ref: this.findBorderBarSizeRef, style: fontStyle, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__BORDER_SIZER) }, "FindBorderBarSize")));
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.renderBorder = function (borderSet, borderComponents, tabComponents, floatingWindows, splitterComponents) {
         for (var _i = 0, _a = borderSet.getBorders(); _i < _a.length; _i++) {
             var border = _a[_i];
-            var borderPath = "/border/" + border.getLocation().getName();
+            var borderPath = "/border/".concat(border.getLocation().getName());
             if (border.isShowing()) {
-                borderComponents.push(React.createElement(BorderTabSet_1.BorderTabSet, { key: "border_" + border.getLocation().getName(), path: borderPath, border: border, layout: this, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
+                borderComponents.push(React.createElement(BorderTabSet_1.BorderTabSet, { key: "border_".concat(border.getLocation().getName()), path: borderPath, border: border, layout: this, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
                 var drawChildren = border._getDrawChildren();
                 var i = 0;
                 var tabCount = 0;
@@ -36636,7 +36542,7 @@ var Layout = /** @class */ (function (_super) {
             }
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.renderChildren = function (path, node, tabSetComponents, tabComponents, floatingWindows, splitterComponents) {
         var drawChildren = node._getDrawChildren();
         var splitterCount = 0;
@@ -36672,12 +36578,12 @@ var Layout = /** @class */ (function (_super) {
             }
             else {
                 // is row
-                var newPath = path + ((child.getOrientation() === __1.Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
+                var newPath = path + ((child.getOrientation() === Orientation_1.Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
                 this.renderChildren(newPath, child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
             }
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype._getScreenRect = function (node) {
         var rect = node.getRect().clone();
         var bodyRect = this.selfRef.current.getBoundingClientRect();
@@ -36752,7 +36658,7 @@ var Layout = /** @class */ (function (_super) {
         var rootdiv = this.selfRef.current;
         rootdiv.appendChild(this.dragDiv);
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.handleCustomTabDrag = function (dropInfo, pos, event) {
         var _this = this;
         var _a, _b, _c;
@@ -36807,7 +36713,7 @@ var Layout = /** @class */ (function (_super) {
             console.error(e);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.onDragEnter = function (event) {
         // DragDrop keeps track of number of dragenters minus the number of
         // dragleaves. Only start a new drag if there isn't one already.
@@ -36821,7 +36727,7 @@ var Layout = /** @class */ (function (_super) {
             this.dragStart(event, drag.dragText, TabNode_1.TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.checkForBorderToShow = function (x, y) {
         var r = this.props.model._getOuterInnerRects().outer;
         var c = r.getCenter();
@@ -36853,7 +36759,7 @@ var Layout = /** @class */ (function (_super) {
             this.setState({ showHiddenBorder: location });
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.showEdges = function (rootdiv) {
         if (this.props.model.isEnableEdgeDock()) {
             var length_1 = this.edgeRectLength + "px";
@@ -36891,7 +36797,7 @@ var Layout = /** @class */ (function (_super) {
             this.edgesShown = true;
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.repositionEdges = function (domRect) {
         if (this.props.model.isEnableEdgeDock()) {
             var r = this.centerRect;
@@ -36905,7 +36811,7 @@ var Layout = /** @class */ (function (_super) {
             this.edgeRightDiv.style.right = domRect.width - r.getRight() + "px";
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.hideEdges = function (rootdiv) {
         if (this.props.model.isEnableEdgeDock()) {
             try {
@@ -36918,23 +36824,23 @@ var Layout = /** @class */ (function (_super) {
         }
         this.edgesShown = false;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.maximize = function (tabsetNode) {
         this.doAction(Actions_1.Actions.maximizeToggle(tabsetNode.getId()));
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.customizeTab = function (tabNode, renderValues) {
         if (this.props.onRenderTab) {
             this.props.onRenderTab(tabNode, renderValues);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.customizeTabSet = function (tabSetNode, renderValues) {
         if (this.props.onRenderTabSet) {
             this.props.onRenderTabSet(tabSetNode, renderValues);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.i18nName = function (id, param) {
         var message;
         if (this.props.i18nMapper) {
@@ -36945,21 +36851,21 @@ var Layout = /** @class */ (function (_super) {
         }
         return message;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getOnRenderFloatingTabPlaceholder = function () {
         return this.props.onRenderFloatingTabPlaceholder;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.getShowOverflowMenu = function () {
         return this.props.onShowOverflowMenu;
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.showContextMenu = function (node, event) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
         }
     };
-    /** @hidden @internal */
+    /** @internal */
     Layout.prototype.auxMouseClick = function (node, event) {
         if (this.props.onAuxMouseClick) {
             this.props.onAuxMouseClick(node, event);
@@ -36968,7 +36874,7 @@ var Layout = /** @class */ (function (_super) {
     return Layout;
 }(React.Component));
 exports.Layout = Layout;
-/** @hidden @internal */
+/** @internal */
 var DragRectRenderWrapper = function (props) {
     React.useEffect(function () {
         var _a;
@@ -36984,12 +36890,10 @@ var DragRectRenderWrapper = function (props) {
 /*!*******************************!*\
   !*** ./src/view/Splitter.tsx ***!
   \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Splitter = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var DragDrop_1 = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
@@ -36997,7 +36901,7 @@ var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions
 var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-/** @hidden @internal */
+/** @internal */
 var Splitter = function (props) {
     var layout = props.layout, node = props.node, path = props.path;
     var pBounds = React.useRef([]);
@@ -37131,12 +37035,10 @@ exports.Splitter = Splitter;
 /*!**************************!*\
   !*** ./src/view/Tab.tsx ***!
   \**************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Tab = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
@@ -37145,9 +37047,9 @@ var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/T
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var __1 = __webpack_require__(/*! .. */ "./src/index.ts");
+var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var Tab = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node, factory = props.factory, path = props.path;
     var _a = React.useState(!props.node.isEnableRenderOnDemand() || props.selected), renderComponent = _a[0], setRenderComponent = _a[1];
@@ -37171,11 +37073,11 @@ var Tab = function (props) {
     var parentNode = node.getParent();
     var style = node._styleWithPosition();
     if (!selected) {
-        Utils_1.hideElement(style, useVisibility);
+        (0, Utils_1.hideElement)(style, useVisibility);
     }
     if (parentNode instanceof TabSetNode_1.TabSetNode) {
         if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
-            Utils_1.hideElement(style, useVisibility);
+            (0, Utils_1.hideElement)(style, useVisibility);
         }
     }
     var child;
@@ -37183,7 +37085,7 @@ var Tab = function (props) {
         child = factory(node);
     }
     var className = cm(Types_1.CLASSES.FLEXLAYOUT__TAB);
-    if (parentNode instanceof __1.BorderNode) {
+    if (parentNode instanceof BorderNode_1.BorderNode) {
         className += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BORDER);
         className += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
     }
@@ -37200,12 +37102,10 @@ exports.Tab = Tab;
 /*!********************************!*\
   !*** ./src/view/TabButton.tsx ***!
   \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabButton = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
@@ -37214,19 +37114,18 @@ var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var TabButton = function (props) {
     var layout = props.layout, node = props.node, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
     var selfRef = React.useRef(null);
     var contentRef = React.useRef(null);
-    var contentWidth = React.useRef(0);
     var onMouseDown = function (event) {
-        if (!Utils_1.isAuxMouseEvent(event) && !layout.getEditingTab()) {
+        if (!(0, Utils_1.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
             layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
     var onAuxMouseClick = function (event) {
-        if (Utils_1.isAuxMouseEvent(event)) {
+        if ((0, Utils_1.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
@@ -37238,16 +37137,13 @@ var TabButton = function (props) {
     };
     var onDoubleClick = function (event) {
         if (node.isEnableRename()) {
-            layout.setEditingTab(node);
-            layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
-            layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
+            onRename();
         }
-        // else {
-        //     const parentNode = node.getParent() as TabSetNode;
-        //     if (parentNode.canMaximize()) {
-        //         layout.maximize(parentNode);
-        //     }
-        // }
+    };
+    var onRename = function () {
+        layout.setEditingTab(node);
+        layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
+        layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
     };
     var onEndEdit = function (event) {
         if (event.target !== contentRef.current) {
@@ -37291,7 +37187,6 @@ var TabButton = function (props) {
         var layoutRect = layout.getDomRect();
         var r = selfRef.current.getBoundingClientRect();
         node._setTabRect(new Rect_1.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
-        contentWidth.current = selfRef.current.getBoundingClientRect().width;
     };
     var onTextBoxMouseDown = function (event) {
         // console.log("onTextBoxMouseDown");
@@ -37323,7 +37218,7 @@ var TabButton = function (props) {
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
     }
-    var renderState = Utils_1.getRenderStateEx(layout, node, iconFactory, titleFactory);
+    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
     var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content)) : null;
     var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
     if (layout.getEditingTab() === node) {
@@ -37347,23 +37242,21 @@ exports.TabButton = TabButton;
 /*!*************************************!*\
   !*** ./src/view/TabButtonStamp.tsx ***!
   \*************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabButtonStamp = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var TabButtonStamp = function (props) {
     var layout = props.layout, node = props.node, iconFactory = props.iconFactory, titleFactory = props.titleFactory;
     var selfRef = React.useRef(null);
     var cm = layout.getClassName;
     var classNames = cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
-    var renderState = Utils_1.getRenderStateEx(layout, node, iconFactory, titleFactory);
+    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
     var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content))
         : node._getNameForOverflowMenu();
     var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
@@ -37380,12 +37273,10 @@ exports.TabButtonStamp = TabButtonStamp;
 /*!**********************************!*\
   !*** ./src/view/TabFloating.tsx ***!
   \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabFloating = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
@@ -37393,7 +37284,7 @@ var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/T
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var TabFloating = function (props) {
     var layout = props.layout, selected = props.selected, node = props.node, path = props.path;
     var showPopout = function () {
@@ -37423,7 +37314,7 @@ var TabFloating = function (props) {
     var cm = layout.getClassName;
     var style = node._styleWithPosition();
     if (!selected) {
-        Utils_1.hideElement(style, node.getModel().isUseVisibility());
+        (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
     }
     var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
     var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
@@ -37451,18 +37342,16 @@ exports.TabFloating = TabFloating;
 /*!**************************************!*\
   !*** ./src/view/TabOverflowHook.tsx ***!
   \**************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.useTabOverflow = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-/** @hidden @internal */
+/** @internal */
 var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) {
     var firstRender = React.useRef(true);
     var tabsTruncated = React.useRef(false);
@@ -37609,17 +37498,19 @@ exports.useTabOverflow = useTabOverflow;
 /*!*****************************!*\
   !*** ./src/view/TabSet.tsx ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-"use strict";
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.TabSet = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
@@ -37630,14 +37521,14 @@ var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
-/** @hidden @internal */
+/** @internal */
 var TabSet = function (props) {
     var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
     var toolbarRef = React.useRef(null);
     var overflowbuttonRef = React.useRef(null);
     var tabbarInnerRef = React.useRef(null);
     var stickyButtonsRef = React.useRef(null);
-    var _a = TabOverflowHook_1.useTabOverflow(node, Orientation_1.Orientation.HORZ, toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel, tabsTruncated = _a.tabsTruncated;
+    var _a = (0, TabOverflowHook_1.useTabOverflow)(node, Orientation_1.Orientation.HORZ, toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel, tabsTruncated = _a.tabsTruncated;
     var onOverflowClick = function (event) {
         var callback = layout.getShowOverflowMenu();
         if (callback !== undefined) {
@@ -37645,7 +37536,7 @@ var TabSet = function (props) {
         }
         else {
             var element = overflowbuttonRef.current;
-            PopupMenu_1.showPopup(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+            (0, PopupMenu_1.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
         }
         event.stopPropagation();
     };
@@ -37654,7 +37545,7 @@ var TabSet = function (props) {
         userControlledLeft.current = false;
     };
     var onMouseDown = function (event) {
-        if (!Utils_1.isAuxMouseEvent(event)) {
+        if (!(0, Utils_1.isAuxMouseEvent)(event)) {
             var name_1 = node.getName();
             if (name_1 === undefined) {
                 name_1 = "";
@@ -37670,7 +37561,7 @@ var TabSet = function (props) {
         }
     };
     var onAuxMouseClick = function (event) {
-        if (Utils_1.isAuxMouseEvent(event)) {
+        if ((0, Utils_1.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
@@ -37710,14 +37601,14 @@ var TabSet = function (props) {
     var selectedTabNode = node.getSelectedNode();
     var style = node._styleWithPosition();
     if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
-        Utils_1.hideElement(style, node.getModel().isUseVisibility());
+        (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
     }
     var tabs = [];
     if (node.isEnableTabStrip()) {
         for (var i = 0; i < node.getChildren().length; i++) {
             var child = node.getChildren()[i];
             var isSelected = node.getSelected() === i;
-            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, height: node.getTabStripHeight(), iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         }
     }
     var showHeader = node.getName() !== undefined;
@@ -37733,7 +37624,7 @@ var TabSet = function (props) {
     headerButtons = renderState.headerButtons;
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
-            buttons = __spreadArray(__spreadArray([], stickyButtons), buttons);
+            buttons = __spreadArray(__spreadArray([], stickyButtons, true), buttons, true);
         }
         else {
             tabs.push(React.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
@@ -37826,15 +37717,13 @@ exports.TabSet = TabSet;
 /*!****************************!*\
   !*** ./src/view/Utils.tsx ***!
   \****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.isAuxMouseEvent = exports.hideElement = exports.getRenderStateEx = void 0;
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/** @hidden @internal */
+/** @internal */
 function getRenderStateEx(layout, node, iconFactory, titleFactory) {
     var leadingContent = iconFactory ? iconFactory(node) : undefined;
     var titleContent = node.getName();
@@ -37869,7 +37758,7 @@ function getRenderStateEx(layout, node, iconFactory, titleFactory) {
     return renderState;
 }
 exports.getRenderStateEx = getRenderStateEx;
-/** @hidden @internal */
+/** @internal */
 function hideElement(style, useVisibility) {
     if (useVisibility) {
         style.visibility = "hidden";
@@ -37879,7 +37768,7 @@ function hideElement(style, useVisibility) {
     }
 }
 exports.hideElement = hideElement;
-/** @hidden @internal */
+/** @internal */
 function isAuxMouseEvent(event) {
     var auxEvent = false;
     if (event.nativeEvent instanceof MouseEvent) {
@@ -37894,5 +37783,68 @@ exports.isAuxMouseEvent = isAuxMouseEvent;
 
 /***/ })
 
-/******/ });
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __webpack_require__("./examples/demo/App.tsx");
+/******/ 	
+/******/ })()
+;
 //# sourceMappingURL=demo.js.map
