@@ -1,3 +1,7 @@
+0.6.4
+Code tidy
+Updated dependencies
+
 0.6.3
 Changed to using named rather than default import/exports, 
 this will require changing top level imports 
