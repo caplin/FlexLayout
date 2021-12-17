@@ -594,7 +594,7 @@ Compile the project and run the examples:
 yarn start
 ```
 
-Open your browser at http://localhost:8081/examples/ to show the examples directory, click on the examples to run them.
+Open your browser at http://localhost:8080/examples/ to show the examples directory, click on the examples to run them.
 
 The 'yarn start' command will watch for changes to flexlayout and example source, so you can make changes to the code
 and then refresh the browser to see the result.

@@ -7,10 +7,10 @@ $color_3: scale_color($color_base, $lightness: 15%) !default;
 $color_4: scale_color($color_base, $lightness: 20%) !default;
 $color_5: scale_color($color_base, $lightness: 25%) !default;
 $color_6: scale_color($color_base, $lightness: 30%) !default;
-$color_drag1: #cfe8ff !default;
-$color_drag2: #b7d1b5 !default;
-$color_drag1_background: transparent !default;
-$color_drag2_background: transparent !default;
+$color_drag1: rgb(207, 232, 255) !default;
+$color_drag2: rgb(183, 209, 181) !default;
+$color_drag1_background: rgba(128, 128, 128, 0.15) !default;
+$color_drag2_background: rgba(128, 128, 128, 0.15) !default;
 
 $font-size: medium !default;
 $font-family: Roboto, Arial, sans-serif !default;
