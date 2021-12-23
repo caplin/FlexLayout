@@ -59,8 +59,8 @@ export class AttributeDefinitions {
 
     update(jsonObj: any, obj: any) {
         for (const attr of this.attributes) {
-            const fromValue = jsonObj[attr.name];
-            if (fromValue !== undefined) {
+            if (jsonObj.hasOwnProperty(attr.name)) {
+                const fromValue = jsonObj[attr.name];
                 obj[attr.name] = fromValue;
             }
         }

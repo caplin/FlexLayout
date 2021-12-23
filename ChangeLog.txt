@@ -1,3 +1,6 @@
+0.6.5
+fix for #289, allow setting attributes to undefined value
+
 0.6.4
 Code tidy
 Updated dependencies
