@@ -61,7 +61,11 @@ export class AttributeDefinitions {
         for (const attr of this.attributes) {
             if (jsonObj.hasOwnProperty(attr.name)) {
                 const fromValue = jsonObj[attr.name];
-                obj[attr.name] = fromValue;
+                if (fromValue === undefined) {
+                    delete obj[attr.name];
+                } else {
+                    obj[attr.name] = fromValue;
+                }
             }
         }
     }
