@@ -2,6 +2,7 @@ import * as React from "react";
 import { createPortal } from "react-dom";
 import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
+import { IFloatWindowContainer } from '../model/FloatWindowContainer'
 
 /** @internal */
 export interface IFloatingWindowProps {
@@ -11,6 +12,7 @@ export interface IFloatingWindowProps {
     rect: Rect;
     onCloseWindow: (id: string) => void;
     onSetWindow: (id: string, window: Window) => void;
+    FloatWindowContainer?: IFloatWindowContainer;
 }
 
 interface IStyleSheet {
@@ -21,7 +23,7 @@ interface IStyleSheet {
 
 /** @internal */
 export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowProps>) => {
-    const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
+    const { title, id, url, rect, onCloseWindow, onSetWindow, FloatWindowContainer, children } = props;
     const popoutWindow = React.useRef<Window | null>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
 
@@ -95,7 +97,14 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
     }, []);
 
     if (content !== undefined) {
-        return createPortal(children, content!);
+        return createPortal(
+            FloatWindowContainer
+                ? <FloatWindowContainer
+                    children={children}
+                    containerEl={content}
+                />
+                : children,
+            content!);
     } else {
         return null;
     }
