@@ -103,6 +103,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onShowOverflowMenu | callback for handling the display of the tab overflow menu |
 | iconFactory      | a factory function for creating icon components for tab bar buttons. <br/><br/> NOTE: for greater customization of the tab use onRenderTab instead of this callback |
 | titleFactory     | a factory function for creating title components for tab bar buttons. <br /><br /> NOTE: for greater customization of the tab use onRenderTab instead of this callback  |
+| FloatWindowContainer | a react component that wrap float window tab. Useful for those using @mui and @emotion |
 
 
 The model is tree of Node objects that define the structure of the layout.
