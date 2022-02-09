@@ -6,6 +6,7 @@ import { CLASSES } from "../Types";
 import { ILayoutCallbacks } from "./Layout";
 import { I18nLabel } from "../I18nLabel";
 import { hideElement } from "./Utils";
+import { BorderNode } from "../model/BorderNode";
 
 /** @internal */
 export interface ITabFloatingProps {
@@ -50,9 +51,17 @@ export const TabFloating = (props: ITabFloatingProps) => {
 
     const cm = layout.getClassName;
 
+
+    const parentNode = node.getParent() as TabSetNode | BorderNode;
     const style: Record<string, any> = node._styleWithPosition();
     if (!selected) {
         hideElement(style, node.getModel().isUseVisibility());
+    }
+
+    if (parentNode instanceof TabSetNode) {
+        if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
+            hideElement(style, node.getModel().isUseVisibility());
+        }
     }
 
     const message = layout.i18nName(I18nLabel.Floating_Window_Message);
