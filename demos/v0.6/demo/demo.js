@@ -31582,9 +31582,14 @@ var AttributeDefinitions = /** @class */ (function () {
     AttributeDefinitions.prototype.update = function (jsonObj, obj) {
         for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
             var attr = _a[_i];
-            var fromValue = jsonObj[attr.name];
-            if (fromValue !== undefined) {
-                obj[attr.name] = fromValue;
+            if (jsonObj.hasOwnProperty(attr.name)) {
+                var fromValue = jsonObj[attr.name];
+                if (fromValue === undefined) {
+                    delete obj[attr.name];
+                }
+                else {
+                    obj[attr.name] = fromValue;
+                }
             }
         }
     };
@@ -37312,9 +37317,15 @@ var TabFloating = function (props) {
         dockPopout();
     };
     var cm = layout.getClassName;
+    var parentNode = node.getParent();
     var style = node._styleWithPosition();
     if (!selected) {
         (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
+    }
+    if (parentNode instanceof TabSetNode_1.TabSetNode) {
+        if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
+            (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
+        }
     }
     var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
     var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
