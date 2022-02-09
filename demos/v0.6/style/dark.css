@@ -10,8 +10,8 @@
   --color-6: #4d4d4d;
   --color-drag1: #cfe8ff;
   --color-drag2: #b7d1b5;
-  --color-drag1-background: transparent;
-  --color-drag2-background: transparent;
+  --color-drag1-background: rgba(128, 128, 128, 0.15);
+  --color-drag2-background: rgba(128, 128, 128, 0.15);
   --font-size: medium;
   --font-family: Roboto, Arial, sans-serif;
   left: 0;
