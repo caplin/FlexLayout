@@ -1,3 +1,6 @@
+0.6.6 
+fix for #296
+
 0.6.5
 fix for #289, allow setting attributes to undefined value
 
