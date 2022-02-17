@@ -488,7 +488,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                     <option value="25px">Size 25px</option>
                     <option value="30px">Size 30px</option>
                 </select>
-                <select  className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="gray" onChange={this.onThemeChange}>
+                <select  className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="light" onChange={this.onThemeChange}>
+                    <option value="underline">Underline</option>
                     <option value="light">Light</option>
                     <option value="gray">Gray</option>
                     <option value="dark">Dark</option>

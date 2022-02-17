@@ -1,50 +1,52 @@
 .flexlayout__layout {
-  --color-text: #eeeeee;
-  --color-background: black;
-  --color-base: black;
-  --color-1: #121212;
-  --color-2: #1a1a1a;
-  --color-3: #262626;
-  --color-4: #333333;
-  --color-5: #404040;
-  --color-6: #4d4d4d;
-  --color-drag1: #cfe8ff;
-  --color-drag2: #b7d1b5;
-  --color-drag1-background: rgba(128, 128, 128, 0.15);
-  --color-drag2-background: rgba(128, 128, 128, 0.15);
+  --color-text: black;
+  --color-background: white;
+  --color-base: white;
+  --color-1: #fafafa;
+  --color-2: whitesmoke;
+  --color-3: #eeeeee;
+  --color-4: #e6e6e6;
+  --color-5: #e0e0e0;
+  --color-6: #d9d9d9;
+  --color-drag1: #5f86c4;
+  --color-drag2: #77a677;
+  --color-drag1-background: rgba(95, 134, 196, 0.1);
+  --color-drag2-background: rgba(119, 166, 119, 0.075);
   --font-size: medium;
   --font-family: Roboto, Arial, sans-serif;
   --color-overflow: gray;
-  --color-tabset-background: var(--color-1);
+  --color-tabset-background: var(--color-background);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-6);
-  --color-tabset-divider-line: var(--color-4);
-  --color-tabset-header-background: var(--color-1);
+  --color-tabset-divider-line: var(--color-3);
+  --color-tabset-header-background: var(--color-background);
   --color-tabset-header: var(--color-text);
-  --color-border-background: var(--color-1);
-  --color-border-divider-line: var(--color-4);
+  --color-border-background: var(--color-background);
+  --color-border-divider-line: var(--color-3);
   --color-tab-selected: var(--color-text);
-  --color-tab-selected-background: var(--color-4);
+  --color-tab-selected-background: transparent;
   --color-tab-unselected: gray;
   --color-tab-unselected-background: transparent;
   --color-tab-textbox: var(--color-text);
   --color-tab-textbox-background: var(--color-3);
   --color-border-tab-selected: var(--color-text);
-  --color-border-tab-selected-background: var(--color-4);
+  --color-border-tab-selected-background: transparent;
   --color-border-tab-unselected: gray;
-  --color-border-tab-unselected-background: var(--color-2);
-  --color-splitter: var(--color-2);
+  --color-border-tab-unselected-background: transparent;
+  --color-splitter: var(--color-1);
   --color-splitter-hover: var(--color-4);
-  --color-splitter-drag: var(--color-5);
-  --color-drag-rect-border: var(--color-4);
-  --color-drag-rect-background: var(--color-1);
+  --color-splitter-drag: var(--color-4);
+  --color-drag-rect-border: var(--color-6);
+  --color-drag-rect-background: var(--color-4);
   --color-drag-rect: var(--color-text);
   --color-popup-border: var(--color-6);
   --color-popup-unselected: var(--color-text);
-  --color-popup-unselected-background: black;
+  --color-popup-unselected-background: white;
   --color-popup-selected: var(--color-text);
-  --color-popup-selected-background: var(--color-4);
+  --color-popup-selected-background: var(--color-3);
   --color-edge-marker: gray;
+  --color-underline: rgb(65, 105, 225);
+  --color-underline-hover: #aaa;
 }
 
 .flexlayout__layout {
@@ -71,7 +73,6 @@
 .flexlayout__splitter_drag {
   z-index: 1000;
   background-color: var(--color-splitter-drag);
-  border-radius: 5px;
 }
 .flexlayout__splitter_extra {
   background-color: transparent;
@@ -129,6 +130,9 @@
 }
 .flexlayout__tabset_tab_divider {
   width: 4px;
+  width: 1px;
+  margin: 4px 6px 4px 6px;
+  border-left: 1px solid #ddd;
 }
 .flexlayout__tabset_header {
   position: absolute;
@@ -141,7 +145,6 @@
   border-bottom: 1px solid var(--color-tabset-divider-line);
   color: var(--color-tabset-header);
   background-color: var(--color-tabset-header-background);
-  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
 }
 .flexlayout__tabset_header_content {
   flex-grow: 1;
@@ -186,11 +189,9 @@
 }
 .flexlayout__tabset-selected {
   background-color: var(--color-tabset-background-selected);
-  background-image: linear-gradient(var(--color-background), var(--color-4));
 }
 .flexlayout__tabset-maximized {
   background-color: var(--color-tabset-background-maximized);
-  background-image: linear-gradient(var(--color-6), var(--color-2));
 }
 .flexlayout__tab_button_stamp {
   display: inline-flex;
@@ -217,26 +218,19 @@
 .flexlayout__tab_button--selected {
   background-color: var(--color-tab-selected-background);
   color: var(--color-tab-selected);
+  border-bottom: 3px solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
     background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
+    border-bottom: 3px solid var(--color-underline-hover);
   }
 }
 .flexlayout__tab_button--unselected {
   background-color: var(--color-tab-unselected-background);
   color: var(--color-tab-unselected);
-}
-.flexlayout__tab_button_top {
-  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-}
-.flexlayout__tab_button_bottom {
-  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
+  color: gray;
 }
 .flexlayout__tab_button_leading {
   display: flex;
@@ -263,7 +257,7 @@
   border-radius: 4px;
 }
 .flexlayout__tab_button_trailing:hover {
-  background-color: var(--color-6);
+  background-color: var(--color-3);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
@@ -299,7 +293,7 @@
 }
 @media (hover: hover) {
   .flexlayout__tab_toolbar_button:hover {
-    background-color: var(--color-4);
+    background-color: var(--color-2);
   }
 }
 .flexlayout__tab_toolbar_sticky_buttons_container {
@@ -388,6 +382,9 @@
 }
 .flexlayout__border_tab_divider {
   width: 4px;
+  width: 1px;
+  margin: 4px 6px 4px 6px;
+  border-left: 1px solid #ddd;
 }
 .flexlayout__border_button {
   display: flex;
@@ -398,18 +395,17 @@
   margin: 2px 0px;
   box-sizing: border-box;
   white-space: nowrap;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
-  border-radius: 3px;
 }
 .flexlayout__border_button--selected {
   background-color: var(--color-border-tab-selected-background);
   color: var(--color-border-tab-selected);
+  border-bottom: 3px solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover {
     background-color: var(--color-border-tab-selected-background);
     color: var(--color-border-tab-selected);
-    background-color: var(--color-4);
+    border-bottom: 3px solid var(--color-underline-hover);
   }
 }
 .flexlayout__border_button--unselected {
@@ -428,7 +424,7 @@
   visibility: hidden;
 }
 .flexlayout__border_button_trailing:hover {
-  background-color: var(--color-6);
+  background-color: var(--color-3);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover .flexlayout__border_button_trailing {
@@ -462,7 +458,7 @@
 }
 @media (hover: hover) {
   .flexlayout__border_toolbar_button:hover {
-    background-color: var(--color-4);
+    background-color: var(--color-2);
   }
 }
 .flexlayout__border_toolbar_button_overflow {
@@ -554,4 +550,8 @@
   font-family: var(--font-family);
 }
 
-/*# sourceMappingURL=dark.css.map */
+.flexlayout__tab_button_textbox {
+  border: none;
+}
+
+/*# sourceMappingURL=underline.css.map */

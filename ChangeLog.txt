@@ -1,3 +1,6 @@
+0.6.7
+More css variables, added Underline theme, updated dependencies
+
 0.6.6 
 fix for #296
 

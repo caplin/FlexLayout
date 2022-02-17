@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.6.6",
+    "version": "0.6.7",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -27,7 +27,7 @@
         "build:demo": "webpack",
         "lint:eslint": "eslint src/*",
         "doc": "typedoc --out typedoc --exclude \"**/examples/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
-        "css": "sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/light.scss test/style/light.css && sass style/dark.scss style/dark.css",
+        "css": "sass style/underline.scss style/underline.css && sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/light.scss test/style/light.css && sass style/dark.scss style/dark.css",
         "cypress": "cypress open-ct",
         "cypress-firefox": "cypress open-ct --browser firefox",
         "test": "cypress run-ct"
@@ -55,7 +55,7 @@
         "prettier": "^2.5.1",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
-        "react-scripts": "4.0.3",
+        "react-scripts": "5.0.0",
         "sass": "^1.45.0",
         "source-map-loader": "^3.0.0",
         "style-loader": "^3.3.1",
