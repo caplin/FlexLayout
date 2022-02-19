@@ -31046,7 +31046,8 @@ var App = /** @class */ (function (_super) {
                         React.createElement("option", { value: "20px" }, "Size 20px"),
                         React.createElement("option", { value: "25px" }, "Size 25px"),
                         React.createElement("option", { value: "30px" }, "Size 30px")),
-                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "gray", onChange: this.onThemeChange },
+                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "light", onChange: this.onThemeChange },
+                        React.createElement("option", { value: "underline" }, "Underline"),
                         React.createElement("option", { value: "light" }, "Light"),
                         React.createElement("option", { value: "gray" }, "Gray"),
                         React.createElement("option", { value: "dark" }, "Dark")),
@@ -32380,6 +32381,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__BORDER_INNER_"] = "flexlayout__border_inner_";
     CLASSES["FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER"] = "flexlayout__border_inner_tab_container";
     CLASSES["FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_"] = "flexlayout__border_inner_tab_container_";
+    CLASSES["FLEXLAYOUT__BORDER_TAB_DIVIDER"] = "flexlayout__border_tab_divider";
     CLASSES["FLEXLAYOUT__BORDER_SIZER"] = "flexlayout__border_sizer";
     CLASSES["FLEXLAYOUT__BORDER_TOOLBAR"] = "flexlayout__border_toolbar";
     CLASSES["FLEXLAYOUT__BORDER_TOOLBAR_"] = "flexlayout__border_toolbar_";
@@ -32407,6 +32409,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TABSET_MAXIMIZED"] = "flexlayout__tabset-maximized";
     CLASSES["FLEXLAYOUT__TABSET_SELECTED"] = "flexlayout__tabset-selected";
     CLASSES["FLEXLAYOUT__TABSET_SIZER"] = "flexlayout__tabset_sizer";
+    CLASSES["FLEXLAYOUT__TABSET_TAB_DIVIDER"] = "flexlayout__tabset_tab_divider";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER"] = "flexlayout__tabset_tabbar_inner";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER_"] = "flexlayout__tabset_tabbar_inner_";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER"] = "flexlayout__tabset_tabbar_inner_tab_container";
@@ -35632,6 +35635,7 @@ var BorderTabSet = function (props) {
         var isSelected = border.getSelected() === i;
         var child = border.getChildren()[i];
         tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+        tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER) }));
     };
     for (var i = 0; i < border.getChildren().length; i++) {
         layoutTab(i);
@@ -37620,6 +37624,7 @@ var TabSet = function (props) {
             var child = node.getChildren()[i];
             var isSelected = node.getSelected() === i;
             tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+            tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER) }));
         }
     }
     var showHeader = node.getName() !== undefined;
