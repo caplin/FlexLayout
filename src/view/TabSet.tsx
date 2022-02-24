@@ -329,12 +329,6 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     const tabStripStyle: { [key: string]: string } = { height: node.getTabStripHeight() + "px" };
-    if (node.getTabLocation() === "top") {
-        const top = showHeader ? node.getHeaderHeight() + "px" : "0px";
-        tabStripStyle["top"] = top;
-    } else {
-        tabStripStyle["bottom"] = "0px";
-    }
     tabStrip = (
         <div className={tabStripClasses} style={tabStripStyle}
             data-layout-path={path + "/tabstrip"}
@@ -357,6 +351,25 @@ export const TabSet = (props: ITabSetProps) => {
 
     style = layout.styleFont(style);
 
+    var placeHolder: React.ReactNode = undefined;
+    if (node.getChildren().length === 0) {
+        const placeHolderCallback = layout.getTabPlaceHolderCallback();
+        if (placeHolderCallback) {
+            placeHolder = placeHolderCallback(node);
+        }
+    }
+
+    const center = <div className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
+        {placeHolder}
+    </div>
+
+    var content;
+    if (node.getTabLocation() === "top") {
+        content = <>{header}{tabStrip}{center}</>;
+    } else {
+        content = <>{header}{center}{tabStrip}</>;
+    }
+
     return (
         <div ref={selfRef}
             dir="ltr"
@@ -364,8 +377,7 @@ export const TabSet = (props: ITabSetProps) => {
             style={style}
             className={cm(CLASSES.FLEXLAYOUT__TABSET)}
             onWheel={onMouseWheel}>
-            {header}
-            {tabStrip}
+            {content}
         </div>
     );
 };

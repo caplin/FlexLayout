@@ -89,6 +89,8 @@
     }
 
     &__tabset {
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
         background-color: var(--color-tabset-background);
         box-sizing: border-box;
@@ -101,13 +103,17 @@
             @include tabset_tab_divider_mixin;
         }
 
+        &_content {
+            display: flex;
+            flex-grow: 1;
+            align-items: center;
+            justify-content: center;
+        }
+
         &_header {
             // tabset header bar
-            position: absolute;
             display: flex;
             align-items: center;
-            left: 0;
-            right: 0;
             padding: 3px 3px 3px 5px;
             box-sizing: border-box;
             border-bottom: 1px solid var(--color-tabset-divider-line);
@@ -125,9 +131,6 @@
                 // tabset tabbar outer
                 box-sizing: border-box;
                 background-color: var(--color-tabset-background);
-                position: absolute;
-                left: 0;
-                right: 0;
                 overflow: hidden;
                 display: flex;
                 @include tabset_tabbar_mixin;

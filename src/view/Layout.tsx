@@ -39,6 +39,7 @@ export type ShowOverflowMenuCallback = (
     items: { index: number; node: TabNode }[],
     onSelect: (item: { index: number; node: TabNode }) => void,
 ) => void;
+export type TabPlaceHolderCallback = (node: TabSetNode) => React.ReactNode;
 
 export interface ILayoutProps {
     model: Model;
@@ -83,6 +84,7 @@ export interface ILayoutProps {
     onContextMenu?: NodeMouseEvent;
     onAuxMouseClick?: NodeMouseEvent;
     onShowOverflowMenu?: ShowOverflowMenuCallback;
+    onTabPlaceHolder?: TabPlaceHolderCallback;
 }
 export interface IFontValues {
     size?: string;
@@ -93,6 +95,7 @@ export interface IFontValues {
 
 export interface ITabSetRenderValues {
     headerContent?: React.ReactNode;
+    centerContent?: React.ReactNode;
     stickyButtons: React.ReactNode[];
     buttons: React.ReactNode[];
     headerButtons: React.ReactNode[];
@@ -187,6 +190,7 @@ export interface ILayoutCallbacks {
     showPortal: (portal: React.ReactNode, portalDiv: HTMLDivElement) => void;
     hidePortal: () => void;
     getShowOverflowMenu(): ShowOverflowMenuCallback | undefined;
+    getTabPlaceHolderCallback() : TabPlaceHolderCallback | undefined;
 }
 
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
@@ -1234,6 +1238,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     getShowOverflowMenu() {
         return this.props.onShowOverflowMenu;
+    }
+
+    /** @internal */
+    getTabPlaceHolderCallback() {
+        return this.props.onTabPlaceHolder;
     }
     /** @internal */
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {

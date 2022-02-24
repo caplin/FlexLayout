@@ -56,6 +56,7 @@ export enum CLASSES {
     FLEXLAYOUT__TABSET_SIZER = "flexlayout__tabset_sizer",
     FLEXLAYOUT__TABSET_TAB_DIVIDER = "flexlayout__tabset_tab_divider",
 
+    FLEXLAYOUT__TABSET_CONTENT = "flexlayout__tabset_content",
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
     FLEXLAYOUT__TABSET_TABBAR_INNER_ = "flexlayout__tabset_tabbar_inner_",
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER = "flexlayout__tabset_tabbar_inner_tab_container",
