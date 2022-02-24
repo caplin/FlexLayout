@@ -36,7 +36,7 @@ body:
       placeholder: |
         e.g. https://stackblitz.com/edit/...... OR Github Repo
     validations:
-      required: true
+      required: false
   - type: textarea
     id: steps
     attributes:
@@ -55,7 +55,40 @@ body:
       label: Expected behavior
       description: Provide a clear and concise description of what you expected to happen.
       placeholder: |
-        As a user, I expected ___ behavior but i am seeing ___
+        As a user, I expected ___ behavior, but I am seeing ___
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: What operating system are you on?
+      multiple: false
+      options:
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: What browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Google Chrome
+        - Firefox
+        - Safari
+        - Microsoft Edge
+        - Other Browser
+    validations:
+      required: true
+  - type: textarea
+    id: browser_version
+    attributes:
+      label: Browser Version
+      description: What browser version are you using?
+      placeholder: |
+        - Version: [e.g. 91.1]
     validations:
       required: true
   - type: textarea
@@ -68,14 +101,6 @@ body:
         to the following link: https://docs.github.com/en/github/writing-on-github/working-with-advanced-formatting/attaching-files
       placeholder: |
         You can drag your video or image files inside of this editor ↓
-  - type: textarea
-    id: platform
-    attributes:
-      label: Platform
-      value: |
-        - OS: [e.g. macOS, Windows, Linux]
-        - Browser: [e.g. Chrome, Safari, Firefox]
-        - Version: [e.g. 91.1]
     validations:
       required: true
   - type: textarea
