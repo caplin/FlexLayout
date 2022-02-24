@@ -58,28 +58,22 @@ body:
         As a user, I expected ___ behavior, but I am seeing ___
     validations:
       required: true
-  - type: dropdown
+  - type: textarea
     id: os
     attributes:
-      label: What operating system are you on?
-      multiple: false
-      options:
-        - macOS
-        - Windows
-        - Linux
+      label: Operating System
+      description: What opearting system are you using?
+      placeholder: |
+        - OS: [e.g. macOS, Windows, Linux]
     validations:
       required: true
-  - type: dropdown
+  - type: textarea
     id: browsers
     attributes:
-      label: What browsers are you seeing the problem on?
-      multiple: true
-      options:
-        - Google Chrome
-        - Firefox
-        - Safari
-        - Microsoft Edge
-        - Other Browser
+      label: Browser Type?
+      description: What browsers are you seeing the problem on?
+      placeholder: |
+        - OS: [e.g. Google Chrome, Safari, Firefox, Opera etc]
     validations:
       required: true
   - type: textarea
