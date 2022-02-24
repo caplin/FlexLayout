@@ -353,7 +353,7 @@ export const TabSet = (props: ITabSetProps) => {
 
     var placeHolder: React.ReactNode = undefined;
     if (node.getChildren().length === 0) {
-        const placeHolderCallback = layout.getTabPlaceHolderCallback();
+        const placeHolderCallback = layout.getTabSetPlaceHolderCallback();
         if (placeHolderCallback) {
             placeHolder = placeHolderCallback(node);
         }

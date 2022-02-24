@@ -101,6 +101,7 @@ The `<Layout>` component renders the tabsets and splitters, it takes the followi
 | onContextMenu    | callback for handling context actions on tabs and tabsets |
 | onAuxMouseClick  | callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks |
 | onShowOverflowMenu | callback for handling the display of the tab overflow menu |
+| onTabSetPlaceHolder | callback for rendering a placeholder when a tabset is empty |
 | iconFactory      | a factory function for creating icon components for tab bar buttons. <br/><br/> NOTE: for greater customization of the tab use onRenderTab instead of this callback |
 | titleFactory     | a factory function for creating title components for tab bar buttons. <br /><br /> NOTE: for greater customization of the tab use onRenderTab instead of this callback  |
 

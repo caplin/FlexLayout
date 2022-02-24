@@ -396,7 +396,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         }
     }
 
-    onTabPlaceHolder(node: TabSetNode){
+    onTabSetPlaceHolder(node: TabSetNode){
         return <div>Drag tabs to this area</div>;
     }
 
@@ -429,7 +429,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                 //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
                 //     }
                 // }}
-                onTabPlaceHolder={this.onTabPlaceHolder}
+                onTabSetPlaceHolder={this.onTabSetPlaceHolder}
 
             // classNameMapper={
             //     className => {
