@@ -1,3 +1,6 @@
+0.6.8
+Added onTabSetPlaceHolder prop to render the tabset area when there are no tabs.
+
 0.6.7
 More css variables, added Underline theme, updated dependencies
 
