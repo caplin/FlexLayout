@@ -31008,12 +31008,21 @@ var App = /** @class */ (function (_super) {
             Utils_1.Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
         }
     };
+    App.prototype.onTabSetPlaceHolder = function (node) {
+        return React.createElement("div", null, "Drag tabs to this area");
+    };
     App.prototype.render = function () {
         var contents = "loading ...";
         var maximized = false;
         if (this.state.model !== null) {
             maximized = this.state.model.getMaximizedTabset() !== undefined;
-            contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined });
+            contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined, 
+                // icons={{
+                //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
+                //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
+                //     }
+                // }}
+                onTabSetPlaceHolder: this.onTabSetPlaceHolder });
         }
         return (React.createElement(ContextExample.Provider, { value: "from context" },
             React.createElement("div", { className: "app" },
@@ -32410,6 +32419,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TABSET_SELECTED"] = "flexlayout__tabset-selected";
     CLASSES["FLEXLAYOUT__TABSET_SIZER"] = "flexlayout__tabset_sizer";
     CLASSES["FLEXLAYOUT__TABSET_TAB_DIVIDER"] = "flexlayout__tabset_tab_divider";
+    CLASSES["FLEXLAYOUT__TABSET_CONTENT"] = "flexlayout__tabset_content";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER"] = "flexlayout__tabset_tabbar_inner";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER_"] = "flexlayout__tabset_tabbar_inner_";
     CLASSES["FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER"] = "flexlayout__tabset_tabbar_inner_tab_container";
@@ -36869,6 +36879,10 @@ var Layout = /** @class */ (function (_super) {
         return this.props.onShowOverflowMenu;
     };
     /** @internal */
+    Layout.prototype.getTabSetPlaceHolderCallback = function () {
+        return this.props.onTabSetPlaceHolder;
+    };
+    /** @internal */
     Layout.prototype.showContextMenu = function (node, event) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
@@ -37708,21 +37722,33 @@ var TabSet = function (props) {
             headerToolbar));
     }
     var tabStripStyle = { height: node.getTabStripHeight() + "px" };
-    if (node.getTabLocation() === "top") {
-        var top_1 = showHeader ? node.getHeaderHeight() + "px" : "0px";
-        tabStripStyle["top"] = top_1;
-    }
-    else {
-        tabStripStyle["bottom"] = "0px";
-    }
     tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, "data-layout-path": path + "/tabstrip", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
         React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
             React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
         toolbar));
     style = layout.styleFont(style);
-    return (React.createElement("div", { ref: selfRef, dir: "ltr", "data-layout-path": path, style: style, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET), onWheel: onMouseWheel },
-        header,
-        tabStrip));
+    var placeHolder = undefined;
+    if (node.getChildren().length === 0) {
+        var placeHolderCallback = layout.getTabSetPlaceHolderCallback();
+        if (placeHolderCallback) {
+            placeHolder = placeHolderCallback(node);
+        }
+    }
+    var center = React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_CONTENT) }, placeHolder);
+    var content;
+    if (node.getTabLocation() === "top") {
+        content = React.createElement(React.Fragment, null,
+            header,
+            tabStrip,
+            center);
+    }
+    else {
+        content = React.createElement(React.Fragment, null,
+            header,
+            center,
+            tabStrip);
+    }
+    return (React.createElement("div", { ref: selfRef, dir: "ltr", "data-layout-path": path, style: style, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET), onWheel: onMouseWheel }, content));
 };
 exports.TabSet = TabSet;
 
