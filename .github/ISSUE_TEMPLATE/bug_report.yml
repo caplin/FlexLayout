@@ -58,7 +58,7 @@ body:
         As a user, I expected ___ behavior, but I am seeing ___
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: os
     attributes:
       label: Operating System
@@ -67,7 +67,7 @@ body:
         - OS: [e.g. macOS, Windows, Linux]
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: browsers
     attributes:
       label: Browser Type?
@@ -76,7 +76,7 @@ body:
         - OS: [e.g. Google Chrome, Safari, Firefox, Opera etc]
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: browser_version
     attributes:
       label: Browser Version
