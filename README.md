@@ -611,5 +611,12 @@ yarn cypress
 
 To build the npm distribution run 'yarn build', this will create the artifacts in the dist dir.
 
+## Alternative Layout Managers
 
+| Name | Repository |
+| ------------- |:-------------|
+| rc-dock | https://github.com/ticlo/rc-dock | 
+| lumino | https://github.com/jupyterlab/lumino | 
+| golden-layout | https://github.com/golden-layout/golden-layout |
+ss
 
