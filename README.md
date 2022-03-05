@@ -618,5 +618,5 @@ To build the npm distribution run 'yarn build', this will create the artifacts i
 | rc-dock | https://github.com/ticlo/rc-dock | 
 | lumino | https://github.com/jupyterlab/lumino | 
 | golden-layout | https://github.com/golden-layout/golden-layout |
-ss
+
 
