@@ -30722,40 +30722,32 @@ var App = /** @class */ (function (_super) {
         _this.onAddDragMouseDown = function (event) {
             event.stopPropagation();
             event.preventDefault();
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDrop(undefined, {
-                    component: "grid",
-                    icon: "images/article.svg",
-                    name: "Grid " + _this.nextGridIndex++
-                }, _this.onAdded);
-                // this.setState({ adding: true });
-            }
+            _this.refs.layout.addTabWithDragAndDrop(undefined, {
+                component: "grid",
+                icon: "images/article.svg",
+                name: "Grid " + _this.nextGridIndex++
+            }, _this.onAdded);
+            // this.setState({ adding: true });
         };
         _this.onAddActiveClick = function (event) {
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabToActiveTabSet({
-                    component: "grid",
-                    icon: "images/article.svg",
-                    name: "Grid " + _this.nextGridIndex++
-                });
-            }
+            _this.refs.layout.addTabToActiveTabSet({
+                component: "grid",
+                icon: "images/article.svg",
+                name: "Grid " + _this.nextGridIndex++
+            });
         };
         _this.onAddFromTabSetButton = function (node) {
-            // if (this.state.model!.getMaximizedTabset() == null) {
             _this.refs.layout.addTabToTabSet(node.getId(), {
                 component: "grid",
                 name: "Grid " + _this.nextGridIndex++
             });
-            // }
         };
         _this.onAddIndirectClick = function (event) {
-            if (_this.state.model.getMaximizedTabset() == null) {
-                _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
-                    component: "grid",
-                    name: "Grid " + _this.nextGridIndex++
-                }, _this.onAdded);
-                _this.setState({ adding: true });
-            }
+            _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
+                component: "grid",
+                name: "Grid " + _this.nextGridIndex++
+            }, _this.onAdded);
+            _this.setState({ adding: true });
         };
         _this.onRealtimeResize = function (event) {
             _this.setState({
@@ -31013,9 +31005,7 @@ var App = /** @class */ (function (_super) {
     };
     App.prototype.render = function () {
         var contents = "loading ...";
-        var maximized = false;
         if (this.state.model !== null) {
-            maximized = this.state.model.getMaximizedTabset() !== undefined;
             contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined, 
                 // icons={{
                 //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
@@ -31061,9 +31051,9 @@ var App = /** @class */ (function (_super) {
                         React.createElement("option", { value: "gray" }, "Gray"),
                         React.createElement("option", { value: "dark" }, "Dark")),
                     React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding || maximized, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding || maximized, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
+                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
                 React.createElement("div", { className: "contents" }, contents))));
     };
     App.prototype.makeFakeData = function () {
@@ -33940,14 +33930,19 @@ var Node = /** @class */ (function () {
     Node.prototype._findDropTargetNode = function (dragNode, x, y) {
         var rtn;
         if (this._rect.contains(x, y)) {
-            rtn = this.canDrop(dragNode, x, y);
-            if (rtn === undefined) {
-                if (this._children.length !== 0) {
-                    for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                        var child = _a[_i];
-                        rtn = child._findDropTargetNode(dragNode, x, y);
-                        if (rtn !== undefined) {
-                            break;
+            if (this._model.getMaximizedTabset() !== undefined) {
+                rtn = this._model.getMaximizedTabset().canDrop(dragNode, x, y);
+            }
+            else {
+                rtn = this.canDrop(dragNode, x, y);
+                if (rtn === undefined) {
+                    if (this._children.length !== 0) {
+                        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
+                            var child = _a[_i];
+                            rtn = child._findDropTargetNode(dragNode, x, y);
+                            if (rtn !== undefined) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -35143,7 +35138,10 @@ var TabSetNode = /** @class */ (function (_super) {
             dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         }
         else if (this._contentRect.contains(x, y)) {
-            var dockLocation = DockLocation_1.DockLocation.getLocation(this._contentRect, x, y);
+            var dockLocation = DockLocation_1.DockLocation.CENTER;
+            if (this._model.getMaximizedTabset() === undefined) {
+                dockLocation = DockLocation_1.DockLocation.getLocation(this._contentRect, x, y);
+            }
             var outlineRect = dockLocation.getDockRect(this._rect);
             dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         }
@@ -36189,7 +36187,7 @@ var Layout = /** @class */ (function (_super) {
         };
         /** @internal */
         _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
-            if (_this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
+            if (!allowDrag) {
                 DragDrop_1.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
             }
             else {
@@ -36253,7 +36251,9 @@ var Layout = /** @class */ (function (_super) {
                 rootdiv.appendChild(_this.dragDiv);
             }
             // add edge indicators
-            _this.showEdges(rootdiv);
+            if (_this.props.model.getMaximizedTabset() === undefined) {
+                _this.showEdges(rootdiv);
+            }
             if (_this.dragNode !== undefined && _this.dragNode instanceof TabNode_1.TabNode && _this.dragNode.getTabRect() !== undefined) {
                 _this.dragNode.getTabRect().positionElement(_this.outlineDiv);
             }
@@ -37585,7 +37585,12 @@ var TabSet = function (props) {
             layout.doAction(Actions_1.Actions.setActiveTabset(node.getId()));
             if (!layout.getEditingTab()) {
                 var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tabset, name_1);
-                layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
+                if (node.getModel().getMaximizedTabset() !== undefined) {
+                    layout.dragStart(event, message, node, false, function (event2) { return undefined; }, onDoubleClick);
+                }
+                else {
+                    layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
+                }
             }
         }
     };
