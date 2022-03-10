@@ -179,13 +179,17 @@ export abstract class Node {
     _findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         let rtn: DropInfo | undefined;
         if (this._rect.contains(x, y)) {
-            rtn = this.canDrop(dragNode, x, y);
-            if (rtn === undefined) {
-                if (this._children.length !== 0) {
-                    for (const child of this._children) {
-                        rtn = child._findDropTargetNode(dragNode, x, y);
-                        if (rtn !== undefined) {
-                            break;
+            if (this._model.getMaximizedTabset() !== undefined) {
+                rtn = this._model.getMaximizedTabset()!.canDrop(dragNode, x, y);
+            } else {
+                rtn = this.canDrop(dragNode, x, y);
+                if (rtn === undefined) {
+                    if (this._children.length !== 0) {
+                        for (const child of this._children) {
+                            rtn = child._findDropTargetNode(dragNode, x, y);
+                            if (rtn !== undefined) {
+                                break;
+                            }
                         }
                     }
                 }

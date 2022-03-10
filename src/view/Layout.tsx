@@ -833,7 +833,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         onClick?: (event: Event) => void,
         onDoubleClick?: (event: Event) => void
     ) => {
-        if (this.props.model.getMaximizedTabset() !== undefined || !allowDrag) {
+        if (!allowDrag) {
             DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, this.selfRef.current!);
         } else {
             this.dragNode = node;
@@ -911,7 +911,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             rootdiv.appendChild(this.dragDiv);
         }
         // add edge indicators
-        this.showEdges(rootdiv);
+        if (this.props.model.getMaximizedTabset() === undefined) {
+            this.showEdges(rootdiv);
+        }
 
         if (this.dragNode !== undefined && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {
             this.dragNode.getTabRect()!.positionElement(this.outlineDiv);

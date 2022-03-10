@@ -67,7 +67,11 @@ export const TabSet = (props: ITabSetProps) => {
             layout.doAction(Actions.setActiveTabset(node.getId()));
             if (!layout.getEditingTab()) {
                 const message = layout.i18nName(I18nLabel.Move_Tabset, name);
-                layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
+                if (node.getModel().getMaximizedTabset() !== undefined) {
+                    layout.dragStart(event, message, node, false, (event2: Event) => undefined, onDoubleClick);
+                } else {
+                    layout.dragStart(event, message, node, node.isEnableDrag(), (event2: Event) => undefined, onDoubleClick);
+                }
             }
         }
     };
