@@ -33,7 +33,7 @@ export const useTabOverflow = (
 
     React.useEffect(() => {
         const instance = selfRef.current!;
-        instance.addEventListener('wheel', onWheel, { passive: true });
+        instance.addEventListener('wheel', onWheel, { passive: false });
         return () => {
             instance.removeEventListener('wheel', onWheel);
         }
