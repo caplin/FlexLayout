@@ -1,0 +1,112 @@
+{
+	"global": {
+		"tabEnableFloat": true
+	},
+	"borders": [],
+	"layout": {
+		"type": "row",
+		"children": [
+			{
+				"type": "tabset",
+				"weight": 23.6,
+				"children": [
+					{
+						"type": "tab",
+						"name": "Tabbed Pane",
+						"component": "sub",
+						"config": {
+							"model": {
+								"global": {
+									"tabSetTabLocation": "bottom"
+								},
+								"borders": [],
+								"layout": {
+									"type": "row",
+									"children": [
+										{
+											"type": "tabset",
+											"weight": 50,
+											"selected": 1,
+											"children": [
+												{
+													"type": "tab",
+													"name": "AAAA",
+													"component": "grid",
+													"config": {
+														"id": "1"
+													}
+												},
+												{
+													"type": "tab",
+													"name": "BBBB",
+													"component": "grid",
+													"config": {
+														"id": "2"
+													}
+												}
+											],
+											"active": true
+										}
+									]
+								}
+							}
+						}
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"weight": 26.4,
+				"children": [
+					{
+						"type": "tab",
+						"name": "Split Pane",
+						"component": "sub",
+						"config": {
+							"model": {
+								"global": {
+									"tabSetEnableTabStrip": false
+								},
+								"borders": [],
+								"layout": {
+									"type": "row",
+									"children": [
+										{
+											"type": "tabset",
+											"weight": 50,
+											"children": [
+												{
+													"type": "tab",
+													"name": "1111",
+													"component": "grid",
+													"config": {
+														"id": "1"
+													}
+												}
+											]
+										},
+										{
+											"type": "tabset",
+											"weight": 50,
+											"children": [
+												{
+													"type": "tab",
+													"name": "2222",
+													"component": "grid",
+													"config": {
+														"id": "2"
+													}
+												}
+											]
+										}
+									]
+								}
+							}
+						}
+					}
+				],
+				"active": true
+			}
+		]
+	}
+}
