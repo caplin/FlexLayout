@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Action, Actions, BorderNode, CLASSES, DockLocation, DragDrop, DropInfo, IJsonTabNode, ILayoutProps, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode } from "../../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { showPopup } from "./PopupMenu";
@@ -450,12 +450,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                         <select className="toolbar_control" onChange={this.onSelectLayout}>
                             <option value="default">Default</option>
                             <option value="newfeatures">New Features</option>
-                            <option value="simple">Simple</option>
-                            <option value="justsplitters">Just Splitters</option>
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
-                            <option value="preferred">Using Preferred size</option>
-                            <option value="trader">Trader</option>
+                            <option value="headers">Headers</option>
                         </select>
                         <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                         <div style={{ flexGrow: 1 }}></div>
@@ -560,4 +557,5 @@ class SimpleTable extends React.Component<{ fields: any, data: any, onClick: any
 //     return <span>{value}</span>;
 // }
 
-ReactDOM.render(<App />, document.getElementById("container"));
+const root = createRoot(document.getElementById("container")!);
+root.render(<App />)

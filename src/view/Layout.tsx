@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
 import { DockLocation } from "../DockLocation";
 import { DragDrop } from "../DragDrop";
 import { DropInfo } from "../DropInfo";
@@ -40,14 +40,16 @@ export type ShowOverflowMenuCallback = (
     onSelect: (item: { index: number; node: TabNode }) => void,
 ) => void;
 export type TabSetPlaceHolderCallback = (node: TabSetNode) => React.ReactNode;
+export type IconFactory = (node: TabNode) => React.ReactNode;
+export type TitleFactory = (node: TabNode) => ITitleObject | React.ReactNode;
 
 export interface ILayoutProps {
     model: Model;
     factory: (node: TabNode) => React.ReactNode;
     font?: IFontValues;
     fontFamily?: string;
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
-    titleFactory?: (node: TabNode) => ITitleObject | React.ReactNode | undefined;
+    iconFactory?: IconFactory;
+    titleFactory?: TitleFactory;
     icons?: IIcons;
     onAction?: (action: Action) => Action | undefined;
     onRenderTab?: (
@@ -120,7 +122,7 @@ export interface ILayoutState {
     calculatedBorderBarSize: number;
     editingTab?: TabNode;
     showHiddenBorder: DockLocation;
-    portal?: React.ReactNode;
+    portal?: React.ReactPortal;
 }
 
 export interface IIcons {
@@ -742,7 +744,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.dragDiv = this.currentDocument!.createElement("div");
         this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
-        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown);
+        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown, {passive: false});
 
         this.dragRectRender(this.dragDivText, undefined, this.newTabJson, () => {
             if (this.dragDiv) {
@@ -883,7 +885,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @internal */
     showPortal = (control: React.ReactNode, element: HTMLElement) => {
-        const portal = ReactDOM.createPortal(control, element);
+        const portal = createPortal(control, element) as React.ReactPortal;
         this.setState({ portal });
     };
 

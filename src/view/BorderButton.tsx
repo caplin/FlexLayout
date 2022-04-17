@@ -3,7 +3,7 @@ import { I18nLabel } from "../I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { Rect } from "../Rect";
-import { IIcons, ILayoutCallbacks } from "./Layout";
+import { IconFactory, IIcons, ILayoutCallbacks, TitleFactory } from "./Layout";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "../Types";
 import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
@@ -14,8 +14,8 @@ export interface IBorderButtonProps {
     node: TabNode;
     selected: boolean;
     border: string;
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    iconFactory?: IconFactory;
+    titleFactory?: TitleFactory;
     icons: IIcons;
     path: string;
 }

@@ -1,13 +1,13 @@
 import * as React from "react";
 import { TabNode } from "../model/TabNode";
-import { ILayoutCallbacks, ITitleObject } from "./Layout";
+import { IconFactory, ILayoutCallbacks, ITitleObject, TitleFactory } from "./Layout";
 
 /** @internal */
 export function getRenderStateEx(
     layout: ILayoutCallbacks,
     node: TabNode,
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined,
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined
+    iconFactory?: IconFactory,
+    titleFactory?: TitleFactory
 ) {
     let leadingContent = iconFactory ? iconFactory(node) : undefined;
     let titleContent: React.ReactNode = node.getName();

@@ -2,7 +2,7 @@ import * as React from "react";
 import { DragDrop } from "./DragDrop";
 import { TabNode } from "./model/TabNode";
 import { CLASSES } from "./Types";
-import { ILayoutCallbacks } from "./view/Layout";
+import { IconFactory, ILayoutCallbacks, TitleFactory } from "./view/Layout";
 import { TabButtonStamp } from "./view/TabButtonStamp";
 
 /** @internal */
@@ -11,8 +11,8 @@ export function showPopup(
     items: { index: number; node: TabNode }[],
     onSelect: (item: { index: number; node: TabNode }) => void,
     layout: ILayoutCallbacks,
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined,
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined,
+    iconFactory?: IconFactory,
+    titleFactory?: TitleFactory,
 ) {
     const layoutDiv = layout.getRootDiv();
     const classNameMapper = layout.getClassName;
@@ -77,8 +77,8 @@ interface IPopupMenuProps {
     onSelect: (item: { index: number; node: TabNode }) => void;
     classNameMapper: (defaultClassName: string) => string;
     layout: ILayoutCallbacks;
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    iconFactory?: IconFactory;
+    titleFactory?: TitleFactory;
 }
 
 /** @internal */

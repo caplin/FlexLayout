@@ -1,3 +1,7 @@
+0.7.0
+Updated dependencies, in particular changed React peer dependency to React 18
+Made changes for React 18
+
 0.6.10
 fix for #312, chrome warning for wheel event listener 
 

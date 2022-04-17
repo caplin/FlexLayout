@@ -8,8 +8,8 @@
   --color-4: #cccccc;
   --color-5: #bfbfbf;
   --color-6: #b3b3b3;
-  --color-drag1: #5f86c4;
-  --color-drag2: #77a677;
+  --color-drag1: rgb(95, 134, 196);
+  --color-drag2: rgb(119, 166, 119);
   --color-drag1-background: rgba(95, 134, 196, 0.1);
   --color-drag2-background: rgba(119, 166, 119, 0.075);
   --font-size: medium;

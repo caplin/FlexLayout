@@ -1,5 +1,7 @@
 {
-"global": {"tabSetEnableTabStrip":false},
+"global": {
+"tabEnableRename":false
+},
 "layout":
 	{
 		"type": "row",

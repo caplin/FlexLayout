@@ -83,7 +83,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
         };
     }, [storedTabs]);
 
-    const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _, __, y: number) => {
+    const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _: any, __: any, y: number) => {
         const absoluteY = y + tab.getRect().y + layout.getDomRect().top;
         const { insertionIndex } = calculateInsertion(absoluteY);
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging;

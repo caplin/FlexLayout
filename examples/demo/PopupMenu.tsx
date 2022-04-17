@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { DragDrop } from "../../src";
 
 /** @hidden @internal */
@@ -36,7 +36,7 @@ export function showPopup(
         DragDrop.instance.hideGlass();
         onSelect(item);
         layoutDiv.removeChild(elm);
-        ReactDOM.unmountComponentAtNode(elm);
+        root.unmount();
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
@@ -52,12 +52,12 @@ export function showPopup(
     elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
 
-    ReactDOM.render(<PopupMenu
+    const root = ReactDOM.createRoot(elm);
+    root.render(<PopupMenu
         currentDocument={currentDocument}
         onHide={onHide}
         title={title}
-        items={items} />,
-        elm);
+        items={items} />);
 }
 
 /** @hidden @internal */

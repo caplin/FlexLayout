@@ -5,6 +5,7 @@ import { CLASSES } from "../Types";
 /** @internal */
 export interface IErrorBoundaryProps {
     message: string;
+    children: React.ReactNode;
 }
 /** @internal */
 export interface IErrorBoundaryState {

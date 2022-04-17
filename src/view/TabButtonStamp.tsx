@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TabNode } from "../model/TabNode";
-import { ILayoutCallbacks } from "./Layout";
+import { IconFactory, ILayoutCallbacks, TitleFactory } from "./Layout";
 import { CLASSES } from "../Types";
 import { getRenderStateEx } from "./Utils";
 
@@ -8,8 +8,8 @@ import { getRenderStateEx } from "./Utils";
 export interface ITabButtonStampProps {
     node: TabNode;
     layout: ILayoutCallbacks;
-    iconFactory?: (node: TabNode) => React.ReactNode | undefined;
-    titleFactory?: (node: TabNode) => React.ReactNode | undefined;
+    iconFactory?: IconFactory;
+    titleFactory?: TitleFactory;
 }
 
 /** @internal */
