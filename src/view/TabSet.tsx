@@ -146,9 +146,11 @@ export const TabSet = (props: ITabSetProps) => {
                     titleFactory={titleFactory}
                     icons={icons}
                 />);
-                tabs.push(
-                    <div  key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER)}></div>
-                );
+                if (i < node.getChildren().length-1) {
+                    tabs.push(
+                        <div  key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER)}></div>
+                    );
+                }
         }
     }
 

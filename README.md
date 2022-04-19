@@ -27,10 +27,10 @@ Features:
 *	maximize tabset (double click tabset header or use icon)
 *	tab overflow (show menu when tabs overflow, scroll tabs using mouse wheel)
 *   border tabsets
-*   popout tabs into new browser windows (only enabled in latest browsers)
+*   popout tabs into new browser windows
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
-*	themeing - light, gray and dark
+*	theming - light, gray and dark
 *	touch events - works on mobile devices (iPad, Android)
 *   add tabs using drag, indirect drag, add to active tabset, add to tabset by id
 *   preferred pixel size tabsets (try to keep their size when window resizes)
@@ -39,7 +39,7 @@ Features:
 *	customizable tabs and tabset header rendering
 *   esc cancels drag
 *	typescript type declarations included
-*	supports overriding css class names via the classNameMapper prop, for use in css modules
+
 
 ## Installation
 
@@ -59,7 +59,7 @@ import { createRoot } from "react-dom/client";
 import * as FlexLayout from "flexlayout-react";
 ```
 
-Include the light, gray or dark style in your html:
+Include the light, underline, gray or dark style in your html:
 
 ```
 <link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
@@ -306,11 +306,7 @@ tabs or drag and drop).
 ```
 ## Floating Tabs (Popouts)
 
-Note: this feature only works for Chrome, Firefox, Safari, latest Edge (the Chrome based one) and Opera, it does
-NOT work for any version of IE or the previous version of Edge. For unsupported browsers the popout icons
-will not be shown and any saved layout with popouts will show with all their tabs in the main layout.
-
-For supported browsers tabs can be rendered into external browser windows (for use in multi-monitor setups)
+Tabs can be rendered into external browser windows (for use in multi-monitor setups)
 by configuring them with the enableFloat attribute. When this attribute is present
 an additional icon is shown in the tab header bar allowing the tab to be popped out
 into an external window.
@@ -331,7 +327,7 @@ following method on one of the elements rendered in the popout (for example a re
 
 In the above code selfRef is a React ref to the toplevel element in the tab being rendered.
 
-Note: some libraries already support popout windows by allowing you to specify the document to use, 
+Note: some libraries support popout windows by allowing you to specify the document to use, 
 for example see the getDocument() callback in agGrid at https://www.ag-grid.com/javascript-grid-callbacks/
 
 ## Global Config attributes

@@ -727,6 +727,15 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /**
+     * Move a tab/tabset using drag and drop
+     * @param node the tab or tabset to drag
+     * @param dragText the text to show on the drag panel
+     */
+    moveTabWithDragAndDrop( node:  (TabNode | TabSetNode), dragText?: string) {
+        this.dragStart(undefined, dragText, node, true, undefined, undefined);
+    }
+
+    /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
      * mouse down on the panel
      *
@@ -744,7 +753,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.dragDiv = this.currentDocument!.createElement("div");
         this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
-        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown, {passive: false});
+        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown, { passive: false });
 
         this.dragRectRender(this.dragDivText, undefined, this.newTabJson, () => {
             if (this.dragDiv) {

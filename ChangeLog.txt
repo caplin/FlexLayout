@@ -1,3 +1,7 @@
+0.7.1
+Fix for #310 - Added new layout method: moveTabWithDragAndDrop(node) to allow tab dragging to be
+started from custom code.
+
 0.7.0
 Updated dependencies, in particular changed React peer dependency to React 18
 Made changes for React 18

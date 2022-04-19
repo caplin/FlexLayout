@@ -250,6 +250,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     onTableClick = (node: Node, event: Event) => {
         // console.log("tab: \n" + node._toAttributeString());
         // console.log("tabset: \n" + node.getParent()!._toAttributeString());
+
+        // const n = this.state.model?.getNodeById("#750f823f-8eda-44b7-a887-f8b287ace2c8");
+        // (this.refs.layout as Layout).moveTabWithDragAndDrop(n as TabSetNode, "move tabset");
+        
+        // (this.refs.layout as Layout).moveTabWithDragAndDrop(node as TabNode);
     }
 
     onAction = (action: Action) => {

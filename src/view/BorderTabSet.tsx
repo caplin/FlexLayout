@@ -97,9 +97,11 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 icons={icons}
             />
         );
-        tabs.push(
-            <div key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER)}></div>
-        );
+        if (i < border.getChildren().length-1) {
+            tabs.push(
+                <div key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER)}></div>
+            );
+        }
 
     };
 
