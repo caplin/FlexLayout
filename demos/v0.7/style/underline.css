@@ -47,6 +47,7 @@
   --color-edge-marker: gray;
   --color-underline: rgb(65, 105, 225);
   --color-underline-hover: #aaa;
+  --underline_height: 3px;
 }
 
 .flexlayout__layout {
@@ -216,23 +217,25 @@
   box-sizing: border-box;
   padding: 3px 0.5em;
   cursor: pointer;
+  padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
 .flexlayout__tab_button--selected {
   background-color: var(--color-tab-selected-background);
   color: var(--color-tab-selected);
-  border-bottom: 3px solid var(--color-underline);
+  border-bottom: var(--underline_height) solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
     background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
-    border-bottom: 3px solid var(--color-underline-hover);
+    border-bottom: var(--underline_height) solid var(--color-underline-hover);
   }
 }
 .flexlayout__tab_button--unselected {
   background-color: var(--color-tab-unselected-background);
   color: var(--color-tab-unselected);
   color: gray;
+  border-bottom: var(--underline_height) solid transparent;
 }
 .flexlayout__tab_button_leading {
   display: flex;
@@ -301,7 +304,7 @@
 .flexlayout__tab_toolbar_sticky_buttons_container {
   display: flex;
   gap: 0.3em;
-  padding-left: 2px;
+  padding-left: 5px;
   align-items: center;
 }
 .flexlayout__tab_floating {
@@ -397,22 +400,24 @@
   margin: 2px 0px;
   box-sizing: border-box;
   white-space: nowrap;
+  padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
 .flexlayout__border_button--selected {
   background-color: var(--color-border-tab-selected-background);
   color: var(--color-border-tab-selected);
-  border-bottom: 3px solid var(--color-underline);
+  border-bottom: var(--underline_height) solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover {
     background-color: var(--color-border-tab-selected-background);
     color: var(--color-border-tab-selected);
-    border-bottom: 3px solid var(--color-underline-hover);
+    border-bottom: var(--underline_height) solid var(--color-underline-hover);
   }
 }
 .flexlayout__border_button--unselected {
   background-color: var(--color-border-tab-unselected-background);
   color: var(--color-border-tab-unselected);
+  border-bottom: var(--underline_height) solid transparent;
 }
 .flexlayout__border_button_leading {
   display: flex;

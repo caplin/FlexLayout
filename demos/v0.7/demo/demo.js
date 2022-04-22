@@ -34134,6 +34134,9 @@ var App = /** @class */ (function (_super) {
         _this.onTableClick = function (node, event) {
             // console.log("tab: \n" + node._toAttributeString());
             // console.log("tabset: \n" + node.getParent()!._toAttributeString());
+            // const n = this.state.model?.getNodeById("#750f823f-8eda-44b7-a887-f8b287ace2c8");
+            // (this.refs.layout as Layout).moveTabWithDragAndDrop(n as TabSetNode, "move tabset");
+            // (this.refs.layout as Layout).moveTabWithDragAndDrop(node as TabNode);
         };
         _this.onAction = function (action) {
             return action;
@@ -38936,7 +38939,9 @@ var BorderTabSet = function (props) {
         var isSelected = border.getSelected() === i;
         var child = border.getChildren()[i];
         tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
-        tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER) }));
+        if (i < border.getChildren().length - 1) {
+            tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER) }));
+        }
     };
     for (var i = 0; i < border.getChildren().length; i++) {
         layoutTab(i);
@@ -39244,9 +39249,14 @@ var OverflowIcon = function () {
 };
 exports.OverflowIcon = OverflowIcon;
 var PopoutIcon = function () {
-    return (React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "gray" },
-        React.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
-        React.createElement("path", { stroke: "gray", d: "M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z" })));
+    return (
+    // <svg xmlns="http://www.w3.org/2000/svg"  style={style}  viewBox="0 0 24 24" fill="gray"><path d="M0 0h24v24H0z" fill="none"/><path stroke="gray" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>
+    // <svg xmlns="http://www.w3.org/2000/svg" style={style} fill="none" viewBox="0 0 24 24" stroke="gray" stroke-width="2">
+    //     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    // </svg>
+    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 20 20", fill: "gray" },
+        React.createElement("path", { d: "M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" }),
+        React.createElement("path", { d: "M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" })));
 };
 exports.PopoutIcon = PopoutIcon;
 var RestoreIcon = function () {
@@ -39936,6 +39946,14 @@ var Layout = /** @class */ (function (_super) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
         this.dragStart(undefined, dragText, TabNode_1.TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
+    };
+    /**
+     * Move a tab/tabset using drag and drop
+     * @param node the tab or tabset to drag
+     * @param dragText the text to show on the drag panel
+     */
+    Layout.prototype.moveTabWithDragAndDrop = function (node, dragText) {
+        this.dragStart(undefined, dragText, node, true, undefined, undefined);
     };
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
@@ -40936,7 +40954,9 @@ var TabSet = function (props) {
             var child = node.getChildren()[i];
             var isSelected = node.getSelected() === i;
             tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
-            tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER) }));
+            if (i < node.getChildren().length - 1) {
+                tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER) }));
+            }
         }
     }
     var showHeader = node.getName() !== undefined;

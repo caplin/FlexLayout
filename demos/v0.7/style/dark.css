@@ -307,7 +307,7 @@
 .flexlayout__tab_toolbar_sticky_buttons_container {
   display: flex;
   gap: 0.3em;
-  padding-left: 2px;
+  padding-left: 5px;
   align-items: center;
 }
 .flexlayout__tab_floating {
