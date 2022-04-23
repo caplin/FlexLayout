@@ -551,6 +551,7 @@ This would add a new grid component to the tabset with id "NAVIGATION" (where th
 | addTabToActiveTabSet(json) | adds a new tab to the active tabset |
 | addTabWithDragAndDrop(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, with the drag starting immediately; on success, `onDrop` is passed the created tab `Node`; on cancel, no arguments are passed |
 | addTabWithDragAndDropIndirect(dragText, json, onDrop) | adds a new tab by dragging a marker to the required location, the marker is shown and must be clicked on to start dragging |
+| moveTabWithDragAndDrop( node, dragText) | Move a tab/tabset using drag and drop triggered from a custom event |
 
 ## Tab Node Events
 
