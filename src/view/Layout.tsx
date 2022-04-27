@@ -515,9 +515,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             const radius = 50;
             edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, right: r.x, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className}></div>)
-            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className}></div>)
             edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
+            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className}></div>)
+            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, right: r.x, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className}></div>)
         }
 
         // this.layoutTime = (Date.now() - this.start);
