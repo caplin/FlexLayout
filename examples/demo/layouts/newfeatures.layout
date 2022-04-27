@@ -60,7 +60,12 @@
 					"enableClose":false,
 					"name": "Terminal",
 					"component": "grid"
-				}
+				},
+                {
+                    "type": "tab",
+                    "name": "Layout JSON",
+                    "component": "json"
+                }
 			]
 		},
 		 {

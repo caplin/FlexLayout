@@ -65,7 +65,12 @@
 					"name": "Terminal",
 					"component": "grid",
                     "icon":"images/terminal.svg"
-				}
+				},
+                {
+                    "type": "tab",
+                    "name": "Layout JSON",
+                    "component": "json"
+                }
 			]
 		},
 		 {

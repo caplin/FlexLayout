@@ -1,20 +1,23 @@
 import * as React from "react";
+import * as Prism from "prismjs";
 import { createRoot } from "react-dom/client";
 import { Action, Actions, BorderNode, CLASSES, DockLocation, DragDrop, DropInfo, IJsonTabNode, ILayoutProps, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode } from "../../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { showPopup } from "./PopupMenu";
 import { TabStorage } from "./TabStorage";
 import { Utils } from "./Utils";
+import "prismjs/themes/prism-coy.css";
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
 const ContextExample = React.createContext('');
 
-class App extends React.Component<any, { layoutFile: string | null, model: Model | null, adding: boolean, fontSize: string, realtimeResize: boolean }> {
+class App extends React.Component<any, { layoutFile: string | null, model: Model | null, json?: string, adding: boolean, fontSize: string, realtimeResize: boolean }> {
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
     showingPopupMenu: boolean = false;
+    htmlTimer?: any = null;
 
     constructor(props: any) {
         super(props);
@@ -38,6 +41,18 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
 
         // use to generate json typescript interfaces 
         // Model.toTypescriptInterfaces();
+    }
+
+    onModelChange = () => {
+        if (this.htmlTimer) {
+            clearTimeout(this.htmlTimer);
+        }
+        this.htmlTimer = setTimeout(() => {
+            const jsonText = JSON.stringify(this.state.model!.toJson(), null, "\t");
+            const html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
+            this.setState({ json: html });
+            this.htmlTimer = null;
+        }, 500);
     }
 
     save() {
@@ -77,7 +92,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         // you can control where nodes can be dropped
         //model.setOnAllowDrop(this.allowDrop);
 
-        this.setState({ layoutFile: this.loadingLayoutName!, model: model });
+        const html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
+        this.setState({ layoutFile: this.loadingLayoutName!, model: model, json: html });
     }
 
     allowDrop = (dragNode: (TabNode | TabSetNode), dropInfo: DropInfo) => {
@@ -253,7 +269,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
 
         // const n = this.state.model?.getNodeById("#750f823f-8eda-44b7-a887-f8b287ace2c8");
         // (this.refs.layout as Layout).moveTabWithDragAndDrop(n as TabSetNode, "move tabset");
-        
+
         // (this.refs.layout as Layout).moveTabWithDragAndDrop(node as TabNode);
     }
 
@@ -269,7 +285,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
 
         var component = node.getComponent();
 
-        if (component === "grid") {
+        if (component === "json") {
+            return (<pre style={{ tabSize: "20px" }} dangerouslySetInnerHTML={{ __html: this.state.json! }} />);
+        }
+        else if (component === "grid") {
             if (node.getExtraData().data == null) {
                 // create data in node extra data first time accessed
                 node.getExtraData().data = this.makeFakeData();
@@ -408,6 +427,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                 factory={this.factory}
                 font={{ size: this.state.fontSize }}
                 onAction={this.onAction}
+                onModelChange={this.onModelChange}
                 titleFactory={this.titleFactory}
                 iconFactory={this.iconFactory}
                 onRenderTab={this.onRenderTab}
@@ -455,6 +475,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                         <select className="toolbar_control" onChange={this.onSelectLayout}>
                             <option value="default">Default</option>
                             <option value="newfeatures">New Features</option>
+                            <option value="simple">Simple</option>
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
                             <option value="headers">Headers</option>
