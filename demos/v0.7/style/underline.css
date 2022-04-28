@@ -15,6 +15,7 @@
   --font-size: medium;
   --font-family: Roboto, Arial, sans-serif;
   --color-overflow: gray;
+  --color-icon: gray;
   --color-tabset-background: var(--color-background);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-6);
