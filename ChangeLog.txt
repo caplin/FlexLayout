@@ -1,3 +1,7 @@
+0.7.2
+New Layout JSON tabs to demo
+Added --color-icon css rootOrientationVertical
+
 0.7.1
 Fix for #310 - Added new layout method: moveTabWithDragAndDrop(node) to allow tab dragging to be
 started from custom code.
