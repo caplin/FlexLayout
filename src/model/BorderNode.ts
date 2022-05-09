@@ -373,7 +373,12 @@ export class BorderNode extends Node implements IDropTarget {
         const dragParent = dragNode.getParent() as BorderNode | TabSetNode;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            adjustSelectedIndex(dragParent, fromIndex);
+            // if selected node in border is being docked into a different border then deselect border tabs
+            if (dragParent !== this && dragParent instanceof BorderNode && dragParent.getSelected() === fromIndex) {
+                dragParent._setSelected(-1);
+            } else {
+                adjustSelectedIndex(dragParent, fromIndex);
+            }
         }
 
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
