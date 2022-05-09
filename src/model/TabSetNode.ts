@@ -389,7 +389,12 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         let fromIndex = 0;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            adjustSelectedIndex(dragParent, fromIndex);
+            // if selected node in border is being docked into tabset then deselect border tabs
+            if (dragParent instanceof BorderNode && dragParent.getSelected() === fromIndex) {
+                dragParent._setSelected(-1);
+            } else {
+                adjustSelectedIndex(dragParent, fromIndex);
+            }
         }
 
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
