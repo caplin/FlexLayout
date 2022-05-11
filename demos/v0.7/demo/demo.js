@@ -39041,7 +39041,13 @@ var BorderNode = /** @class */ (function (_super) {
         var dragParent = dragNode.getParent();
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+            // if selected node in border is being docked into a different border then deselect border tabs
+            if (dragParent !== this && dragParent instanceof BorderNode && dragParent.getSelected() === fromIndex) {
+                dragParent._setSelected(-1);
+            }
+            else {
+                (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+            }
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
@@ -40951,6 +40957,7 @@ var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
 var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
 var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
 var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
@@ -41271,7 +41278,13 @@ var TabSetNode = /** @class */ (function (_super) {
         var fromIndex = 0;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
-            (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+            // if selected node in border is being docked into tabset then deselect border tabs
+            if (dragParent instanceof BorderNode_1.BorderNode && dragParent.getSelected() === fromIndex) {
+                dragParent._setSelected(-1);
+            }
+            else {
+                (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+            }
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
         if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
@@ -42557,7 +42570,7 @@ var Layout = /** @class */ (function (_super) {
             edges.push(React.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length_1, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className }));
             edges.push(React.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length_1, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className }));
             edges.push(React.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length_1, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className }));
-            edges.push(React.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, right: r.x, width: width, height: length_1, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className }));
+            edges.push(React.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length_1, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className }));
         }
         // this.layoutTime = (Date.now() - this.start);
         return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
