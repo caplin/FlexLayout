@@ -1,3 +1,7 @@
+0.7.3
+Fixed right edge marker location when border enableAutoHide
+Dragging out a selected border tab will now leave the border unselected
+
 0.7.2
 New Layout JSON tabs to demo
 Added --color-icon css rootOrientationVertical
