@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { DragDrop } from "../../src";
+import { DragDrop } from "../../src/index";
 
 /** @hidden @internal */
 export function showPopup(
