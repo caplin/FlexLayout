@@ -23,9 +23,13 @@ interface IStyleSheet {
 export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowProps>) => {
     const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
     const popoutWindow = React.useRef<Window | null>(null);
+    const timerId = React.useRef<any>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
 
     React.useLayoutEffect(() => {
+        if (timerId.current) {
+            clearTimeout(timerId.current);
+        }
         const r = rect;
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
@@ -85,7 +89,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
 
         return () => {
             // delay so refresh will close window
-            setTimeout(() => {
+            timerId.current = setTimeout(() => {
                 if (popoutWindow.current) {
                     popoutWindow.current.close();
                     popoutWindow.current = null;

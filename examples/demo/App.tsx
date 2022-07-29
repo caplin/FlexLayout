@@ -18,10 +18,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     nextGridIndex: number = 1;
     showingPopupMenu: boolean = false;
     htmlTimer?: any = null;
+    layoutRef?: React.RefObject<Layout>;
 
     constructor(props: any) {
         super(props);
         this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
+        this.layoutRef = React.createRef();
 
         // save layout when unloading page
         window.onbeforeunload = (event: Event) => {
@@ -56,8 +58,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     save() {
-        var jsonStr = JSON.stringify(this.state.model!.toJson(), null, "\t");
-        localStorage.setItem(this.state.layoutFile!, jsonStr);
+         var jsonStr = JSON.stringify(this.state.model!.toJson(), null, "\t");
+         localStorage.setItem(this.state.layoutFile!, jsonStr);
     }
 
     loadLayout(layoutName: string, reload?: boolean) {
@@ -117,7 +119,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     onAddDragMouseDown = (event: React.MouseEvent | React.TouchEvent<HTMLButtonElement>) => {
         event.stopPropagation();
         event.preventDefault();
-        (this.refs.layout as Layout).addTabWithDragAndDrop(undefined, {
+        (this.layoutRef!.current!).addTabWithDragAndDrop(undefined, {
             component: "grid",
             icon: "images/article.svg",
             name: "Grid " + this.nextGridIndex++
@@ -126,7 +128,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     onAddActiveClick = (event: React.MouseEvent) => {
-        (this.refs.layout as Layout).addTabToActiveTabSet({
+        (this.layoutRef!.current!).addTabToActiveTabSet({
             component: "grid",
             icon: "images/article.svg",
             name: "Grid " + this.nextGridIndex++
@@ -134,14 +136,14 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
-        (this.refs.layout as Layout).addTabToTabSet(node.getId(), {
+        (this.layoutRef!.current!).addTabToTabSet(node.getId(), {
             component: "grid",
             name: "Grid " + this.nextGridIndex++
         });
     }
 
     onAddIndirectClick = (event: React.MouseEvent) => {
-        (this.refs.layout as Layout).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
+        (this.layoutRef!.current!).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
             component: "grid",
             name: "Grid " + this.nextGridIndex++
         }, this.onAdded);
@@ -177,7 +179,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
             console.log(node, event);
             showPopup(
                 node instanceof TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(),
-                (this.refs.layout as Layout).getRootDiv(),
+                (this.layoutRef!.current!).getRootDiv(),
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
                 (item: string | undefined) => {
@@ -339,7 +341,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
             }
         }
         else if (component === "tabstorage") {
-            return <TabStorage tab={node} layout={this.refs.layout as Layout} />
+            return <TabStorage tab={node} layout={this.layoutRef!.current!} />
         }
 
         return null;
@@ -422,7 +424,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         let contents: React.ReactNode = "loading ...";
         if (this.state.model !== null) {
             contents = <Layout
-                ref="layout"
+                ref={this.layoutRef}
                 model={this.state.model}
                 factory={this.factory}
                 font={{ size: this.state.fontSize }}
@@ -469,6 +471,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         }
 
         return (
+            <React.StrictMode>
             <ContextExample.Provider value="from context">
                 <div className="app">
                     <div className="toolbar" dir="ltr">
@@ -525,7 +528,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                         {contents}
                     </div>
                 </div>
-            </ContextExample.Provider>);
+            </ContextExample.Provider>
+            </React.StrictMode>);
     }
 
     makeFakeData() {

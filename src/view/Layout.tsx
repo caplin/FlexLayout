@@ -267,8 +267,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     private icons: IIcons;
     /** @internal */
-    private firstRender: boolean;
-    /** @internal */
     private resizeObserver?: ResizeObserver;
 
     constructor(props: ILayoutProps) {
@@ -282,7 +280,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         this.icons = { ...defaultIcons, ...props.icons };
-        this.firstRender = true;
 
         this.state = {
             rect: new Rect(0, 0, 0, 0),
@@ -458,8 +455,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     render() {
         // first render will be used to find the size (via selfRef)
-        if (this.firstRender) {
-            this.firstRender = false;
+        if (!this.selfRef.current) {
             return (
                 <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
                     {this.metricsElements()}
