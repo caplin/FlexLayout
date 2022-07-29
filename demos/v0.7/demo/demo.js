@@ -2560,6 +2560,7 @@ function shouldRemoveAttribute(name, value, propertyInfo, isCustomComponentTag) 
   }
 
   if (isCustomComponentTag) {
+
     return false;
   }
 
@@ -2874,7 +2875,7 @@ function getValueForProperty(node, name, expected, propertyInfo) {
  * attributes have multiple equivalent values.
  */
 
-function getValueForAttribute(node, name, expected) {
+function getValueForAttribute(node, name, expected, isCustomComponentTag) {
   {
     if (!isAttributeNameSafe(name)) {
       return;
@@ -2914,7 +2915,7 @@ function setValueForProperty(node, name, value, isCustomComponentTag) {
 
   if (shouldRemoveAttribute(name, value, propertyInfo, isCustomComponentTag)) {
     value = null;
-  } // If the prop isn't in the special list, treat it as a simple attribute.
+  }
 
 
   if (isCustomComponentTag || propertyInfo === null) {
@@ -2991,26 +2992,28 @@ function setValueForProperty(node, name, value, isCustomComponentTag) {
 }
 
 // ATTENTION
-
-var REACT_ELEMENT_TYPE =  Symbol.for('react.element');
-var REACT_PORTAL_TYPE =  Symbol.for('react.portal');
-var REACT_FRAGMENT_TYPE =  Symbol.for('react.fragment');
-var REACT_STRICT_MODE_TYPE =  Symbol.for('react.strict_mode');
-var REACT_PROFILER_TYPE =  Symbol.for('react.profiler');
-var REACT_PROVIDER_TYPE =  Symbol.for('react.provider');
-var REACT_CONTEXT_TYPE =  Symbol.for('react.context');
-var REACT_FORWARD_REF_TYPE =  Symbol.for('react.forward_ref');
-var REACT_SUSPENSE_TYPE =  Symbol.for('react.suspense');
-var REACT_SUSPENSE_LIST_TYPE =  Symbol.for('react.suspense_list');
-var REACT_MEMO_TYPE =  Symbol.for('react.memo');
-var REACT_LAZY_TYPE =  Symbol.for('react.lazy');
-var REACT_SCOPE_TYPE =  Symbol.for('react.scope');
-var REACT_DEBUG_TRACING_MODE_TYPE =  Symbol.for('react.debug_trace_mode');
-var REACT_OFFSCREEN_TYPE =  Symbol.for('react.offscreen');
-var REACT_LEGACY_HIDDEN_TYPE =  Symbol.for('react.legacy_hidden');
-var REACT_CACHE_TYPE =  Symbol.for('react.cache');
-var REACT_TRACING_MARKER_TYPE =  Symbol.for('react.tracing_marker');
-var MAYBE_ITERATOR_SYMBOL =  Symbol.iterator;
+// When adding new symbols to this file,
+// Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+// The Symbol used to tag the ReactElement-like types.
+var REACT_ELEMENT_TYPE = Symbol.for('react.element');
+var REACT_PORTAL_TYPE = Symbol.for('react.portal');
+var REACT_FRAGMENT_TYPE = Symbol.for('react.fragment');
+var REACT_STRICT_MODE_TYPE = Symbol.for('react.strict_mode');
+var REACT_PROFILER_TYPE = Symbol.for('react.profiler');
+var REACT_PROVIDER_TYPE = Symbol.for('react.provider');
+var REACT_CONTEXT_TYPE = Symbol.for('react.context');
+var REACT_FORWARD_REF_TYPE = Symbol.for('react.forward_ref');
+var REACT_SUSPENSE_TYPE = Symbol.for('react.suspense');
+var REACT_SUSPENSE_LIST_TYPE = Symbol.for('react.suspense_list');
+var REACT_MEMO_TYPE = Symbol.for('react.memo');
+var REACT_LAZY_TYPE = Symbol.for('react.lazy');
+var REACT_SCOPE_TYPE = Symbol.for('react.scope');
+var REACT_DEBUG_TRACING_MODE_TYPE = Symbol.for('react.debug_trace_mode');
+var REACT_OFFSCREEN_TYPE = Symbol.for('react.offscreen');
+var REACT_LEGACY_HIDDEN_TYPE = Symbol.for('react.legacy_hidden');
+var REACT_CACHE_TYPE = Symbol.for('react.cache');
+var REACT_TRACING_MARKER_TYPE = Symbol.for('react.tracing_marker');
+var MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator';
 function getIteratorFn(maybeIterable) {
   if (maybeIterable === null || typeof maybeIterable !== 'object') {
@@ -13309,10 +13312,8 @@ function clearContainer(container) {
   if (container.nodeType === ELEMENT_NODE) {
     container.textContent = '';
   } else if (container.nodeType === DOCUMENT_NODE) {
-    var body = container.body;
-
-    if (body != null) {
-      body.textContent = '';
+    if (container.documentElement) {
+      container.removeChild(container.documentElement);
     }
   }
 } // -------------------
@@ -13347,6 +13348,38 @@ function isSuspenseInstancePending(instance) {
 }
 function isSuspenseInstanceFallback(instance) {
   return instance.data === SUSPENSE_FALLBACK_START_DATA;
+}
+function getSuspenseInstanceFallbackErrorDetails(instance) {
+  var dataset = instance.nextSibling && instance.nextSibling.dataset;
+  var digest, message, stack;
+
+  if (dataset) {
+    digest = dataset.dgst;
+
+    {
+      message = dataset.msg;
+      stack = dataset.stck;
+    }
+  }
+
+  {
+    return {
+      message: message,
+      digest: digest,
+      stack: stack
+    };
+  } // let value = {message: undefined, hash: undefined};
+  // const nextSibling = instance.nextSibling;
+  // if (nextSibling) {
+  //   const dataset = ((nextSibling: any): HTMLTemplateElement).dataset;
+  //   value.message = dataset.msg;
+  //   value.hash = dataset.hash;
+  //   if (true) {
+  //     value.stack = dataset.stack;
+  //   }
+  // }
+  // return value;
+
 }
 function registerSuspenseInstanceRetry(instance, callback) {
   instance._reactRetry = callback;
@@ -14164,6 +14197,682 @@ function flushSyncCallbacks() {
   return null;
 }
 
+// TODO: Use the unified fiber stack module instead of this local one?
+// Intentionally not using it yet to derisk the initial implementation, because
+// the way we push/pop these values is a bit unusual. If there's a mistake, I'd
+// rather the ids be wrong than crash the whole reconciler.
+var forkStack = [];
+var forkStackIndex = 0;
+var treeForkProvider = null;
+var treeForkCount = 0;
+var idStack = [];
+var idStackIndex = 0;
+var treeContextProvider = null;
+var treeContextId = 1;
+var treeContextOverflow = '';
+function isForkedChild(workInProgress) {
+  warnIfNotHydrating();
+  return (workInProgress.flags & Forked) !== NoFlags;
+}
+function getForksAtLevel(workInProgress) {
+  warnIfNotHydrating();
+  return treeForkCount;
+}
+function getTreeId() {
+  var overflow = treeContextOverflow;
+  var idWithLeadingBit = treeContextId;
+  var id = idWithLeadingBit & ~getLeadingBit(idWithLeadingBit);
+  return id.toString(32) + overflow;
+}
+function pushTreeFork(workInProgress, totalChildren) {
+  // This is called right after we reconcile an array (or iterator) of child
+  // fibers, because that's the only place where we know how many children in
+  // the whole set without doing extra work later, or storing addtional
+  // information on the fiber.
+  //
+  // That's why this function is separate from pushTreeId — it's called during
+  // the render phase of the fork parent, not the child, which is where we push
+  // the other context values.
+  //
+  // In the Fizz implementation this is much simpler because the child is
+  // rendered in the same callstack as the parent.
+  //
+  // It might be better to just add a `forks` field to the Fiber type. It would
+  // make this module simpler.
+  warnIfNotHydrating();
+  forkStack[forkStackIndex++] = treeForkCount;
+  forkStack[forkStackIndex++] = treeForkProvider;
+  treeForkProvider = workInProgress;
+  treeForkCount = totalChildren;
+}
+function pushTreeId(workInProgress, totalChildren, index) {
+  warnIfNotHydrating();
+  idStack[idStackIndex++] = treeContextId;
+  idStack[idStackIndex++] = treeContextOverflow;
+  idStack[idStackIndex++] = treeContextProvider;
+  treeContextProvider = workInProgress;
+  var baseIdWithLeadingBit = treeContextId;
+  var baseOverflow = treeContextOverflow; // The leftmost 1 marks the end of the sequence, non-inclusive. It's not part
+  // of the id; we use it to account for leading 0s.
+
+  var baseLength = getBitLength(baseIdWithLeadingBit) - 1;
+  var baseId = baseIdWithLeadingBit & ~(1 << baseLength);
+  var slot = index + 1;
+  var length = getBitLength(totalChildren) + baseLength; // 30 is the max length we can store without overflowing, taking into
+  // consideration the leading 1 we use to mark the end of the sequence.
+
+  if (length > 30) {
+    // We overflowed the bitwise-safe range. Fall back to slower algorithm.
+    // This branch assumes the length of the base id is greater than 5; it won't
+    // work for smaller ids, because you need 5 bits per character.
+    //
+    // We encode the id in multiple steps: first the base id, then the
+    // remaining digits.
+    //
+    // Each 5 bit sequence corresponds to a single base 32 character. So for
+    // example, if the current id is 23 bits long, we can convert 20 of those
+    // bits into a string of 4 characters, with 3 bits left over.
+    //
+    // First calculate how many bits in the base id represent a complete
+    // sequence of characters.
+    var numberOfOverflowBits = baseLength - baseLength % 5; // Then create a bitmask that selects only those bits.
+
+    var newOverflowBits = (1 << numberOfOverflowBits) - 1; // Select the bits, and convert them to a base 32 string.
+
+    var newOverflow = (baseId & newOverflowBits).toString(32); // Now we can remove those bits from the base id.
+
+    var restOfBaseId = baseId >> numberOfOverflowBits;
+    var restOfBaseLength = baseLength - numberOfOverflowBits; // Finally, encode the rest of the bits using the normal algorithm. Because
+    // we made more room, this time it won't overflow.
+
+    var restOfLength = getBitLength(totalChildren) + restOfBaseLength;
+    var restOfNewBits = slot << restOfBaseLength;
+    var id = restOfNewBits | restOfBaseId;
+    var overflow = newOverflow + baseOverflow;
+    treeContextId = 1 << restOfLength | id;
+    treeContextOverflow = overflow;
+  } else {
+    // Normal path
+    var newBits = slot << baseLength;
+
+    var _id = newBits | baseId;
+
+    var _overflow = baseOverflow;
+    treeContextId = 1 << length | _id;
+    treeContextOverflow = _overflow;
+  }
+}
+function pushMaterializedTreeId(workInProgress) {
+  warnIfNotHydrating(); // This component materialized an id. This will affect any ids that appear
+  // in its children.
+
+  var returnFiber = workInProgress.return;
+
+  if (returnFiber !== null) {
+    var numberOfForks = 1;
+    var slotIndex = 0;
+    pushTreeFork(workInProgress, numberOfForks);
+    pushTreeId(workInProgress, numberOfForks, slotIndex);
+  }
+}
+
+function getBitLength(number) {
+  return 32 - clz32(number);
+}
+
+function getLeadingBit(id) {
+  return 1 << getBitLength(id) - 1;
+}
+
+function popTreeContext(workInProgress) {
+  // Restore the previous values.
+  // This is a bit more complicated than other context-like modules in Fiber
+  // because the same Fiber may appear on the stack multiple times and for
+  // different reasons. We have to keep popping until the work-in-progress is
+  // no longer at the top of the stack.
+  while (workInProgress === treeForkProvider) {
+    treeForkProvider = forkStack[--forkStackIndex];
+    forkStack[forkStackIndex] = null;
+    treeForkCount = forkStack[--forkStackIndex];
+    forkStack[forkStackIndex] = null;
+  }
+
+  while (workInProgress === treeContextProvider) {
+    treeContextProvider = idStack[--idStackIndex];
+    idStack[idStackIndex] = null;
+    treeContextOverflow = idStack[--idStackIndex];
+    idStack[idStackIndex] = null;
+    treeContextId = idStack[--idStackIndex];
+    idStack[idStackIndex] = null;
+  }
+}
+function getSuspendedTreeContext() {
+  warnIfNotHydrating();
+
+  if (treeContextProvider !== null) {
+    return {
+      id: treeContextId,
+      overflow: treeContextOverflow
+    };
+  } else {
+    return null;
+  }
+}
+function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
+  warnIfNotHydrating();
+  idStack[idStackIndex++] = treeContextId;
+  idStack[idStackIndex++] = treeContextOverflow;
+  idStack[idStackIndex++] = treeContextProvider;
+  treeContextId = suspendedContext.id;
+  treeContextOverflow = suspendedContext.overflow;
+  treeContextProvider = workInProgress;
+}
+
+function warnIfNotHydrating() {
+  {
+    if (!getIsHydrating()) {
+      error('Expected to be hydrating. This is a bug in React. Please file ' + 'an issue.');
+    }
+  }
+}
+
+// This may have been an insertion or a hydration.
+
+var hydrationParentFiber = null;
+var nextHydratableInstance = null;
+var isHydrating = false; // This flag allows for warning supression when we expect there to be mismatches
+// due to earlier mismatches or a suspended fiber.
+
+var didSuspendOrErrorDEV = false; // Hydration errors that were thrown inside this boundary
+
+var hydrationErrors = null;
+
+function warnIfHydrating() {
+  {
+    if (isHydrating) {
+      error('We should not be hydrating here. This is a bug in React. Please file a bug.');
+    }
+  }
+}
+
+function markDidThrowWhileHydratingDEV() {
+  {
+    didSuspendOrErrorDEV = true;
+  }
+}
+function didSuspendOrErrorWhileHydratingDEV() {
+  {
+    return didSuspendOrErrorDEV;
+  }
+}
+
+function enterHydrationState(fiber) {
+
+  var parentInstance = fiber.stateNode.containerInfo;
+  nextHydratableInstance = getFirstHydratableChildWithinContainer(parentInstance);
+  hydrationParentFiber = fiber;
+  isHydrating = true;
+  hydrationErrors = null;
+  didSuspendOrErrorDEV = false;
+  return true;
+}
+
+function reenterHydrationStateFromDehydratedSuspenseInstance(fiber, suspenseInstance, treeContext) {
+
+  nextHydratableInstance = getFirstHydratableChildWithinSuspenseInstance(suspenseInstance);
+  hydrationParentFiber = fiber;
+  isHydrating = true;
+  hydrationErrors = null;
+  didSuspendOrErrorDEV = false;
+
+  if (treeContext !== null) {
+    restoreSuspendedTreeContext(fiber, treeContext);
+  }
+
+  return true;
+}
+
+function warnUnhydratedInstance(returnFiber, instance) {
+  {
+    switch (returnFiber.tag) {
+      case HostRoot:
+        {
+          didNotHydrateInstanceWithinContainer(returnFiber.stateNode.containerInfo, instance);
+          break;
+        }
+
+      case HostComponent:
+        {
+          var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+          didNotHydrateInstance(returnFiber.type, returnFiber.memoizedProps, returnFiber.stateNode, instance, // TODO: Delete this argument when we remove the legacy root API.
+          isConcurrentMode);
+          break;
+        }
+
+      case SuspenseComponent:
+        {
+          var suspenseState = returnFiber.memoizedState;
+          if (suspenseState.dehydrated !== null) didNotHydrateInstanceWithinSuspenseInstance(suspenseState.dehydrated, instance);
+          break;
+        }
+    }
+  }
+}
+
+function deleteHydratableInstance(returnFiber, instance) {
+  warnUnhydratedInstance(returnFiber, instance);
+  var childToDelete = createFiberFromHostInstanceForDeletion();
+  childToDelete.stateNode = instance;
+  childToDelete.return = returnFiber;
+  var deletions = returnFiber.deletions;
+
+  if (deletions === null) {
+    returnFiber.deletions = [childToDelete];
+    returnFiber.flags |= ChildDeletion;
+  } else {
+    deletions.push(childToDelete);
+  }
+}
+
+function warnNonhydratedInstance(returnFiber, fiber) {
+  {
+    if (didSuspendOrErrorDEV) {
+      // Inside a boundary that already suspended. We're currently rendering the
+      // siblings of a suspended node. The mismatch may be due to the missing
+      // data, so it's probably a false positive.
+      return;
+    }
+
+    switch (returnFiber.tag) {
+      case HostRoot:
+        {
+          var parentContainer = returnFiber.stateNode.containerInfo;
+
+          switch (fiber.tag) {
+            case HostComponent:
+              var type = fiber.type;
+              var props = fiber.pendingProps;
+              didNotFindHydratableInstanceWithinContainer(parentContainer, type);
+              break;
+
+            case HostText:
+              var text = fiber.pendingProps;
+              didNotFindHydratableTextInstanceWithinContainer(parentContainer, text);
+              break;
+          }
+
+          break;
+        }
+
+      case HostComponent:
+        {
+          var parentType = returnFiber.type;
+          var parentProps = returnFiber.memoizedProps;
+          var parentInstance = returnFiber.stateNode;
+
+          switch (fiber.tag) {
+            case HostComponent:
+              {
+                var _type = fiber.type;
+                var _props = fiber.pendingProps;
+                var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+                didNotFindHydratableInstance(parentType, parentProps, parentInstance, _type, _props, // TODO: Delete this argument when we remove the legacy root API.
+                isConcurrentMode);
+                break;
+              }
+
+            case HostText:
+              {
+                var _text = fiber.pendingProps;
+
+                var _isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+
+                didNotFindHydratableTextInstance(parentType, parentProps, parentInstance, _text, // TODO: Delete this argument when we remove the legacy root API.
+                _isConcurrentMode);
+                break;
+              }
+          }
+
+          break;
+        }
+
+      case SuspenseComponent:
+        {
+          var suspenseState = returnFiber.memoizedState;
+          var _parentInstance = suspenseState.dehydrated;
+          if (_parentInstance !== null) switch (fiber.tag) {
+            case HostComponent:
+              var _type2 = fiber.type;
+              var _props2 = fiber.pendingProps;
+              didNotFindHydratableInstanceWithinSuspenseInstance(_parentInstance, _type2);
+              break;
+
+            case HostText:
+              var _text2 = fiber.pendingProps;
+              didNotFindHydratableTextInstanceWithinSuspenseInstance(_parentInstance, _text2);
+              break;
+          }
+          break;
+        }
+
+      default:
+        return;
+    }
+  }
+}
+
+function insertNonHydratedInstance(returnFiber, fiber) {
+  fiber.flags = fiber.flags & ~Hydrating | Placement;
+  warnNonhydratedInstance(returnFiber, fiber);
+}
+
+function tryHydrate(fiber, nextInstance) {
+  switch (fiber.tag) {
+    case HostComponent:
+      {
+        var type = fiber.type;
+        var props = fiber.pendingProps;
+        var instance = canHydrateInstance(nextInstance, type);
+
+        if (instance !== null) {
+          fiber.stateNode = instance;
+          hydrationParentFiber = fiber;
+          nextHydratableInstance = getFirstHydratableChild(instance);
+          return true;
+        }
+
+        return false;
+      }
+
+    case HostText:
+      {
+        var text = fiber.pendingProps;
+        var textInstance = canHydrateTextInstance(nextInstance, text);
+
+        if (textInstance !== null) {
+          fiber.stateNode = textInstance;
+          hydrationParentFiber = fiber; // Text Instances don't have children so there's nothing to hydrate.
+
+          nextHydratableInstance = null;
+          return true;
+        }
+
+        return false;
+      }
+
+    case SuspenseComponent:
+      {
+        var suspenseInstance = canHydrateSuspenseInstance(nextInstance);
+
+        if (suspenseInstance !== null) {
+          var suspenseState = {
+            dehydrated: suspenseInstance,
+            treeContext: getSuspendedTreeContext(),
+            retryLane: OffscreenLane
+          };
+          fiber.memoizedState = suspenseState; // Store the dehydrated fragment as a child fiber.
+          // This simplifies the code for getHostSibling and deleting nodes,
+          // since it doesn't have to consider all Suspense boundaries and
+          // check if they're dehydrated ones or not.
+
+          var dehydratedFragment = createFiberFromDehydratedFragment(suspenseInstance);
+          dehydratedFragment.return = fiber;
+          fiber.child = dehydratedFragment;
+          hydrationParentFiber = fiber; // While a Suspense Instance does have children, we won't step into
+          // it during the first pass. Instead, we'll reenter it later.
+
+          nextHydratableInstance = null;
+          return true;
+        }
+
+        return false;
+      }
+
+    default:
+      return false;
+  }
+}
+
+function shouldClientRenderOnMismatch(fiber) {
+  return (fiber.mode & ConcurrentMode) !== NoMode && (fiber.flags & DidCapture) === NoFlags;
+}
+
+function throwOnHydrationMismatch(fiber) {
+  throw new Error('Hydration failed because the initial UI does not match what was ' + 'rendered on the server.');
+}
+
+function tryToClaimNextHydratableInstance(fiber) {
+  if (!isHydrating) {
+    return;
+  }
+
+  var nextInstance = nextHydratableInstance;
+
+  if (!nextInstance) {
+    if (shouldClientRenderOnMismatch(fiber)) {
+      warnNonhydratedInstance(hydrationParentFiber, fiber);
+      throwOnHydrationMismatch();
+    } // Nothing to hydrate. Make it an insertion.
+
+
+    insertNonHydratedInstance(hydrationParentFiber, fiber);
+    isHydrating = false;
+    hydrationParentFiber = fiber;
+    return;
+  }
+
+  var firstAttemptedInstance = nextInstance;
+
+  if (!tryHydrate(fiber, nextInstance)) {
+    if (shouldClientRenderOnMismatch(fiber)) {
+      warnNonhydratedInstance(hydrationParentFiber, fiber);
+      throwOnHydrationMismatch();
+    } // If we can't hydrate this instance let's try the next one.
+    // We use this as a heuristic. It's based on intuition and not data so it
+    // might be flawed or unnecessary.
+
+
+    nextInstance = getNextHydratableSibling(firstAttemptedInstance);
+    var prevHydrationParentFiber = hydrationParentFiber;
+
+    if (!nextInstance || !tryHydrate(fiber, nextInstance)) {
+      // Nothing to hydrate. Make it an insertion.
+      insertNonHydratedInstance(hydrationParentFiber, fiber);
+      isHydrating = false;
+      hydrationParentFiber = fiber;
+      return;
+    } // We matched the next one, we'll now assume that the first one was
+    // superfluous and we'll delete it. Since we can't eagerly delete it
+    // we'll have to schedule a deletion. To do that, this node needs a dummy
+    // fiber associated with it.
+
+
+    deleteHydratableInstance(prevHydrationParentFiber, firstAttemptedInstance);
+  }
+}
+
+function prepareToHydrateHostInstance(fiber, rootContainerInstance, hostContext) {
+
+  var instance = fiber.stateNode;
+  var shouldWarnIfMismatchDev = !didSuspendOrErrorDEV;
+  var updatePayload = hydrateInstance(instance, fiber.type, fiber.memoizedProps, rootContainerInstance, hostContext, fiber, shouldWarnIfMismatchDev); // TODO: Type this specific to this type of component.
+
+  fiber.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
+  // is a new ref we mark this as an update.
+
+  if (updatePayload !== null) {
+    return true;
+  }
+
+  return false;
+}
+
+function prepareToHydrateHostTextInstance(fiber) {
+
+  var textInstance = fiber.stateNode;
+  var textContent = fiber.memoizedProps;
+  var shouldUpdate = hydrateTextInstance(textInstance, textContent, fiber);
+
+  if (shouldUpdate) {
+    // We assume that prepareToHydrateHostTextInstance is called in a context where the
+    // hydration parent is the parent host component of this host text.
+    var returnFiber = hydrationParentFiber;
+
+    if (returnFiber !== null) {
+      switch (returnFiber.tag) {
+        case HostRoot:
+          {
+            var parentContainer = returnFiber.stateNode.containerInfo;
+            var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
+            didNotMatchHydratedContainerTextInstance(parentContainer, textInstance, textContent, // TODO: Delete this argument when we remove the legacy root API.
+            isConcurrentMode);
+            break;
+          }
+
+        case HostComponent:
+          {
+            var parentType = returnFiber.type;
+            var parentProps = returnFiber.memoizedProps;
+            var parentInstance = returnFiber.stateNode;
+
+            var _isConcurrentMode2 = (returnFiber.mode & ConcurrentMode) !== NoMode;
+
+            didNotMatchHydratedTextInstance(parentType, parentProps, parentInstance, textInstance, textContent, // TODO: Delete this argument when we remove the legacy root API.
+            _isConcurrentMode2);
+            break;
+          }
+      }
+    }
+  }
+
+  return shouldUpdate;
+}
+
+function prepareToHydrateHostSuspenseInstance(fiber) {
+
+  var suspenseState = fiber.memoizedState;
+  var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
+
+  if (!suspenseInstance) {
+    throw new Error('Expected to have a hydrated suspense instance. ' + 'This error is likely caused by a bug in React. Please file an issue.');
+  }
+
+  hydrateSuspenseInstance(suspenseInstance, fiber);
+}
+
+function skipPastDehydratedSuspenseInstance(fiber) {
+
+  var suspenseState = fiber.memoizedState;
+  var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
+
+  if (!suspenseInstance) {
+    throw new Error('Expected to have a hydrated suspense instance. ' + 'This error is likely caused by a bug in React. Please file an issue.');
+  }
+
+  return getNextHydratableInstanceAfterSuspenseInstance(suspenseInstance);
+}
+
+function popToNextHostParent(fiber) {
+  var parent = fiber.return;
+
+  while (parent !== null && parent.tag !== HostComponent && parent.tag !== HostRoot && parent.tag !== SuspenseComponent) {
+    parent = parent.return;
+  }
+
+  hydrationParentFiber = parent;
+}
+
+function popHydrationState(fiber) {
+
+  if (fiber !== hydrationParentFiber) {
+    // We're deeper than the current hydration context, inside an inserted
+    // tree.
+    return false;
+  }
+
+  if (!isHydrating) {
+    // If we're not currently hydrating but we're in a hydration context, then
+    // we were an insertion and now need to pop up reenter hydration of our
+    // siblings.
+    popToNextHostParent(fiber);
+    isHydrating = true;
+    return false;
+  } // If we have any remaining hydratable nodes, we need to delete them now.
+  // We only do this deeper than head and body since they tend to have random
+  // other nodes in them. We also ignore components with pure text content in
+  // side of them. We also don't delete anything inside the root container.
+
+
+  if (fiber.tag !== HostRoot && (fiber.tag !== HostComponent || shouldDeleteUnhydratedTailInstances(fiber.type) && !shouldSetTextContent(fiber.type, fiber.memoizedProps))) {
+    var nextInstance = nextHydratableInstance;
+
+    if (nextInstance) {
+      if (shouldClientRenderOnMismatch(fiber)) {
+        warnIfUnhydratedTailNodes(fiber);
+        throwOnHydrationMismatch();
+      } else {
+        while (nextInstance) {
+          deleteHydratableInstance(fiber, nextInstance);
+          nextInstance = getNextHydratableSibling(nextInstance);
+        }
+      }
+    }
+  }
+
+  popToNextHostParent(fiber);
+
+  if (fiber.tag === SuspenseComponent) {
+    nextHydratableInstance = skipPastDehydratedSuspenseInstance(fiber);
+  } else {
+    nextHydratableInstance = hydrationParentFiber ? getNextHydratableSibling(fiber.stateNode) : null;
+  }
+
+  return true;
+}
+
+function hasUnhydratedTailNodes() {
+  return isHydrating && nextHydratableInstance !== null;
+}
+
+function warnIfUnhydratedTailNodes(fiber) {
+  var nextInstance = nextHydratableInstance;
+
+  while (nextInstance) {
+    warnUnhydratedInstance(fiber, nextInstance);
+    nextInstance = getNextHydratableSibling(nextInstance);
+  }
+}
+
+function resetHydrationState() {
+
+  hydrationParentFiber = null;
+  nextHydratableInstance = null;
+  isHydrating = false;
+  didSuspendOrErrorDEV = false;
+}
+
+function upgradeHydrationErrorsToRecoverable() {
+  if (hydrationErrors !== null) {
+    // Successfully completed a forced client render. The errors that occurred
+    // during the hydration attempt are now recovered. We will log them in
+    // commit phase, once the entire tree has finished.
+    queueRecoverableErrors(hydrationErrors);
+    hydrationErrors = null;
+  }
+}
+
+function getIsHydrating() {
+  return isHydrating;
+}
+
+function queueHydrationError(error) {
+  if (hydrationErrors === null) {
+    hydrationErrors = [error];
+  } else {
+    hydrationErrors.push(error);
+  }
+}
+
 var ReactCurrentBatchConfig$1 = ReactSharedInternals.ReactCurrentBatchConfig;
 var NoTransition = null;
 function requestCurrentTransition() {
@@ -14709,30 +15418,27 @@ function readContext(context) {
   return value;
 }
 
-// An array of all update queues that received updates during the current
 // render. When this render exits, either because it finishes or because it is
 // interrupted, the interleaved updates will be transferred onto the main part
 // of the queue.
-var interleavedQueues = null;
-function pushInterleavedQueue(queue) {
-  if (interleavedQueues === null) {
-    interleavedQueues = [queue];
+
+var concurrentQueues = null;
+function pushConcurrentUpdateQueue(queue) {
+  if (concurrentQueues === null) {
+    concurrentQueues = [queue];
   } else {
-    interleavedQueues.push(queue);
+    concurrentQueues.push(queue);
   }
 }
-function hasInterleavedUpdates() {
-  return interleavedQueues !== null;
-}
-function enqueueInterleavedUpdates() {
+function finishQueueingConcurrentUpdates() {
   // Transfer the interleaved updates onto the main queue. Each queue has a
   // `pending` field and an `interleaved` field. When they are not null, they
   // point to the last node in a circular linked list. We need to append the
   // interleaved list to the end of the pending list by joining them into a
   // single, circular list.
-  if (interleavedQueues !== null) {
-    for (var i = 0; i < interleavedQueues.length; i++) {
-      var queue = interleavedQueues[i];
+  if (concurrentQueues !== null) {
+    for (var i = 0; i < concurrentQueues.length; i++) {
+      var queue = concurrentQueues[i];
       var lastInterleavedUpdate = queue.interleaved;
 
       if (lastInterleavedUpdate !== null) {
@@ -14750,7 +15456,108 @@ function enqueueInterleavedUpdates() {
       }
     }
 
-    interleavedQueues = null;
+    concurrentQueues = null;
+  }
+}
+function enqueueConcurrentHookUpdate(fiber, queue, update, lane) {
+  var interleaved = queue.interleaved;
+
+  if (interleaved === null) {
+    // This is the first update. Create a circular list.
+    update.next = update; // At the end of the current render, this queue's interleaved updates will
+    // be transferred to the pending queue.
+
+    pushConcurrentUpdateQueue(queue);
+  } else {
+    update.next = interleaved.next;
+    interleaved.next = update;
+  }
+
+  queue.interleaved = update;
+  return markUpdateLaneFromFiberToRoot(fiber, lane);
+}
+function enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update, lane) {
+  var interleaved = queue.interleaved;
+
+  if (interleaved === null) {
+    // This is the first update. Create a circular list.
+    update.next = update; // At the end of the current render, this queue's interleaved updates will
+    // be transferred to the pending queue.
+
+    pushConcurrentUpdateQueue(queue);
+  } else {
+    update.next = interleaved.next;
+    interleaved.next = update;
+  }
+
+  queue.interleaved = update;
+}
+function enqueueConcurrentClassUpdate(fiber, queue, update, lane) {
+  var interleaved = queue.interleaved;
+
+  if (interleaved === null) {
+    // This is the first update. Create a circular list.
+    update.next = update; // At the end of the current render, this queue's interleaved updates will
+    // be transferred to the pending queue.
+
+    pushConcurrentUpdateQueue(queue);
+  } else {
+    update.next = interleaved.next;
+    interleaved.next = update;
+  }
+
+  queue.interleaved = update;
+  return markUpdateLaneFromFiberToRoot(fiber, lane);
+}
+function enqueueConcurrentRenderForLane(fiber, lane) {
+  return markUpdateLaneFromFiberToRoot(fiber, lane);
+} // Calling this function outside this module should only be done for backwards
+// compatibility and should always be accompanied by a warning.
+
+var unsafe_markUpdateLaneFromFiberToRoot = markUpdateLaneFromFiberToRoot;
+
+function markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
+  // Update the source fiber's lanes
+  sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
+  var alternate = sourceFiber.alternate;
+
+  if (alternate !== null) {
+    alternate.lanes = mergeLanes(alternate.lanes, lane);
+  }
+
+  {
+    if (alternate === null && (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags) {
+      warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
+    }
+  } // Walk the parent path to the root and update the child lanes.
+
+
+  var node = sourceFiber;
+  var parent = sourceFiber.return;
+
+  while (parent !== null) {
+    parent.childLanes = mergeLanes(parent.childLanes, lane);
+    alternate = parent.alternate;
+
+    if (alternate !== null) {
+      alternate.childLanes = mergeLanes(alternate.childLanes, lane);
+    } else {
+      {
+        if ((parent.flags & (Placement | Hydrating)) !== NoFlags) {
+          warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
+        }
+      }
+    }
+
+    node = parent;
+    parent = parent.return;
+  }
+
+  if (node.tag === HostRoot) {
+    var root = node.stateNode;
+    return root;
+  } else {
+    return null;
   }
 }
 
@@ -14816,27 +15623,22 @@ function enqueueUpdate(fiber, update, lane) {
 
   if (updateQueue === null) {
     // Only occurs if the fiber has been unmounted.
-    return;
+    return null;
   }
 
   var sharedQueue = updateQueue.shared;
 
-  if (isInterleavedUpdate(fiber)) {
-    var interleaved = sharedQueue.interleaved;
+  {
+    if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
+      error('An update (setState, replaceState, or forceUpdate) was scheduled ' + 'from inside an update function. Update functions should be pure, ' + 'with zero side-effects. Consider using componentDidUpdate or a ' + 'callback.');
 
-    if (interleaved === null) {
-      // This is the first update. Create a circular list.
-      update.next = update; // At the end of the current render, this queue's interleaved updates will
-      // be transferred to the pending queue.
-
-      pushInterleavedQueue(sharedQueue);
-    } else {
-      update.next = interleaved.next;
-      interleaved.next = update;
+      didWarnUpdateInsideUpdate = true;
     }
+  }
 
-    sharedQueue.interleaved = update;
-  } else {
+  if (isUnsafeClassRenderPhaseUpdate()) {
+    // This is an unsafe render phase update. Add directly to the update
+    // queue so we can process it immediately during the current render.
     var pending = sharedQueue.pending;
 
     if (pending === null) {
@@ -14847,15 +15649,14 @@ function enqueueUpdate(fiber, update, lane) {
       pending.next = update;
     }
 
-    sharedQueue.pending = update;
-  }
+    sharedQueue.pending = update; // Update the childLanes even though we're most likely already rendering
+    // this fiber. This is for backwards compatibility in the case where you
+    // update a different component during render phase than the one that is
+    // currently renderings (a pattern that is accompanied by a warning).
 
-  {
-    if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
-      error('An update (setState, replaceState, or forceUpdate) was scheduled ' + 'from inside an update function. Update functions should be pure, ' + 'with zero side-effects. Consider using componentDidUpdate or a ' + 'callback.');
-
-      didWarnUpdateInsideUpdate = true;
-    }
+    return unsafe_markUpdateLaneFromFiberToRoot(fiber, lane);
+  } else {
+    return enqueueConcurrentClassUpdate(fiber, sharedQueue, update, lane);
   }
 }
 function entangleTransitions(root, fiber, lane) {
@@ -15394,10 +16195,10 @@ var classComponentUpdater = {
       update.callback = callback;
     }
 
-    enqueueUpdate(fiber, update);
-    var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    var root = enqueueUpdate(fiber, update, lane);
 
     if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
       entangleTransitions(root, fiber, lane);
     }
 
@@ -15421,10 +16222,10 @@ var classComponentUpdater = {
       update.callback = callback;
     }
 
-    enqueueUpdate(fiber, update);
-    var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    var root = enqueueUpdate(fiber, update, lane);
 
     if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
       entangleTransitions(root, fiber, lane);
     }
 
@@ -15447,10 +16248,10 @@ var classComponentUpdater = {
       update.callback = callback;
     }
 
-    enqueueUpdate(fiber, update);
-    var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    var root = enqueueUpdate(fiber, update, lane);
 
     if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
       entangleTransitions(root, fiber, lane);
     }
 
@@ -16081,677 +16882,6 @@ function updateClassInstance(current, workInProgress, ctor, newProps, renderLane
   instance.state = newState;
   instance.context = nextContext;
   return shouldUpdate;
-}
-
-// TODO: Use the unified fiber stack module instead of this local one?
-// Intentionally not using it yet to derisk the initial implementation, because
-// the way we push/pop these values is a bit unusual. If there's a mistake, I'd
-// rather the ids be wrong than crash the whole reconciler.
-var forkStack = [];
-var forkStackIndex = 0;
-var treeForkProvider = null;
-var treeForkCount = 0;
-var idStack = [];
-var idStackIndex = 0;
-var treeContextProvider = null;
-var treeContextId = 1;
-var treeContextOverflow = '';
-function isForkedChild(workInProgress) {
-  warnIfNotHydrating();
-  return (workInProgress.flags & Forked) !== NoFlags;
-}
-function getForksAtLevel(workInProgress) {
-  warnIfNotHydrating();
-  return treeForkCount;
-}
-function getTreeId() {
-  var overflow = treeContextOverflow;
-  var idWithLeadingBit = treeContextId;
-  var id = idWithLeadingBit & ~getLeadingBit(idWithLeadingBit);
-  return id.toString(32) + overflow;
-}
-function pushTreeFork(workInProgress, totalChildren) {
-  // This is called right after we reconcile an array (or iterator) of child
-  // fibers, because that's the only place where we know how many children in
-  // the whole set without doing extra work later, or storing addtional
-  // information on the fiber.
-  //
-  // That's why this function is separate from pushTreeId — it's called during
-  // the render phase of the fork parent, not the child, which is where we push
-  // the other context values.
-  //
-  // In the Fizz implementation this is much simpler because the child is
-  // rendered in the same callstack as the parent.
-  //
-  // It might be better to just add a `forks` field to the Fiber type. It would
-  // make this module simpler.
-  warnIfNotHydrating();
-  forkStack[forkStackIndex++] = treeForkCount;
-  forkStack[forkStackIndex++] = treeForkProvider;
-  treeForkProvider = workInProgress;
-  treeForkCount = totalChildren;
-}
-function pushTreeId(workInProgress, totalChildren, index) {
-  warnIfNotHydrating();
-  idStack[idStackIndex++] = treeContextId;
-  idStack[idStackIndex++] = treeContextOverflow;
-  idStack[idStackIndex++] = treeContextProvider;
-  treeContextProvider = workInProgress;
-  var baseIdWithLeadingBit = treeContextId;
-  var baseOverflow = treeContextOverflow; // The leftmost 1 marks the end of the sequence, non-inclusive. It's not part
-  // of the id; we use it to account for leading 0s.
-
-  var baseLength = getBitLength(baseIdWithLeadingBit) - 1;
-  var baseId = baseIdWithLeadingBit & ~(1 << baseLength);
-  var slot = index + 1;
-  var length = getBitLength(totalChildren) + baseLength; // 30 is the max length we can store without overflowing, taking into
-  // consideration the leading 1 we use to mark the end of the sequence.
-
-  if (length > 30) {
-    // We overflowed the bitwise-safe range. Fall back to slower algorithm.
-    // This branch assumes the length of the base id is greater than 5; it won't
-    // work for smaller ids, because you need 5 bits per character.
-    //
-    // We encode the id in multiple steps: first the base id, then the
-    // remaining digits.
-    //
-    // Each 5 bit sequence corresponds to a single base 32 character. So for
-    // example, if the current id is 23 bits long, we can convert 20 of those
-    // bits into a string of 4 characters, with 3 bits left over.
-    //
-    // First calculate how many bits in the base id represent a complete
-    // sequence of characters.
-    var numberOfOverflowBits = baseLength - baseLength % 5; // Then create a bitmask that selects only those bits.
-
-    var newOverflowBits = (1 << numberOfOverflowBits) - 1; // Select the bits, and convert them to a base 32 string.
-
-    var newOverflow = (baseId & newOverflowBits).toString(32); // Now we can remove those bits from the base id.
-
-    var restOfBaseId = baseId >> numberOfOverflowBits;
-    var restOfBaseLength = baseLength - numberOfOverflowBits; // Finally, encode the rest of the bits using the normal algorithm. Because
-    // we made more room, this time it won't overflow.
-
-    var restOfLength = getBitLength(totalChildren) + restOfBaseLength;
-    var restOfNewBits = slot << restOfBaseLength;
-    var id = restOfNewBits | restOfBaseId;
-    var overflow = newOverflow + baseOverflow;
-    treeContextId = 1 << restOfLength | id;
-    treeContextOverflow = overflow;
-  } else {
-    // Normal path
-    var newBits = slot << baseLength;
-
-    var _id = newBits | baseId;
-
-    var _overflow = baseOverflow;
-    treeContextId = 1 << length | _id;
-    treeContextOverflow = _overflow;
-  }
-}
-function pushMaterializedTreeId(workInProgress) {
-  warnIfNotHydrating(); // This component materialized an id. This will affect any ids that appear
-  // in its children.
-
-  var returnFiber = workInProgress.return;
-
-  if (returnFiber !== null) {
-    var numberOfForks = 1;
-    var slotIndex = 0;
-    pushTreeFork(workInProgress, numberOfForks);
-    pushTreeId(workInProgress, numberOfForks, slotIndex);
-  }
-}
-
-function getBitLength(number) {
-  return 32 - clz32(number);
-}
-
-function getLeadingBit(id) {
-  return 1 << getBitLength(id) - 1;
-}
-
-function popTreeContext(workInProgress) {
-  // Restore the previous values.
-  // This is a bit more complicated than other context-like modules in Fiber
-  // because the same Fiber may appear on the stack multiple times and for
-  // different reasons. We have to keep popping until the work-in-progress is
-  // no longer at the top of the stack.
-  while (workInProgress === treeForkProvider) {
-    treeForkProvider = forkStack[--forkStackIndex];
-    forkStack[forkStackIndex] = null;
-    treeForkCount = forkStack[--forkStackIndex];
-    forkStack[forkStackIndex] = null;
-  }
-
-  while (workInProgress === treeContextProvider) {
-    treeContextProvider = idStack[--idStackIndex];
-    idStack[idStackIndex] = null;
-    treeContextOverflow = idStack[--idStackIndex];
-    idStack[idStackIndex] = null;
-    treeContextId = idStack[--idStackIndex];
-    idStack[idStackIndex] = null;
-  }
-}
-function getSuspendedTreeContext() {
-  warnIfNotHydrating();
-
-  if (treeContextProvider !== null) {
-    return {
-      id: treeContextId,
-      overflow: treeContextOverflow
-    };
-  } else {
-    return null;
-  }
-}
-function restoreSuspendedTreeContext(workInProgress, suspendedContext) {
-  warnIfNotHydrating();
-  idStack[idStackIndex++] = treeContextId;
-  idStack[idStackIndex++] = treeContextOverflow;
-  idStack[idStackIndex++] = treeContextProvider;
-  treeContextId = suspendedContext.id;
-  treeContextOverflow = suspendedContext.overflow;
-  treeContextProvider = workInProgress;
-}
-
-function warnIfNotHydrating() {
-  {
-    if (!getIsHydrating()) {
-      error('Expected to be hydrating. This is a bug in React. Please file ' + 'an issue.');
-    }
-  }
-}
-
-// This may have been an insertion or a hydration.
-
-var hydrationParentFiber = null;
-var nextHydratableInstance = null;
-var isHydrating = false; // This flag allows for warning supression when we expect there to be mismatches
-// due to earlier mismatches or a suspended fiber.
-
-var didSuspendOrErrorDEV = false; // Hydration errors that were thrown inside this boundary
-
-var hydrationErrors = null;
-
-function warnIfHydrating() {
-  {
-    if (isHydrating) {
-      error('We should not be hydrating here. This is a bug in React. Please file a bug.');
-    }
-  }
-}
-
-function markDidThrowWhileHydratingDEV() {
-  {
-    didSuspendOrErrorDEV = true;
-  }
-}
-
-function enterHydrationState(fiber) {
-
-  var parentInstance = fiber.stateNode.containerInfo;
-  nextHydratableInstance = getFirstHydratableChildWithinContainer(parentInstance);
-  hydrationParentFiber = fiber;
-  isHydrating = true;
-  hydrationErrors = null;
-  didSuspendOrErrorDEV = false;
-  return true;
-}
-
-function reenterHydrationStateFromDehydratedSuspenseInstance(fiber, suspenseInstance, treeContext) {
-
-  nextHydratableInstance = getFirstHydratableChildWithinSuspenseInstance(suspenseInstance);
-  hydrationParentFiber = fiber;
-  isHydrating = true;
-  hydrationErrors = null;
-  didSuspendOrErrorDEV = false;
-
-  if (treeContext !== null) {
-    restoreSuspendedTreeContext(fiber, treeContext);
-  }
-
-  return true;
-}
-
-function warnUnhydratedInstance(returnFiber, instance) {
-  {
-    switch (returnFiber.tag) {
-      case HostRoot:
-        {
-          didNotHydrateInstanceWithinContainer(returnFiber.stateNode.containerInfo, instance);
-          break;
-        }
-
-      case HostComponent:
-        {
-          var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-          didNotHydrateInstance(returnFiber.type, returnFiber.memoizedProps, returnFiber.stateNode, instance, // TODO: Delete this argument when we remove the legacy root API.
-          isConcurrentMode);
-          break;
-        }
-
-      case SuspenseComponent:
-        {
-          var suspenseState = returnFiber.memoizedState;
-          if (suspenseState.dehydrated !== null) didNotHydrateInstanceWithinSuspenseInstance(suspenseState.dehydrated, instance);
-          break;
-        }
-    }
-  }
-}
-
-function deleteHydratableInstance(returnFiber, instance) {
-  warnUnhydratedInstance(returnFiber, instance);
-  var childToDelete = createFiberFromHostInstanceForDeletion();
-  childToDelete.stateNode = instance;
-  childToDelete.return = returnFiber;
-  var deletions = returnFiber.deletions;
-
-  if (deletions === null) {
-    returnFiber.deletions = [childToDelete];
-    returnFiber.flags |= ChildDeletion;
-  } else {
-    deletions.push(childToDelete);
-  }
-}
-
-function warnNonhydratedInstance(returnFiber, fiber) {
-  {
-    if (didSuspendOrErrorDEV) {
-      // Inside a boundary that already suspended. We're currently rendering the
-      // siblings of a suspended node. The mismatch may be due to the missing
-      // data, so it's probably a false positive.
-      return;
-    }
-
-    switch (returnFiber.tag) {
-      case HostRoot:
-        {
-          var parentContainer = returnFiber.stateNode.containerInfo;
-
-          switch (fiber.tag) {
-            case HostComponent:
-              var type = fiber.type;
-              var props = fiber.pendingProps;
-              didNotFindHydratableInstanceWithinContainer(parentContainer, type);
-              break;
-
-            case HostText:
-              var text = fiber.pendingProps;
-              didNotFindHydratableTextInstanceWithinContainer(parentContainer, text);
-              break;
-          }
-
-          break;
-        }
-
-      case HostComponent:
-        {
-          var parentType = returnFiber.type;
-          var parentProps = returnFiber.memoizedProps;
-          var parentInstance = returnFiber.stateNode;
-
-          switch (fiber.tag) {
-            case HostComponent:
-              {
-                var _type = fiber.type;
-                var _props = fiber.pendingProps;
-                var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-                didNotFindHydratableInstance(parentType, parentProps, parentInstance, _type, _props, // TODO: Delete this argument when we remove the legacy root API.
-                isConcurrentMode);
-                break;
-              }
-
-            case HostText:
-              {
-                var _text = fiber.pendingProps;
-
-                var _isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-
-                didNotFindHydratableTextInstance(parentType, parentProps, parentInstance, _text, // TODO: Delete this argument when we remove the legacy root API.
-                _isConcurrentMode);
-                break;
-              }
-          }
-
-          break;
-        }
-
-      case SuspenseComponent:
-        {
-          var suspenseState = returnFiber.memoizedState;
-          var _parentInstance = suspenseState.dehydrated;
-          if (_parentInstance !== null) switch (fiber.tag) {
-            case HostComponent:
-              var _type2 = fiber.type;
-              var _props2 = fiber.pendingProps;
-              didNotFindHydratableInstanceWithinSuspenseInstance(_parentInstance, _type2);
-              break;
-
-            case HostText:
-              var _text2 = fiber.pendingProps;
-              didNotFindHydratableTextInstanceWithinSuspenseInstance(_parentInstance, _text2);
-              break;
-          }
-          break;
-        }
-
-      default:
-        return;
-    }
-  }
-}
-
-function insertNonHydratedInstance(returnFiber, fiber) {
-  fiber.flags = fiber.flags & ~Hydrating | Placement;
-  warnNonhydratedInstance(returnFiber, fiber);
-}
-
-function tryHydrate(fiber, nextInstance) {
-  switch (fiber.tag) {
-    case HostComponent:
-      {
-        var type = fiber.type;
-        var props = fiber.pendingProps;
-        var instance = canHydrateInstance(nextInstance, type);
-
-        if (instance !== null) {
-          fiber.stateNode = instance;
-          hydrationParentFiber = fiber;
-          nextHydratableInstance = getFirstHydratableChild(instance);
-          return true;
-        }
-
-        return false;
-      }
-
-    case HostText:
-      {
-        var text = fiber.pendingProps;
-        var textInstance = canHydrateTextInstance(nextInstance, text);
-
-        if (textInstance !== null) {
-          fiber.stateNode = textInstance;
-          hydrationParentFiber = fiber; // Text Instances don't have children so there's nothing to hydrate.
-
-          nextHydratableInstance = null;
-          return true;
-        }
-
-        return false;
-      }
-
-    case SuspenseComponent:
-      {
-        var suspenseInstance = canHydrateSuspenseInstance(nextInstance);
-
-        if (suspenseInstance !== null) {
-          var suspenseState = {
-            dehydrated: suspenseInstance,
-            treeContext: getSuspendedTreeContext(),
-            retryLane: OffscreenLane
-          };
-          fiber.memoizedState = suspenseState; // Store the dehydrated fragment as a child fiber.
-          // This simplifies the code for getHostSibling and deleting nodes,
-          // since it doesn't have to consider all Suspense boundaries and
-          // check if they're dehydrated ones or not.
-
-          var dehydratedFragment = createFiberFromDehydratedFragment(suspenseInstance);
-          dehydratedFragment.return = fiber;
-          fiber.child = dehydratedFragment;
-          hydrationParentFiber = fiber; // While a Suspense Instance does have children, we won't step into
-          // it during the first pass. Instead, we'll reenter it later.
-
-          nextHydratableInstance = null;
-          return true;
-        }
-
-        return false;
-      }
-
-    default:
-      return false;
-  }
-}
-
-function shouldClientRenderOnMismatch(fiber) {
-  return (fiber.mode & ConcurrentMode) !== NoMode && (fiber.flags & DidCapture) === NoFlags;
-}
-
-function throwOnHydrationMismatch(fiber) {
-  throw new Error('Hydration failed because the initial UI does not match what was ' + 'rendered on the server.');
-}
-
-function tryToClaimNextHydratableInstance(fiber) {
-  if (!isHydrating) {
-    return;
-  }
-
-  var nextInstance = nextHydratableInstance;
-
-  if (!nextInstance) {
-    if (shouldClientRenderOnMismatch(fiber)) {
-      warnNonhydratedInstance(hydrationParentFiber, fiber);
-      throwOnHydrationMismatch();
-    } // Nothing to hydrate. Make it an insertion.
-
-
-    insertNonHydratedInstance(hydrationParentFiber, fiber);
-    isHydrating = false;
-    hydrationParentFiber = fiber;
-    return;
-  }
-
-  var firstAttemptedInstance = nextInstance;
-
-  if (!tryHydrate(fiber, nextInstance)) {
-    if (shouldClientRenderOnMismatch(fiber)) {
-      warnNonhydratedInstance(hydrationParentFiber, fiber);
-      throwOnHydrationMismatch();
-    } // If we can't hydrate this instance let's try the next one.
-    // We use this as a heuristic. It's based on intuition and not data so it
-    // might be flawed or unnecessary.
-
-
-    nextInstance = getNextHydratableSibling(firstAttemptedInstance);
-    var prevHydrationParentFiber = hydrationParentFiber;
-
-    if (!nextInstance || !tryHydrate(fiber, nextInstance)) {
-      // Nothing to hydrate. Make it an insertion.
-      insertNonHydratedInstance(hydrationParentFiber, fiber);
-      isHydrating = false;
-      hydrationParentFiber = fiber;
-      return;
-    } // We matched the next one, we'll now assume that the first one was
-    // superfluous and we'll delete it. Since we can't eagerly delete it
-    // we'll have to schedule a deletion. To do that, this node needs a dummy
-    // fiber associated with it.
-
-
-    deleteHydratableInstance(prevHydrationParentFiber, firstAttemptedInstance);
-  }
-}
-
-function prepareToHydrateHostInstance(fiber, rootContainerInstance, hostContext) {
-
-  var instance = fiber.stateNode;
-  var shouldWarnIfMismatchDev = !didSuspendOrErrorDEV;
-  var updatePayload = hydrateInstance(instance, fiber.type, fiber.memoizedProps, rootContainerInstance, hostContext, fiber, shouldWarnIfMismatchDev); // TODO: Type this specific to this type of component.
-
-  fiber.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
-  // is a new ref we mark this as an update.
-
-  if (updatePayload !== null) {
-    return true;
-  }
-
-  return false;
-}
-
-function prepareToHydrateHostTextInstance(fiber) {
-
-  var textInstance = fiber.stateNode;
-  var textContent = fiber.memoizedProps;
-  var shouldUpdate = hydrateTextInstance(textInstance, textContent, fiber);
-
-  if (shouldUpdate) {
-    // We assume that prepareToHydrateHostTextInstance is called in a context where the
-    // hydration parent is the parent host component of this host text.
-    var returnFiber = hydrationParentFiber;
-
-    if (returnFiber !== null) {
-      switch (returnFiber.tag) {
-        case HostRoot:
-          {
-            var parentContainer = returnFiber.stateNode.containerInfo;
-            var isConcurrentMode = (returnFiber.mode & ConcurrentMode) !== NoMode;
-            didNotMatchHydratedContainerTextInstance(parentContainer, textInstance, textContent, // TODO: Delete this argument when we remove the legacy root API.
-            isConcurrentMode);
-            break;
-          }
-
-        case HostComponent:
-          {
-            var parentType = returnFiber.type;
-            var parentProps = returnFiber.memoizedProps;
-            var parentInstance = returnFiber.stateNode;
-
-            var _isConcurrentMode2 = (returnFiber.mode & ConcurrentMode) !== NoMode;
-
-            didNotMatchHydratedTextInstance(parentType, parentProps, parentInstance, textInstance, textContent, // TODO: Delete this argument when we remove the legacy root API.
-            _isConcurrentMode2);
-            break;
-          }
-      }
-    }
-  }
-
-  return shouldUpdate;
-}
-
-function prepareToHydrateHostSuspenseInstance(fiber) {
-
-  var suspenseState = fiber.memoizedState;
-  var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
-
-  if (!suspenseInstance) {
-    throw new Error('Expected to have a hydrated suspense instance. ' + 'This error is likely caused by a bug in React. Please file an issue.');
-  }
-
-  hydrateSuspenseInstance(suspenseInstance, fiber);
-}
-
-function skipPastDehydratedSuspenseInstance(fiber) {
-
-  var suspenseState = fiber.memoizedState;
-  var suspenseInstance = suspenseState !== null ? suspenseState.dehydrated : null;
-
-  if (!suspenseInstance) {
-    throw new Error('Expected to have a hydrated suspense instance. ' + 'This error is likely caused by a bug in React. Please file an issue.');
-  }
-
-  return getNextHydratableInstanceAfterSuspenseInstance(suspenseInstance);
-}
-
-function popToNextHostParent(fiber) {
-  var parent = fiber.return;
-
-  while (parent !== null && parent.tag !== HostComponent && parent.tag !== HostRoot && parent.tag !== SuspenseComponent) {
-    parent = parent.return;
-  }
-
-  hydrationParentFiber = parent;
-}
-
-function popHydrationState(fiber) {
-
-  if (fiber !== hydrationParentFiber) {
-    // We're deeper than the current hydration context, inside an inserted
-    // tree.
-    return false;
-  }
-
-  if (!isHydrating) {
-    // If we're not currently hydrating but we're in a hydration context, then
-    // we were an insertion and now need to pop up reenter hydration of our
-    // siblings.
-    popToNextHostParent(fiber);
-    isHydrating = true;
-    return false;
-  } // If we have any remaining hydratable nodes, we need to delete them now.
-  // We only do this deeper than head and body since they tend to have random
-  // other nodes in them. We also ignore components with pure text content in
-  // side of them. We also don't delete anything inside the root container.
-
-
-  if (fiber.tag !== HostRoot && (fiber.tag !== HostComponent || shouldDeleteUnhydratedTailInstances(fiber.type) && !shouldSetTextContent(fiber.type, fiber.memoizedProps))) {
-    var nextInstance = nextHydratableInstance;
-
-    if (nextInstance) {
-      if (shouldClientRenderOnMismatch(fiber)) {
-        warnIfUnhydratedTailNodes(fiber);
-        throwOnHydrationMismatch();
-      } else {
-        while (nextInstance) {
-          deleteHydratableInstance(fiber, nextInstance);
-          nextInstance = getNextHydratableSibling(nextInstance);
-        }
-      }
-    }
-  }
-
-  popToNextHostParent(fiber);
-
-  if (fiber.tag === SuspenseComponent) {
-    nextHydratableInstance = skipPastDehydratedSuspenseInstance(fiber);
-  } else {
-    nextHydratableInstance = hydrationParentFiber ? getNextHydratableSibling(fiber.stateNode) : null;
-  }
-
-  return true;
-}
-
-function hasUnhydratedTailNodes() {
-  return isHydrating && nextHydratableInstance !== null;
-}
-
-function warnIfUnhydratedTailNodes(fiber) {
-  var nextInstance = nextHydratableInstance;
-
-  while (nextInstance) {
-    warnUnhydratedInstance(fiber, nextInstance);
-    nextInstance = getNextHydratableSibling(nextInstance);
-  }
-}
-
-function resetHydrationState() {
-
-  hydrationParentFiber = null;
-  nextHydratableInstance = null;
-  isHydrating = false;
-  didSuspendOrErrorDEV = false;
-}
-
-function upgradeHydrationErrorsToRecoverable() {
-  if (hydrationErrors !== null) {
-    // Successfully completed a forced client render. The errors that occurred
-    // during the hydration attempt are now recovered. We will log them in
-    // commit phase, once the entire tree has finished.
-    queueRecoverableErrors(hydrationErrors);
-    hydrationErrors = null;
-  }
-}
-
-function getIsHydrating() {
-  return isHydrating;
-}
-
-function queueHydrationError(error) {
-  if (hydrationErrors === null) {
-    hydrationErrors = [error];
-  } else {
-    hydrationErrors.push(error);
-  }
 }
 
 var didWarnAboutMaps;
@@ -18975,7 +19105,11 @@ function checkIfSnapshotChanged(inst) {
 }
 
 function forceStoreRerender(fiber) {
-  scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+  var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+  if (root !== null) {
+    scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+  }
 }
 
 function mountState(initialState) {
@@ -19445,11 +19579,11 @@ function dispatchReducerAction(fiber, queue, action) {
   if (isRenderPhaseUpdate(fiber)) {
     enqueueRenderPhaseUpdate(queue, update);
   } else {
-    enqueueUpdate$1(fiber, queue, update);
-    var eventTime = requestEventTime();
-    var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    var root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
 
     if (root !== null) {
+      var eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
       entangleTransitionUpdate(root, queue, lane);
     }
   }
@@ -19476,7 +19610,6 @@ function dispatchSetState(fiber, queue, action) {
   if (isRenderPhaseUpdate(fiber)) {
     enqueueRenderPhaseUpdate(queue, update);
   } else {
-    enqueueUpdate$1(fiber, queue, update);
     var alternate = fiber.alternate;
 
     if (fiber.lanes === NoLanes && (alternate === null || alternate.lanes === NoLanes)) {
@@ -19508,6 +19641,8 @@ function dispatchSetState(fiber, queue, action) {
             // It's still possible that we'll need to rebase this update later,
             // if the component re-renders for a different reason and by that
             // time the reducer has changed.
+            // TODO: Do we still need to entangle transitions in this case?
+            enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update, lane);
             return;
           }
         } catch (error) {// Suppress the error. It will throw again in the render phase.
@@ -19519,10 +19654,11 @@ function dispatchSetState(fiber, queue, action) {
       }
     }
 
-    var eventTime = requestEventTime();
-    var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    var root = enqueueConcurrentHookUpdate(fiber, queue, update, lane);
 
     if (root !== null) {
+      var eventTime = requestEventTime();
+      scheduleUpdateOnFiber(root, fiber, lane, eventTime);
       entangleTransitionUpdate(root, queue, lane);
     }
   }
@@ -19551,38 +19687,8 @@ function enqueueRenderPhaseUpdate(queue, update) {
   }
 
   queue.pending = update;
-}
+} // TODO: Move to ReactFiberConcurrentUpdates?
 
-function enqueueUpdate$1(fiber, queue, update, lane) {
-  if (isInterleavedUpdate(fiber)) {
-    var interleaved = queue.interleaved;
-
-    if (interleaved === null) {
-      // This is the first update. Create a circular list.
-      update.next = update; // At the end of the current render, this queue's interleaved updates will
-      // be transferred to the pending queue.
-
-      pushInterleavedQueue(queue);
-    } else {
-      update.next = interleaved.next;
-      interleaved.next = update;
-    }
-
-    queue.interleaved = update;
-  } else {
-    var pending = queue.pending;
-
-    if (pending === null) {
-      // This is the first update. Create a circular list.
-      update.next = update;
-    } else {
-      update.next = pending.next;
-      pending.next = update;
-    }
-
-    queue.pending = update;
-  }
-}
 
 function entangleTransitionUpdate(root, queue, lane) {
   if (isTransitionLane(lane)) {
@@ -20635,13 +20741,22 @@ function transferActualDuration(fiber) {
   }
 }
 
-function createCapturedValue(value, source) {
+function createCapturedValueAtFiber(value, source) {
   // If the value is an error, call this function immediately after it is thrown
   // so the stack is accurate.
   return {
     value: value,
     source: source,
-    stack: getStackByFiberInDevAndProd(source)
+    stack: getStackByFiberInDevAndProd(source),
+    digest: null
+  };
+}
+function createCapturedValue(value, digest, stack) {
+  return {
+    value: value,
+    source: null,
+    stack: stack != null ? stack : null,
+    digest: digest != null ? digest : null
   };
 }
 
@@ -20952,7 +21067,7 @@ function markSuspenseBoundaryShouldCapture(suspenseBoundary, returnFiber, source
           // prevent a bail out.
           var update = createUpdate(NoTimestamp, SyncLane);
           update.tag = ForceUpdate;
-          enqueueUpdate(sourceFiber, update);
+          enqueueUpdate(sourceFiber, update, SyncLane);
         }
       } // The source fiber did not complete. Mark it with Sync priority to
       // indicate that it still has pending work.
@@ -21092,17 +21207,17 @@ function throwException(root, returnFiber, sourceFiber, value, rootRenderLanes) 
         markSuspenseBoundaryShouldCapture(_suspenseBoundary, returnFiber, sourceFiber, root, rootRenderLanes); // Even though the user may not be affected by this error, we should
         // still log it so it can be fixed.
 
-        queueHydrationError(value);
+        queueHydrationError(createCapturedValueAtFiber(value, sourceFiber));
         return;
       }
     }
-  } // We didn't find a boundary that could handle this type of exception. Start
+  }
+
+  value = createCapturedValueAtFiber(value, sourceFiber);
+  renderDidError(value); // We didn't find a boundary that could handle this type of exception. Start
   // over and traverse parent path again, this time treating the exception
   // as an error.
 
-
-  renderDidError(value);
-  value = createCapturedValue(value, sourceFiber);
   var workInProgress = returnFiber;
 
   do {
@@ -21148,918 +21263,6 @@ function getSuspendedCache() {
   {
     return null;
   } // This function is called when a Suspense boundary suspends. It returns the
-}
-
-function markUpdate(workInProgress) {
-  // Tag the fiber with an update effect. This turns a Placement into
-  // a PlacementAndUpdate.
-  workInProgress.flags |= Update;
-}
-
-function markRef(workInProgress) {
-  workInProgress.flags |= Ref;
-
-  {
-    workInProgress.flags |= RefStatic;
-  }
-}
-
-var appendAllChildren;
-var updateHostContainer;
-var updateHostComponent;
-var updateHostText;
-
-{
-  // Mutation mode
-  appendAllChildren = function (parent, workInProgress, needsVisibilityToggle, isHidden) {
-    // We only have the top Fiber that was created but we need recurse down its
-    // children to find all the terminal nodes.
-    var node = workInProgress.child;
-
-    while (node !== null) {
-      if (node.tag === HostComponent || node.tag === HostText) {
-        appendInitialChild(parent, node.stateNode);
-      } else if (node.tag === HostPortal) ; else if (node.child !== null) {
-        node.child.return = node;
-        node = node.child;
-        continue;
-      }
-
-      if (node === workInProgress) {
-        return;
-      }
-
-      while (node.sibling === null) {
-        if (node.return === null || node.return === workInProgress) {
-          return;
-        }
-
-        node = node.return;
-      }
-
-      node.sibling.return = node.return;
-      node = node.sibling;
-    }
-  };
-
-  updateHostContainer = function (current, workInProgress) {// Noop
-  };
-
-  updateHostComponent = function (current, workInProgress, type, newProps, rootContainerInstance) {
-    // If we have an alternate, that means this is an update and we need to
-    // schedule a side-effect to do the updates.
-    var oldProps = current.memoizedProps;
-
-    if (oldProps === newProps) {
-      // In mutation mode, this is sufficient for a bailout because
-      // we won't touch this node even if children changed.
-      return;
-    } // If we get updated because one of our children updated, we don't
-    // have newProps so we'll have to reuse them.
-    // TODO: Split the update API as separate for the props vs. children.
-    // Even better would be if children weren't special cased at all tho.
-
-
-    var instance = workInProgress.stateNode;
-    var currentHostContext = getHostContext(); // TODO: Experiencing an error where oldProps is null. Suggests a host
-    // component is hitting the resume path. Figure out why. Possibly
-    // related to `hidden`.
-
-    var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext); // TODO: Type this specific to this type of component.
-
-    workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
-    // is a new ref we mark this as an update. All the work is done in commitWork.
-
-    if (updatePayload) {
-      markUpdate(workInProgress);
-    }
-  };
-
-  updateHostText = function (current, workInProgress, oldText, newText) {
-    // If the text differs, mark it as an update. All the work in done in commitWork.
-    if (oldText !== newText) {
-      markUpdate(workInProgress);
-    }
-  };
-}
-
-function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
-  if (getIsHydrating()) {
-    // If we're hydrating, we should consume as many items as we can
-    // so we don't leave any behind.
-    return;
-  }
-
-  switch (renderState.tailMode) {
-    case 'hidden':
-      {
-        // Any insertions at the end of the tail list after this point
-        // should be invisible. If there are already mounted boundaries
-        // anything before them are not considered for collapsing.
-        // Therefore we need to go through the whole tail to find if
-        // there are any.
-        var tailNode = renderState.tail;
-        var lastTailNode = null;
-
-        while (tailNode !== null) {
-          if (tailNode.alternate !== null) {
-            lastTailNode = tailNode;
-          }
-
-          tailNode = tailNode.sibling;
-        } // Next we're simply going to delete all insertions after the
-        // last rendered item.
-
-
-        if (lastTailNode === null) {
-          // All remaining items in the tail are insertions.
-          renderState.tail = null;
-        } else {
-          // Detach the insertion after the last node that was already
-          // inserted.
-          lastTailNode.sibling = null;
-        }
-
-        break;
-      }
-
-    case 'collapsed':
-      {
-        // Any insertions at the end of the tail list after this point
-        // should be invisible. If there are already mounted boundaries
-        // anything before them are not considered for collapsing.
-        // Therefore we need to go through the whole tail to find if
-        // there are any.
-        var _tailNode = renderState.tail;
-        var _lastTailNode = null;
-
-        while (_tailNode !== null) {
-          if (_tailNode.alternate !== null) {
-            _lastTailNode = _tailNode;
-          }
-
-          _tailNode = _tailNode.sibling;
-        } // Next we're simply going to delete all insertions after the
-        // last rendered item.
-
-
-        if (_lastTailNode === null) {
-          // All remaining items in the tail are insertions.
-          if (!hasRenderedATailFallback && renderState.tail !== null) {
-            // We suspended during the head. We want to show at least one
-            // row at the tail. So we'll keep on and cut off the rest.
-            renderState.tail.sibling = null;
-          } else {
-            renderState.tail = null;
-          }
-        } else {
-          // Detach the insertion after the last node that was already
-          // inserted.
-          _lastTailNode.sibling = null;
-        }
-
-        break;
-      }
-  }
-}
-
-function bubbleProperties(completedWork) {
-  var didBailout = completedWork.alternate !== null && completedWork.alternate.child === completedWork.child;
-  var newChildLanes = NoLanes;
-  var subtreeFlags = NoFlags;
-
-  if (!didBailout) {
-    // Bubble up the earliest expiration time.
-    if ( (completedWork.mode & ProfileMode) !== NoMode) {
-      // In profiling mode, resetChildExpirationTime is also used to reset
-      // profiler durations.
-      var actualDuration = completedWork.actualDuration;
-      var treeBaseDuration = completedWork.selfBaseDuration;
-      var child = completedWork.child;
-
-      while (child !== null) {
-        newChildLanes = mergeLanes(newChildLanes, mergeLanes(child.lanes, child.childLanes));
-        subtreeFlags |= child.subtreeFlags;
-        subtreeFlags |= child.flags; // When a fiber is cloned, its actualDuration is reset to 0. This value will
-        // only be updated if work is done on the fiber (i.e. it doesn't bailout).
-        // When work is done, it should bubble to the parent's actualDuration. If
-        // the fiber has not been cloned though, (meaning no work was done), then
-        // this value will reflect the amount of time spent working on a previous
-        // render. In that case it should not bubble. We determine whether it was
-        // cloned by comparing the child pointer.
-
-        actualDuration += child.actualDuration;
-        treeBaseDuration += child.treeBaseDuration;
-        child = child.sibling;
-      }
-
-      completedWork.actualDuration = actualDuration;
-      completedWork.treeBaseDuration = treeBaseDuration;
-    } else {
-      var _child = completedWork.child;
-
-      while (_child !== null) {
-        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child.lanes, _child.childLanes));
-        subtreeFlags |= _child.subtreeFlags;
-        subtreeFlags |= _child.flags; // Update the return pointer so the tree is consistent. This is a code
-        // smell because it assumes the commit phase is never concurrent with
-        // the render phase. Will address during refactor to alternate model.
-
-        _child.return = completedWork;
-        _child = _child.sibling;
-      }
-    }
-
-    completedWork.subtreeFlags |= subtreeFlags;
-  } else {
-    // Bubble up the earliest expiration time.
-    if ( (completedWork.mode & ProfileMode) !== NoMode) {
-      // In profiling mode, resetChildExpirationTime is also used to reset
-      // profiler durations.
-      var _treeBaseDuration = completedWork.selfBaseDuration;
-      var _child2 = completedWork.child;
-
-      while (_child2 !== null) {
-        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child2.lanes, _child2.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
-        // so we should bubble those up even during a bailout. All the other
-        // flags have a lifetime only of a single render + commit, so we should
-        // ignore them.
-
-        subtreeFlags |= _child2.subtreeFlags & StaticMask;
-        subtreeFlags |= _child2.flags & StaticMask;
-        _treeBaseDuration += _child2.treeBaseDuration;
-        _child2 = _child2.sibling;
-      }
-
-      completedWork.treeBaseDuration = _treeBaseDuration;
-    } else {
-      var _child3 = completedWork.child;
-
-      while (_child3 !== null) {
-        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child3.lanes, _child3.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
-        // so we should bubble those up even during a bailout. All the other
-        // flags have a lifetime only of a single render + commit, so we should
-        // ignore them.
-
-        subtreeFlags |= _child3.subtreeFlags & StaticMask;
-        subtreeFlags |= _child3.flags & StaticMask; // Update the return pointer so the tree is consistent. This is a code
-        // smell because it assumes the commit phase is never concurrent with
-        // the render phase. Will address during refactor to alternate model.
-
-        _child3.return = completedWork;
-        _child3 = _child3.sibling;
-      }
-    }
-
-    completedWork.subtreeFlags |= subtreeFlags;
-  }
-
-  completedWork.childLanes = newChildLanes;
-  return didBailout;
-}
-
-function completeWork(current, workInProgress, renderLanes) {
-  var newProps = workInProgress.pendingProps; // Note: This intentionally doesn't check if we're hydrating because comparing
-  // to the current tree provider fiber is just as fast and less error-prone.
-  // Ideally we would have a special version of the work loop only
-  // for hydration.
-
-  popTreeContext(workInProgress);
-
-  switch (workInProgress.tag) {
-    case IndeterminateComponent:
-    case LazyComponent:
-    case SimpleMemoComponent:
-    case FunctionComponent:
-    case ForwardRef:
-    case Fragment:
-    case Mode:
-    case Profiler:
-    case ContextConsumer:
-    case MemoComponent:
-      bubbleProperties(workInProgress);
-      return null;
-
-    case ClassComponent:
-      {
-        var Component = workInProgress.type;
-
-        if (isContextProvider(Component)) {
-          popContext(workInProgress);
-        }
-
-        bubbleProperties(workInProgress);
-        return null;
-      }
-
-    case HostRoot:
-      {
-        var fiberRoot = workInProgress.stateNode;
-        popHostContainer(workInProgress);
-        popTopLevelContextObject(workInProgress);
-        resetWorkInProgressVersions();
-
-        if (fiberRoot.pendingContext) {
-          fiberRoot.context = fiberRoot.pendingContext;
-          fiberRoot.pendingContext = null;
-        }
-
-        if (current === null || current.child === null) {
-          // If we hydrated, pop so that we can delete any remaining children
-          // that weren't hydrated.
-          var wasHydrated = popHydrationState(workInProgress);
-
-          if (wasHydrated) {
-            // If we hydrated, then we'll need to schedule an update for
-            // the commit side-effects on the root.
-            markUpdate(workInProgress);
-          } else {
-            if (current !== null) {
-              var prevState = current.memoizedState;
-
-              if ( // Check if this is a client root
-              !prevState.isDehydrated || // Check if we reverted to client rendering (e.g. due to an error)
-              (workInProgress.flags & ForceClientRender) !== NoFlags) {
-                // Schedule an effect to clear this container at the start of the
-                // next commit. This handles the case of React rendering into a
-                // container with previous children. It's also safe to do for
-                // updates too, because current.child would only be null if the
-                // previous render was null (so the container would already
-                // be empty).
-                workInProgress.flags |= Snapshot; // If this was a forced client render, there may have been
-                // recoverable errors during first hydration attempt. If so, add
-                // them to a queue so we can log them in the commit phase.
-
-                upgradeHydrationErrorsToRecoverable();
-              }
-            }
-          }
-        }
-
-        updateHostContainer(current, workInProgress);
-        bubbleProperties(workInProgress);
-
-        return null;
-      }
-
-    case HostComponent:
-      {
-        popHostContext(workInProgress);
-        var rootContainerInstance = getRootHostContainer();
-        var type = workInProgress.type;
-
-        if (current !== null && workInProgress.stateNode != null) {
-          updateHostComponent(current, workInProgress, type, newProps, rootContainerInstance);
-
-          if (current.ref !== workInProgress.ref) {
-            markRef(workInProgress);
-          }
-        } else {
-          if (!newProps) {
-            if (workInProgress.stateNode === null) {
-              throw new Error('We must have new props for new mounts. This error is likely ' + 'caused by a bug in React. Please file an issue.');
-            } // This can happen when we abort work.
-
-
-            bubbleProperties(workInProgress);
-            return null;
-          }
-
-          var currentHostContext = getHostContext(); // TODO: Move createInstance to beginWork and keep it on a context
-          // "stack" as the parent. Then append children as we go in beginWork
-          // or completeWork depending on whether we want to add them top->down or
-          // bottom->up. Top->down is faster in IE11.
-
-          var _wasHydrated = popHydrationState(workInProgress);
-
-          if (_wasHydrated) {
-            // TODO: Move this and createInstance step into the beginPhase
-            // to consolidate.
-            if (prepareToHydrateHostInstance(workInProgress, rootContainerInstance, currentHostContext)) {
-              // If changes to the hydrated node need to be applied at the
-              // commit-phase we mark this as such.
-              markUpdate(workInProgress);
-            }
-          } else {
-            var instance = createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress);
-            appendAllChildren(instance, workInProgress, false, false);
-            workInProgress.stateNode = instance; // Certain renderers require commit-time effects for initial mount.
-            // (eg DOM renderer supports auto-focus for certain elements).
-            // Make sure such renderers get scheduled for later work.
-
-            if (finalizeInitialChildren(instance, type, newProps, rootContainerInstance)) {
-              markUpdate(workInProgress);
-            }
-          }
-
-          if (workInProgress.ref !== null) {
-            // If there is a ref on a host node we need to schedule a callback
-            markRef(workInProgress);
-          }
-        }
-
-        bubbleProperties(workInProgress);
-        return null;
-      }
-
-    case HostText:
-      {
-        var newText = newProps;
-
-        if (current && workInProgress.stateNode != null) {
-          var oldText = current.memoizedProps; // If we have an alternate, that means this is an update and we need
-          // to schedule a side-effect to do the updates.
-
-          updateHostText(current, workInProgress, oldText, newText);
-        } else {
-          if (typeof newText !== 'string') {
-            if (workInProgress.stateNode === null) {
-              throw new Error('We must have new props for new mounts. This error is likely ' + 'caused by a bug in React. Please file an issue.');
-            } // This can happen when we abort work.
-
-          }
-
-          var _rootContainerInstance = getRootHostContainer();
-
-          var _currentHostContext = getHostContext();
-
-          var _wasHydrated2 = popHydrationState(workInProgress);
-
-          if (_wasHydrated2) {
-            if (prepareToHydrateHostTextInstance(workInProgress)) {
-              markUpdate(workInProgress);
-            }
-          } else {
-            workInProgress.stateNode = createTextInstance(newText, _rootContainerInstance, _currentHostContext, workInProgress);
-          }
-        }
-
-        bubbleProperties(workInProgress);
-        return null;
-      }
-
-    case SuspenseComponent:
-      {
-        popSuspenseContext(workInProgress);
-        var nextState = workInProgress.memoizedState;
-
-        if (hasUnhydratedTailNodes() && (workInProgress.mode & ConcurrentMode) !== NoMode && (workInProgress.flags & DidCapture) === NoFlags) {
-          warnIfUnhydratedTailNodes(workInProgress);
-          resetHydrationState();
-          workInProgress.flags |= ForceClientRender | Incomplete | ShouldCapture;
-          return workInProgress;
-        }
-
-        if (nextState !== null && nextState.dehydrated !== null) {
-          // We might be inside a hydration state the first time we're picking up this
-          // Suspense boundary, and also after we've reentered it for further hydration.
-          var _wasHydrated3 = popHydrationState(workInProgress);
-
-          if (current === null) {
-            if (!_wasHydrated3) {
-              throw new Error('A dehydrated suspense component was completed without a hydrated node. ' + 'This is probably a bug in React.');
-            }
-
-            prepareToHydrateHostSuspenseInstance(workInProgress);
-            bubbleProperties(workInProgress);
-
-            {
-              if ((workInProgress.mode & ProfileMode) !== NoMode) {
-                var isTimedOutSuspense = nextState !== null;
-
-                if (isTimedOutSuspense) {
-                  // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-                  var primaryChildFragment = workInProgress.child;
-
-                  if (primaryChildFragment !== null) {
-                    // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                    workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
-                  }
-                }
-              }
-            }
-
-            return null;
-          } else {
-            // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
-            // state since we're now exiting out of it. popHydrationState doesn't do that for us.
-            resetHydrationState();
-
-            if ((workInProgress.flags & DidCapture) === NoFlags) {
-              // This boundary did not suspend so it's now hydrated and unsuspended.
-              workInProgress.memoizedState = null;
-            } // If nothing suspended, we need to schedule an effect to mark this boundary
-            // as having hydrated so events know that they're free to be invoked.
-            // It's also a signal to replay events and the suspense callback.
-            // If something suspended, schedule an effect to attach retry listeners.
-            // So we might as well always mark this.
-
-
-            workInProgress.flags |= Update;
-            bubbleProperties(workInProgress);
-
-            {
-              if ((workInProgress.mode & ProfileMode) !== NoMode) {
-                var _isTimedOutSuspense = nextState !== null;
-
-                if (_isTimedOutSuspense) {
-                  // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-                  var _primaryChildFragment = workInProgress.child;
-
-                  if (_primaryChildFragment !== null) {
-                    // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                    workInProgress.treeBaseDuration -= _primaryChildFragment.treeBaseDuration;
-                  }
-                }
-              }
-            }
-
-            return null;
-          }
-        } // Successfully completed this tree. If this was a forced client render,
-        // there may have been recoverable errors during first hydration
-        // attempt. If so, add them to a queue so we can log them in the
-        // commit phase.
-
-
-        upgradeHydrationErrorsToRecoverable();
-
-        if ((workInProgress.flags & DidCapture) !== NoFlags) {
-          // Something suspended. Re-render with the fallback children.
-          workInProgress.lanes = renderLanes; // Do not reset the effect list.
-
-          if ( (workInProgress.mode & ProfileMode) !== NoMode) {
-            transferActualDuration(workInProgress);
-          } // Don't bubble properties in this case.
-
-
-          return workInProgress;
-        }
-
-        var nextDidTimeout = nextState !== null;
-        var prevDidTimeout = false;
-
-        if (current === null) {
-          popHydrationState(workInProgress);
-        } else {
-          var _prevState = current.memoizedState;
-          prevDidTimeout = _prevState !== null;
-        }
-        // a passive effect, which is when we process the transitions
-
-
-        if (nextDidTimeout !== prevDidTimeout) {
-          // an effect to toggle the subtree's visibility. When we switch from
-          // fallback -> primary, the inner Offscreen fiber schedules this effect
-          // as part of its normal complete phase. But when we switch from
-          // primary -> fallback, the inner Offscreen fiber does not have a complete
-          // phase. So we need to schedule its effect here.
-          //
-          // We also use this flag to connect/disconnect the effects, but the same
-          // logic applies: when re-connecting, the Offscreen fiber's complete
-          // phase will handle scheduling the effect. It's only when the fallback
-          // is active that we have to do anything special.
-
-
-          if (nextDidTimeout) {
-            var _offscreenFiber2 = workInProgress.child;
-            _offscreenFiber2.flags |= Visibility; // TODO: This will still suspend a synchronous tree if anything
-            // in the concurrent tree already suspended during this render.
-            // This is a known bug.
-
-            if ((workInProgress.mode & ConcurrentMode) !== NoMode) {
-              // TODO: Move this back to throwException because this is too late
-              // if this is a large tree which is common for initial loads. We
-              // don't know if we should restart a render or not until we get
-              // this marker, and this is too late.
-              // If this render already had a ping or lower pri updates,
-              // and this is the first time we know we're going to suspend we
-              // should be able to immediately restart from within throwException.
-              var hasInvisibleChildContext = current === null && (workInProgress.memoizedProps.unstable_avoidThisFallback !== true || !enableSuspenseAvoidThisFallback);
-
-              if (hasInvisibleChildContext || hasSuspenseContext(suspenseStackCursor.current, InvisibleParentSuspenseContext)) {
-                // If this was in an invisible tree or a new render, then showing
-                // this boundary is ok.
-                renderDidSuspend();
-              } else {
-                // Otherwise, we're going to have to hide content so we should
-                // suspend for longer if possible.
-                renderDidSuspendDelayIfPossible();
-              }
-            }
-          }
-        }
-
-        var wakeables = workInProgress.updateQueue;
-
-        if (wakeables !== null) {
-          // Schedule an effect to attach a retry listener to the promise.
-          // TODO: Move to passive phase
-          workInProgress.flags |= Update;
-        }
-
-        bubbleProperties(workInProgress);
-
-        {
-          if ((workInProgress.mode & ProfileMode) !== NoMode) {
-            if (nextDidTimeout) {
-              // Don't count time spent in a timed out Suspense subtree as part of the base duration.
-              var _primaryChildFragment2 = workInProgress.child;
-
-              if (_primaryChildFragment2 !== null) {
-                // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
-                workInProgress.treeBaseDuration -= _primaryChildFragment2.treeBaseDuration;
-              }
-            }
-          }
-        }
-
-        return null;
-      }
-
-    case HostPortal:
-      popHostContainer(workInProgress);
-      updateHostContainer(current, workInProgress);
-
-      if (current === null) {
-        preparePortalMount(workInProgress.stateNode.containerInfo);
-      }
-
-      bubbleProperties(workInProgress);
-      return null;
-
-    case ContextProvider:
-      // Pop provider fiber
-      var context = workInProgress.type._context;
-      popProvider(context, workInProgress);
-      bubbleProperties(workInProgress);
-      return null;
-
-    case IncompleteClassComponent:
-      {
-        // Same as class component case. I put it down here so that the tags are
-        // sequential to ensure this switch is compiled to a jump table.
-        var _Component = workInProgress.type;
-
-        if (isContextProvider(_Component)) {
-          popContext(workInProgress);
-        }
-
-        bubbleProperties(workInProgress);
-        return null;
-      }
-
-    case SuspenseListComponent:
-      {
-        popSuspenseContext(workInProgress);
-        var renderState = workInProgress.memoizedState;
-
-        if (renderState === null) {
-          // We're running in the default, "independent" mode.
-          // We don't do anything in this mode.
-          bubbleProperties(workInProgress);
-          return null;
-        }
-
-        var didSuspendAlready = (workInProgress.flags & DidCapture) !== NoFlags;
-        var renderedTail = renderState.rendering;
-
-        if (renderedTail === null) {
-          // We just rendered the head.
-          if (!didSuspendAlready) {
-            // This is the first pass. We need to figure out if anything is still
-            // suspended in the rendered set.
-            // If new content unsuspended, but there's still some content that
-            // didn't. Then we need to do a second pass that forces everything
-            // to keep showing their fallbacks.
-            // We might be suspended if something in this render pass suspended, or
-            // something in the previous committed pass suspended. Otherwise,
-            // there's no chance so we can skip the expensive call to
-            // findFirstSuspended.
-            var cannotBeSuspended = renderHasNotSuspendedYet() && (current === null || (current.flags & DidCapture) === NoFlags);
-
-            if (!cannotBeSuspended) {
-              var row = workInProgress.child;
-
-              while (row !== null) {
-                var suspended = findFirstSuspended(row);
-
-                if (suspended !== null) {
-                  didSuspendAlready = true;
-                  workInProgress.flags |= DidCapture;
-                  cutOffTailIfNeeded(renderState, false); // If this is a newly suspended tree, it might not get committed as
-                  // part of the second pass. In that case nothing will subscribe to
-                  // its thenables. Instead, we'll transfer its thenables to the
-                  // SuspenseList so that it can retry if they resolve.
-                  // There might be multiple of these in the list but since we're
-                  // going to wait for all of them anyway, it doesn't really matter
-                  // which ones gets to ping. In theory we could get clever and keep
-                  // track of how many dependencies remain but it gets tricky because
-                  // in the meantime, we can add/remove/change items and dependencies.
-                  // We might bail out of the loop before finding any but that
-                  // doesn't matter since that means that the other boundaries that
-                  // we did find already has their listeners attached.
-
-                  var newThenables = suspended.updateQueue;
-
-                  if (newThenables !== null) {
-                    workInProgress.updateQueue = newThenables;
-                    workInProgress.flags |= Update;
-                  } // Rerender the whole list, but this time, we'll force fallbacks
-                  // to stay in place.
-                  // Reset the effect flags before doing the second pass since that's now invalid.
-                  // Reset the child fibers to their original state.
-
-
-                  workInProgress.subtreeFlags = NoFlags;
-                  resetChildFibers(workInProgress, renderLanes); // Set up the Suspense Context to force suspense and immediately
-                  // rerender the children.
-
-                  pushSuspenseContext(workInProgress, setShallowSuspenseContext(suspenseStackCursor.current, ForceSuspenseFallback)); // Don't bubble properties in this case.
-
-                  return workInProgress.child;
-                }
-
-                row = row.sibling;
-              }
-            }
-
-            if (renderState.tail !== null && now() > getRenderTargetTime()) {
-              // We have already passed our CPU deadline but we still have rows
-              // left in the tail. We'll just give up further attempts to render
-              // the main content and only render fallbacks.
-              workInProgress.flags |= DidCapture;
-              didSuspendAlready = true;
-              cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
-              // to get it started back up to attempt the next item. While in terms
-              // of priority this work has the same priority as this current render,
-              // it's not part of the same transition once the transition has
-              // committed. If it's sync, we still want to yield so that it can be
-              // painted. Conceptually, this is really the same as pinging.
-              // We can use any RetryLane even if it's the one currently rendering
-              // since we're leaving it behind on this node.
-
-              workInProgress.lanes = SomeRetryLane;
-            }
-          } else {
-            cutOffTailIfNeeded(renderState, false);
-          } // Next we're going to render the tail.
-
-        } else {
-          // Append the rendered row to the child list.
-          if (!didSuspendAlready) {
-            var _suspended = findFirstSuspended(renderedTail);
-
-            if (_suspended !== null) {
-              workInProgress.flags |= DidCapture;
-              didSuspendAlready = true; // Ensure we transfer the update queue to the parent so that it doesn't
-              // get lost if this row ends up dropped during a second pass.
-
-              var _newThenables = _suspended.updateQueue;
-
-              if (_newThenables !== null) {
-                workInProgress.updateQueue = _newThenables;
-                workInProgress.flags |= Update;
-              }
-
-              cutOffTailIfNeeded(renderState, true); // This might have been modified.
-
-              if (renderState.tail === null && renderState.tailMode === 'hidden' && !renderedTail.alternate && !getIsHydrating() // We don't cut it if we're hydrating.
-              ) {
-                  // We're done.
-                  bubbleProperties(workInProgress);
-                  return null;
-                }
-            } else if ( // The time it took to render last row is greater than the remaining
-            // time we have to render. So rendering one more row would likely
-            // exceed it.
-            now() * 2 - renderState.renderingStartTime > getRenderTargetTime() && renderLanes !== OffscreenLane) {
-              // We have now passed our CPU deadline and we'll just give up further
-              // attempts to render the main content and only render fallbacks.
-              // The assumption is that this is usually faster.
-              workInProgress.flags |= DidCapture;
-              didSuspendAlready = true;
-              cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
-              // to get it started back up to attempt the next item. While in terms
-              // of priority this work has the same priority as this current render,
-              // it's not part of the same transition once the transition has
-              // committed. If it's sync, we still want to yield so that it can be
-              // painted. Conceptually, this is really the same as pinging.
-              // We can use any RetryLane even if it's the one currently rendering
-              // since we're leaving it behind on this node.
-
-              workInProgress.lanes = SomeRetryLane;
-            }
-          }
-
-          if (renderState.isBackwards) {
-            // The effect list of the backwards tail will have been added
-            // to the end. This breaks the guarantee that life-cycles fire in
-            // sibling order but that isn't a strong guarantee promised by React.
-            // Especially since these might also just pop in during future commits.
-            // Append to the beginning of the list.
-            renderedTail.sibling = workInProgress.child;
-            workInProgress.child = renderedTail;
-          } else {
-            var previousSibling = renderState.last;
-
-            if (previousSibling !== null) {
-              previousSibling.sibling = renderedTail;
-            } else {
-              workInProgress.child = renderedTail;
-            }
-
-            renderState.last = renderedTail;
-          }
-        }
-
-        if (renderState.tail !== null) {
-          // We still have tail rows to render.
-          // Pop a row.
-          var next = renderState.tail;
-          renderState.rendering = next;
-          renderState.tail = next.sibling;
-          renderState.renderingStartTime = now();
-          next.sibling = null; // Restore the context.
-          // TODO: We can probably just avoid popping it instead and only
-          // setting it the first time we go from not suspended to suspended.
-
-          var suspenseContext = suspenseStackCursor.current;
-
-          if (didSuspendAlready) {
-            suspenseContext = setShallowSuspenseContext(suspenseContext, ForceSuspenseFallback);
-          } else {
-            suspenseContext = setDefaultShallowSuspenseContext(suspenseContext);
-          }
-
-          pushSuspenseContext(workInProgress, suspenseContext); // Do a pass over the next row.
-          // Don't bubble properties in this case.
-
-          return next;
-        }
-
-        bubbleProperties(workInProgress);
-        return null;
-      }
-
-    case ScopeComponent:
-      {
-
-        break;
-      }
-
-    case OffscreenComponent:
-    case LegacyHiddenComponent:
-      {
-        popRenderLanes(workInProgress);
-        var _nextState = workInProgress.memoizedState;
-        var nextIsHidden = _nextState !== null;
-
-        if (current !== null) {
-          var _prevState2 = current.memoizedState;
-          var prevIsHidden = _prevState2 !== null;
-
-          if (prevIsHidden !== nextIsHidden && ( // LegacyHidden doesn't do any hiding — it only pre-renders.
-          !enableLegacyHidden )) {
-            workInProgress.flags |= Visibility;
-          }
-        }
-
-        if (!nextIsHidden || (workInProgress.mode & ConcurrentMode) === NoMode) {
-          bubbleProperties(workInProgress);
-        } else {
-          // Don't bubble properties for hidden children unless we're rendering
-          // at offscreen priority.
-          if (includesSomeLane(subtreeRenderLanes, OffscreenLane)) {
-            bubbleProperties(workInProgress);
-
-            {
-              // Check if there was an insertion or update in the hidden subtree.
-              // If so, we need to hide those nodes in the commit phase, so
-              // schedule a visibility effect.
-              if ( workInProgress.subtreeFlags & (Placement | Update)) {
-                workInProgress.flags |= Visibility;
-              }
-            }
-          }
-        }
-        return null;
-      }
-
-    case CacheComponent:
-      {
-
-        return null;
-      }
-
-    case TracingMarkerComponent:
-      {
-
-        return null;
-      }
-  }
-
-  throw new Error("Unknown unit of work tag (" + workInProgress.tag + "). This error is likely caused by a bug in " + 'React. Please file an issue.');
 }
 
 var ReactCurrentOwner$1 = ReactSharedInternals.ReactCurrentOwner;
@@ -22431,11 +21634,9 @@ function updateOffscreenComponent(current, workInProgress, renderLanes) {
     pushRenderLanes(workInProgress, _subtreeRenderLanes);
   }
 
-  {
-    reconcileChildren(current, workInProgress, nextChildren, renderLanes);
-    return workInProgress.child;
-  }
-}
+  reconcileChildren(current, workInProgress, nextChildren, renderLanes);
+  return workInProgress.child;
+} // Note: These happen to have identical begin phases, for now. We shouldn't hold
 
 function updateFragment(current, workInProgress, renderLanes) {
   var nextChildren = workInProgress.pendingProps;
@@ -22468,7 +21669,7 @@ function updateProfiler(current, workInProgress, renderLanes) {
   return workInProgress.child;
 }
 
-function markRef$1(current, workInProgress) {
+function markRef(current, workInProgress) {
   var ref = workInProgress.ref;
 
   if (current === null && ref !== null || current !== null && current.ref !== ref) {
@@ -22576,7 +21777,7 @@ function updateClassComponent(current, workInProgress, Component, nextProps, ren
           var lane = pickArbitraryLane(renderLanes);
           workInProgress.lanes = mergeLanes(workInProgress.lanes, lane); // Schedule the error boundary to re-render using updated state
 
-          var update = createClassErrorUpdate(workInProgress, createCapturedValue(error$1, workInProgress), lane);
+          var update = createClassErrorUpdate(workInProgress, createCapturedValueAtFiber(error$1, workInProgress), lane);
           enqueueCapturedUpdate(workInProgress, update);
           break;
         }
@@ -22611,17 +21812,7 @@ function updateClassComponent(current, workInProgress, Component, nextProps, ren
   var shouldUpdate;
 
   if (instance === null) {
-    if (current !== null) {
-      // A class component without an instance only mounts if it suspended
-      // inside a non-concurrent tree, in an inconsistent state. We want to
-      // treat it like a new mount, even though an empty version of it already
-      // committed. Disconnect the alternate pointers.
-      current.alternate = null;
-      workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-
-      workInProgress.flags |= Placement;
-    } // In the initial pass we might need to construct the instance.
-
+    resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress); // In the initial pass we might need to construct the instance.
 
     constructClassInstance(workInProgress, Component, nextProps);
     mountClassInstance(workInProgress, Component, nextProps, renderLanes);
@@ -22652,7 +21843,7 @@ function updateClassComponent(current, workInProgress, Component, nextProps, ren
 
 function finishClassComponent(current, workInProgress, Component, shouldUpdate, hasContext, renderLanes) {
   // Refs should update even if shouldComponentUpdate returns false
-  markRef$1(current, workInProgress);
+  markRef(current, workInProgress);
   var didCaptureError = (workInProgress.flags & DidCapture) !== NoFlags;
 
   if (!shouldUpdate && !didCaptureError) {
@@ -22784,10 +21975,10 @@ function updateHostRoot(current, workInProgress, renderLanes) {
     if (workInProgress.flags & ForceClientRender) {
       // Something errored during a previous attempt to hydrate the shell, so we
       // forced a client render.
-      var recoverableError = new Error('There was an error while hydrating. Because the error happened outside ' + 'of a Suspense boundary, the entire root will switch to ' + 'client rendering.');
+      var recoverableError = createCapturedValueAtFiber(new Error('There was an error while hydrating. Because the error happened outside ' + 'of a Suspense boundary, the entire root will switch to ' + 'client rendering.'), workInProgress);
       return mountHostRootWithoutHydrating(current, workInProgress, nextChildren, renderLanes, recoverableError);
     } else if (nextChildren !== prevChildren) {
-      var _recoverableError = new Error('This root received an early update, before anything was able ' + 'hydrate. Switched the entire root to client rendering.');
+      var _recoverableError = createCapturedValueAtFiber(new Error('This root received an early update, before anything was able ' + 'hydrate. Switched the entire root to client rendering.'), workInProgress);
 
       return mountHostRootWithoutHydrating(current, workInProgress, nextChildren, renderLanes, _recoverableError);
     } else {
@@ -22833,7 +22024,7 @@ function mountHostRootWithoutHydrating(current, workInProgress, nextChildren, re
   return workInProgress.child;
 }
 
-function updateHostComponent$1(current, workInProgress, renderLanes) {
+function updateHostComponent(current, workInProgress, renderLanes) {
   pushHostContext(workInProgress);
 
   if (current === null) {
@@ -22858,12 +22049,12 @@ function updateHostComponent$1(current, workInProgress, renderLanes) {
     workInProgress.flags |= ContentReset;
   }
 
-  markRef$1(current, workInProgress);
+  markRef(current, workInProgress);
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
 }
 
-function updateHostText$1(current, workInProgress) {
+function updateHostText(current, workInProgress) {
   if (current === null) {
     tryToClaimNextHydratableInstance(workInProgress);
   } // Nothing to do here. This is terminal. We'll do the completion step
@@ -22874,17 +22065,7 @@ function updateHostText$1(current, workInProgress) {
 }
 
 function mountLazyComponent(_current, workInProgress, elementType, renderLanes) {
-  if (_current !== null) {
-    // A lazy component only mounts if it suspended inside a non-
-    // concurrent tree, in an inconsistent state. We want to treat it like
-    // a new mount, even though an empty version of it already committed.
-    // Disconnect the alternate pointers.
-    _current.alternate = null;
-    workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-
-    workInProgress.flags |= Placement;
-  }
-
+  resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);
   var props = workInProgress.pendingProps;
   var lazyComponent = elementType;
   var payload = lazyComponent._payload;
@@ -22962,17 +22143,7 @@ function mountLazyComponent(_current, workInProgress, elementType, renderLanes) 
 }
 
 function mountIncompleteClassComponent(_current, workInProgress, Component, nextProps, renderLanes) {
-  if (_current !== null) {
-    // An incomplete component only mounts if it suspended inside a non-
-    // concurrent tree, in an inconsistent state. We want to treat it like
-    // a new mount, even though an empty version of it already committed.
-    // Disconnect the alternate pointers.
-    _current.alternate = null;
-    workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-
-    workInProgress.flags |= Placement;
-  } // Promote the fiber to a class and try rendering again.
-
+  resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress); // Promote the fiber to a class and try rendering again.
 
   workInProgress.tag = ClassComponent; // The rest of this function is a fork of `updateClassComponent`
   // Push context providers early to prevent context stack mismatches.
@@ -22995,17 +22166,7 @@ function mountIncompleteClassComponent(_current, workInProgress, Component, next
 }
 
 function mountIndeterminateComponent(_current, workInProgress, Component, renderLanes) {
-  if (_current !== null) {
-    // An indeterminate component only mounts if it suspended inside a non-
-    // concurrent tree, in an inconsistent state. We want to treat it like
-    // a new mount, even though an empty version of it already committed.
-    // Disconnect the alternate pointers.
-    _current.alternate = null;
-    workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
-
-    workInProgress.flags |= Placement;
-  }
-
+  resetSuspendedCurrentOnMountInLegacyMode(_current, workInProgress);
   var props = workInProgress.pendingProps;
   var context;
 
@@ -23291,6 +22452,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
 
   if (current === null) {
     // Initial mount
+    // Special path for hydration
     // If we're currently hydrating, try to hydrate this boundary.
     tryToClaimNextHydratableInstance(workInProgress); // This could've been a dehydrated suspense component.
 
@@ -23319,92 +22481,35 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
     }
   } else {
     // This is an update.
-    // If the current fiber has a SuspenseState, that means it's already showing
-    // a fallback.
+    // Special path for hydration
     var prevState = current.memoizedState;
 
     if (prevState !== null) {
-      // The current tree is already showing a fallback
-      // Special path for hydration
       var _dehydrated = prevState.dehydrated;
 
       if (_dehydrated !== null) {
-        if (!didSuspend) {
-          return updateDehydratedSuspenseComponent(current, workInProgress, _dehydrated, prevState, renderLanes);
-        } else if (workInProgress.flags & ForceClientRender) {
-          // Something errored during hydration. Try again without hydrating.
-          workInProgress.flags &= ~ForceClientRender;
-          return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, new Error('There was an error while hydrating this Suspense boundary. ' + 'Switched to client rendering.'));
-        } else if (workInProgress.memoizedState !== null) {
-          // Something suspended and we should still be in dehydrated mode.
-          // Leave the existing child in place.
-          workInProgress.child = current.child; // The dehydrated completion pass expects this flag to be there
-          // but the normal suspense pass doesn't.
-
-          workInProgress.flags |= DidCapture;
-          return null;
-        } else {
-          // Suspended but we should no longer be in dehydrated mode.
-          // Therefore we now have to render the fallback.
-          var _nextPrimaryChildren = nextProps.children;
-          var _nextFallbackChildren = nextProps.fallback;
-          var fallbackChildFragment = mountSuspenseFallbackAfterRetryWithoutHydrating(current, workInProgress, _nextPrimaryChildren, _nextFallbackChildren, renderLanes);
-          var _primaryChildFragment2 = workInProgress.child;
-          _primaryChildFragment2.memoizedState = mountSuspenseOffscreenState(renderLanes);
-          workInProgress.memoizedState = SUSPENDED_MARKER;
-          return fallbackChildFragment;
-        }
+        return updateDehydratedSuspenseComponent(current, workInProgress, didSuspend, nextProps, _dehydrated, prevState, renderLanes);
       }
+    }
 
-      if (showFallback) {
-        var _nextFallbackChildren2 = nextProps.fallback;
-        var _nextPrimaryChildren2 = nextProps.children;
+    if (showFallback) {
+      var _nextFallbackChildren = nextProps.fallback;
+      var _nextPrimaryChildren = nextProps.children;
+      var fallbackChildFragment = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren, _nextFallbackChildren, renderLanes);
+      var _primaryChildFragment2 = workInProgress.child;
+      var prevOffscreenState = current.child.memoizedState;
+      _primaryChildFragment2.memoizedState = prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
 
-        var _fallbackChildFragment = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren2, _nextFallbackChildren2, renderLanes);
-
-        var _primaryChildFragment3 = workInProgress.child;
-        var prevOffscreenState = current.child.memoizedState;
-        _primaryChildFragment3.memoizedState = prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(prevOffscreenState, renderLanes);
-
-        _primaryChildFragment3.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
-        workInProgress.memoizedState = SUSPENDED_MARKER;
-        return _fallbackChildFragment;
-      } else {
-        var _nextPrimaryChildren3 = nextProps.children;
-
-        var _primaryChildFragment4 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren3, renderLanes);
-
-        workInProgress.memoizedState = null;
-        return _primaryChildFragment4;
-      }
+      _primaryChildFragment2.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
+      workInProgress.memoizedState = SUSPENDED_MARKER;
+      return fallbackChildFragment;
     } else {
-      // The current tree is not already showing a fallback.
-      if (showFallback) {
-        // Timed out.
-        var _nextFallbackChildren3 = nextProps.fallback;
-        var _nextPrimaryChildren4 = nextProps.children;
+      var _nextPrimaryChildren2 = nextProps.children;
 
-        var _fallbackChildFragment2 = updateSuspenseFallbackChildren(current, workInProgress, _nextPrimaryChildren4, _nextFallbackChildren3, renderLanes);
+      var _primaryChildFragment3 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren2, renderLanes);
 
-        var _primaryChildFragment5 = workInProgress.child;
-        var _prevOffscreenState = current.child.memoizedState;
-        _primaryChildFragment5.memoizedState = _prevOffscreenState === null ? mountSuspenseOffscreenState(renderLanes) : updateSuspenseOffscreenState(_prevOffscreenState, renderLanes);
-        _primaryChildFragment5.childLanes = getRemainingWorkInPrimaryTree(current, renderLanes);
-        // fallback children.
-
-
-        workInProgress.memoizedState = SUSPENDED_MARKER;
-        return _fallbackChildFragment2;
-      } else {
-        // Still haven't timed out. Continue rendering the children, like we
-        // normally do.
-        var _nextPrimaryChildren5 = nextProps.children;
-
-        var _primaryChildFragment6 = updateSuspensePrimaryChildren(current, workInProgress, _nextPrimaryChildren5, renderLanes);
-
-        workInProgress.memoizedState = null;
-        return _primaryChildFragment6;
-      }
+      workInProgress.memoizedState = null;
+      return _primaryChildFragment3;
     }
   }
 }
@@ -23538,17 +22643,16 @@ function updateSuspenseFallbackChildren(current, workInProgress, primaryChildren
       primaryChildFragment.actualStartTime = -1;
       primaryChildFragment.selfBaseDuration = currentPrimaryChildFragment.selfBaseDuration;
       primaryChildFragment.treeBaseDuration = currentPrimaryChildFragment.treeBaseDuration;
-    }
+    } // The fallback fiber was added as a deletion during the first pass.
     // However, since we're going to remain on the fallback, we no longer want
     // to delete it.
 
 
     workInProgress.deletions = null;
   } else {
-    primaryChildFragment = updateWorkInProgressOffscreenFiber(currentPrimaryChildFragment, primaryChildProps);
+    primaryChildFragment = updateWorkInProgressOffscreenFiber(currentPrimaryChildFragment, primaryChildProps); // Since we're reusing a current tree, we need to reuse the flags, too.
     // (We don't do this in legacy mode, because in legacy mode we don't re-use
     // the current tree; see previous branch.)
-
 
     primaryChildFragment.subtreeFlags = currentPrimaryChildFragment.subtreeFlags & StaticMask;
   }
@@ -23652,89 +22756,141 @@ function mountDehydratedSuspenseComponent(workInProgress, suspenseInstance, rend
   return null;
 }
 
-function updateDehydratedSuspenseComponent(current, workInProgress, suspenseInstance, suspenseState, renderLanes) {
-  // We should never be hydrating at this point because it is the first pass,
-  // but after we've already committed once.
-  warnIfHydrating();
+function updateDehydratedSuspenseComponent(current, workInProgress, didSuspend, nextProps, suspenseInstance, suspenseState, renderLanes) {
+  if (!didSuspend) {
+    // This is the first render pass. Attempt to hydrate.
+    // We should never be hydrating at this point because it is the first pass,
+    // but after we've already committed once.
+    warnIfHydrating();
 
-  if ((workInProgress.mode & ConcurrentMode) === NoMode) {
-    return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // TODO: When we delete legacy mode, we should make this error argument
-    // required — every concurrent mode path that causes hydration to
-    // de-opt to client rendering should have an error message.
-    null);
-  }
+    if ((workInProgress.mode & ConcurrentMode) === NoMode) {
+      return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // TODO: When we delete legacy mode, we should make this error argument
+      // required — every concurrent mode path that causes hydration to
+      // de-opt to client rendering should have an error message.
+      null);
+    }
 
-  if (isSuspenseInstanceFallback(suspenseInstance)) {
-    // This boundary is in a permanent fallback state. In this case, we'll never
-    // get an update and we'll never be able to hydrate the final content. Let's just try the
-    // client side render instead.
-    return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, // TODO: The server should serialize the error message so we can log it
-    // here on the client. Or, in production, a hash/id that corresponds to
-    // the error.
-    new Error('The server could not finish this Suspense boundary, likely ' + 'due to an error during server rendering. Switched to ' + 'client rendering.'));
-  }
-  // any context has changed, we need to treat is as if the input might have changed.
+    if (isSuspenseInstanceFallback(suspenseInstance)) {
+      // This boundary is in a permanent fallback state. In this case, we'll never
+      // get an update and we'll never be able to hydrate the final content. Let's just try the
+      // client side render instead.
+      var digest, message, stack;
 
+      {
+        var _getSuspenseInstanceF = getSuspenseInstanceFallbackErrorDetails(suspenseInstance);
 
-  var hasContextChanged = includesSomeLane(renderLanes, current.childLanes);
-
-  if (didReceiveUpdate || hasContextChanged) {
-    // This boundary has changed since the first render. This means that we are now unable to
-    // hydrate it. We might still be able to hydrate it using a higher priority lane.
-    var root = getWorkInProgressRoot();
-
-    if (root !== null) {
-      var attemptHydrationAtLane = getBumpedLaneForHydration(root, renderLanes);
-
-      if (attemptHydrationAtLane !== NoLane && attemptHydrationAtLane !== suspenseState.retryLane) {
-        // Intentionally mutating since this render will get interrupted. This
-        // is one of the very rare times where we mutate the current tree
-        // during the render phase.
-        suspenseState.retryLane = attemptHydrationAtLane; // TODO: Ideally this would inherit the event time of the current render
-
-        var eventTime = NoTimestamp;
-        scheduleUpdateOnFiber(current, attemptHydrationAtLane, eventTime);
+        digest = _getSuspenseInstanceF.digest;
+        message = _getSuspenseInstanceF.message;
+        stack = _getSuspenseInstanceF.stack;
       }
-    } // If we have scheduled higher pri work above, this will probably just abort the render
-    // since we now have higher priority work, but in case it doesn't, we need to prepare to
-    // render something, if we time out. Even if that requires us to delete everything and
-    // skip hydration.
-    // Delay having to do this as long as the suspense timeout allows us.
+
+      var error;
+
+      if (message) {
+        // eslint-disable-next-line react-internal/prod-error-codes
+        error = new Error(message);
+      } else {
+        error = new Error('The server could not finish this Suspense boundary, likely ' + 'due to an error during server rendering. Switched to ' + 'client rendering.');
+      }
+
+      var capturedValue = createCapturedValue(error, digest, stack);
+      return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, capturedValue);
+    }
+    // any context has changed, we need to treat is as if the input might have changed.
 
 
-    renderDidSuspendDelayIfPossible();
-    return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, new Error('This Suspense boundary received an update before it finished ' + 'hydrating. This caused the boundary to switch to client rendering. ' + 'The usual way to fix this is to wrap the original update ' + 'in startTransition.'));
-  } else if (isSuspenseInstancePending(suspenseInstance)) {
-    // This component is still pending more data from the server, so we can't hydrate its
-    // content. We treat it as if this component suspended itself. It might seem as if
-    // we could just try to render it client-side instead. However, this will perform a
-    // lot of unnecessary work and is unlikely to complete since it often will suspend
-    // on missing data anyway. Additionally, the server might be able to render more
-    // than we can on the client yet. In that case we'd end up with more fallback states
-    // on the client than if we just leave it alone. If the server times out or errors
-    // these should update this boundary to the permanent Fallback state instead.
-    // Mark it as having captured (i.e. suspended).
-    workInProgress.flags |= DidCapture; // Leave the child in place. I.e. the dehydrated fragment.
+    var hasContextChanged = includesSomeLane(renderLanes, current.childLanes);
 
-    workInProgress.child = current.child; // Register a callback to retry this boundary once the server has sent the result.
+    if (didReceiveUpdate || hasContextChanged) {
+      // This boundary has changed since the first render. This means that we are now unable to
+      // hydrate it. We might still be able to hydrate it using a higher priority lane.
+      var root = getWorkInProgressRoot();
 
-    var retry = retryDehydratedSuspenseBoundary.bind(null, current);
-    registerSuspenseInstanceRetry(suspenseInstance, retry);
-    return null;
+      if (root !== null) {
+        var attemptHydrationAtLane = getBumpedLaneForHydration(root, renderLanes);
+
+        if (attemptHydrationAtLane !== NoLane && attemptHydrationAtLane !== suspenseState.retryLane) {
+          // Intentionally mutating since this render will get interrupted. This
+          // is one of the very rare times where we mutate the current tree
+          // during the render phase.
+          suspenseState.retryLane = attemptHydrationAtLane; // TODO: Ideally this would inherit the event time of the current render
+
+          var eventTime = NoTimestamp;
+          enqueueConcurrentRenderForLane(current, attemptHydrationAtLane);
+          scheduleUpdateOnFiber(root, current, attemptHydrationAtLane, eventTime);
+        }
+      } // If we have scheduled higher pri work above, this will probably just abort the render
+      // since we now have higher priority work, but in case it doesn't, we need to prepare to
+      // render something, if we time out. Even if that requires us to delete everything and
+      // skip hydration.
+      // Delay having to do this as long as the suspense timeout allows us.
+
+
+      renderDidSuspendDelayIfPossible();
+
+      var _capturedValue = createCapturedValue(new Error('This Suspense boundary received an update before it finished ' + 'hydrating. This caused the boundary to switch to client rendering. ' + 'The usual way to fix this is to wrap the original update ' + 'in startTransition.'));
+
+      return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, _capturedValue);
+    } else if (isSuspenseInstancePending(suspenseInstance)) {
+      // This component is still pending more data from the server, so we can't hydrate its
+      // content. We treat it as if this component suspended itself. It might seem as if
+      // we could just try to render it client-side instead. However, this will perform a
+      // lot of unnecessary work and is unlikely to complete since it often will suspend
+      // on missing data anyway. Additionally, the server might be able to render more
+      // than we can on the client yet. In that case we'd end up with more fallback states
+      // on the client than if we just leave it alone. If the server times out or errors
+      // these should update this boundary to the permanent Fallback state instead.
+      // Mark it as having captured (i.e. suspended).
+      workInProgress.flags |= DidCapture; // Leave the child in place. I.e. the dehydrated fragment.
+
+      workInProgress.child = current.child; // Register a callback to retry this boundary once the server has sent the result.
+
+      var retry = retryDehydratedSuspenseBoundary.bind(null, current);
+      registerSuspenseInstanceRetry(suspenseInstance, retry);
+      return null;
+    } else {
+      // This is the first attempt.
+      reenterHydrationStateFromDehydratedSuspenseInstance(workInProgress, suspenseInstance, suspenseState.treeContext);
+      var primaryChildren = nextProps.children;
+      var primaryChildFragment = mountSuspensePrimaryChildren(workInProgress, primaryChildren); // Mark the children as hydrating. This is a fast path to know whether this
+      // tree is part of a hydrating tree. This is used to determine if a child
+      // node has fully mounted yet, and for scheduling event replaying.
+      // Conceptually this is similar to Placement in that a new subtree is
+      // inserted into the React tree here. It just happens to not need DOM
+      // mutations because it already exists.
+
+      primaryChildFragment.flags |= Hydrating;
+      return primaryChildFragment;
+    }
   } else {
-    // This is the first attempt.
-    reenterHydrationStateFromDehydratedSuspenseInstance(workInProgress, suspenseInstance, suspenseState.treeContext);
-    var nextProps = workInProgress.pendingProps;
-    var primaryChildren = nextProps.children;
-    var primaryChildFragment = mountSuspensePrimaryChildren(workInProgress, primaryChildren); // Mark the children as hydrating. This is a fast path to know whether this
-    // tree is part of a hydrating tree. This is used to determine if a child
-    // node has fully mounted yet, and for scheduling event replaying.
-    // Conceptually this is similar to Placement in that a new subtree is
-    // inserted into the React tree here. It just happens to not need DOM
-    // mutations because it already exists.
+    // This is the second render pass. We already attempted to hydrated, but
+    // something either suspended or errored.
+    if (workInProgress.flags & ForceClientRender) {
+      // Something errored during hydration. Try again without hydrating.
+      workInProgress.flags &= ~ForceClientRender;
 
-    primaryChildFragment.flags |= Hydrating;
-    return primaryChildFragment;
+      var _capturedValue2 = createCapturedValue(new Error('There was an error while hydrating this Suspense boundary. ' + 'Switched to client rendering.'));
+
+      return retrySuspenseComponentWithoutHydrating(current, workInProgress, renderLanes, _capturedValue2);
+    } else if (workInProgress.memoizedState !== null) {
+      // Something suspended and we should still be in dehydrated mode.
+      // Leave the existing child in place.
+      workInProgress.child = current.child; // The dehydrated completion pass expects this flag to be there
+      // but the normal suspense pass doesn't.
+
+      workInProgress.flags |= DidCapture;
+      return null;
+    } else {
+      // Suspended but we should no longer be in dehydrated mode.
+      // Therefore we now have to render the fallback.
+      var nextPrimaryChildren = nextProps.children;
+      var nextFallbackChildren = nextProps.fallback;
+      var fallbackChildFragment = mountSuspenseFallbackAfterRetryWithoutHydrating(current, workInProgress, nextPrimaryChildren, nextFallbackChildren, renderLanes);
+      var _primaryChildFragment4 = workInProgress.child;
+      _primaryChildFragment4.memoizedState = mountSuspenseOffscreenState(renderLanes);
+      workInProgress.memoizedState = SUSPENDED_MARKER;
+      return fallbackChildFragment;
+    }
   }
 }
 
@@ -24195,6 +23351,21 @@ function markWorkInProgressReceivedUpdate() {
   didReceiveUpdate = true;
 }
 
+function resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress) {
+  if ((workInProgress.mode & ConcurrentMode) === NoMode) {
+    if (current !== null) {
+      // A lazy component only mounts if it suspended inside a non-
+      // concurrent tree, in an inconsistent state. We want to treat it like
+      // a new mount, even though an empty version of it already committed.
+      // Disconnect the alternate pointers.
+      current.alternate = null;
+      workInProgress.alternate = null; // Since this is conceptually a new fiber, schedule a Placement effect
+
+      workInProgress.flags |= Placement;
+    }
+  }
+}
+
 function bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes) {
   if (current !== null) {
     // Reuse previous dependencies
@@ -24573,10 +23744,10 @@ function beginWork(current, workInProgress, renderLanes) {
       return updateHostRoot(current, workInProgress, renderLanes);
 
     case HostComponent:
-      return updateHostComponent$1(current, workInProgress, renderLanes);
+      return updateHostComponent(current, workInProgress, renderLanes);
 
     case HostText:
-      return updateHostText$1(current, workInProgress);
+      return updateHostText(current, workInProgress);
 
     case SuspenseComponent:
       return updateSuspenseComponent(current, workInProgress, renderLanes);
@@ -24660,6 +23831,936 @@ function beginWork(current, workInProgress, renderLanes) {
     case OffscreenComponent:
       {
         return updateOffscreenComponent(current, workInProgress, renderLanes);
+      }
+  }
+
+  throw new Error("Unknown unit of work tag (" + workInProgress.tag + "). This error is likely caused by a bug in " + 'React. Please file an issue.');
+}
+
+function markUpdate(workInProgress) {
+  // Tag the fiber with an update effect. This turns a Placement into
+  // a PlacementAndUpdate.
+  workInProgress.flags |= Update;
+}
+
+function markRef$1(workInProgress) {
+  workInProgress.flags |= Ref;
+
+  {
+    workInProgress.flags |= RefStatic;
+  }
+}
+
+var appendAllChildren;
+var updateHostContainer;
+var updateHostComponent$1;
+var updateHostText$1;
+
+{
+  // Mutation mode
+  appendAllChildren = function (parent, workInProgress, needsVisibilityToggle, isHidden) {
+    // We only have the top Fiber that was created but we need recurse down its
+    // children to find all the terminal nodes.
+    var node = workInProgress.child;
+
+    while (node !== null) {
+      if (node.tag === HostComponent || node.tag === HostText) {
+        appendInitialChild(parent, node.stateNode);
+      } else if (node.tag === HostPortal) ; else if (node.child !== null) {
+        node.child.return = node;
+        node = node.child;
+        continue;
+      }
+
+      if (node === workInProgress) {
+        return;
+      }
+
+      while (node.sibling === null) {
+        if (node.return === null || node.return === workInProgress) {
+          return;
+        }
+
+        node = node.return;
+      }
+
+      node.sibling.return = node.return;
+      node = node.sibling;
+    }
+  };
+
+  updateHostContainer = function (current, workInProgress) {// Noop
+  };
+
+  updateHostComponent$1 = function (current, workInProgress, type, newProps, rootContainerInstance) {
+    // If we have an alternate, that means this is an update and we need to
+    // schedule a side-effect to do the updates.
+    var oldProps = current.memoizedProps;
+
+    if (oldProps === newProps) {
+      // In mutation mode, this is sufficient for a bailout because
+      // we won't touch this node even if children changed.
+      return;
+    } // If we get updated because one of our children updated, we don't
+    // have newProps so we'll have to reuse them.
+    // TODO: Split the update API as separate for the props vs. children.
+    // Even better would be if children weren't special cased at all tho.
+
+
+    var instance = workInProgress.stateNode;
+    var currentHostContext = getHostContext(); // TODO: Experiencing an error where oldProps is null. Suggests a host
+    // component is hitting the resume path. Figure out why. Possibly
+    // related to `hidden`.
+
+    var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext); // TODO: Type this specific to this type of component.
+
+    workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
+    // is a new ref we mark this as an update. All the work is done in commitWork.
+
+    if (updatePayload) {
+      markUpdate(workInProgress);
+    }
+  };
+
+  updateHostText$1 = function (current, workInProgress, oldText, newText) {
+    // If the text differs, mark it as an update. All the work in done in commitWork.
+    if (oldText !== newText) {
+      markUpdate(workInProgress);
+    }
+  };
+}
+
+function cutOffTailIfNeeded(renderState, hasRenderedATailFallback) {
+  if (getIsHydrating()) {
+    // If we're hydrating, we should consume as many items as we can
+    // so we don't leave any behind.
+    return;
+  }
+
+  switch (renderState.tailMode) {
+    case 'hidden':
+      {
+        // Any insertions at the end of the tail list after this point
+        // should be invisible. If there are already mounted boundaries
+        // anything before them are not considered for collapsing.
+        // Therefore we need to go through the whole tail to find if
+        // there are any.
+        var tailNode = renderState.tail;
+        var lastTailNode = null;
+
+        while (tailNode !== null) {
+          if (tailNode.alternate !== null) {
+            lastTailNode = tailNode;
+          }
+
+          tailNode = tailNode.sibling;
+        } // Next we're simply going to delete all insertions after the
+        // last rendered item.
+
+
+        if (lastTailNode === null) {
+          // All remaining items in the tail are insertions.
+          renderState.tail = null;
+        } else {
+          // Detach the insertion after the last node that was already
+          // inserted.
+          lastTailNode.sibling = null;
+        }
+
+        break;
+      }
+
+    case 'collapsed':
+      {
+        // Any insertions at the end of the tail list after this point
+        // should be invisible. If there are already mounted boundaries
+        // anything before them are not considered for collapsing.
+        // Therefore we need to go through the whole tail to find if
+        // there are any.
+        var _tailNode = renderState.tail;
+        var _lastTailNode = null;
+
+        while (_tailNode !== null) {
+          if (_tailNode.alternate !== null) {
+            _lastTailNode = _tailNode;
+          }
+
+          _tailNode = _tailNode.sibling;
+        } // Next we're simply going to delete all insertions after the
+        // last rendered item.
+
+
+        if (_lastTailNode === null) {
+          // All remaining items in the tail are insertions.
+          if (!hasRenderedATailFallback && renderState.tail !== null) {
+            // We suspended during the head. We want to show at least one
+            // row at the tail. So we'll keep on and cut off the rest.
+            renderState.tail.sibling = null;
+          } else {
+            renderState.tail = null;
+          }
+        } else {
+          // Detach the insertion after the last node that was already
+          // inserted.
+          _lastTailNode.sibling = null;
+        }
+
+        break;
+      }
+  }
+}
+
+function bubbleProperties(completedWork) {
+  var didBailout = completedWork.alternate !== null && completedWork.alternate.child === completedWork.child;
+  var newChildLanes = NoLanes;
+  var subtreeFlags = NoFlags;
+
+  if (!didBailout) {
+    // Bubble up the earliest expiration time.
+    if ( (completedWork.mode & ProfileMode) !== NoMode) {
+      // In profiling mode, resetChildExpirationTime is also used to reset
+      // profiler durations.
+      var actualDuration = completedWork.actualDuration;
+      var treeBaseDuration = completedWork.selfBaseDuration;
+      var child = completedWork.child;
+
+      while (child !== null) {
+        newChildLanes = mergeLanes(newChildLanes, mergeLanes(child.lanes, child.childLanes));
+        subtreeFlags |= child.subtreeFlags;
+        subtreeFlags |= child.flags; // When a fiber is cloned, its actualDuration is reset to 0. This value will
+        // only be updated if work is done on the fiber (i.e. it doesn't bailout).
+        // When work is done, it should bubble to the parent's actualDuration. If
+        // the fiber has not been cloned though, (meaning no work was done), then
+        // this value will reflect the amount of time spent working on a previous
+        // render. In that case it should not bubble. We determine whether it was
+        // cloned by comparing the child pointer.
+
+        actualDuration += child.actualDuration;
+        treeBaseDuration += child.treeBaseDuration;
+        child = child.sibling;
+      }
+
+      completedWork.actualDuration = actualDuration;
+      completedWork.treeBaseDuration = treeBaseDuration;
+    } else {
+      var _child = completedWork.child;
+
+      while (_child !== null) {
+        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child.lanes, _child.childLanes));
+        subtreeFlags |= _child.subtreeFlags;
+        subtreeFlags |= _child.flags; // Update the return pointer so the tree is consistent. This is a code
+        // smell because it assumes the commit phase is never concurrent with
+        // the render phase. Will address during refactor to alternate model.
+
+        _child.return = completedWork;
+        _child = _child.sibling;
+      }
+    }
+
+    completedWork.subtreeFlags |= subtreeFlags;
+  } else {
+    // Bubble up the earliest expiration time.
+    if ( (completedWork.mode & ProfileMode) !== NoMode) {
+      // In profiling mode, resetChildExpirationTime is also used to reset
+      // profiler durations.
+      var _treeBaseDuration = completedWork.selfBaseDuration;
+      var _child2 = completedWork.child;
+
+      while (_child2 !== null) {
+        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child2.lanes, _child2.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
+        // so we should bubble those up even during a bailout. All the other
+        // flags have a lifetime only of a single render + commit, so we should
+        // ignore them.
+
+        subtreeFlags |= _child2.subtreeFlags & StaticMask;
+        subtreeFlags |= _child2.flags & StaticMask;
+        _treeBaseDuration += _child2.treeBaseDuration;
+        _child2 = _child2.sibling;
+      }
+
+      completedWork.treeBaseDuration = _treeBaseDuration;
+    } else {
+      var _child3 = completedWork.child;
+
+      while (_child3 !== null) {
+        newChildLanes = mergeLanes(newChildLanes, mergeLanes(_child3.lanes, _child3.childLanes)); // "Static" flags share the lifetime of the fiber/hook they belong to,
+        // so we should bubble those up even during a bailout. All the other
+        // flags have a lifetime only of a single render + commit, so we should
+        // ignore them.
+
+        subtreeFlags |= _child3.subtreeFlags & StaticMask;
+        subtreeFlags |= _child3.flags & StaticMask; // Update the return pointer so the tree is consistent. This is a code
+        // smell because it assumes the commit phase is never concurrent with
+        // the render phase. Will address during refactor to alternate model.
+
+        _child3.return = completedWork;
+        _child3 = _child3.sibling;
+      }
+    }
+
+    completedWork.subtreeFlags |= subtreeFlags;
+  }
+
+  completedWork.childLanes = newChildLanes;
+  return didBailout;
+}
+
+function completeDehydratedSuspenseBoundary(current, workInProgress, nextState) {
+  if (hasUnhydratedTailNodes() && (workInProgress.mode & ConcurrentMode) !== NoMode && (workInProgress.flags & DidCapture) === NoFlags) {
+    warnIfUnhydratedTailNodes(workInProgress);
+    resetHydrationState();
+    workInProgress.flags |= ForceClientRender | Incomplete | ShouldCapture;
+    return false;
+  }
+
+  var wasHydrated = popHydrationState(workInProgress);
+
+  if (nextState !== null && nextState.dehydrated !== null) {
+    // We might be inside a hydration state the first time we're picking up this
+    // Suspense boundary, and also after we've reentered it for further hydration.
+    if (current === null) {
+      if (!wasHydrated) {
+        throw new Error('A dehydrated suspense component was completed without a hydrated node. ' + 'This is probably a bug in React.');
+      }
+
+      prepareToHydrateHostSuspenseInstance(workInProgress);
+      bubbleProperties(workInProgress);
+
+      {
+        if ((workInProgress.mode & ProfileMode) !== NoMode) {
+          var isTimedOutSuspense = nextState !== null;
+
+          if (isTimedOutSuspense) {
+            // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+            var primaryChildFragment = workInProgress.child;
+
+            if (primaryChildFragment !== null) {
+              // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+              workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
+            }
+          }
+        }
+      }
+
+      return false;
+    } else {
+      // We might have reentered this boundary to hydrate it. If so, we need to reset the hydration
+      // state since we're now exiting out of it. popHydrationState doesn't do that for us.
+      resetHydrationState();
+
+      if ((workInProgress.flags & DidCapture) === NoFlags) {
+        // This boundary did not suspend so it's now hydrated and unsuspended.
+        workInProgress.memoizedState = null;
+      } // If nothing suspended, we need to schedule an effect to mark this boundary
+      // as having hydrated so events know that they're free to be invoked.
+      // It's also a signal to replay events and the suspense callback.
+      // If something suspended, schedule an effect to attach retry listeners.
+      // So we might as well always mark this.
+
+
+      workInProgress.flags |= Update;
+      bubbleProperties(workInProgress);
+
+      {
+        if ((workInProgress.mode & ProfileMode) !== NoMode) {
+          var _isTimedOutSuspense = nextState !== null;
+
+          if (_isTimedOutSuspense) {
+            // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+            var _primaryChildFragment = workInProgress.child;
+
+            if (_primaryChildFragment !== null) {
+              // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+              workInProgress.treeBaseDuration -= _primaryChildFragment.treeBaseDuration;
+            }
+          }
+        }
+      }
+
+      return false;
+    }
+  } else {
+    // Successfully completed this tree. If this was a forced client render,
+    // there may have been recoverable errors during first hydration
+    // attempt. If so, add them to a queue so we can log them in the
+    // commit phase.
+    upgradeHydrationErrorsToRecoverable(); // Fall through to normal Suspense path
+
+    return true;
+  }
+}
+
+function completeWork(current, workInProgress, renderLanes) {
+  var newProps = workInProgress.pendingProps; // Note: This intentionally doesn't check if we're hydrating because comparing
+  // to the current tree provider fiber is just as fast and less error-prone.
+  // Ideally we would have a special version of the work loop only
+  // for hydration.
+
+  popTreeContext(workInProgress);
+
+  switch (workInProgress.tag) {
+    case IndeterminateComponent:
+    case LazyComponent:
+    case SimpleMemoComponent:
+    case FunctionComponent:
+    case ForwardRef:
+    case Fragment:
+    case Mode:
+    case Profiler:
+    case ContextConsumer:
+    case MemoComponent:
+      bubbleProperties(workInProgress);
+      return null;
+
+    case ClassComponent:
+      {
+        var Component = workInProgress.type;
+
+        if (isContextProvider(Component)) {
+          popContext(workInProgress);
+        }
+
+        bubbleProperties(workInProgress);
+        return null;
+      }
+
+    case HostRoot:
+      {
+        var fiberRoot = workInProgress.stateNode;
+        popHostContainer(workInProgress);
+        popTopLevelContextObject(workInProgress);
+        resetWorkInProgressVersions();
+
+        if (fiberRoot.pendingContext) {
+          fiberRoot.context = fiberRoot.pendingContext;
+          fiberRoot.pendingContext = null;
+        }
+
+        if (current === null || current.child === null) {
+          // If we hydrated, pop so that we can delete any remaining children
+          // that weren't hydrated.
+          var wasHydrated = popHydrationState(workInProgress);
+
+          if (wasHydrated) {
+            // If we hydrated, then we'll need to schedule an update for
+            // the commit side-effects on the root.
+            markUpdate(workInProgress);
+          } else {
+            if (current !== null) {
+              var prevState = current.memoizedState;
+
+              if ( // Check if this is a client root
+              !prevState.isDehydrated || // Check if we reverted to client rendering (e.g. due to an error)
+              (workInProgress.flags & ForceClientRender) !== NoFlags) {
+                // Schedule an effect to clear this container at the start of the
+                // next commit. This handles the case of React rendering into a
+                // container with previous children. It's also safe to do for
+                // updates too, because current.child would only be null if the
+                // previous render was null (so the container would already
+                // be empty).
+                workInProgress.flags |= Snapshot; // If this was a forced client render, there may have been
+                // recoverable errors during first hydration attempt. If so, add
+                // them to a queue so we can log them in the commit phase.
+
+                upgradeHydrationErrorsToRecoverable();
+              }
+            }
+          }
+        }
+
+        updateHostContainer(current, workInProgress);
+        bubbleProperties(workInProgress);
+
+        return null;
+      }
+
+    case HostComponent:
+      {
+        popHostContext(workInProgress);
+        var rootContainerInstance = getRootHostContainer();
+        var type = workInProgress.type;
+
+        if (current !== null && workInProgress.stateNode != null) {
+          updateHostComponent$1(current, workInProgress, type, newProps, rootContainerInstance);
+
+          if (current.ref !== workInProgress.ref) {
+            markRef$1(workInProgress);
+          }
+        } else {
+          if (!newProps) {
+            if (workInProgress.stateNode === null) {
+              throw new Error('We must have new props for new mounts. This error is likely ' + 'caused by a bug in React. Please file an issue.');
+            } // This can happen when we abort work.
+
+
+            bubbleProperties(workInProgress);
+            return null;
+          }
+
+          var currentHostContext = getHostContext(); // TODO: Move createInstance to beginWork and keep it on a context
+          // "stack" as the parent. Then append children as we go in beginWork
+          // or completeWork depending on whether we want to add them top->down or
+          // bottom->up. Top->down is faster in IE11.
+
+          var _wasHydrated = popHydrationState(workInProgress);
+
+          if (_wasHydrated) {
+            // TODO: Move this and createInstance step into the beginPhase
+            // to consolidate.
+            if (prepareToHydrateHostInstance(workInProgress, rootContainerInstance, currentHostContext)) {
+              // If changes to the hydrated node need to be applied at the
+              // commit-phase we mark this as such.
+              markUpdate(workInProgress);
+            }
+          } else {
+            var instance = createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress);
+            appendAllChildren(instance, workInProgress, false, false);
+            workInProgress.stateNode = instance; // Certain renderers require commit-time effects for initial mount.
+            // (eg DOM renderer supports auto-focus for certain elements).
+            // Make sure such renderers get scheduled for later work.
+
+            if (finalizeInitialChildren(instance, type, newProps, rootContainerInstance)) {
+              markUpdate(workInProgress);
+            }
+          }
+
+          if (workInProgress.ref !== null) {
+            // If there is a ref on a host node we need to schedule a callback
+            markRef$1(workInProgress);
+          }
+        }
+
+        bubbleProperties(workInProgress);
+        return null;
+      }
+
+    case HostText:
+      {
+        var newText = newProps;
+
+        if (current && workInProgress.stateNode != null) {
+          var oldText = current.memoizedProps; // If we have an alternate, that means this is an update and we need
+          // to schedule a side-effect to do the updates.
+
+          updateHostText$1(current, workInProgress, oldText, newText);
+        } else {
+          if (typeof newText !== 'string') {
+            if (workInProgress.stateNode === null) {
+              throw new Error('We must have new props for new mounts. This error is likely ' + 'caused by a bug in React. Please file an issue.');
+            } // This can happen when we abort work.
+
+          }
+
+          var _rootContainerInstance = getRootHostContainer();
+
+          var _currentHostContext = getHostContext();
+
+          var _wasHydrated2 = popHydrationState(workInProgress);
+
+          if (_wasHydrated2) {
+            if (prepareToHydrateHostTextInstance(workInProgress)) {
+              markUpdate(workInProgress);
+            }
+          } else {
+            workInProgress.stateNode = createTextInstance(newText, _rootContainerInstance, _currentHostContext, workInProgress);
+          }
+        }
+
+        bubbleProperties(workInProgress);
+        return null;
+      }
+
+    case SuspenseComponent:
+      {
+        popSuspenseContext(workInProgress);
+        var nextState = workInProgress.memoizedState; // Special path for dehydrated boundaries. We may eventually move this
+        // to its own fiber type so that we can add other kinds of hydration
+        // boundaries that aren't associated with a Suspense tree. In anticipation
+        // of such a refactor, all the hydration logic is contained in
+        // this branch.
+
+        if (current === null || current.memoizedState !== null && current.memoizedState.dehydrated !== null) {
+          var fallthroughToNormalSuspensePath = completeDehydratedSuspenseBoundary(current, workInProgress, nextState);
+
+          if (!fallthroughToNormalSuspensePath) {
+            if (workInProgress.flags & ShouldCapture) {
+              // Special case. There were remaining unhydrated nodes. We treat
+              // this as a mismatch. Revert to client rendering.
+              return workInProgress;
+            } else {
+              // Did not finish hydrating, either because this is the initial
+              // render or because something suspended.
+              return null;
+            }
+          } // Continue with the normal Suspense path.
+
+        }
+
+        if ((workInProgress.flags & DidCapture) !== NoFlags) {
+          // Something suspended. Re-render with the fallback children.
+          workInProgress.lanes = renderLanes; // Do not reset the effect list.
+
+          if ( (workInProgress.mode & ProfileMode) !== NoMode) {
+            transferActualDuration(workInProgress);
+          } // Don't bubble properties in this case.
+
+
+          return workInProgress;
+        }
+
+        var nextDidTimeout = nextState !== null;
+        var prevDidTimeout = current !== null && current.memoizedState !== null;
+        // a passive effect, which is when we process the transitions
+
+
+        if (nextDidTimeout !== prevDidTimeout) {
+          // an effect to toggle the subtree's visibility. When we switch from
+          // fallback -> primary, the inner Offscreen fiber schedules this effect
+          // as part of its normal complete phase. But when we switch from
+          // primary -> fallback, the inner Offscreen fiber does not have a complete
+          // phase. So we need to schedule its effect here.
+          //
+          // We also use this flag to connect/disconnect the effects, but the same
+          // logic applies: when re-connecting, the Offscreen fiber's complete
+          // phase will handle scheduling the effect. It's only when the fallback
+          // is active that we have to do anything special.
+
+
+          if (nextDidTimeout) {
+            var _offscreenFiber2 = workInProgress.child;
+            _offscreenFiber2.flags |= Visibility; // TODO: This will still suspend a synchronous tree if anything
+            // in the concurrent tree already suspended during this render.
+            // This is a known bug.
+
+            if ((workInProgress.mode & ConcurrentMode) !== NoMode) {
+              // TODO: Move this back to throwException because this is too late
+              // if this is a large tree which is common for initial loads. We
+              // don't know if we should restart a render or not until we get
+              // this marker, and this is too late.
+              // If this render already had a ping or lower pri updates,
+              // and this is the first time we know we're going to suspend we
+              // should be able to immediately restart from within throwException.
+              var hasInvisibleChildContext = current === null && (workInProgress.memoizedProps.unstable_avoidThisFallback !== true || !enableSuspenseAvoidThisFallback);
+
+              if (hasInvisibleChildContext || hasSuspenseContext(suspenseStackCursor.current, InvisibleParentSuspenseContext)) {
+                // If this was in an invisible tree or a new render, then showing
+                // this boundary is ok.
+                renderDidSuspend();
+              } else {
+                // Otherwise, we're going to have to hide content so we should
+                // suspend for longer if possible.
+                renderDidSuspendDelayIfPossible();
+              }
+            }
+          }
+        }
+
+        var wakeables = workInProgress.updateQueue;
+
+        if (wakeables !== null) {
+          // Schedule an effect to attach a retry listener to the promise.
+          // TODO: Move to passive phase
+          workInProgress.flags |= Update;
+        }
+
+        bubbleProperties(workInProgress);
+
+        {
+          if ((workInProgress.mode & ProfileMode) !== NoMode) {
+            if (nextDidTimeout) {
+              // Don't count time spent in a timed out Suspense subtree as part of the base duration.
+              var primaryChildFragment = workInProgress.child;
+
+              if (primaryChildFragment !== null) {
+                // $FlowFixMe Flow doesn't support type casting in combination with the -= operator
+                workInProgress.treeBaseDuration -= primaryChildFragment.treeBaseDuration;
+              }
+            }
+          }
+        }
+
+        return null;
+      }
+
+    case HostPortal:
+      popHostContainer(workInProgress);
+      updateHostContainer(current, workInProgress);
+
+      if (current === null) {
+        preparePortalMount(workInProgress.stateNode.containerInfo);
+      }
+
+      bubbleProperties(workInProgress);
+      return null;
+
+    case ContextProvider:
+      // Pop provider fiber
+      var context = workInProgress.type._context;
+      popProvider(context, workInProgress);
+      bubbleProperties(workInProgress);
+      return null;
+
+    case IncompleteClassComponent:
+      {
+        // Same as class component case. I put it down here so that the tags are
+        // sequential to ensure this switch is compiled to a jump table.
+        var _Component = workInProgress.type;
+
+        if (isContextProvider(_Component)) {
+          popContext(workInProgress);
+        }
+
+        bubbleProperties(workInProgress);
+        return null;
+      }
+
+    case SuspenseListComponent:
+      {
+        popSuspenseContext(workInProgress);
+        var renderState = workInProgress.memoizedState;
+
+        if (renderState === null) {
+          // We're running in the default, "independent" mode.
+          // We don't do anything in this mode.
+          bubbleProperties(workInProgress);
+          return null;
+        }
+
+        var didSuspendAlready = (workInProgress.flags & DidCapture) !== NoFlags;
+        var renderedTail = renderState.rendering;
+
+        if (renderedTail === null) {
+          // We just rendered the head.
+          if (!didSuspendAlready) {
+            // This is the first pass. We need to figure out if anything is still
+            // suspended in the rendered set.
+            // If new content unsuspended, but there's still some content that
+            // didn't. Then we need to do a second pass that forces everything
+            // to keep showing their fallbacks.
+            // We might be suspended if something in this render pass suspended, or
+            // something in the previous committed pass suspended. Otherwise,
+            // there's no chance so we can skip the expensive call to
+            // findFirstSuspended.
+            var cannotBeSuspended = renderHasNotSuspendedYet() && (current === null || (current.flags & DidCapture) === NoFlags);
+
+            if (!cannotBeSuspended) {
+              var row = workInProgress.child;
+
+              while (row !== null) {
+                var suspended = findFirstSuspended(row);
+
+                if (suspended !== null) {
+                  didSuspendAlready = true;
+                  workInProgress.flags |= DidCapture;
+                  cutOffTailIfNeeded(renderState, false); // If this is a newly suspended tree, it might not get committed as
+                  // part of the second pass. In that case nothing will subscribe to
+                  // its thenables. Instead, we'll transfer its thenables to the
+                  // SuspenseList so that it can retry if they resolve.
+                  // There might be multiple of these in the list but since we're
+                  // going to wait for all of them anyway, it doesn't really matter
+                  // which ones gets to ping. In theory we could get clever and keep
+                  // track of how many dependencies remain but it gets tricky because
+                  // in the meantime, we can add/remove/change items and dependencies.
+                  // We might bail out of the loop before finding any but that
+                  // doesn't matter since that means that the other boundaries that
+                  // we did find already has their listeners attached.
+
+                  var newThenables = suspended.updateQueue;
+
+                  if (newThenables !== null) {
+                    workInProgress.updateQueue = newThenables;
+                    workInProgress.flags |= Update;
+                  } // Rerender the whole list, but this time, we'll force fallbacks
+                  // to stay in place.
+                  // Reset the effect flags before doing the second pass since that's now invalid.
+                  // Reset the child fibers to their original state.
+
+
+                  workInProgress.subtreeFlags = NoFlags;
+                  resetChildFibers(workInProgress, renderLanes); // Set up the Suspense Context to force suspense and immediately
+                  // rerender the children.
+
+                  pushSuspenseContext(workInProgress, setShallowSuspenseContext(suspenseStackCursor.current, ForceSuspenseFallback)); // Don't bubble properties in this case.
+
+                  return workInProgress.child;
+                }
+
+                row = row.sibling;
+              }
+            }
+
+            if (renderState.tail !== null && now() > getRenderTargetTime()) {
+              // We have already passed our CPU deadline but we still have rows
+              // left in the tail. We'll just give up further attempts to render
+              // the main content and only render fallbacks.
+              workInProgress.flags |= DidCapture;
+              didSuspendAlready = true;
+              cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
+              // to get it started back up to attempt the next item. While in terms
+              // of priority this work has the same priority as this current render,
+              // it's not part of the same transition once the transition has
+              // committed. If it's sync, we still want to yield so that it can be
+              // painted. Conceptually, this is really the same as pinging.
+              // We can use any RetryLane even if it's the one currently rendering
+              // since we're leaving it behind on this node.
+
+              workInProgress.lanes = SomeRetryLane;
+            }
+          } else {
+            cutOffTailIfNeeded(renderState, false);
+          } // Next we're going to render the tail.
+
+        } else {
+          // Append the rendered row to the child list.
+          if (!didSuspendAlready) {
+            var _suspended = findFirstSuspended(renderedTail);
+
+            if (_suspended !== null) {
+              workInProgress.flags |= DidCapture;
+              didSuspendAlready = true; // Ensure we transfer the update queue to the parent so that it doesn't
+              // get lost if this row ends up dropped during a second pass.
+
+              var _newThenables = _suspended.updateQueue;
+
+              if (_newThenables !== null) {
+                workInProgress.updateQueue = _newThenables;
+                workInProgress.flags |= Update;
+              }
+
+              cutOffTailIfNeeded(renderState, true); // This might have been modified.
+
+              if (renderState.tail === null && renderState.tailMode === 'hidden' && !renderedTail.alternate && !getIsHydrating() // We don't cut it if we're hydrating.
+              ) {
+                  // We're done.
+                  bubbleProperties(workInProgress);
+                  return null;
+                }
+            } else if ( // The time it took to render last row is greater than the remaining
+            // time we have to render. So rendering one more row would likely
+            // exceed it.
+            now() * 2 - renderState.renderingStartTime > getRenderTargetTime() && renderLanes !== OffscreenLane) {
+              // We have now passed our CPU deadline and we'll just give up further
+              // attempts to render the main content and only render fallbacks.
+              // The assumption is that this is usually faster.
+              workInProgress.flags |= DidCapture;
+              didSuspendAlready = true;
+              cutOffTailIfNeeded(renderState, false); // Since nothing actually suspended, there will nothing to ping this
+              // to get it started back up to attempt the next item. While in terms
+              // of priority this work has the same priority as this current render,
+              // it's not part of the same transition once the transition has
+              // committed. If it's sync, we still want to yield so that it can be
+              // painted. Conceptually, this is really the same as pinging.
+              // We can use any RetryLane even if it's the one currently rendering
+              // since we're leaving it behind on this node.
+
+              workInProgress.lanes = SomeRetryLane;
+            }
+          }
+
+          if (renderState.isBackwards) {
+            // The effect list of the backwards tail will have been added
+            // to the end. This breaks the guarantee that life-cycles fire in
+            // sibling order but that isn't a strong guarantee promised by React.
+            // Especially since these might also just pop in during future commits.
+            // Append to the beginning of the list.
+            renderedTail.sibling = workInProgress.child;
+            workInProgress.child = renderedTail;
+          } else {
+            var previousSibling = renderState.last;
+
+            if (previousSibling !== null) {
+              previousSibling.sibling = renderedTail;
+            } else {
+              workInProgress.child = renderedTail;
+            }
+
+            renderState.last = renderedTail;
+          }
+        }
+
+        if (renderState.tail !== null) {
+          // We still have tail rows to render.
+          // Pop a row.
+          var next = renderState.tail;
+          renderState.rendering = next;
+          renderState.tail = next.sibling;
+          renderState.renderingStartTime = now();
+          next.sibling = null; // Restore the context.
+          // TODO: We can probably just avoid popping it instead and only
+          // setting it the first time we go from not suspended to suspended.
+
+          var suspenseContext = suspenseStackCursor.current;
+
+          if (didSuspendAlready) {
+            suspenseContext = setShallowSuspenseContext(suspenseContext, ForceSuspenseFallback);
+          } else {
+            suspenseContext = setDefaultShallowSuspenseContext(suspenseContext);
+          }
+
+          pushSuspenseContext(workInProgress, suspenseContext); // Do a pass over the next row.
+          // Don't bubble properties in this case.
+
+          return next;
+        }
+
+        bubbleProperties(workInProgress);
+        return null;
+      }
+
+    case ScopeComponent:
+      {
+
+        break;
+      }
+
+    case OffscreenComponent:
+    case LegacyHiddenComponent:
+      {
+        popRenderLanes(workInProgress);
+        var _nextState = workInProgress.memoizedState;
+        var nextIsHidden = _nextState !== null;
+
+        if (current !== null) {
+          var _prevState = current.memoizedState;
+          var prevIsHidden = _prevState !== null;
+
+          if (prevIsHidden !== nextIsHidden && ( // LegacyHidden doesn't do any hiding — it only pre-renders.
+          !enableLegacyHidden )) {
+            workInProgress.flags |= Visibility;
+          }
+        }
+
+        if (!nextIsHidden || (workInProgress.mode & ConcurrentMode) === NoMode) {
+          bubbleProperties(workInProgress);
+        } else {
+          // Don't bubble properties for hidden children unless we're rendering
+          // at offscreen priority.
+          if (includesSomeLane(subtreeRenderLanes, OffscreenLane)) {
+            bubbleProperties(workInProgress);
+
+            {
+              // Check if there was an insertion or update in the hidden subtree.
+              // If so, we need to hide those nodes in the commit phase, so
+              // schedule a visibility effect.
+              if ( workInProgress.subtreeFlags & (Placement | Update)) {
+                workInProgress.flags |= Visibility;
+              }
+            }
+          }
+        }
+        return null;
+      }
+
+    case CacheComponent:
+      {
+
+        return null;
+      }
+
+    case TracingMarkerComponent:
+      {
+
+        return null;
       }
   }
 
@@ -25515,6 +25616,7 @@ function commitLayoutEffectOnFiber(finishedRoot, current, finishedWork, committe
       case ScopeComponent:
       case OffscreenComponent:
       case LegacyHiddenComponent:
+      case TracingMarkerComponent:
         {
           break;
         }
@@ -26493,8 +26595,12 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         var offscreenFiber = finishedWork.child;
 
         if (offscreenFiber.flags & Visibility) {
+          var offscreenInstance = offscreenFiber.stateNode;
           var newState = offscreenFiber.memoizedState;
-          var isHidden = newState !== null;
+          var isHidden = newState !== null; // Track the current state on the Offscreen instance so we can
+          // read it during an event
+
+          offscreenInstance.isHidden = isHidden;
 
           if (isHidden) {
             var wasHidden = offscreenFiber.alternate !== null && offscreenFiber.alternate.memoizedState !== null;
@@ -26539,17 +26645,15 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
         commitReconciliationEffects(finishedWork);
 
         if (flags & Visibility) {
+          var _offscreenInstance = finishedWork.stateNode;
           var _newState = finishedWork.memoizedState;
 
           var _isHidden = _newState !== null;
 
-          var offscreenBoundary = finishedWork;
+          var offscreenBoundary = finishedWork; // Track the current state on the Offscreen instance so we can
+          // read it during an event
 
-          {
-            // TODO: This needs to run whenever there's an insertion or update
-            // inside a hidden Offscreen tree.
-            hideOrUnhideAllChildren(offscreenBoundary, _isHidden);
-          }
+          _offscreenInstance.isHidden = _isHidden;
 
           {
             if (_isHidden) {
@@ -26566,6 +26670,12 @@ function commitMutationEffectsOnFiber(finishedWork, root, lanes) {
                 }
               }
             }
+          }
+
+          {
+            // TODO: This needs to run whenever there's an insertion or update
+            // inside a hidden Offscreen tree.
+            hideOrUnhideAllChildren(offscreenBoundary, _isHidden);
           }
         }
 
@@ -27490,19 +27600,13 @@ function requestRetryLane(fiber) {
   return claimNextRetryLane();
 }
 
-function scheduleUpdateOnFiber(fiber, lane, eventTime) {
+function scheduleUpdateOnFiber(root, fiber, lane, eventTime) {
   checkForNestedUpdates();
 
   {
     if (isRunningInsertionEffect) {
       error('useInsertionEffect must not schedule updates.');
     }
-  }
-
-  var root = markUpdateLaneFromFiberToRoot(fiber, lane);
-
-  if (root === null) {
-    return null;
   }
 
   {
@@ -27533,7 +27637,6 @@ function scheduleUpdateOnFiber(fiber, lane, eventTime) {
     warnIfUpdatesNotWrappedWithActDEV(fiber);
 
     if (root === workInProgressRoot) {
-      // TODO: Consolidate with `isInterleavedUpdate` check
       // Received an update to a tree that's in the middle of rendering. Mark
       // that there was an interleaved update work on this root. Unless the
       // `deferRenderPhaseUpdateToNextBatch` flag is off and this is a render
@@ -27567,8 +27670,6 @@ function scheduleUpdateOnFiber(fiber, lane, eventTime) {
       flushSyncCallbacksOnlyInLegacyMode();
     }
   }
-
-  return root;
 }
 function scheduleInitialHydrationOnRoot(root, lane, eventTime) {
   // This is a special fork of scheduleUpdateOnFiber that is only used to
@@ -27584,70 +27685,13 @@ function scheduleInitialHydrationOnRoot(root, lane, eventTime) {
   current.lanes = lane;
   markRootUpdated(root, lane, eventTime);
   ensureRootIsScheduled(root, eventTime);
-} // This is split into a separate function so we can mark a fiber with pending
-// work without treating it as a typical update that originates from an event;
-// e.g. retrying a Suspense boundary isn't an update, but it does schedule work
-// on a fiber.
-
-function markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
-  // Update the source fiber's lanes
-  sourceFiber.lanes = mergeLanes(sourceFiber.lanes, lane);
-  var alternate = sourceFiber.alternate;
-
-  if (alternate !== null) {
-    alternate.lanes = mergeLanes(alternate.lanes, lane);
-  }
-
-  {
-    if (alternate === null && (sourceFiber.flags & (Placement | Hydrating)) !== NoFlags) {
-      warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
-    }
-  } // Walk the parent path to the root and update the child lanes.
-
-
-  var node = sourceFiber;
-  var parent = sourceFiber.return;
-
-  while (parent !== null) {
-    parent.childLanes = mergeLanes(parent.childLanes, lane);
-    alternate = parent.alternate;
-
-    if (alternate !== null) {
-      alternate.childLanes = mergeLanes(alternate.childLanes, lane);
-    } else {
-      {
-        if ((parent.flags & (Placement | Hydrating)) !== NoFlags) {
-          warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber);
-        }
-      }
-    }
-
-    node = parent;
-    parent = parent.return;
-  }
-
-  if (node.tag === HostRoot) {
-    var root = node.stateNode;
-    return root;
-  } else {
-    return null;
-  }
 }
-
-function isInterleavedUpdate(fiber, lane) {
-  return (// TODO: Optimize slightly by comparing to root that fiber belongs to.
-    // Requires some refactoring. Not a big deal though since it's rare for
-    // concurrent apps to have more than a single root.
-    (workInProgressRoot !== null || // If the interleaved updates queue hasn't been cleared yet, then
-    // we should treat this as an interleaved update, too. This is also a
-    // defensive coding measure in case a new update comes in between when
-    // rendering has finished and when the interleaved updates are transferred
-    // to the main queue.
-    hasInterleavedUpdates()) && (fiber.mode & ConcurrentMode) !== NoMode && ( // If this is a render phase update (i.e. UNSAFE_componentWillReceiveProps),
-    // then don't treat this as an interleaved update. This pattern is
-    // accompanied by a warning but we haven't fully deprecated it yet. We can
-    // remove once the deferRenderPhaseUpdateToNextBatch flag is enabled.
-     (executionContext & RenderContext) === NoContext)
+function isUnsafeClassRenderPhaseUpdate(fiber) {
+  // Check if this is a render phase update. Only called by class components,
+  // which special (deprecated) behavior for UNSAFE_componentWillReceive props.
+  return (// TODO: Remove outdated deferRenderPhaseUpdateToNextBatch experiment. We
+    // decided not to enable it.
+     (executionContext & RenderContext) !== NoContext
   );
 } // Use this function to schedule a task for a root. There's only one task per
 // root; if a task was already scheduled, we'll check to make sure the priority
@@ -27730,9 +27774,9 @@ function ensureRootIsScheduled(root, currentTime) {
           // https://github.com/facebook/react/issues/22459
           // We don't support running callbacks in the middle of render
           // or commit so we need to check against that.
-          if (executionContext === NoContext) {
-            // It's only safe to do this conditionally because we always
-            // check for pending work before we exit the task.
+          if ((executionContext & (RenderContext | CommitContext)) === NoContext) {
+            // Note that this would still prematurely flush the callbacks
+            // if this happens outside render or commit phase (e.g. in an event).
             flushSyncCallbacks();
           }
         });
@@ -28336,7 +28380,7 @@ function prepareFreshStack(root, lanes) {
   workInProgressRootPingedLanes = NoLanes;
   workInProgressRootConcurrentErrors = null;
   workInProgressRootRecoverableErrors = null;
-  enqueueInterleavedUpdates();
+  finishQueueingConcurrentUpdates();
 
   {
     ReactStrictModeWarnings.discardPendingWarnings();
@@ -28992,7 +29036,12 @@ function commitRootImpl(root, recoverableErrors, transitions, renderPriorityLeve
 
     for (var i = 0; i < recoverableErrors.length; i++) {
       var recoverableError = recoverableErrors[i];
-      onRecoverableError(recoverableError);
+      var componentStack = recoverableError.stack;
+      var digest = recoverableError.digest;
+      onRecoverableError(recoverableError.value, {
+        componentStack: componentStack,
+        digest: digest
+      });
     }
   }
 
@@ -29190,11 +29239,10 @@ function prepareToThrowUncaughtError(error) {
 var onUncaughtError = prepareToThrowUncaughtError;
 
 function captureCommitPhaseErrorOnRoot(rootFiber, sourceFiber, error) {
-  var errorInfo = createCapturedValue(error, sourceFiber);
+  var errorInfo = createCapturedValueAtFiber(error, sourceFiber);
   var update = createRootErrorUpdate(rootFiber, errorInfo, SyncLane);
-  enqueueUpdate(rootFiber, update);
+  var root = enqueueUpdate(rootFiber, update, SyncLane);
   var eventTime = requestEventTime();
-  var root = markUpdateLaneFromFiberToRoot(rootFiber, SyncLane);
 
   if (root !== null) {
     markRootUpdated(root, SyncLane, eventTime);
@@ -29230,11 +29278,10 @@ function captureCommitPhaseError(sourceFiber, nearestMountedAncestor, error$1) {
       var instance = fiber.stateNode;
 
       if (typeof ctor.getDerivedStateFromError === 'function' || typeof instance.componentDidCatch === 'function' && !isAlreadyFailedLegacyErrorBoundary(instance)) {
-        var errorInfo = createCapturedValue(error$1, sourceFiber);
+        var errorInfo = createCapturedValueAtFiber(error$1, sourceFiber);
         var update = createClassErrorUpdate(fiber, errorInfo, SyncLane);
-        enqueueUpdate(fiber, update);
+        var root = enqueueUpdate(fiber, update, SyncLane);
         var eventTime = requestEventTime();
-        var root = markUpdateLaneFromFiberToRoot(fiber, SyncLane);
 
         if (root !== null) {
           markRootUpdated(root, SyncLane, eventTime);
@@ -29304,7 +29351,7 @@ function retryTimedOutBoundary(boundaryFiber, retryLane) {
 
 
   var eventTime = requestEventTime();
-  var root = markUpdateLaneFromFiberToRoot(boundaryFiber, retryLane);
+  var root = enqueueConcurrentRenderForLane(boundaryFiber, retryLane);
 
   if (root !== null) {
     markRootUpdated(root, retryLane, eventTime);
@@ -29444,7 +29491,6 @@ function invokeEffectsInDev(firstChild, fiberFlags, invokeEffectFn) {
 }
 
 var didWarnStateUpdateForNotYetMountedComponent = null;
-
 function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
   {
     if ((executionContext & RenderContext) !== NoContext) {
@@ -29492,7 +29538,6 @@ function warnAboutUpdateOnNotYetMountedFiberInDEV(fiber) {
     }
   }
 }
-
 var beginWork$1;
 
 {
@@ -29509,8 +29554,9 @@ var beginWork$1;
     try {
       return beginWork(current, unitOfWork, lanes);
     } catch (originalError) {
-      if (originalError !== null && typeof originalError === 'object' && typeof originalError.then === 'function') {
-        // Don't replay promises. Treat everything else like an error.
+      if (didSuspendOrErrorWhileHydratingDEV() || originalError !== null && typeof originalError === 'object' && typeof originalError.then === 'function') {
+        // Don't replay promises.
+        // Don't replay errors if we are hydrating and have already suspended or handled an error
         throw originalError;
       } // Keep this code in sync with handleError; any changes here must have
       // corresponding changes there.
@@ -29951,7 +29997,11 @@ function scheduleFibersWithFamiliesRecursively(fiber, updatedFamilies, staleFami
     }
 
     if (needsRemount || needsRender) {
-      scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+      var _root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+      if (_root !== null) {
+        scheduleUpdateOnFiber(_root, fiber, SyncLane, NoTimestamp);
+      }
     }
 
     if (child !== null && !needsRemount) {
@@ -30593,7 +30643,9 @@ function createFiberFromOffscreen(pendingProps, mode, lanes, key) {
   var fiber = createFiber(OffscreenComponent, pendingProps, key, mode);
   fiber.elementType = REACT_OFFSCREEN_TYPE;
   fiber.lanes = lanes;
-  var primaryChildInstance = {};
+  var primaryChildInstance = {
+    isHidden: false
+  };
   fiber.stateNode = primaryChildInstance;
   return fiber;
 }
@@ -30759,7 +30811,7 @@ identifierPrefix, onRecoverableError, transitionCallbacks) {
   return root;
 }
 
-var ReactVersion = '18.1.0';
+var ReactVersion = '18.2.0';
 
 function createPortal(children, containerInfo, // TODO: figure out the API for cross-renderer implementation.
 implementation) {
@@ -30878,7 +30930,7 @@ callback, containerInfo, tag, hydrationCallbacks, isStrictMode, concurrentUpdate
   var lane = requestUpdateLane(current);
   var update = createUpdate(eventTime, lane);
   update.callback = callback !== undefined && callback !== null ? callback : null;
-  enqueueUpdate(current, update);
+  enqueueUpdate(current, update, lane);
   scheduleInitialHydrationOnRoot(root, lane, eventTime);
   return root;
 }
@@ -30929,10 +30981,10 @@ function updateContainer(element, container, parentComponent, callback) {
     update.callback = callback;
   }
 
-  enqueueUpdate(current$1, update);
-  var root = scheduleUpdateOnFiber(current$1, lane, eventTime);
+  var root = enqueueUpdate(current$1, update, lane);
 
   if (root !== null) {
+    scheduleUpdateOnFiber(root, current$1, lane, eventTime);
     entangleTransitions(root, current$1, lane);
   }
 
@@ -30956,27 +31008,35 @@ function getPublicRootInstance(container) {
 function attemptSynchronousHydration$1(fiber) {
   switch (fiber.tag) {
     case HostRoot:
-      var root = fiber.stateNode;
+      {
+        var root = fiber.stateNode;
 
-      if (isRootDehydrated(root)) {
-        // Flush the first scheduled "update".
-        var lanes = getHighestPriorityPendingLanes(root);
-        flushRoot(root, lanes);
+        if (isRootDehydrated(root)) {
+          // Flush the first scheduled "update".
+          var lanes = getHighestPriorityPendingLanes(root);
+          flushRoot(root, lanes);
+        }
+
+        break;
       }
 
-      break;
-
     case SuspenseComponent:
-      var eventTime = requestEventTime();
-      flushSync(function () {
-        return scheduleUpdateOnFiber(fiber, SyncLane, eventTime);
-      }); // If we're still blocked after this, we need to increase
-      // the priority of any promises resolving within this
-      // boundary so that they next attempt also has higher pri.
+      {
+        flushSync(function () {
+          var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
 
-      var retryLane = SyncLane;
-      markRetryLaneIfNotHydrated(fiber, retryLane);
-      break;
+          if (root !== null) {
+            var eventTime = requestEventTime();
+            scheduleUpdateOnFiber(root, fiber, SyncLane, eventTime);
+          }
+        }); // If we're still blocked after this, we need to increase
+        // the priority of any promises resolving within this
+        // boundary so that they next attempt also has higher pri.
+
+        var retryLane = SyncLane;
+        markRetryLaneIfNotHydrated(fiber, retryLane);
+        break;
+      }
   }
 }
 
@@ -31006,9 +31066,14 @@ function attemptContinuousHydration$1(fiber) {
     return;
   }
 
-  var eventTime = requestEventTime();
   var lane = SelectiveHydrationLane;
-  scheduleUpdateOnFiber(fiber, lane, eventTime);
+  var root = enqueueConcurrentRenderForLane(fiber, lane);
+
+  if (root !== null) {
+    var eventTime = requestEventTime();
+    scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+  }
+
   markRetryLaneIfNotHydrated(fiber, lane);
 }
 function attemptHydrationAtCurrentPriority$1(fiber) {
@@ -31018,9 +31083,14 @@ function attemptHydrationAtCurrentPriority$1(fiber) {
     return;
   }
 
-  var eventTime = requestEventTime();
   var lane = requestUpdateLane(fiber);
-  scheduleUpdateOnFiber(fiber, lane, eventTime);
+  var root = enqueueConcurrentRenderForLane(fiber, lane);
+
+  if (root !== null) {
+    var eventTime = requestEventTime();
+    scheduleUpdateOnFiber(root, fiber, lane, eventTime);
+  }
+
   markRetryLaneIfNotHydrated(fiber, lane);
 }
 function findHostInstanceWithNoPortals(fiber) {
@@ -31166,7 +31236,11 @@ var setSuspenseHandler = null;
       // Shallow cloning props works as a workaround for now to bypass the bailout check.
 
       fiber.memoizedProps = assign({}, fiber.memoizedProps);
-      scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+      var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+      if (root !== null) {
+        scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+      }
     }
   };
 
@@ -31183,7 +31257,11 @@ var setSuspenseHandler = null;
       // Shallow cloning props works as a workaround for now to bypass the bailout check.
 
       fiber.memoizedProps = assign({}, fiber.memoizedProps);
-      scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+      var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+      if (root !== null) {
+        scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+      }
     }
   };
 
@@ -31200,7 +31278,11 @@ var setSuspenseHandler = null;
       // Shallow cloning props works as a workaround for now to bypass the bailout check.
 
       fiber.memoizedProps = assign({}, fiber.memoizedProps);
-      scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+      var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+      if (root !== null) {
+        scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+      }
     }
   }; // Support DevTools props for function components, forwardRef, memo, host components, etc.
 
@@ -31212,7 +31294,11 @@ var setSuspenseHandler = null;
       fiber.alternate.pendingProps = fiber.pendingProps;
     }
 
-    scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+    var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+    if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+    }
   };
 
   overridePropsDeletePath = function (fiber, path) {
@@ -31222,7 +31308,11 @@ var setSuspenseHandler = null;
       fiber.alternate.pendingProps = fiber.pendingProps;
     }
 
-    scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+    var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+    if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+    }
   };
 
   overridePropsRenamePath = function (fiber, oldPath, newPath) {
@@ -31232,11 +31322,19 @@ var setSuspenseHandler = null;
       fiber.alternate.pendingProps = fiber.pendingProps;
     }
 
-    scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+    var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+    if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+    }
   };
 
   scheduleUpdate = function (fiber) {
-    scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp);
+    var root = enqueueConcurrentRenderForLane(fiber, SyncLane);
+
+    if (root !== null) {
+      scheduleUpdateOnFiber(root, fiber, SyncLane, NoTimestamp);
+    }
   };
 
   setErrorHandler = function (newShouldErrorImpl) {
@@ -32011,36 +32109,26 @@ if (
 ) {
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
 }
-          var ReactVersion = '18.1.0';
-
-// -----------------------------------------------------------------------------
-
-var enableScopeAPI = false; // Experimental Create Event Handle API.
-var enableCacheElement = false;
-var enableTransitionTracing = false; // No known bugs, but needs performance testing
-
-var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
-// stuff. Intended to enable React core members to more easily debug scheduling
-// issues in DEV builds.
-
-var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
+          var ReactVersion = '18.2.0';
 
 // ATTENTION
-
-var REACT_ELEMENT_TYPE =  Symbol.for('react.element');
-var REACT_PORTAL_TYPE =  Symbol.for('react.portal');
-var REACT_FRAGMENT_TYPE =  Symbol.for('react.fragment');
-var REACT_STRICT_MODE_TYPE =  Symbol.for('react.strict_mode');
-var REACT_PROFILER_TYPE =  Symbol.for('react.profiler');
-var REACT_PROVIDER_TYPE =  Symbol.for('react.provider');
-var REACT_CONTEXT_TYPE =  Symbol.for('react.context');
-var REACT_FORWARD_REF_TYPE =  Symbol.for('react.forward_ref');
-var REACT_SUSPENSE_TYPE =  Symbol.for('react.suspense');
-var REACT_SUSPENSE_LIST_TYPE =  Symbol.for('react.suspense_list');
-var REACT_MEMO_TYPE =  Symbol.for('react.memo');
-var REACT_LAZY_TYPE =  Symbol.for('react.lazy');
-var REACT_OFFSCREEN_TYPE =  Symbol.for('react.offscreen');
-var MAYBE_ITERATOR_SYMBOL =  Symbol.iterator;
+// When adding new symbols to this file,
+// Please consider also adding to 'react-devtools-shared/src/backend/ReactSymbols'
+// The Symbol used to tag the ReactElement-like types.
+var REACT_ELEMENT_TYPE = Symbol.for('react.element');
+var REACT_PORTAL_TYPE = Symbol.for('react.portal');
+var REACT_FRAGMENT_TYPE = Symbol.for('react.fragment');
+var REACT_STRICT_MODE_TYPE = Symbol.for('react.strict_mode');
+var REACT_PROFILER_TYPE = Symbol.for('react.profiler');
+var REACT_PROVIDER_TYPE = Symbol.for('react.provider');
+var REACT_CONTEXT_TYPE = Symbol.for('react.context');
+var REACT_FORWARD_REF_TYPE = Symbol.for('react.forward_ref');
+var REACT_SUSPENSE_TYPE = Symbol.for('react.suspense');
+var REACT_SUSPENSE_LIST_TYPE = Symbol.for('react.suspense_list');
+var REACT_MEMO_TYPE = Symbol.for('react.memo');
+var REACT_LAZY_TYPE = Symbol.for('react.lazy');
+var REACT_OFFSCREEN_TYPE = Symbol.for('react.offscreen');
+var MAYBE_ITERATOR_SYMBOL = Symbol.iterator;
 var FAUX_ITERATOR_SYMBOL = '@@iterator';
 function getIteratorFn(maybeIterable) {
   if (maybeIterable === null || typeof maybeIterable !== 'object') {
@@ -32131,6 +32219,18 @@ function setExtraStackFrame(stack) {
     return stack;
   };
 }
+
+// -----------------------------------------------------------------------------
+
+var enableScopeAPI = false; // Experimental Create Event Handle API.
+var enableCacheElement = false;
+var enableTransitionTracing = false; // No known bugs, but needs performance testing
+
+var enableLegacyHidden = false; // Enables unstable_avoidThisFallback feature in Fiber
+// stuff. Intended to enable React core members to more easily debug scheduling
+// issues in DEV builds.
+
+var enableDebugTracing = false; // Track which Fiber(s) schedule render work.
 
 var ReactSharedInternals = {
   ReactCurrentDispatcher: ReactCurrentDispatcher,
@@ -35716,340 +35816,6 @@ module.exports = styleTagTransform;
 
 /***/ }),
 
-/***/ "./node_modules/uuid/dist/esm-browser/index.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/index.js ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "NIL": () => (/* reexport safe */ _nil_js__WEBPACK_IMPORTED_MODULE_4__["default"]),
-/* harmony export */   "parse": () => (/* reexport safe */ _parse_js__WEBPACK_IMPORTED_MODULE_8__["default"]),
-/* harmony export */   "stringify": () => (/* reexport safe */ _stringify_js__WEBPACK_IMPORTED_MODULE_7__["default"]),
-/* harmony export */   "v1": () => (/* reexport safe */ _v1_js__WEBPACK_IMPORTED_MODULE_0__["default"]),
-/* harmony export */   "v3": () => (/* reexport safe */ _v3_js__WEBPACK_IMPORTED_MODULE_1__["default"]),
-/* harmony export */   "v4": () => (/* reexport safe */ _v4_js__WEBPACK_IMPORTED_MODULE_2__["default"]),
-/* harmony export */   "v5": () => (/* reexport safe */ _v5_js__WEBPACK_IMPORTED_MODULE_3__["default"]),
-/* harmony export */   "validate": () => (/* reexport safe */ _validate_js__WEBPACK_IMPORTED_MODULE_6__["default"]),
-/* harmony export */   "version": () => (/* reexport safe */ _version_js__WEBPACK_IMPORTED_MODULE_5__["default"])
-/* harmony export */ });
-/* harmony import */ var _v1_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v1.js */ "./node_modules/uuid/dist/esm-browser/v1.js");
-/* harmony import */ var _v3_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./v3.js */ "./node_modules/uuid/dist/esm-browser/v3.js");
-/* harmony import */ var _v4_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./v4.js */ "./node_modules/uuid/dist/esm-browser/v4.js");
-/* harmony import */ var _v5_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./v5.js */ "./node_modules/uuid/dist/esm-browser/v5.js");
-/* harmony import */ var _nil_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./nil.js */ "./node_modules/uuid/dist/esm-browser/nil.js");
-/* harmony import */ var _version_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./version.js */ "./node_modules/uuid/dist/esm-browser/version.js");
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
-/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./parse.js */ "./node_modules/uuid/dist/esm-browser/parse.js");
-
-
-
-
-
-
-
-
-
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/md5.js":
-/*!***************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/md5.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/*
- * Browser-compatible JavaScript MD5
- *
- * Modification of JavaScript MD5
- * https://github.com/blueimp/JavaScript-MD5
- *
- * Copyright 2011, Sebastian Tschan
- * https://blueimp.net
- *
- * Licensed under the MIT license:
- * https://opensource.org/licenses/MIT
- *
- * Based on
- * A JavaScript implementation of the RSA Data Security, Inc. MD5 Message
- * Digest Algorithm, as defined in RFC 1321.
- * Version 2.2 Copyright (C) Paul Johnston 1999 - 2009
- * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
- * Distributed under the BSD License
- * See http://pajhome.org.uk/crypt/md5 for more info.
- */
-function md5(bytes) {
-  if (typeof bytes === 'string') {
-    var msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
-
-    bytes = new Uint8Array(msg.length);
-
-    for (var i = 0; i < msg.length; ++i) {
-      bytes[i] = msg.charCodeAt(i);
-    }
-  }
-
-  return md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), bytes.length * 8));
-}
-/*
- * Convert an array of little-endian words to an array of bytes
- */
-
-
-function md5ToHexEncodedArray(input) {
-  var output = [];
-  var length32 = input.length * 32;
-  var hexTab = '0123456789abcdef';
-
-  for (var i = 0; i < length32; i += 8) {
-    var x = input[i >> 5] >>> i % 32 & 0xff;
-    var hex = parseInt(hexTab.charAt(x >>> 4 & 0x0f) + hexTab.charAt(x & 0x0f), 16);
-    output.push(hex);
-  }
-
-  return output;
-}
-/**
- * Calculate output length with padding and bit length
- */
-
-
-function getOutputLength(inputLength8) {
-  return (inputLength8 + 64 >>> 9 << 4) + 14 + 1;
-}
-/*
- * Calculate the MD5 of an array of little-endian words, and a bit length.
- */
-
-
-function wordsToMd5(x, len) {
-  /* append padding */
-  x[len >> 5] |= 0x80 << len % 32;
-  x[getOutputLength(len) - 1] = len;
-  var a = 1732584193;
-  var b = -271733879;
-  var c = -1732584194;
-  var d = 271733878;
-
-  for (var i = 0; i < x.length; i += 16) {
-    var olda = a;
-    var oldb = b;
-    var oldc = c;
-    var oldd = d;
-    a = md5ff(a, b, c, d, x[i], 7, -680876936);
-    d = md5ff(d, a, b, c, x[i + 1], 12, -389564586);
-    c = md5ff(c, d, a, b, x[i + 2], 17, 606105819);
-    b = md5ff(b, c, d, a, x[i + 3], 22, -1044525330);
-    a = md5ff(a, b, c, d, x[i + 4], 7, -176418897);
-    d = md5ff(d, a, b, c, x[i + 5], 12, 1200080426);
-    c = md5ff(c, d, a, b, x[i + 6], 17, -1473231341);
-    b = md5ff(b, c, d, a, x[i + 7], 22, -45705983);
-    a = md5ff(a, b, c, d, x[i + 8], 7, 1770035416);
-    d = md5ff(d, a, b, c, x[i + 9], 12, -1958414417);
-    c = md5ff(c, d, a, b, x[i + 10], 17, -42063);
-    b = md5ff(b, c, d, a, x[i + 11], 22, -1990404162);
-    a = md5ff(a, b, c, d, x[i + 12], 7, 1804603682);
-    d = md5ff(d, a, b, c, x[i + 13], 12, -40341101);
-    c = md5ff(c, d, a, b, x[i + 14], 17, -1502002290);
-    b = md5ff(b, c, d, a, x[i + 15], 22, 1236535329);
-    a = md5gg(a, b, c, d, x[i + 1], 5, -165796510);
-    d = md5gg(d, a, b, c, x[i + 6], 9, -1069501632);
-    c = md5gg(c, d, a, b, x[i + 11], 14, 643717713);
-    b = md5gg(b, c, d, a, x[i], 20, -373897302);
-    a = md5gg(a, b, c, d, x[i + 5], 5, -701558691);
-    d = md5gg(d, a, b, c, x[i + 10], 9, 38016083);
-    c = md5gg(c, d, a, b, x[i + 15], 14, -660478335);
-    b = md5gg(b, c, d, a, x[i + 4], 20, -405537848);
-    a = md5gg(a, b, c, d, x[i + 9], 5, 568446438);
-    d = md5gg(d, a, b, c, x[i + 14], 9, -1019803690);
-    c = md5gg(c, d, a, b, x[i + 3], 14, -187363961);
-    b = md5gg(b, c, d, a, x[i + 8], 20, 1163531501);
-    a = md5gg(a, b, c, d, x[i + 13], 5, -1444681467);
-    d = md5gg(d, a, b, c, x[i + 2], 9, -51403784);
-    c = md5gg(c, d, a, b, x[i + 7], 14, 1735328473);
-    b = md5gg(b, c, d, a, x[i + 12], 20, -1926607734);
-    a = md5hh(a, b, c, d, x[i + 5], 4, -378558);
-    d = md5hh(d, a, b, c, x[i + 8], 11, -2022574463);
-    c = md5hh(c, d, a, b, x[i + 11], 16, 1839030562);
-    b = md5hh(b, c, d, a, x[i + 14], 23, -35309556);
-    a = md5hh(a, b, c, d, x[i + 1], 4, -1530992060);
-    d = md5hh(d, a, b, c, x[i + 4], 11, 1272893353);
-    c = md5hh(c, d, a, b, x[i + 7], 16, -155497632);
-    b = md5hh(b, c, d, a, x[i + 10], 23, -1094730640);
-    a = md5hh(a, b, c, d, x[i + 13], 4, 681279174);
-    d = md5hh(d, a, b, c, x[i], 11, -358537222);
-    c = md5hh(c, d, a, b, x[i + 3], 16, -722521979);
-    b = md5hh(b, c, d, a, x[i + 6], 23, 76029189);
-    a = md5hh(a, b, c, d, x[i + 9], 4, -640364487);
-    d = md5hh(d, a, b, c, x[i + 12], 11, -421815835);
-    c = md5hh(c, d, a, b, x[i + 15], 16, 530742520);
-    b = md5hh(b, c, d, a, x[i + 2], 23, -995338651);
-    a = md5ii(a, b, c, d, x[i], 6, -198630844);
-    d = md5ii(d, a, b, c, x[i + 7], 10, 1126891415);
-    c = md5ii(c, d, a, b, x[i + 14], 15, -1416354905);
-    b = md5ii(b, c, d, a, x[i + 5], 21, -57434055);
-    a = md5ii(a, b, c, d, x[i + 12], 6, 1700485571);
-    d = md5ii(d, a, b, c, x[i + 3], 10, -1894986606);
-    c = md5ii(c, d, a, b, x[i + 10], 15, -1051523);
-    b = md5ii(b, c, d, a, x[i + 1], 21, -2054922799);
-    a = md5ii(a, b, c, d, x[i + 8], 6, 1873313359);
-    d = md5ii(d, a, b, c, x[i + 15], 10, -30611744);
-    c = md5ii(c, d, a, b, x[i + 6], 15, -1560198380);
-    b = md5ii(b, c, d, a, x[i + 13], 21, 1309151649);
-    a = md5ii(a, b, c, d, x[i + 4], 6, -145523070);
-    d = md5ii(d, a, b, c, x[i + 11], 10, -1120210379);
-    c = md5ii(c, d, a, b, x[i + 2], 15, 718787259);
-    b = md5ii(b, c, d, a, x[i + 9], 21, -343485551);
-    a = safeAdd(a, olda);
-    b = safeAdd(b, oldb);
-    c = safeAdd(c, oldc);
-    d = safeAdd(d, oldd);
-  }
-
-  return [a, b, c, d];
-}
-/*
- * Convert an array bytes to an array of little-endian words
- * Characters >255 have their high-byte silently ignored.
- */
-
-
-function bytesToWords(input) {
-  if (input.length === 0) {
-    return [];
-  }
-
-  var length8 = input.length * 8;
-  var output = new Uint32Array(getOutputLength(length8));
-
-  for (var i = 0; i < length8; i += 8) {
-    output[i >> 5] |= (input[i / 8] & 0xff) << i % 32;
-  }
-
-  return output;
-}
-/*
- * Add integers, wrapping at 2^32. This uses 16-bit operations internally
- * to work around bugs in some JS interpreters.
- */
-
-
-function safeAdd(x, y) {
-  var lsw = (x & 0xffff) + (y & 0xffff);
-  var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-  return msw << 16 | lsw & 0xffff;
-}
-/*
- * Bitwise rotate a 32-bit number to the left.
- */
-
-
-function bitRotateLeft(num, cnt) {
-  return num << cnt | num >>> 32 - cnt;
-}
-/*
- * These functions implement the four basic operations the algorithm uses.
- */
-
-
-function md5cmn(q, a, b, x, s, t) {
-  return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b);
-}
-
-function md5ff(a, b, c, d, x, s, t) {
-  return md5cmn(b & c | ~b & d, a, b, x, s, t);
-}
-
-function md5gg(a, b, c, d, x, s, t) {
-  return md5cmn(b & d | c & ~d, a, b, x, s, t);
-}
-
-function md5hh(a, b, c, d, x, s, t) {
-  return md5cmn(b ^ c ^ d, a, b, x, s, t);
-}
-
-function md5ii(a, b, c, d, x, s, t) {
-  return md5cmn(c ^ (b | ~d), a, b, x, s, t);
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (md5);
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/nil.js":
-/*!***************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/nil.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ('00000000-0000-0000-0000-000000000000');
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/parse.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/parse.js ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
-
-
-function parse(uuid) {
-  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
-    throw TypeError('Invalid UUID');
-  }
-
-  var v;
-  var arr = new Uint8Array(16); // Parse ########-....-....-....-............
-
-  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
-  arr[1] = v >>> 16 & 0xff;
-  arr[2] = v >>> 8 & 0xff;
-  arr[3] = v & 0xff; // Parse ........-####-....-....-............
-
-  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
-  arr[5] = v & 0xff; // Parse ........-....-####-....-............
-
-  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
-  arr[7] = v & 0xff; // Parse ........-....-....-####-............
-
-  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
-  arr[9] = v & 0xff; // Parse ........-....-....-....-############
-  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
-
-  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
-  arr[11] = v / 0x100000000 & 0xff;
-  arr[12] = v >>> 24 & 0xff;
-  arr[13] = v >>> 16 & 0xff;
-  arr[14] = v >>> 8 & 0xff;
-  arr[15] = v & 0xff;
-  return arr;
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (parse);
-
-/***/ }),
-
 /***/ "./node_modules/uuid/dist/esm-browser/regex.js":
 /*!*****************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/regex.js ***!
@@ -36098,116 +35864,6 @@ function rng() {
 
 /***/ }),
 
-/***/ "./node_modules/uuid/dist/esm-browser/sha1.js":
-/*!****************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/sha1.js ***!
-  \****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-// Adapted from Chris Veness' SHA1 code at
-// http://www.movable-type.co.uk/scripts/sha1.html
-function f(s, x, y, z) {
-  switch (s) {
-    case 0:
-      return x & y ^ ~x & z;
-
-    case 1:
-      return x ^ y ^ z;
-
-    case 2:
-      return x & y ^ x & z ^ y & z;
-
-    case 3:
-      return x ^ y ^ z;
-  }
-}
-
-function ROTL(x, n) {
-  return x << n | x >>> 32 - n;
-}
-
-function sha1(bytes) {
-  var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
-  var H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
-
-  if (typeof bytes === 'string') {
-    var msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
-
-    bytes = [];
-
-    for (var i = 0; i < msg.length; ++i) {
-      bytes.push(msg.charCodeAt(i));
-    }
-  } else if (!Array.isArray(bytes)) {
-    // Convert Array-like to Array
-    bytes = Array.prototype.slice.call(bytes);
-  }
-
-  bytes.push(0x80);
-  var l = bytes.length / 4 + 2;
-  var N = Math.ceil(l / 16);
-  var M = new Array(N);
-
-  for (var _i = 0; _i < N; ++_i) {
-    var arr = new Uint32Array(16);
-
-    for (var j = 0; j < 16; ++j) {
-      arr[j] = bytes[_i * 64 + j * 4] << 24 | bytes[_i * 64 + j * 4 + 1] << 16 | bytes[_i * 64 + j * 4 + 2] << 8 | bytes[_i * 64 + j * 4 + 3];
-    }
-
-    M[_i] = arr;
-  }
-
-  M[N - 1][14] = (bytes.length - 1) * 8 / Math.pow(2, 32);
-  M[N - 1][14] = Math.floor(M[N - 1][14]);
-  M[N - 1][15] = (bytes.length - 1) * 8 & 0xffffffff;
-
-  for (var _i2 = 0; _i2 < N; ++_i2) {
-    var W = new Uint32Array(80);
-
-    for (var t = 0; t < 16; ++t) {
-      W[t] = M[_i2][t];
-    }
-
-    for (var _t = 16; _t < 80; ++_t) {
-      W[_t] = ROTL(W[_t - 3] ^ W[_t - 8] ^ W[_t - 14] ^ W[_t - 16], 1);
-    }
-
-    var a = H[0];
-    var b = H[1];
-    var c = H[2];
-    var d = H[3];
-    var e = H[4];
-
-    for (var _t2 = 0; _t2 < 80; ++_t2) {
-      var s = Math.floor(_t2 / 20);
-      var T = ROTL(a, 5) + f(s, b, c, d) + e + K[s] + W[_t2] >>> 0;
-      e = d;
-      d = c;
-      c = ROTL(b, 30) >>> 0;
-      b = a;
-      a = T;
-    }
-
-    H[0] = H[0] + a >>> 0;
-    H[1] = H[1] + b >>> 0;
-    H[2] = H[2] + c >>> 0;
-    H[3] = H[3] + d >>> 0;
-    H[4] = H[4] + e >>> 0;
-  }
-
-  return [H[0] >> 24 & 0xff, H[0] >> 16 & 0xff, H[0] >> 8 & 0xff, H[0] & 0xff, H[1] >> 24 & 0xff, H[1] >> 16 & 0xff, H[1] >> 8 & 0xff, H[1] & 0xff, H[2] >> 24 & 0xff, H[2] >> 16 & 0xff, H[2] >> 8 & 0xff, H[2] & 0xff, H[3] >> 24 & 0xff, H[3] >> 16 & 0xff, H[3] >> 8 & 0xff, H[3] & 0xff, H[4] >> 24 & 0xff, H[4] >> 16 & 0xff, H[4] >> 8 & 0xff, H[4] & 0xff];
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (sha1);
-
-/***/ }),
-
 /***/ "./node_modules/uuid/dist/esm-browser/stringify.js":
 /*!*********************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/stringify.js ***!
@@ -36253,219 +35909,6 @@ function stringify(arr) {
 
 /***/ }),
 
-/***/ "./node_modules/uuid/dist/esm-browser/v1.js":
-/*!**************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/v1.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./rng.js */ "./node_modules/uuid/dist/esm-browser/rng.js");
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
-
- // **`v1()` - Generate time-based UUID**
-//
-// Inspired by https://github.com/LiosK/UUID.js
-// and http://docs.python.org/library/uuid.html
-
-var _nodeId;
-
-var _clockseq; // Previous uuid creation time
-
-
-var _lastMSecs = 0;
-var _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
-
-function v1(options, buf, offset) {
-  var i = buf && offset || 0;
-  var b = buf || new Array(16);
-  options = options || {};
-  var node = options.node || _nodeId;
-  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
-  // specified.  We do this lazily to minimize issues related to insufficient
-  // system entropy.  See #189
-
-  if (node == null || clockseq == null) {
-    var seedBytes = options.random || (options.rng || _rng_js__WEBPACK_IMPORTED_MODULE_0__["default"])();
-
-    if (node == null) {
-      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
-      node = _nodeId = [seedBytes[0] | 0x01, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
-    }
-
-    if (clockseq == null) {
-      // Per 4.2.2, randomize (14 bit) clockseq
-      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
-    }
-  } // UUID timestamps are 100 nano-second units since the Gregorian epoch,
-  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
-  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
-  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
-
-
-  var msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
-  // cycle to simulate higher resolution clock
-
-  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
-
-  var dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
-
-  if (dt < 0 && options.clockseq === undefined) {
-    clockseq = clockseq + 1 & 0x3fff;
-  } // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
-  // time interval
-
-
-  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
-    nsecs = 0;
-  } // Per 4.2.1.2 Throw error if too many uuids are requested
-
-
-  if (nsecs >= 10000) {
-    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
-  }
-
-  _lastMSecs = msecs;
-  _lastNSecs = nsecs;
-  _clockseq = clockseq; // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
-
-  msecs += 12219292800000; // `time_low`
-
-  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
-  b[i++] = tl >>> 24 & 0xff;
-  b[i++] = tl >>> 16 & 0xff;
-  b[i++] = tl >>> 8 & 0xff;
-  b[i++] = tl & 0xff; // `time_mid`
-
-  var tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
-  b[i++] = tmh >>> 8 & 0xff;
-  b[i++] = tmh & 0xff; // `time_high_and_version`
-
-  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
-
-  b[i++] = tmh >>> 16 & 0xff; // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
-
-  b[i++] = clockseq >>> 8 | 0x80; // `clock_seq_low`
-
-  b[i++] = clockseq & 0xff; // `node`
-
-  for (var n = 0; n < 6; ++n) {
-    b[i + n] = node[n];
-  }
-
-  return buf || (0,_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(b);
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v1);
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/v3.js":
-/*!**************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/v3.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v35.js */ "./node_modules/uuid/dist/esm-browser/v35.js");
-/* harmony import */ var _md5_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./md5.js */ "./node_modules/uuid/dist/esm-browser/md5.js");
-
-
-var v3 = (0,_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v3', 0x30, _md5_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v3);
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/v35.js":
-/*!***************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/v35.js ***!
-  \***************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "DNS": () => (/* binding */ DNS),
-/* harmony export */   "URL": () => (/* binding */ URL),
-/* harmony export */   "default": () => (/* export default binding */ __WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./stringify.js */ "./node_modules/uuid/dist/esm-browser/stringify.js");
-/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./parse.js */ "./node_modules/uuid/dist/esm-browser/parse.js");
-
-
-
-function stringToBytes(str) {
-  str = unescape(encodeURIComponent(str)); // UTF8 escape
-
-  var bytes = [];
-
-  for (var i = 0; i < str.length; ++i) {
-    bytes.push(str.charCodeAt(i));
-  }
-
-  return bytes;
-}
-
-var DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
-/* harmony default export */ function __WEBPACK_DEFAULT_EXPORT__(name, version, hashfunc) {
-  function generateUUID(value, namespace, buf, offset) {
-    if (typeof value === 'string') {
-      value = stringToBytes(value);
-    }
-
-    if (typeof namespace === 'string') {
-      namespace = (0,_parse_js__WEBPACK_IMPORTED_MODULE_0__["default"])(namespace);
-    }
-
-    if (namespace.length !== 16) {
-      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
-    } // Compute hash of namespace and value, Per 4.3
-    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
-    // hashfunc([...namespace, ... value])`
-
-
-    var bytes = new Uint8Array(16 + value.length);
-    bytes.set(namespace);
-    bytes.set(value, namespace.length);
-    bytes = hashfunc(bytes);
-    bytes[6] = bytes[6] & 0x0f | version;
-    bytes[8] = bytes[8] & 0x3f | 0x80;
-
-    if (buf) {
-      offset = offset || 0;
-
-      for (var i = 0; i < 16; ++i) {
-        buf[offset + i] = bytes[i];
-      }
-
-      return buf;
-    }
-
-    return (0,_stringify_js__WEBPACK_IMPORTED_MODULE_1__["default"])(bytes);
-  } // Function#name is not settable on some platforms (#270)
-
-
-  try {
-    generateUUID.name = name; // eslint-disable-next-line no-empty
-  } catch (err) {} // For CommonJS default export support
-
-
-  generateUUID.DNS = DNS;
-  generateUUID.URL = URL;
-  return generateUUID;
-}
-
-/***/ }),
-
 /***/ "./node_modules/uuid/dist/esm-browser/v4.js":
 /*!**************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/v4.js ***!
@@ -36506,26 +35949,6 @@ function v4(options, buf, offset) {
 
 /***/ }),
 
-/***/ "./node_modules/uuid/dist/esm-browser/v5.js":
-/*!**************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/v5.js ***!
-  \**************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./v35.js */ "./node_modules/uuid/dist/esm-browser/v35.js");
-/* harmony import */ var _sha1_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sha1.js */ "./node_modules/uuid/dist/esm-browser/sha1.js");
-
-
-var v5 = (0,_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v5', 0x50, _sha1_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (v5);
-
-/***/ }),
-
 /***/ "./node_modules/uuid/dist/esm-browser/validate.js":
 /*!********************************************************!*\
   !*** ./node_modules/uuid/dist/esm-browser/validate.js ***!
@@ -36545,32 +35968,6 @@ function validate(uuid) {
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (validate);
-
-/***/ }),
-
-/***/ "./node_modules/uuid/dist/esm-browser/version.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/uuid/dist/esm-browser/version.js ***!
-  \*******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./validate.js */ "./node_modules/uuid/dist/esm-browser/validate.js");
-
-
-function version(uuid) {
-  if (!(0,_validate_js__WEBPACK_IMPORTED_MODULE_0__["default"])(uuid)) {
-    throw TypeError('Invalid UUID');
-  }
-
-  return parseInt(uuid.substr(14, 1), 16);
-}
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (version);
 
 /***/ }),
 
@@ -36629,535 +36026,59 @@ var update = _style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMP
 
 /***/ }),
 
-/***/ "./examples/demo/App.tsx":
-/*!*******************************!*\
-  !*** ./examples/demo/App.tsx ***!
-  \*******************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Prism = __webpack_require__(/*! prismjs */ "./node_modules/prismjs/prism.js");
-var client_1 = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
-var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
-var NewFeatures_1 = __webpack_require__(/*! ./NewFeatures */ "./examples/demo/NewFeatures.tsx");
-var PopupMenu_1 = __webpack_require__(/*! ./PopupMenu */ "./examples/demo/PopupMenu.tsx");
-var TabStorage_1 = __webpack_require__(/*! ./TabStorage */ "./examples/demo/TabStorage.tsx");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
-__webpack_require__(/*! prismjs/themes/prism-coy.css */ "./node_modules/prismjs/themes/prism-coy.css");
-var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
-var ContextExample = React.createContext('');
-var App = /** @class */ (function (_super) {
-    __extends(App, _super);
-    function App(props) {
-        var _this = _super.call(this, props) || this;
-        _this.nextGridIndex = 1;
-        _this.showingPopupMenu = false;
-        _this.htmlTimer = null;
-        _this.onModelChange = function () {
-            if (_this.htmlTimer) {
-                clearTimeout(_this.htmlTimer);
-            }
-            _this.htmlTimer = setTimeout(function () {
-                var jsonText = JSON.stringify(_this.state.model.toJson(), null, "\t");
-                var html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
-                _this.setState({ json: html });
-                _this.htmlTimer = null;
-            }, 500);
-        };
-        _this.load = function (jsonText) {
-            var json = JSON.parse(jsonText);
-            var model = index_1.Model.fromJson(json);
-            // model.setOnCreateTabSet((tabNode?: TabNode) => {
-            //     console.log("onCreateTabSet " + tabNode);
-            //     // return { type: "tabset", name: "Header Text" };
-            //     return { type: "tabset" };
-            // });
-            // you can control where nodes can be dropped
-            //model.setOnAllowDrop(this.allowDrop);
-            var html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
-            _this.setState({ layoutFile: _this.loadingLayoutName, model: model, json: html });
-        };
-        _this.allowDrop = function (dragNode, dropInfo) {
-            var dropNode = dropInfo.node;
-            // prevent non-border tabs dropping into borders
-            if (dropNode.getType() === "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
-                return false;
-            // prevent border tabs dropping into main layout
-            if (dropNode.getType() !== "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
-                return false;
-            return true;
-        };
-        _this.error = function (reason) {
-            alert("Error loading json config file: " + _this.loadingLayoutName + "\n" + reason);
-        };
-        _this.onAddDragMouseDown = function (event) {
-            event.stopPropagation();
-            event.preventDefault();
-            _this.refs.layout.addTabWithDragAndDrop(undefined, {
-                component: "grid",
-                icon: "images/article.svg",
-                name: "Grid " + _this.nextGridIndex++
-            }, _this.onAdded);
-            // this.setState({ adding: true });
-        };
-        _this.onAddActiveClick = function (event) {
-            _this.refs.layout.addTabToActiveTabSet({
-                component: "grid",
-                icon: "images/article.svg",
-                name: "Grid " + _this.nextGridIndex++
-            });
-        };
-        _this.onAddFromTabSetButton = function (node) {
-            _this.refs.layout.addTabToTabSet(node.getId(), {
-                component: "grid",
-                name: "Grid " + _this.nextGridIndex++
-            });
-        };
-        _this.onAddIndirectClick = function (event) {
-            _this.refs.layout.addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
-                component: "grid",
-                name: "Grid " + _this.nextGridIndex++
-            }, _this.onAdded);
-            _this.setState({ adding: true });
-        };
-        _this.onRealtimeResize = function (event) {
-            _this.setState({
-                realtimeResize: event.target.checked
-            });
-        };
-        _this.onRenderDragRect = function (content, node, json) {
-            if (_this.state.layoutFile === "newfeatures") {
-                return (React.createElement(React.Fragment, null,
-                    content,
-                    React.createElement("div", { style: { whiteSpace: "pre" } },
-                        React.createElement("br", null),
-                        "This is a customized",
-                        React.createElement("br", null),
-                        "drag rectangle")));
-            }
-            else {
-                return undefined; // use default rendering
-            }
-        };
-        _this.onContextMenu = function (node, event) {
-            if (!_this.showingPopupMenu) {
-                event.preventDefault();
-                event.stopPropagation();
-                console.log(node, event);
-                (0, PopupMenu_1.showPopup)(node instanceof index_1.TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(), _this.refs.layout.getRootDiv(), event.clientX, event.clientY, ["Option 1", "Option 2"], function (item) {
-                    console.log("selected: " + item);
-                    _this.showingPopupMenu = false;
-                });
-                _this.showingPopupMenu = true;
-            }
-        };
-        _this.onAuxMouseClick = function (node, event) {
-            console.log(node, event);
-        };
-        _this.onRenderFloatingTabPlaceholder = function (dockPopout, showPopout) {
-            return (React.createElement("div", { className: index_1.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER },
-                React.createElement("div", null, "Custom renderer for floating tab placeholder"),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: showPopout }, "show the tab")),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: dockPopout }, "dock the tab"))));
-        };
-        _this.onExternalDrag = function (e) {
-            // console.log("onExternaldrag ", e.dataTransfer.types);
-            // Check for supported content type
-            var validTypes = ["text/uri-list", "text/html", "text/plain"];
-            if (e.dataTransfer.types.find(function (t) { return validTypes.indexOf(t) !== -1; }) === undefined)
-                return;
-            // Set dropEffect (icon)
-            e.dataTransfer.dropEffect = "link";
-            return {
-                dragText: "Drag To New Tab",
-                json: {
-                    type: "tab",
-                    component: "multitype"
-                },
-                onDrop: function (node, event) {
-                    if (!node || !event)
-                        return; // aborted drag
-                    if (node instanceof index_1.TabNode && event instanceof DragEvent) {
-                        var dragEvent = event;
-                        if (dragEvent.dataTransfer) {
-                            if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/uri-list");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data: data, type: "url" } }));
-                            }
-                            else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/html");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data: data, type: "html" } }));
-                            }
-                            else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
-                                var data = dragEvent.dataTransfer.getData("text/plain");
-                                _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data: data, type: "text" } }));
-                            }
-                        }
-                    }
-                }
-            };
-        };
-        _this.onTabDrag = function (dragging, over, x, y, location, refresh) {
-            var tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
-            if (tabStorageImpl) {
-                return tabStorageImpl(dragging, over, x, y, location, refresh);
-            }
-            return undefined;
-        };
-        _this.onShowLayoutClick = function (event) {
-            console.log(JSON.stringify(_this.state.model.toJson(), null, "\t"));
-        };
-        _this.onAdded = function () {
-            _this.setState({ adding: false });
-        };
-        _this.onTableClick = function (node, event) {
-            // console.log("tab: \n" + node._toAttributeString());
-            // console.log("tabset: \n" + node.getParent()!._toAttributeString());
-            // const n = this.state.model?.getNodeById("#750f823f-8eda-44b7-a887-f8b287ace2c8");
-            // (this.refs.layout as Layout).moveTabWithDragAndDrop(n as TabSetNode, "move tabset");
-            // (this.refs.layout as Layout).moveTabWithDragAndDrop(node as TabNode);
-        };
-        _this.onAction = function (action) {
-            return action;
-        };
-        _this.factory = function (node) {
-            // log lifecycle events
-            //node.setEventListener("resize", function(p){console.log("resize", node);});
-            //node.setEventListener("visibility", function(p){console.log("visibility", node);});
-            //node.setEventListener("close", function(p){console.log("close", node);});
-            var component = node.getComponent();
-            if (component === "json") {
-                return (React.createElement("pre", { style: { tabSize: "20px" }, dangerouslySetInnerHTML: { __html: _this.state.json } }));
-            }
-            else if (component === "grid") {
-                if (node.getExtraData().data == null) {
-                    // create data in node extra data first time accessed
-                    node.getExtraData().data = _this.makeFakeData();
-                }
-                return React.createElement(SimpleTable, { fields: fields, onClick: _this.onTableClick.bind(_this, node), data: node.getExtraData().data });
-            }
-            else if (component === "sub") {
-                var model = node.getExtraData().model;
-                if (model == null) {
-                    node.getExtraData().model = index_1.Model.fromJson(node.getConfig().model);
-                    model = node.getExtraData().model;
-                    // save submodel on save event
-                    node.setEventListener("save", function (p) {
-                        _this.state.model.doAction(index_1.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
-                        //  node.getConfig().model = node.getExtraData().model.toJson();
-                    });
-                }
-                return React.createElement(index_1.Layout, { model: model, factory: _this.factory });
-            }
-            else if (component === "text") {
-                try {
-                    return React.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
-                }
-                catch (e) {
-                    console.log(e);
-                }
-            }
-            else if (component === "newfeatures") {
-                return React.createElement(NewFeatures_1.NewFeatures, null);
-            }
-            else if (component === "multitype") {
-                try {
-                    var config = node.getConfig();
-                    if (config.type === "url") {
-                        return React.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", border: "none", boxSizing: "border-box" }, width: "100%", height: "100%" });
-                    }
-                    else if (config.type === "html") {
-                        return (React.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
-                    }
-                    else if (config.type === "text") {
-                        return (React.createElement("textarea", { style: { position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }, defaultValue: config.data }));
-                    }
-                }
-                catch (e) {
-                    return (React.createElement("div", null, String(e)));
-                }
-            }
-            else if (component === "tabstorage") {
-                return React.createElement(TabStorage_1.TabStorage, { tab: node, layout: _this.refs.layout });
-            }
-            return null;
-        };
-        _this.titleFactory = function (node) {
-            if (node.getId() === "custom-tab") {
-                // return "(Added by titleFactory) " + node.getName();
-                return {
-                    titleContent: React.createElement("div", null,
-                        "(Added by titleFactory) ",
-                        node.getName()),
-                    name: "the name for custom tab"
-                };
-            }
-            return;
-        };
-        _this.iconFactory = function (node) {
-            if (node.getId() === "custom-tab") {
-                return React.createElement(React.Fragment, null,
-                    React.createElement("span", { style: { marginRight: 3 } }, ":)"));
-            }
-            return;
-        };
-        _this.onSelectLayout = function (event) {
-            var target = event.target;
-            _this.loadLayout(target.value);
-        };
-        _this.onReloadFromFile = function (event) {
-            _this.loadLayout(_this.state.layoutFile, true);
-        };
-        _this.onThemeChange = function (event) {
-            var target = event.target;
-            var flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
-            var index = flexlayout_stylesheet.href.lastIndexOf("/");
-            var newAddress = flexlayout_stylesheet.href.substr(0, index);
-            flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
-            var page_stylesheet = window.document.getElementById("page-stylesheet");
-            page_stylesheet.setAttribute("href", target.value + ".css");
-            _this.forceUpdate();
-        };
-        _this.onSizeChange = function (event) {
-            var target = event.target;
-            _this.setState({ fontSize: target.value });
-        };
-        _this.onRenderTab = function (node, renderValues) {
-            // renderValues.content = (<InnerComponent/>);
-            // renderValues.content += " *";
-            // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
-            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
-            // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-        };
-        _this.onRenderTabSet = function (node, renderValues) {
-            if (_this.state.layoutFile === "default") {
-                //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-                //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-                renderValues.stickyButtons.push(React.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: function () { return _this.onAddFromTabSetButton(node); } }));
-            }
-        };
-        _this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
-        // save layout when unloading page
-        window.onbeforeunload = function (event) {
-            _this.save();
-        };
-        return _this;
-    }
-    App.prototype.preventIOSScrollingWhenDragging = function (e) {
-        if (index_1.DragDrop.instance.isActive()) {
-            e.preventDefault();
-        }
-    };
-    App.prototype.componentDidMount = function () {
-        this.loadLayout("default", false);
-        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
-        // use to generate json typescript interfaces 
-        // Model.toTypescriptInterfaces();
-    };
-    App.prototype.save = function () {
-        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
-        localStorage.setItem(this.state.layoutFile, jsonStr);
-    };
-    App.prototype.loadLayout = function (layoutName, reload) {
-        if (this.state.layoutFile !== null) {
-            this.save();
-        }
-        this.loadingLayoutName = layoutName;
-        var loaded = false;
-        if (!reload) {
-            var json = localStorage.getItem(layoutName);
-            if (json != null) {
-                this.load(json);
-                loaded = true;
-            }
-        }
-        if (!loaded) {
-            Utils_1.Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
-        }
-    };
-    App.prototype.onTabSetPlaceHolder = function (node) {
-        return React.createElement("div", null, "Drag tabs to this area");
-    };
-    App.prototype.render = function () {
-        var contents = "loading ...";
-        if (this.state.model !== null) {
-            contents = React.createElement(index_1.Layout, { ref: "layout", model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, onModelChange: this.onModelChange, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined, 
-                // icons={{
-                //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
-                //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
-                //     }
-                // }}
-                onTabSetPlaceHolder: this.onTabSetPlaceHolder });
-        }
-        return (React.createElement(ContextExample.Provider, { value: "from context" },
-            React.createElement("div", { className: "app" },
-                React.createElement("div", { className: "toolbar", dir: "ltr" },
-                    React.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
-                        React.createElement("option", { value: "default" }, "Default"),
-                        React.createElement("option", { value: "newfeatures" }, "New Features"),
-                        React.createElement("option", { value: "simple" }, "Simple"),
-                        React.createElement("option", { value: "sub" }, "SubLayout"),
-                        React.createElement("option", { value: "complex" }, "Complex"),
-                        React.createElement("option", { value: "headers" }, "Headers")),
-                    React.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
-                    React.createElement("div", { style: { flexGrow: 1 } }),
-                    React.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
-                    React.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
-                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
-                        React.createElement("option", { value: "xx-small" }, "Size xx-small"),
-                        React.createElement("option", { value: "x-small" }, "Size x-small"),
-                        React.createElement("option", { value: "small" }, "Size small"),
-                        React.createElement("option", { value: "medium" }, "Size medium"),
-                        React.createElement("option", { value: "large" }, "Size large"),
-                        React.createElement("option", { value: "8px" }, "Size 8px"),
-                        React.createElement("option", { value: "10px" }, "Size 10px"),
-                        React.createElement("option", { value: "12px" }, "Size 12px"),
-                        React.createElement("option", { value: "14px" }, "Size 14px"),
-                        React.createElement("option", { value: "16px" }, "Size 16px"),
-                        React.createElement("option", { value: "18px" }, "Size 18px"),
-                        React.createElement("option", { value: "20px" }, "Size 20px"),
-                        React.createElement("option", { value: "25px" }, "Size 25px"),
-                        React.createElement("option", { value: "30px" }, "Size 30px")),
-                    React.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "light", onChange: this.onThemeChange },
-                        React.createElement("option", { value: "underline" }, "Underline"),
-                        React.createElement("option", { value: "light" }, "Light"),
-                        React.createElement("option", { value: "gray" }, "Gray"),
-                        React.createElement("option", { value: "dark" }, "Dark")),
-                    React.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
-                    React.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
-                    React.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
-                React.createElement("div", { className: "contents" }, contents))));
-    };
-    App.prototype.makeFakeData = function () {
-        var data = [];
-        var r = Math.random() * 50;
-        for (var i = 0; i < r; i++) {
-            var rec = {};
-            rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-            for (var j = 1; j < fields.length; j++) {
-                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
-            }
-            data.push(rec);
-        }
-        return data;
-    };
-    App.prototype.randomString = function (len, chars) {
-        var a = [];
-        for (var i = 0; i < len; i++) {
-            a.push(chars[Math.floor(Math.random() * chars.length)]);
-        }
-        return a.join("");
-    };
-    return App;
-}(React.Component));
-var SimpleTable = /** @class */ (function (_super) {
-    __extends(SimpleTable, _super);
-    function SimpleTable() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    SimpleTable.prototype.shouldComponentUpdate = function () {
-        return true;
-    };
-    SimpleTable.prototype.render = function () {
-        var _this = this;
-        // if (Math.random()>0.8) throw Error("oppps I crashed");
-        var headercells = this.props.fields.map(function (field) {
-            return React.createElement("th", { key: field }, field);
-        });
-        var rows = [];
-        for (var i = 0; i < this.props.data.length; i++) {
-            var row = this.props.fields.map(function (field) { return React.createElement("td", { key: field }, _this.props.data[i][field]); });
-            rows.push(React.createElement("tr", { key: i }, row));
-        }
-        return React.createElement("table", { className: "simple_table", onClick: this.props.onClick },
-            React.createElement("tbody", null,
-                React.createElement("tr", null, headercells),
-                rows));
-    };
-    return SimpleTable;
-}(React.Component));
-// function InnerComponent() {
-//     const value = React.useContext(ContextExample);
-//     return <span>{value}</span>;
-// }
-var root = (0, client_1.createRoot)(document.getElementById("container"));
-root.render(React.createElement(App, null));
-
-
-/***/ }),
-
 /***/ "./examples/demo/NewFeatures.tsx":
 /*!***************************************!*\
   !*** ./examples/demo/NewFeatures.tsx ***!
   \***************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "NewFeatures": () => (/* binding */ NewFeatures)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.NewFeatures = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 function NewFeatures() {
-    return (React.createElement("ul", null,
-        React.createElement("li", null,
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("ul", null,
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Help text (tooltip) option on tabs: ",
-            React.createElement("br", null),
-            React.createElement("small", null, "Hover over this tab button")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "Hover over this tab button")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Action to close tabset:",
-            React.createElement("br", null),
-            React.createElement("small", null, "See added x button in this tabset")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "See added x button in this tabset")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Intercept drag drop to allow dropping tabs into custom areas:",
-            React.createElement("br", null),
-            React.createElement("small", null, "See Tab Storage tab")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "See Tab Storage tab")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Allow narrow splitters with extended hit test areas:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Uses the splitterExtra global attribute")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "Uses the splitterExtra global attribute")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Tab attributes: borderWidth, borderHeight to allow tabs to have individual sizes in borders:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Try the 'With border sizes' tab")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "Try the 'With border sizes' tab")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "Customize the drag rectangle using the callback property: onRenderDragRect ",
-            React.createElement("br", null),
-            React.createElement("small", null, "In this layout all drag rectangles are custom rendered")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "In this layout all drag rectangles are custom rendered")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "New border attribute: enableAutoHide, to hide border if it has zero tabs:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Try moving all tabs from any of the borders")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "Try moving all tabs from any of the borders")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "New onRenderFloatingTabPlaceholder prop:",
-            React.createElement("br", null),
-            React.createElement("small", null, "Popout one of the tabs to see the custom rendered placeholder")),
-        React.createElement("li", null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "Popout one of the tabs to see the custom rendered placeholder")),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("li", null,
             "New onContextMenu prop:",
-            React.createElement("br", null),
-            React.createElement("small", null, "All tabs and tabsets in this layout have a custom context menu"))));
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("small", null, "All tabs and tabsets in this layout have a custom context menu"))));
 }
-exports.NewFeatures = NewFeatures;
 
 
 /***/ }),
@@ -37166,20 +36087,25 @@ exports.NewFeatures = NewFeatures;
 /*!*************************************!*\
   !*** ./examples/demo/PopupMenu.tsx ***!
   \*************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "showPopup": () => (/* binding */ showPopup)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+/* harmony import */ var _src_index__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.showPopup = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var ReactDOM = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
-var src_1 = __webpack_require__(/*! ../../src */ "./src/index.ts");
+
+
 /** @hidden @internal */
 function showPopup(title, layoutDiv, x, y, items, onSelect) {
-    var currentDocument = layoutDiv.ownerDocument;
-    var layoutRect = layoutDiv.getBoundingClientRect();
-    var elm = currentDocument.createElement("div");
+    const currentDocument = layoutDiv.ownerDocument;
+    const layoutRect = layoutDiv.getBoundingClientRect();
+    const elm = currentDocument.createElement("div");
     elm.className = "popup_menu_container";
     if (x < layoutRect.left + layoutRect.width / 2) {
         elm.style.left = x - layoutRect.left + "px";
@@ -37193,39 +36119,38 @@ function showPopup(title, layoutDiv, x, y, items, onSelect) {
     else {
         elm.style.bottom = layoutRect.bottom - y + "px";
     }
-    src_1.DragDrop.instance.addGlass(function () { return onHide(undefined); });
-    src_1.DragDrop.instance.setGlassCursorOverride("default");
+    _src_index__WEBPACK_IMPORTED_MODULE_2__.DragDrop.instance.addGlass(() => onHide(undefined));
+    _src_index__WEBPACK_IMPORTED_MODULE_2__.DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
-    var onHide = function (item) {
-        src_1.DragDrop.instance.hideGlass();
+    const onHide = (item) => {
+        _src_index__WEBPACK_IMPORTED_MODULE_2__.DragDrop.instance.hideGlass();
         onSelect(item);
         layoutDiv.removeChild(elm);
         root.unmount();
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
-    var onElementMouseDown = function (event) {
+    const onElementMouseDown = (event) => {
         event.stopPropagation();
     };
-    var onDocMouseDown = function (event) {
+    const onDocMouseDown = (event) => {
         onHide(undefined);
     };
     elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
-    var root = ReactDOM.createRoot(elm);
-    root.render(React.createElement(PopupMenu, { currentDocument: currentDocument, onHide: onHide, title: title, items: items }));
+    const root = react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot(elm);
+    root.render(react__WEBPACK_IMPORTED_MODULE_0__.createElement(PopupMenu, { currentDocument: currentDocument, onHide: onHide, title: title, items: items }));
 }
-exports.showPopup = showPopup;
 /** @hidden @internal */
-var PopupMenu = function (props) {
-    var title = props.title, items = props.items, onHide = props.onHide;
-    var onItemClick = function (item, event) {
+const PopupMenu = (props) => {
+    const { title, items, onHide } = props;
+    const onItemClick = (item, event) => {
         onHide(item);
         event.stopPropagation();
     };
-    var itemElements = items.map(function (item) { return (React.createElement("div", { key: item, className: "popup_menu_item", onClick: function (event) { return onItemClick(item, event); } }, item)); });
-    return (React.createElement("div", { className: "popup_menu" },
-        React.createElement("div", { className: "popup_menu_title" }, title),
+    const itemElements = items.map((item) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: item, className: "popup_menu_item", onClick: (event) => onItemClick(item, event) }, item)));
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "popup_menu" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "popup_menu_title" }, title),
         itemElements));
 };
 
@@ -37236,110 +36161,94 @@ var PopupMenu = function (props) {
 /*!**************************************!*\
   !*** ./examples/demo/TabStorage.tsx ***!
   \**************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabStorage": () => (/* binding */ TabStorage)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var uuid__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/v4.js");
+/* harmony import */ var _src_index__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
 
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabStorage = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
-var index_1 = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
-function TabStorage(_a) {
-    var _b, _c;
-    var tab = _a.tab, layout = _a.layout;
-    var _d = (0, react_1.useState)((_c = (_b = tab.getConfig()) === null || _b === void 0 ? void 0 : _b.storedTabs) !== null && _c !== void 0 ? _c : []), storedTabs = _d[0], setStoredTabs = _d[1];
-    (0, react_1.useEffect)(function () {
+
+
+
+function TabStorage({ tab, layout }) {
+    var _a, _b;
+    const [storedTabs, setStoredTabs] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)((_b = (_a = tab.getConfig()) === null || _a === void 0 ? void 0 : _a.storedTabs) !== null && _b !== void 0 ? _b : []);
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
         var _a;
-        tab.getModel().doAction(index_1.Actions.updateNodeAttributes(tab.getId(), { config: __assign(__assign({}, ((_a = tab.getConfig()) !== null && _a !== void 0 ? _a : {})), { storedTabs: storedTabs }) }));
+        tab.getModel().doAction(_src_index__WEBPACK_IMPORTED_MODULE_1__.Actions.updateNodeAttributes(tab.getId(), { config: Object.assign(Object.assign({}, ((_a = tab.getConfig()) !== null && _a !== void 0 ? _a : {})), { storedTabs }) }));
     }, [storedTabs]);
-    var _e = (0, react_1.useState)(null), contents = _e[0], setContents = _e[1];
-    var _f = (0, react_1.useState)(null), list = _f[0], setList = _f[1];
-    var refs = (0, react_1.useRef)(new Map()).current;
-    var _g = (0, react_1.useState)(null), emptyElem = _g[0], setEmptyElem = _g[1];
+    const [contents, setContents] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+    const [list, setList] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+    const refs = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(new Map()).current;
+    const [emptyElem, setEmptyElem] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
     // true = down, false = up, null = none
-    var _h = (0, react_1.useState)(null), scrollDown = _h[0], setScrollDown = _h[1];
-    var scrollInvalidateRef = (0, react_1.useRef)();
-    var scroller = (0, react_1.useCallback)(function (isDown) {
+    const [scrollDown, setScrollDown] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+    const scrollInvalidateRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+    const scroller = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((isDown) => {
         var _a;
         contents === null || contents === void 0 ? void 0 : contents.scrollBy(0, isDown ? 10 : -10);
         (_a = scrollInvalidateRef.current) === null || _a === void 0 ? void 0 : _a.call(scrollInvalidateRef);
     }, [contents]);
-    var scrollerRef = (0, react_1.useRef)(scroller);
+    const scrollerRef = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(scroller);
     scrollerRef.current = scroller;
-    (0, react_1.useEffect)(function () {
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
         if (scrollDown !== null) {
-            var scrollInterval_1;
-            var scrollTimeout_1 = setTimeout(function () {
+            let scrollInterval;
+            let scrollTimeout = setTimeout(() => {
                 scrollerRef.current(scrollDown);
-                scrollInterval_1 = setInterval(function () { return scrollerRef.current(scrollDown); }, 50);
+                scrollInterval = setInterval(() => scrollerRef.current(scrollDown), 50);
             }, 500);
-            return function () {
-                clearTimeout(scrollTimeout_1);
-                clearInterval(scrollInterval_1);
+            return () => {
+                clearTimeout(scrollTimeout);
+                clearInterval(scrollInterval);
             };
         }
         return;
     }, [scrollDown]);
-    var kickstartingCallback = (0, react_1.useCallback)(function (dragging) {
-        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+    const kickstartingCallback = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((dragging) => {
+        const json = dragging instanceof _src_index__WEBPACK_IMPORTED_MODULE_1__.TabNode ? dragging.toJson() : dragging;
         if (json.id === undefined) {
-            json.id = "#".concat((0, uuid_1.v4)());
+            json.id = `#${(0,uuid__WEBPACK_IMPORTED_MODULE_2__["default"])()}`;
         }
-        setStoredTabs(function (tabs) { return __spreadArray(__spreadArray([], tabs, true), [json], false); });
-        if (dragging instanceof index_1.TabNode) {
-            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        setStoredTabs(tabs => [...tabs, json]);
+        if (dragging instanceof _src_index__WEBPACK_IMPORTED_MODULE_1__.TabNode) {
+            tab.getModel().doAction(_src_index__WEBPACK_IMPORTED_MODULE_1__.Actions.deleteTab(dragging.getId()));
         }
     }, [tab]);
-    var calculateInsertion = (0, react_1.useCallback)(function (absoluteY) {
-        var rects = storedTabs.map(function (json) { return refs.get(json.id).getBoundingClientRect(); });
-        var splits = [rects[0].top];
-        for (var i = 1; i < rects.length; i++) {
+    const calculateInsertion = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((absoluteY) => {
+        const rects = storedTabs.map(json => refs.get(json.id).getBoundingClientRect());
+        const splits = [rects[0].top];
+        for (let i = 1; i < rects.length; i++) {
             splits.push((rects[i - 1].bottom + rects[i].top) / 2);
         }
         splits.push(rects[rects.length - 1].bottom);
-        var insertionIndex = 0;
-        for (var i = 1; i < splits.length; i++) {
+        let insertionIndex = 0;
+        for (let i = 1; i < splits.length; i++) {
             if (Math.abs(splits[i] - absoluteY) <= Math.abs(splits[insertionIndex] - absoluteY)) {
                 insertionIndex = i;
             }
         }
         return {
-            insertionIndex: insertionIndex,
+            insertionIndex,
             split: splits[insertionIndex]
         };
     }, [storedTabs]);
-    var insertionCallback = (0, react_1.useCallback)(function (dragging, _, __, y) {
-        var absoluteY = y + tab.getRect().y + layout.getDomRect().top;
-        var insertionIndex = calculateInsertion(absoluteY).insertionIndex;
-        var json = dragging instanceof index_1.TabNode ? dragging.toJson() : dragging;
+    const insertionCallback = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((dragging, _, __, y) => {
+        const absoluteY = y + tab.getRect().y + layout.getDomRect().top;
+        const { insertionIndex } = calculateInsertion(absoluteY);
+        const json = dragging instanceof _src_index__WEBPACK_IMPORTED_MODULE_1__.TabNode ? dragging.toJson() : dragging;
         if (json.id === undefined) {
-            json.id = "#".concat((0, uuid_1.v4)());
+            json.id = `#${(0,uuid__WEBPACK_IMPORTED_MODULE_2__["default"])()}`;
         }
-        setStoredTabs(function (tabs) {
-            var newTabs = __spreadArray([], tabs, true);
-            var foundAt = newTabs.indexOf(json);
+        setStoredTabs(tabs => {
+            const newTabs = [...tabs];
+            const foundAt = newTabs.indexOf(json);
             if (foundAt > -1) {
                 newTabs.splice(foundAt, 1);
                 newTabs.splice(insertionIndex > foundAt ? insertionIndex - 1 : insertionIndex, 0, json);
@@ -37350,19 +36259,19 @@ function TabStorage(_a) {
             return newTabs;
         });
         setScrollDown(null);
-        if (dragging instanceof index_1.TabNode) {
-            tab.getModel().doAction(index_1.Actions.deleteTab(dragging.getId()));
+        if (dragging instanceof _src_index__WEBPACK_IMPORTED_MODULE_1__.TabNode) {
+            tab.getModel().doAction(_src_index__WEBPACK_IMPORTED_MODULE_1__.Actions.deleteTab(dragging.getId()));
         }
     }, [calculateInsertion, tab, layout]);
-    tab.getExtraData().tabStorage_onTabDrag = (0, react_1.useCallback)((function (dragging, over, x, y, _, refresh) {
+    tab.getExtraData().tabStorage_onTabDrag = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(((dragging, over, x, y, _, refresh) => {
         if (contents && list) {
-            var layoutDomRect = layout.getDomRect();
-            var tabRect = tab.getRect();
-            var rootX = tabRect.x + layoutDomRect.left;
-            var rootY = tabRect.y + layoutDomRect.top;
-            var absX = x + rootX;
-            var absY = y + rootY;
-            var listBounds = list.getBoundingClientRect();
+            const layoutDomRect = layout.getDomRect();
+            const tabRect = tab.getRect();
+            const rootX = tabRect.x + layoutDomRect.left;
+            const rootY = tabRect.y + layoutDomRect.top;
+            const absX = x + rootX;
+            const absY = y + rootY;
+            const listBounds = list.getBoundingClientRect();
             if (absX < listBounds.left || absX >= listBounds.right ||
                 absY < listBounds.top || absY >= listBounds.bottom)
                 return;
@@ -37377,7 +36286,7 @@ function TabStorage(_a) {
                 };
             }
             else {
-                var insertion = calculateInsertion(absY);
+                const insertion = calculateInsertion(absY);
                 scrollInvalidateRef.current = refresh;
                 if (absY - rootY < tabRect.height / 5) {
                     setScrollDown(false);
@@ -37394,30 +36303,29 @@ function TabStorage(_a) {
                     width: listBounds.width,
                     height: 0,
                     callback: insertionCallback,
-                    invalidated: function () { return setScrollDown(null); },
+                    invalidated: () => setScrollDown(null),
                     cursor: 'row-resize'
                 };
             }
         }
         return undefined;
     }), [storedTabs, contents, list, refs, emptyElem]);
-    return React.createElement("div", { ref: setContents, className: "tab-storage" },
-        React.createElement("p", null, "This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list. You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!"),
-        React.createElement("div", { ref: setList, className: "tab-storage-tabs" },
-            storedTabs.length === 0 && React.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
-            storedTabs.map(function (stored, i) {
+    return react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: setContents, className: "tab-storage" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("p", null, "This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list. You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!"),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: setList, className: "tab-storage-tabs" },
+            storedTabs.length === 0 && react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
+            storedTabs.map((stored, i) => {
                 var _a;
-                return (React.createElement("div", { ref: function (ref) { return ref ? refs.set(stored.id, ref) : refs.delete(stored.id); }, className: "tab-storage-entry", key: stored.id, onMouseDown: function (e) {
+                return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: ref => ref ? refs.set(stored.id, ref) : refs.delete(stored.id), className: "tab-storage-entry", key: stored.id, onMouseDown: e => {
                         var _a;
                         e.preventDefault();
-                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
-                    }, onTouchStart: function (e) {
+                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
+                    }, onTouchStart: e => {
                         var _a;
-                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, function (node) { return node && setStoredTabs(function (tabs) { return tabs.filter(function (tab) { return tab !== stored; }); }); });
+                        layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
                     } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed'));
             })));
 }
-exports.TabStorage = TabStorage;
 
 
 /***/ }),
@@ -37426,16 +36334,15 @@ exports.TabStorage = TabStorage;
 /*!*********************************!*\
   !*** ./examples/demo/Utils.tsx ***!
   \*********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Utils = void 0;
-var Utils = /** @class */ (function () {
-    function Utils() {
-    }
-    Utils.downloadFile = function (downloadUrl, onSuccess, onError) {
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Utils": () => (/* binding */ Utils)
+/* harmony export */ });
+class Utils {
+    static downloadFile(downloadUrl, onSuccess, onError) {
         console.log("DownloadFile: " + downloadUrl);
         if (downloadUrl) {
             var xhr = new XMLHttpRequest();
@@ -37454,8 +36361,8 @@ var Utils = /** @class */ (function () {
             };
             xhr.send();
         }
-    };
-    Utils.getQueryParams = function () {
+    }
+    static getQueryParams() {
         var a = window.location.search.substr(1);
         if (a == "")
             return {};
@@ -37469,10 +36376,8 @@ var Utils = /** @class */ (function () {
                 b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
         }
         return b;
-    };
-    return Utils;
-}());
-exports.Utils = Utils;
+    }
+}
 
 
 /***/ }),
@@ -37481,15 +36386,16 @@ exports.Utils = Utils;
 /*!**************************!*\
   !*** ./src/Attribute.ts ***!
   \**************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Attribute = void 0;
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Attribute": () => (/* binding */ Attribute)
+/* harmony export */ });
 /** @internal */
-var Attribute = /** @class */ (function () {
-    function Attribute(name, modelName, defaultValue, alwaysWriteJson) {
+class Attribute {
+    constructor(name, modelName, defaultValue, alwaysWriteJson) {
         this.name = name;
         this.modelName = modelName;
         this.defaultValue = defaultValue;
@@ -37498,24 +36404,22 @@ var Attribute = /** @class */ (function () {
         this.fixed = false;
         this.type = "any";
     }
-    Attribute.prototype.setType = function (value) {
+    setType(value) {
         this.type = value;
         return this;
-    };
-    Attribute.prototype.setRequired = function () {
+    }
+    setRequired() {
         this.required = true;
         return this;
-    };
-    Attribute.prototype.setFixed = function () {
+    }
+    setFixed() {
         this.fixed = true;
         return this;
-    };
-    Attribute.NUMBER = "number";
-    Attribute.STRING = "string";
-    Attribute.BOOLEAN = "boolean";
-    return Attribute;
-}());
-exports.Attribute = Attribute;
+    }
+}
+Attribute.NUMBER = "number";
+Attribute.STRING = "string";
+Attribute.BOOLEAN = "boolean";
 
 
 /***/ }),
@@ -37524,54 +36428,54 @@ exports.Attribute = Attribute;
 /*!*************************************!*\
   !*** ./src/AttributeDefinitions.ts ***!
   \*************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "AttributeDefinitions": () => (/* binding */ AttributeDefinitions)
+/* harmony export */ });
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Attribute */ "./src/Attribute.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AttributeDefinitions = void 0;
-var Attribute_1 = __webpack_require__(/*! ./Attribute */ "./src/Attribute.ts");
 /** @internal */
-var AttributeDefinitions = /** @class */ (function () {
-    function AttributeDefinitions() {
+class AttributeDefinitions {
+    constructor() {
         this.attributes = [];
         this.nameToAttribute = {};
     }
-    AttributeDefinitions.prototype.addWithAll = function (name, modelName, defaultValue, alwaysWriteJson) {
-        var attr = new Attribute_1.Attribute(name, modelName, defaultValue, alwaysWriteJson);
+    addWithAll(name, modelName, defaultValue, alwaysWriteJson) {
+        const attr = new _Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute(name, modelName, defaultValue, alwaysWriteJson);
         this.attributes.push(attr);
         this.nameToAttribute[name] = attr;
         return attr;
-    };
-    AttributeDefinitions.prototype.addInherited = function (name, modelName) {
+    }
+    addInherited(name, modelName) {
         return this.addWithAll(name, modelName, undefined, false);
-    };
-    AttributeDefinitions.prototype.add = function (name, defaultValue, alwaysWriteJson) {
+    }
+    add(name, defaultValue, alwaysWriteJson) {
         return this.addWithAll(name, undefined, defaultValue, alwaysWriteJson);
-    };
-    AttributeDefinitions.prototype.getAttributes = function () {
+    }
+    getAttributes() {
         return this.attributes;
-    };
-    AttributeDefinitions.prototype.getModelName = function (name) {
-        var conversion = this.nameToAttribute[name];
+    }
+    getModelName(name) {
+        const conversion = this.nameToAttribute[name];
         if (conversion !== undefined) {
             return conversion.modelName;
         }
         return undefined;
-    };
-    AttributeDefinitions.prototype.toJson = function (jsonObj, obj) {
-        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
-            var attr = _a[_i];
-            var fromValue = obj[attr.name];
+    }
+    toJson(jsonObj, obj) {
+        for (const attr of this.attributes) {
+            const fromValue = obj[attr.name];
             if (attr.alwaysWriteJson || fromValue !== attr.defaultValue) {
                 jsonObj[attr.name] = fromValue;
             }
         }
-    };
-    AttributeDefinitions.prototype.fromJson = function (jsonObj, obj) {
-        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
-            var attr = _a[_i];
-            var fromValue = jsonObj[attr.name];
+    }
+    fromJson(jsonObj, obj) {
+        for (const attr of this.attributes) {
+            const fromValue = jsonObj[attr.name];
             if (fromValue === undefined) {
                 obj[attr.name] = attr.defaultValue;
             }
@@ -37579,12 +36483,11 @@ var AttributeDefinitions = /** @class */ (function () {
                 obj[attr.name] = fromValue;
             }
         }
-    };
-    AttributeDefinitions.prototype.update = function (jsonObj, obj) {
-        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
-            var attr = _a[_i];
+    }
+    update(jsonObj, obj) {
+        for (const attr of this.attributes) {
             if (jsonObj.hasOwnProperty(attr.name)) {
-                var fromValue = jsonObj[attr.name];
+                const fromValue = jsonObj[attr.name];
                 if (fromValue === undefined) {
                     delete obj[attr.name];
                 }
@@ -37593,24 +36496,23 @@ var AttributeDefinitions = /** @class */ (function () {
                 }
             }
         }
-    };
-    AttributeDefinitions.prototype.setDefaults = function (obj) {
-        for (var _i = 0, _a = this.attributes; _i < _a.length; _i++) {
-            var attr = _a[_i];
+    }
+    setDefaults(obj) {
+        for (const attr of this.attributes) {
             obj[attr.name] = attr.defaultValue;
         }
-    };
-    AttributeDefinitions.prototype.toTypescriptInterface = function (name, parentAttributes) {
-        var lines = [];
-        var sorted = this.attributes.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    }
+    toTypescriptInterface(name, parentAttributes) {
+        const lines = [];
+        const sorted = this.attributes.sort((a, b) => a.name.localeCompare(b.name));
         // const sorted = this.attributes;
         lines.push("export interface I" + name + "Attributes {");
-        for (var i = 0; i < sorted.length; i++) {
-            var c = sorted[i];
-            var type = c.type;
-            var defaultValue = undefined;
-            var attr = c;
-            var inherited = undefined;
+        for (let i = 0; i < sorted.length; i++) {
+            const c = sorted[i];
+            let type = c.type;
+            let defaultValue = undefined;
+            let attr = c;
+            let inherited = undefined;
             if (attr.defaultValue !== undefined) {
                 defaultValue = attr.defaultValue;
             }
@@ -37622,13 +36524,13 @@ var AttributeDefinitions = /** @class */ (function () {
                 defaultValue = attr.defaultValue;
                 type = attr.type;
             }
-            var defValue = JSON.stringify(defaultValue);
-            var required = attr.required || attr.fixed ? "" : "?";
+            let defValue = JSON.stringify(defaultValue);
+            const required = attr.required || attr.fixed ? "" : "?";
             if (c.fixed) {
                 lines.push("\t" + c.name + ": " + defValue + ";");
             }
             else {
-                var comment = (defaultValue !== undefined ? "default: " + defValue : "") +
+                const comment = (defaultValue !== undefined ? "default: " + defValue : "") +
                     (inherited !== undefined ? " - inherited from global " + inherited : "");
                 lines.push("\t" + c.name + required + ": " + type + ";" +
                     (comment.length > 0 ? " // " + comment : ""));
@@ -37636,10 +36538,8 @@ var AttributeDefinitions = /** @class */ (function () {
         }
         lines.push("}");
         return lines.join("\n");
-    };
-    return AttributeDefinitions;
-}());
-exports.AttributeDefinitions = AttributeDefinitions;
+    }
+}
 
 
 /***/ }),
@@ -37648,28 +36548,31 @@ exports.AttributeDefinitions = AttributeDefinitions;
 /*!*****************************!*\
   !*** ./src/DockLocation.ts ***!
   \*****************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DockLocation": () => (/* binding */ DockLocation)
+/* harmony export */ });
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DockLocation = void 0;
-var Orientation_1 = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
-var DockLocation = /** @class */ (function () {
+
+class DockLocation {
     /** @internal */
-    function DockLocation(name, orientation, indexPlus) {
+    constructor(name, orientation, indexPlus) {
         this._name = name;
         this._orientation = orientation;
         this._indexPlus = indexPlus;
         DockLocation.values[this._name] = this;
     }
     /** @internal */
-    DockLocation.getByName = function (name) {
+    static getByName(name) {
         return DockLocation.values[name];
-    };
+    }
     /** @internal */
-    DockLocation.getLocation = function (rect, x, y) {
+    static getLocation(rect, x, y) {
         x = (x - rect.x) / rect.width;
         y = (y - rect.y) / rect.height;
         if (x >= 0.25 && x < 0.75 && y >= 0.25 && y < 0.75) {
@@ -37683,7 +36586,7 @@ var DockLocation = /** @class */ (function () {
         // |xxx\ |
         // |xxxx\|
         // +-----+
-        var bl = y >= x;
+        const bl = y >= x;
         // Whether or not the point is in the bottom-right half of the rect
         // +-----+
         // |    /|
@@ -37692,64 +36595,64 @@ var DockLocation = /** @class */ (function () {
         // | /xxx|
         // |/xxxx|
         // +-----+
-        var br = y >= 1 - x;
+        const br = y >= 1 - x;
         if (bl) {
             return br ? DockLocation.BOTTOM : DockLocation.LEFT;
         }
         else {
             return br ? DockLocation.RIGHT : DockLocation.TOP;
         }
-    };
-    DockLocation.prototype.getName = function () {
+    }
+    getName() {
         return this._name;
-    };
-    DockLocation.prototype.getOrientation = function () {
+    }
+    getOrientation() {
         return this._orientation;
-    };
+    }
     /** @internal */
-    DockLocation.prototype.getDockRect = function (r) {
+    getDockRect(r) {
         if (this === DockLocation.TOP) {
-            return new Rect_1.Rect(r.x, r.y, r.width, r.height / 2);
+            return new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(r.x, r.y, r.width, r.height / 2);
         }
         else if (this === DockLocation.BOTTOM) {
-            return new Rect_1.Rect(r.x, r.getBottom() - r.height / 2, r.width, r.height / 2);
+            return new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(r.x, r.getBottom() - r.height / 2, r.width, r.height / 2);
         }
         if (this === DockLocation.LEFT) {
-            return new Rect_1.Rect(r.x, r.y, r.width / 2, r.height);
+            return new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(r.x, r.y, r.width / 2, r.height);
         }
         else if (this === DockLocation.RIGHT) {
-            return new Rect_1.Rect(r.getRight() - r.width / 2, r.y, r.width / 2, r.height);
+            return new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(r.getRight() - r.width / 2, r.y, r.width / 2, r.height);
         }
         else {
             return r.clone();
         }
-    };
+    }
     /** @internal */
-    DockLocation.prototype.split = function (rect, size) {
+    split(rect, size) {
         if (this === DockLocation.TOP) {
-            var r1 = new Rect_1.Rect(rect.x, rect.y, rect.width, size);
-            var r2 = new Rect_1.Rect(rect.x, rect.y + size, rect.width, rect.height - size);
+            const r1 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.y, rect.width, size);
+            const r2 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.y + size, rect.width, rect.height - size);
             return { start: r1, end: r2 };
         }
         else if (this === DockLocation.LEFT) {
-            var r1 = new Rect_1.Rect(rect.x, rect.y, size, rect.height);
-            var r2 = new Rect_1.Rect(rect.x + size, rect.y, rect.width - size, rect.height);
+            const r1 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.y, size, rect.height);
+            const r2 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x + size, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
         }
         if (this === DockLocation.RIGHT) {
-            var r1 = new Rect_1.Rect(rect.getRight() - size, rect.y, size, rect.height);
-            var r2 = new Rect_1.Rect(rect.x, rect.y, rect.width - size, rect.height);
+            const r1 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.getRight() - size, rect.y, size, rect.height);
+            const r2 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.y, rect.width - size, rect.height);
             return { start: r1, end: r2 };
         }
         else {
             // if (this === DockLocation.BOTTOM) {
-            var r1 = new Rect_1.Rect(rect.x, rect.getBottom() - size, rect.width, size);
-            var r2 = new Rect_1.Rect(rect.x, rect.y, rect.width, rect.height - size);
+            const r1 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.getBottom() - size, rect.width, size);
+            const r2 = new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(rect.x, rect.y, rect.width, rect.height - size);
             return { start: r1, end: r2 };
         }
-    };
+    }
     /** @internal */
-    DockLocation.prototype.reflect = function () {
+    reflect() {
         if (this === DockLocation.TOP) {
             return DockLocation.BOTTOM;
         }
@@ -37763,19 +36666,17 @@ var DockLocation = /** @class */ (function () {
             // if (this === DockLocation.BOTTOM) {
             return DockLocation.TOP;
         }
-    };
-    DockLocation.prototype.toString = function () {
+    }
+    toString() {
         return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
-    };
-    DockLocation.values = {};
-    DockLocation.TOP = new DockLocation("top", Orientation_1.Orientation.VERT, 0);
-    DockLocation.BOTTOM = new DockLocation("bottom", Orientation_1.Orientation.VERT, 1);
-    DockLocation.LEFT = new DockLocation("left", Orientation_1.Orientation.HORZ, 0);
-    DockLocation.RIGHT = new DockLocation("right", Orientation_1.Orientation.HORZ, 1);
-    DockLocation.CENTER = new DockLocation("center", Orientation_1.Orientation.VERT, 0);
-    return DockLocation;
-}());
-exports.DockLocation = DockLocation;
+    }
+}
+DockLocation.values = {};
+DockLocation.TOP = new DockLocation("top", _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.VERT, 0);
+DockLocation.BOTTOM = new DockLocation("bottom", _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.VERT, 1);
+DockLocation.LEFT = new DockLocation("left", _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.HORZ, 0);
+DockLocation.RIGHT = new DockLocation("right", _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.HORZ, 1);
+DockLocation.CENTER = new DockLocation("center", _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.VERT, 0);
 
 
 /***/ }),
@@ -37784,18 +36685,20 @@ exports.DockLocation = DockLocation;
 /*!*************************!*\
   !*** ./src/DragDrop.ts ***!
   \*************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DragDrop": () => (/* binding */ DragDrop)
+/* harmony export */ });
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DragDrop = void 0;
-var Rect_1 = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
 /** @internal */
-var canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
-var DragDrop = /** @class */ (function () {
+const canUseDOM = !!(typeof window !== "undefined" && window.document && window.document.createElement);
+class DragDrop {
     /** @internal */
-    function DragDrop() {
+    constructor() {
         /** @internal */
         this._manualGlassManagement = false;
         /** @internal */
@@ -37830,7 +36733,7 @@ var DragDrop = /** @class */ (function () {
         this._clickY = 0;
     }
     // if you add the glass pane then you should remove it
-    DragDrop.prototype.addGlass = function (fCancel) {
+    addGlass(fCancel) {
         var _a;
         if (!this._glassShowing) {
             if (!this._document) {
@@ -37856,12 +36759,12 @@ var DragDrop = /** @class */ (function () {
             // second call to addGlass (via dragstart)
             this._manualGlassManagement = true;
         }
-    };
-    DragDrop.prototype.resizeGlass = function () {
-        var glassRect = Rect_1.Rect.fromElement(this._rootElement);
+    }
+    resizeGlass() {
+        const glassRect = _Rect__WEBPACK_IMPORTED_MODULE_0__.Rect.fromElement(this._rootElement);
         glassRect.positionElement(this._glass, "fixed");
-    };
-    DragDrop.prototype.hideGlass = function () {
+    }
+    hideGlass() {
         var _a;
         if (this._glassShowing) {
             this._document.body.removeChild(this._glass);
@@ -37871,22 +36774,22 @@ var DragDrop = /** @class */ (function () {
             this._rootElement = undefined;
             this.setGlassCursorOverride(undefined);
         }
-    };
+    }
     /** @internal */
-    DragDrop.prototype._updateGlassCursor = function () {
+    _updateGlassCursor() {
         var _a;
         this._glass.style.cursor = (_a = this._glassCursorOverride) !== null && _a !== void 0 ? _a : this._defaultGlassCursor;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._setDefaultGlassCursor = function (cursor) {
+    _setDefaultGlassCursor(cursor) {
         this._defaultGlassCursor = cursor;
         this._updateGlassCursor();
-    };
-    DragDrop.prototype.setGlassCursorOverride = function (cursor) {
+    }
+    setGlassCursorOverride(cursor) {
         this._glassCursorOverride = cursor;
         this._updateGlassCursor();
-    };
-    DragDrop.prototype.startDrag = function (event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument, rootElement) {
+    }
+    startDrag(event, fDragStart, fDragMove, fDragEnd, fDragCancel, fClick, fDblClick, currentDocument, rootElement) {
         // prevent 'duplicate' action (mouse event for same action as previous touch event (a fix for ios))
         if (event && this._lastEvent && this._lastEvent.type.startsWith("touch") && event.type.startsWith("mouse") && event.timeStamp - this._lastEvent.timeStamp < 500) {
             return;
@@ -37904,7 +36807,7 @@ var DragDrop = /** @class */ (function () {
         else {
             this._rootElement = this._document.body;
         }
-        var posEvent = this._getLocationEvent(event);
+        const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
         if (this._dragging) {
             console.warn("this._dragging true on startDrag should never happen");
@@ -37945,26 +36848,26 @@ var DragDrop = /** @class */ (function () {
             this._document.addEventListener("touchend", this._onMouseUp, { passive: false });
             this._document.addEventListener("touchmove", this._onMouseMove, { passive: false });
         }
-    };
-    DragDrop.prototype.isDragging = function () {
+    }
+    isDragging() {
         return this._dragging;
-    };
-    DragDrop.prototype.isActive = function () {
+    }
+    isActive() {
         return this._active;
-    };
-    DragDrop.prototype.toString = function () {
-        var rtn = "(DragDrop: " + "startX=" + this._startX + ", startY=" + this._startY + ", dragging=" + this._dragging + ")";
+    }
+    toString() {
+        const rtn = "(DragDrop: " + "startX=" + this._startX + ", startY=" + this._startY + ", dragging=" + this._dragging + ")";
         return rtn;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onKeyPress = function (event) {
+    _onKeyPress(event) {
         if (event.keyCode === 27) {
             // esc
             this._onDragCancel();
         }
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onDragCancel = function () {
+    _onDragCancel() {
         this._rootElement.removeEventListener("dragenter", this._onDragEnter);
         this._rootElement.removeEventListener("dragover", this._onMouseMove);
         this._rootElement.removeEventListener("dragleave", this._onDragLeave);
@@ -37980,40 +36883,40 @@ var DragDrop = /** @class */ (function () {
         }
         this._dragging = false;
         this._active = false;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._getLocationEvent = function (event) {
-        var posEvent = event;
+    _getLocationEvent(event) {
+        let posEvent = event;
         if (event && event.touches) {
             posEvent = event.touches[0];
         }
         return posEvent;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._getLocationEventEnd = function (event) {
-        var posEvent = event;
+    _getLocationEventEnd(event) {
+        let posEvent = event;
         if (event.changedTouches) {
             posEvent = event.changedTouches[0];
         }
         return posEvent;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._stopPropagation = function (event) {
+    _stopPropagation(event) {
         if (event.stopPropagation) {
             event.stopPropagation();
         }
-    };
+    }
     /** @internal */
-    DragDrop.prototype._preventDefault = function (event) {
+    _preventDefault(event) {
         if (event.preventDefault && event.cancelable) {
             event.preventDefault();
         }
         return event;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onMouseMove = function (event) {
+    _onMouseMove(event) {
         this._lastEvent = event;
-        var posEvent = this._getLocationEvent(event);
+        const posEvent = this._getLocationEvent(event);
         this._stopPropagation(event);
         this._preventDefault(event);
         if (!this._dragging && (Math.abs(this._startX - posEvent.clientX) > 5 || Math.abs(this._startY - posEvent.clientY) > 5)) {
@@ -38029,11 +36932,11 @@ var DragDrop = /** @class */ (function () {
             }
         }
         return false;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onMouseUp = function (event) {
+    _onMouseUp(event) {
         this._lastEvent = event;
-        var posEvent = this._getLocationEventEnd(event);
+        const posEvent = this._getLocationEventEnd(event);
         this._stopPropagation(event);
         this._preventDefault(event);
         this._active = false;
@@ -38061,8 +36964,8 @@ var DragDrop = /** @class */ (function () {
                 this._fDragCancel(this._dragging);
             }
             if (Math.abs(this._startX - posEvent.clientX) <= 5 && Math.abs(this._startY - posEvent.clientY) <= 5) {
-                var isDoubleClick = false;
-                var clickTime = new Date().getTime();
+                let isDoubleClick = false;
+                const clickTime = new Date().getTime();
                 // check for double click
                 if (Math.abs(this._clickX - posEvent.clientX) <= 5 && Math.abs(this._clickY - posEvent.clientY) <= 5) {
                     if (clickTime - this._lastClick < 500) {
@@ -38081,16 +36984,16 @@ var DragDrop = /** @class */ (function () {
             }
         }
         return false;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onDragEnter = function (event) {
+    _onDragEnter(event) {
         this._preventDefault(event);
         this._stopPropagation(event);
         this._dragDepth++;
         return false;
-    };
+    }
     /** @internal */
-    DragDrop.prototype._onDragLeave = function (event) {
+    _onDragLeave(event) {
         this._preventDefault(event);
         this._stopPropagation(event);
         this._dragDepth--;
@@ -38098,11 +37001,9 @@ var DragDrop = /** @class */ (function () {
             this._onDragCancel();
         }
         return false;
-    };
-    DragDrop.instance = new DragDrop();
-    return DragDrop;
-}());
-exports.DragDrop = DragDrop;
+    }
+}
+DragDrop.instance = new DragDrop();
 
 
 /***/ }),
@@ -38111,23 +37012,22 @@ exports.DragDrop = DragDrop;
 /*!*************************!*\
   !*** ./src/DropInfo.ts ***!
   \*************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DropInfo = void 0;
-var DropInfo = /** @class */ (function () {
-    function DropInfo(node, rect, location, index, className) {
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "DropInfo": () => (/* binding */ DropInfo)
+/* harmony export */ });
+class DropInfo {
+    constructor(node, rect, location, index, className) {
         this.node = node;
         this.rect = rect;
         this.location = location;
         this.index = index;
         this.className = className;
     }
-    return DropInfo;
-}());
-exports.DropInfo = DropInfo;
+}
 
 
 /***/ }),
@@ -38136,12 +37036,13 @@ exports.DropInfo = DropInfo;
 /*!**************************!*\
   !*** ./src/I18nLabel.ts ***!
   \**************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.I18nLabel = void 0;
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "I18nLabel": () => (/* binding */ I18nLabel)
+/* harmony export */ });
 var I18nLabel;
 (function (I18nLabel) {
     I18nLabel["Close_Tab"] = "Close";
@@ -38156,7 +37057,7 @@ var I18nLabel;
     I18nLabel["Floating_Window_Show_Window"] = "Show window";
     I18nLabel["Floating_Window_Dock_Window"] = "Dock window";
     I18nLabel["Error_rendering_component"] = "Error rendering component";
-})(I18nLabel = exports.I18nLabel || (exports.I18nLabel = {}));
+})(I18nLabel || (I18nLabel = {}));
 
 
 /***/ }),
@@ -38165,36 +37066,35 @@ var I18nLabel;
 /*!****************************!*\
   !*** ./src/Orientation.ts ***!
   \****************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Orientation = void 0;
-var Orientation = /** @class */ (function () {
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Orientation": () => (/* binding */ Orientation)
+/* harmony export */ });
+class Orientation {
     /** @internal */
-    function Orientation(name) {
+    constructor(name) {
         this._name = name;
     }
-    Orientation.flip = function (from) {
+    static flip(from) {
         if (from === Orientation.HORZ) {
             return Orientation.VERT;
         }
         else {
             return Orientation.HORZ;
         }
-    };
-    Orientation.prototype.getName = function () {
+    }
+    getName() {
         return this._name;
-    };
-    Orientation.prototype.toString = function () {
+    }
+    toString() {
         return this._name;
-    };
-    Orientation.HORZ = new Orientation("horz");
-    Orientation.VERT = new Orientation("vert");
-    return Orientation;
-}());
-exports.Orientation = Orientation;
+    }
+}
+Orientation.HORZ = new Orientation("horz");
+Orientation.VERT = new Orientation("vert");
 
 
 /***/ }),
@@ -38203,25 +37103,31 @@ exports.Orientation = Orientation;
 /*!***************************!*\
   !*** ./src/PopupMenu.tsx ***!
   \***************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "showPopup": () => (/* binding */ showPopup)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _DragDrop__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Types */ "./src/Types.ts");
+/* harmony import */ var _view_TabButtonStamp__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./view/TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.showPopup = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var DragDrop_1 = __webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts");
-var Types_1 = __webpack_require__(/*! ./Types */ "./src/Types.ts");
-var TabButtonStamp_1 = __webpack_require__(/*! ./view/TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
+
+
+
 /** @internal */
 function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFactory) {
-    var layoutDiv = layout.getRootDiv();
-    var classNameMapper = layout.getClassName;
-    var currentDocument = triggerElement.ownerDocument;
-    var triggerRect = triggerElement.getBoundingClientRect();
-    var layoutRect = layoutDiv.getBoundingClientRect();
-    var elm = currentDocument.createElement("div");
-    elm.className = classNameMapper(Types_1.CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER);
+    const layoutDiv = layout.getRootDiv();
+    const classNameMapper = layout.getClassName;
+    const currentDocument = triggerElement.ownerDocument;
+    const triggerRect = triggerElement.getBoundingClientRect();
+    const layoutRect = layoutDiv.getBoundingClientRect();
+    const elm = currentDocument.createElement("div");
+    elm.className = classNameMapper(_Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER);
     if (triggerRect.left < layoutRect.left + layoutRect.width / 2) {
         elm.style.left = triggerRect.left - layoutRect.left + "px";
     }
@@ -38234,39 +37140,38 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     else {
         elm.style.bottom = layoutRect.bottom - triggerRect.bottom + "px";
     }
-    DragDrop_1.DragDrop.instance.addGlass(function () { return onHide(); });
-    DragDrop_1.DragDrop.instance.setGlassCursorOverride("default");
+    _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.addGlass(() => onHide());
+    _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
-    var onHide = function () {
+    const onHide = () => {
         layout.hidePortal();
-        DragDrop_1.DragDrop.instance.hideGlass();
+        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.hideGlass();
         layoutDiv.removeChild(elm);
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
-    var onElementMouseDown = function (event) {
+    const onElementMouseDown = (event) => {
         event.stopPropagation();
     };
-    var onDocMouseDown = function (event) {
+    const onDocMouseDown = (event) => {
         onHide();
     };
     elm.addEventListener("mousedown", onElementMouseDown);
     currentDocument.addEventListener("mousedown", onDocMouseDown);
-    layout.showPortal(React.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }), elm);
+    layout.showPortal(react__WEBPACK_IMPORTED_MODULE_0__.createElement(PopupMenu, { currentDocument: currentDocument, onSelect: onSelect, onHide: onHide, items: items, classNameMapper: classNameMapper, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }), elm);
 }
-exports.showPopup = showPopup;
 /** @internal */
-var PopupMenu = function (props) {
-    var items = props.items, onHide = props.onHide, onSelect = props.onSelect, classNameMapper = props.classNameMapper, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory;
-    var onItemClick = function (item, event) {
+const PopupMenu = (props) => {
+    const { items, onHide, onSelect, classNameMapper, layout, iconFactory, titleFactory } = props;
+    const onItemClick = (item, event) => {
         onSelect(item);
         onHide();
         event.stopPropagation();
     };
-    var itemElements = items.map(function (item, i) { return (React.createElement("div", { key: item.index, className: classNameMapper(Types_1.CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM), "data-layout-path": "/popup-menu/tb" + i, onClick: function (event) { return onItemClick(item, event); }, title: item.node.getHelpText() }, item.node.getModel().isLegacyOverflowMenu() ?
+    const itemElements = items.map((item, i) => (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: item.index, className: classNameMapper(_Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM), "data-layout-path": "/popup-menu/tb" + i, onClick: (event) => onItemClick(item, event), title: item.node.getHelpText() }, item.node.getModel().isLegacyOverflowMenu() ?
         item.node._getNameForOverflowMenu() :
-        React.createElement(TabButtonStamp_1.TabButtonStamp, { node: item.node, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }))); });
-    return (React.createElement("div", { className: classNameMapper(Types_1.CLASSES.FLEXLAYOUT__POPUP_MENU), "data-layout-path": "/popup-menu" }, itemElements));
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement(_view_TabButtonStamp__WEBPACK_IMPORTED_MODULE_3__.TabButtonStamp, { node: item.node, layout: layout, iconFactory: iconFactory, titleFactory: titleFactory }))));
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: classNameMapper(_Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__POPUP_MENU), "data-layout-path": "/popup-menu" }, itemElements));
 };
 
 
@@ -38276,88 +37181,87 @@ var PopupMenu = function (props) {
 /*!*********************!*\
   !*** ./src/Rect.ts ***!
   \*********************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Rect": () => (/* binding */ Rect)
+/* harmony export */ });
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Rect = void 0;
-var Orientation_1 = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
-var Rect = /** @class */ (function () {
-    function Rect(x, y, width, height) {
+class Rect {
+    constructor(x, y, width, height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
     }
-    Rect.empty = function () {
+    static empty() {
         return new Rect(0, 0, 0, 0);
-    };
-    Rect.fromElement = function (element) {
-        var _a = element.getBoundingClientRect(), x = _a.x, y = _a.y, width = _a.width, height = _a.height;
+    }
+    static fromElement(element) {
+        let { x, y, width, height } = element.getBoundingClientRect();
         return new Rect(x, y, width, height);
-    };
-    Rect.prototype.clone = function () {
+    }
+    clone() {
         return new Rect(this.x, this.y, this.width, this.height);
-    };
-    Rect.prototype.equals = function (rect) {
+    }
+    equals(rect) {
         if (this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height) {
             return true;
         }
         else {
             return false;
         }
-    };
-    Rect.prototype.getBottom = function () {
+    }
+    getBottom() {
         return this.y + this.height;
-    };
-    Rect.prototype.getRight = function () {
+    }
+    getRight() {
         return this.x + this.width;
-    };
-    Rect.prototype.getCenter = function () {
+    }
+    getCenter() {
         return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
-    };
-    Rect.prototype.positionElement = function (element, position) {
+    }
+    positionElement(element, position) {
         this.styleWithPosition(element.style, position);
-    };
-    Rect.prototype.styleWithPosition = function (style, position) {
-        if (position === void 0) { position = "absolute"; }
+    }
+    styleWithPosition(style, position = "absolute") {
         style.left = this.x + "px";
         style.top = this.y + "px";
         style.width = Math.max(0, this.width) + "px"; // need Math.max to prevent -ve, cause error in IE
         style.height = Math.max(0, this.height) + "px";
         style.position = position;
         return style;
-    };
-    Rect.prototype.contains = function (x, y) {
+    }
+    contains(x, y) {
         if (this.x <= x && x <= this.getRight() && this.y <= y && y <= this.getBottom()) {
             return true;
         }
         else {
             return false;
         }
-    };
-    Rect.prototype.removeInsets = function (insets) {
+    }
+    removeInsets(insets) {
         return new Rect(this.x + insets.left, this.y + insets.top, Math.max(0, this.width - insets.left - insets.right), Math.max(0, this.height - insets.top - insets.bottom));
-    };
-    Rect.prototype.centerInRect = function (outerRect) {
+    }
+    centerInRect(outerRect) {
         this.x = (outerRect.width - this.width) / 2;
         this.y = (outerRect.height - this.height) / 2;
-    };
+    }
     /** @internal */
-    Rect.prototype._getSize = function (orientation) {
-        var prefSize = this.width;
-        if (orientation === Orientation_1.Orientation.VERT) {
+    _getSize(orientation) {
+        let prefSize = this.width;
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.VERT) {
             prefSize = this.height;
         }
         return prefSize;
-    };
-    Rect.prototype.toString = function () {
+    }
+    toString() {
         return "(Rect: x=" + this.x + ", y=" + this.y + ", width=" + this.width + ", height=" + this.height + ")";
-    };
-    return Rect;
-}());
-exports.Rect = Rect;
+    }
+}
 
 
 /***/ }),
@@ -38366,12 +37270,13 @@ exports.Rect = Rect;
 /*!**********************!*\
   !*** ./src/Types.ts ***!
   \**********************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CLASSES = void 0;
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CLASSES": () => (/* binding */ CLASSES)
+/* harmony export */ });
 var CLASSES;
 (function (CLASSES) {
     CLASSES["FLEXLAYOUT__BORDER"] = "flexlayout__border";
@@ -38446,7 +37351,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__POPUP_MENU_CONTAINER"] = "flexlayout__popup_menu_container";
     CLASSES["FLEXLAYOUT__POPUP_MENU_ITEM"] = "flexlayout__popup_menu_item";
     CLASSES["FLEXLAYOUT__POPUP_MENU"] = "flexlayout__popup_menu";
-})(CLASSES = exports.CLASSES || (exports.CLASSES = {}));
+})(CLASSES || (CLASSES = {}));
 
 
 /***/ }),
@@ -38455,47 +37360,75 @@ var CLASSES;
 /*!**********************!*\
   !*** ./src/index.ts ***!
   \**********************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Action": () => (/* reexport safe */ _model_Action__WEBPACK_IMPORTED_MODULE_1__.Action),
+/* harmony export */   "Actions": () => (/* reexport safe */ _model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions),
+/* harmony export */   "BorderNode": () => (/* reexport safe */ _model_BorderNode__WEBPACK_IMPORTED_MODULE_3__.BorderNode),
+/* harmony export */   "BorderSet": () => (/* reexport safe */ _model_BorderSet__WEBPACK_IMPORTED_MODULE_4__.BorderSet),
+/* harmony export */   "CLASSES": () => (/* reexport safe */ _Types__WEBPACK_IMPORTED_MODULE_21__.CLASSES),
+/* harmony export */   "DockLocation": () => (/* reexport safe */ _DockLocation__WEBPACK_IMPORTED_MODULE_15__.DockLocation),
+/* harmony export */   "DragDrop": () => (/* reexport safe */ _DragDrop__WEBPACK_IMPORTED_MODULE_16__.DragDrop),
+/* harmony export */   "DropInfo": () => (/* reexport safe */ _DropInfo__WEBPACK_IMPORTED_MODULE_17__.DropInfo),
+/* harmony export */   "I18nLabel": () => (/* reexport safe */ _I18nLabel__WEBPACK_IMPORTED_MODULE_18__.I18nLabel),
+/* harmony export */   "ICloseType": () => (/* reexport safe */ _model_ICloseType__WEBPACK_IMPORTED_MODULE_5__.ICloseType),
+/* harmony export */   "Layout": () => (/* reexport safe */ _view_Layout__WEBPACK_IMPORTED_MODULE_0__.Layout),
+/* harmony export */   "Model": () => (/* reexport safe */ _model_Model__WEBPACK_IMPORTED_MODULE_9__.Model),
+/* harmony export */   "Node": () => (/* reexport safe */ _model_Node__WEBPACK_IMPORTED_MODULE_10__.Node),
+/* harmony export */   "Orientation": () => (/* reexport safe */ _Orientation__WEBPACK_IMPORTED_MODULE_19__.Orientation),
+/* harmony export */   "Rect": () => (/* reexport safe */ _Rect__WEBPACK_IMPORTED_MODULE_20__.Rect),
+/* harmony export */   "RowNode": () => (/* reexport safe */ _model_RowNode__WEBPACK_IMPORTED_MODULE_11__.RowNode),
+/* harmony export */   "SplitterNode": () => (/* reexport safe */ _model_SplitterNode__WEBPACK_IMPORTED_MODULE_12__.SplitterNode),
+/* harmony export */   "TabNode": () => (/* reexport safe */ _model_TabNode__WEBPACK_IMPORTED_MODULE_13__.TabNode),
+/* harmony export */   "TabSetNode": () => (/* reexport safe */ _model_TabSetNode__WEBPACK_IMPORTED_MODULE_14__.TabSetNode)
+/* harmony export */ });
+/* harmony import */ var _view_Layout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./view/Layout */ "./src/view/Layout.tsx");
+/* harmony import */ var _model_Action__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./model/Action */ "./src/model/Action.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _model_BorderNode__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./model/BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _model_BorderSet__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./model/BorderSet */ "./src/model/BorderSet.ts");
+/* harmony import */ var _model_ICloseType__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./model/ICloseType */ "./src/model/ICloseType.ts");
+/* harmony import */ var _model_IDraggable__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./model/IDraggable */ "./src/model/IDraggable.ts");
+/* harmony import */ var _model_IDropTarget__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./model/IDropTarget */ "./src/model/IDropTarget.ts");
+/* harmony import */ var _model_IJsonModel__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./model/IJsonModel */ "./src/model/IJsonModel.ts");
+/* harmony import */ var _model_Model__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./model/Model */ "./src/model/Model.ts");
+/* harmony import */ var _model_Node__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./model/Node */ "./src/model/Node.ts");
+/* harmony import */ var _model_RowNode__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./model/RowNode */ "./src/model/RowNode.ts");
+/* harmony import */ var _model_SplitterNode__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./model/SplitterNode */ "./src/model/SplitterNode.ts");
+/* harmony import */ var _model_TabNode__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./model/TabNode */ "./src/model/TabNode.ts");
+/* harmony import */ var _model_TabSetNode__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./model/TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _DragDrop__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts");
+/* harmony import */ var _DropInfo__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./DropInfo */ "./src/DropInfo.ts");
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./Types */ "./src/Types.ts");
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-__exportStar(__webpack_require__(/*! ./view/Layout */ "./src/view/Layout.tsx"), exports);
-__exportStar(__webpack_require__(/*! ./model/Action */ "./src/model/Action.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/Actions */ "./src/model/Actions.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/BorderNode */ "./src/model/BorderNode.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/BorderSet */ "./src/model/BorderSet.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/ICloseType */ "./src/model/ICloseType.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/IDraggable */ "./src/model/IDraggable.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/IDropTarget */ "./src/model/IDropTarget.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/IJsonModel */ "./src/model/IJsonModel.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/Model */ "./src/model/Model.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/Node */ "./src/model/Node.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/RowNode */ "./src/model/RowNode.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/SplitterNode */ "./src/model/SplitterNode.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/TabNode */ "./src/model/TabNode.ts"), exports);
-__exportStar(__webpack_require__(/*! ./model/TabSetNode */ "./src/model/TabSetNode.ts"), exports);
-__exportStar(__webpack_require__(/*! ./DockLocation */ "./src/DockLocation.ts"), exports);
-__exportStar(__webpack_require__(/*! ./DragDrop */ "./src/DragDrop.ts"), exports);
-__exportStar(__webpack_require__(/*! ./DropInfo */ "./src/DropInfo.ts"), exports);
-__exportStar(__webpack_require__(/*! ./I18nLabel */ "./src/I18nLabel.ts"), exports);
-__exportStar(__webpack_require__(/*! ./Orientation */ "./src/Orientation.ts"), exports);
-__exportStar(__webpack_require__(/*! ./Rect */ "./src/Rect.ts"), exports);
-__exportStar(__webpack_require__(/*! ./Types */ "./src/Types.ts"), exports);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /***/ }),
@@ -38504,20 +37437,19 @@ __exportStar(__webpack_require__(/*! ./Types */ "./src/Types.ts"), exports);
 /*!*****************************!*\
   !*** ./src/model/Action.ts ***!
   \*****************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Action = void 0;
-var Action = /** @class */ (function () {
-    function Action(type, data) {
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Action": () => (/* binding */ Action)
+/* harmony export */ });
+class Action {
+    constructor(type, data) {
         this.type = type;
         this.data = data;
     }
-    return Action;
-}());
-exports.Action = Action;
+}
 
 
 /***/ }),
@@ -38526,19 +37458,19 @@ exports.Action = Action;
 /*!******************************!*\
   !*** ./src/model/Actions.ts ***!
   \******************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Actions": () => (/* binding */ Actions)
+/* harmony export */ });
+/* harmony import */ var _Action__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Action */ "./src/model/Action.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Actions = void 0;
-var Action_1 = __webpack_require__(/*! ./Action */ "./src/model/Action.ts");
 /**
  * The Action creator class for FlexLayout model actions
  */
-var Actions = /** @class */ (function () {
-    function Actions() {
-    }
+class Actions {
     /**
      * Adds a tab node to the given tabset node
      * @param json the json for the new tab node e.g {type:"tab", component:"table"}
@@ -38548,15 +37480,15 @@ var Actions = /** @class */ (function () {
      * @param select (optional) whether to select the new tab, overriding autoSelectTab
      * @returns {Action} the action
      */
-    Actions.addNode = function (json, toNodeId, location, index, select) {
-        return new Action_1.Action(Actions.ADD_NODE, {
-            json: json,
+    static addNode(json, toNodeId, location, index, select) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.ADD_NODE, {
+            json,
             toNode: toNodeId,
             location: location.getName(),
-            index: index,
-            select: select,
+            index,
+            select,
         });
-    };
+    }
     /**
      * Moves a node (tab or tabset) from one location to another
      * @param fromNodeId the id of the node to move
@@ -38566,56 +37498,56 @@ var Actions = /** @class */ (function () {
      * @param select (optional) whether to select the moved tab(s) in new tabset, overriding autoSelectTab
      * @returns {Action} the action
      */
-    Actions.moveNode = function (fromNodeId, toNodeId, location, index, select) {
-        return new Action_1.Action(Actions.MOVE_NODE, {
+    static moveNode(fromNodeId, toNodeId, location, index, select) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.MOVE_NODE, {
             fromNode: fromNodeId,
             toNode: toNodeId,
             location: location.getName(),
-            index: index,
-            select: select,
+            index,
+            select,
         });
-    };
+    }
     /**
      * Deletes a tab node from the layout
      * @param tabsetNodeId the id of the tab node to delete
      * @returns {Action} the action
      */
-    Actions.deleteTab = function (tabNodeId) {
-        return new Action_1.Action(Actions.DELETE_TAB, { node: tabNodeId });
-    };
+    static deleteTab(tabNodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.DELETE_TAB, { node: tabNodeId });
+    }
     /**
      * Deletes a tabset node and all it's child tab nodes from the layout
      * @param tabsetNodeId the id of the tabset node to delete
      * @returns {Action} the action
      */
-    Actions.deleteTabset = function (tabsetNodeId) {
-        return new Action_1.Action(Actions.DELETE_TABSET, { node: tabsetNodeId });
-    };
+    static deleteTabset(tabsetNodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.DELETE_TABSET, { node: tabsetNodeId });
+    }
     /**
      * Change the given nodes tab text
      * @param tabNodeId the id of the node to rename
      * @param text the test of the tab
      * @returns {Action} the action
      */
-    Actions.renameTab = function (tabNodeId, text) {
-        return new Action_1.Action(Actions.RENAME_TAB, { node: tabNodeId, text: text });
-    };
+    static renameTab(tabNodeId, text) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.RENAME_TAB, { node: tabNodeId, text });
+    }
     /**
      * Selects the given tab in its parent tabset
      * @param tabNodeId the id of the node to set selected
      * @returns {Action} the action
      */
-    Actions.selectTab = function (tabNodeId) {
-        return new Action_1.Action(Actions.SELECT_TAB, { tabNode: tabNodeId });
-    };
+    static selectTab(tabNodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.SELECT_TAB, { tabNode: tabNodeId });
+    }
     /**
      * Set the given tabset node as the active tabset
      * @param tabsetNodeId the id of the tabset node to set as active
      * @returns {Action} the action
      */
-    Actions.setActiveTabset = function (tabsetNodeId) {
-        return new Action_1.Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId });
-    };
+    static setActiveTabset(tabsetNodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId });
+    }
     /**
      * Adjust the splitter between two tabsets
      * @example
@@ -38624,69 +37556,67 @@ var Actions = /** @class */ (function () {
      * @param splitSpec an object the defines the new split between two tabsets, see example below.
      * @returns {Action} the action
      */
-    Actions.adjustSplit = function (splitSpec) {
-        var node1 = splitSpec.node1Id;
-        var node2 = splitSpec.node2Id;
-        return new Action_1.Action(Actions.ADJUST_SPLIT, {
-            node1: node1,
+    static adjustSplit(splitSpec) {
+        const node1 = splitSpec.node1Id;
+        const node2 = splitSpec.node2Id;
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.ADJUST_SPLIT, {
+            node1,
             weight1: splitSpec.weight1,
             pixelWidth1: splitSpec.pixelWidth1,
-            node2: node2,
+            node2,
             weight2: splitSpec.weight2,
             pixelWidth2: splitSpec.pixelWidth2,
         });
-    };
-    Actions.adjustBorderSplit = function (nodeId, pos) {
-        return new Action_1.Action(Actions.ADJUST_BORDER_SPLIT, { node: nodeId, pos: pos });
-    };
+    }
+    static adjustBorderSplit(nodeId, pos) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.ADJUST_BORDER_SPLIT, { node: nodeId, pos });
+    }
     /**
      * Maximizes the given tabset
      * @param tabsetNodeId the id of the tabset to maximize
      * @returns {Action} the action
      */
-    Actions.maximizeToggle = function (tabsetNodeId) {
-        return new Action_1.Action(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId });
-    };
+    static maximizeToggle(tabsetNodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId });
+    }
     /**
      * Updates the global model jsone attributes
      * @param attributes the json for the model attributes to update (merge into the existing attributes)
      * @returns {Action} the action
      */
-    Actions.updateModelAttributes = function (attributes) {
-        return new Action_1.Action(Actions.UPDATE_MODEL_ATTRIBUTES, { json: attributes });
-    };
+    static updateModelAttributes(attributes) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.UPDATE_MODEL_ATTRIBUTES, { json: attributes });
+    }
     /**
      * Updates the given nodes json attributes
      * @param nodeId the id of the node to update
      * @param attributes the json attributes to update (merge with the existing attributes)
      * @returns {Action} the action
      */
-    Actions.updateNodeAttributes = function (nodeId, attributes) {
-        return new Action_1.Action(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
-    };
-    Actions.floatTab = function (nodeId) {
-        return new Action_1.Action(Actions.FLOAT_TAB, { node: nodeId });
-    };
-    Actions.unFloatTab = function (nodeId) {
-        return new Action_1.Action(Actions.UNFLOAT_TAB, { node: nodeId });
-    };
-    Actions.ADD_NODE = "FlexLayout_AddNode";
-    Actions.MOVE_NODE = "FlexLayout_MoveNode";
-    Actions.DELETE_TAB = "FlexLayout_DeleteTab";
-    Actions.DELETE_TABSET = "FlexLayout_DeleteTabset";
-    Actions.RENAME_TAB = "FlexLayout_RenameTab";
-    Actions.SELECT_TAB = "FlexLayout_SelectTab";
-    Actions.SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
-    Actions.ADJUST_SPLIT = "FlexLayout_AdjustSplit";
-    Actions.ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
-    Actions.MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
-    Actions.UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
-    Actions.UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
-    Actions.FLOAT_TAB = "FlexLayout_FloatTab";
-    Actions.UNFLOAT_TAB = "FlexLayout_UnFloatTab";
-    return Actions;
-}());
-exports.Actions = Actions;
+    static updateNodeAttributes(nodeId, attributes) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
+    }
+    static floatTab(nodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.FLOAT_TAB, { node: nodeId });
+    }
+    static unFloatTab(nodeId) {
+        return new _Action__WEBPACK_IMPORTED_MODULE_0__.Action(Actions.UNFLOAT_TAB, { node: nodeId });
+    }
+}
+Actions.ADD_NODE = "FlexLayout_AddNode";
+Actions.MOVE_NODE = "FlexLayout_MoveNode";
+Actions.DELETE_TAB = "FlexLayout_DeleteTab";
+Actions.DELETE_TABSET = "FlexLayout_DeleteTabset";
+Actions.RENAME_TAB = "FlexLayout_RenameTab";
+Actions.SELECT_TAB = "FlexLayout_SelectTab";
+Actions.SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
+Actions.ADJUST_SPLIT = "FlexLayout_AdjustSplit";
+Actions.ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
+Actions.MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
+Actions.UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
+Actions.UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
+Actions.FLOAT_TAB = "FlexLayout_FloatTab";
+Actions.UNFLOAT_TAB = "FlexLayout_UnFloatTab";
 
 
 /***/ }),
@@ -38695,100 +37625,95 @@ exports.Actions = Actions;
 /*!*********************************!*\
   !*** ./src/model/BorderNode.ts ***!
   \*********************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "BorderNode": () => (/* binding */ BorderNode)
+/* harmony export */ });
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _DropInfo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Node__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
+/* harmony import */ var _SplitterNode__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./SplitterNode */ "./src/model/SplitterNode.ts");
+/* harmony import */ var _TabNode__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BorderNode = void 0;
-var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
-var SplitterNode_1 = __webpack_require__(/*! ./SplitterNode */ "./src/model/SplitterNode.ts");
-var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
-var BorderNode = /** @class */ (function (_super) {
-    __extends(BorderNode, _super);
+
+
+
+
+
+
+
+
+
+
+class BorderNode extends _Node__WEBPACK_IMPORTED_MODULE_7__.Node {
     /** @internal */
-    function BorderNode(location, json, model) {
-        var _this = _super.call(this, model) || this;
+    constructor(location, json, model) {
+        super(model);
         /** @internal */
-        _this._adjustedSize = 0;
+        this._adjustedSize = 0;
         /** @internal */
-        _this._calculatedBorderBarSize = 0;
-        _this._location = location;
-        _this._drawChildren = [];
-        _this._attributes.id = "border_".concat(location.getName());
-        BorderNode._attributeDefinitions.fromJson(json, _this._attributes);
-        model._addNode(_this);
-        return _this;
+        this._calculatedBorderBarSize = 0;
+        this._location = location;
+        this._drawChildren = [];
+        this._attributes.id = `border_${location.getName()}`;
+        BorderNode._attributeDefinitions.fromJson(json, this._attributes);
+        model._addNode(this);
     }
     /** @internal */
-    BorderNode._fromJson = function (json, model) {
-        var location = DockLocation_1.DockLocation.getByName(json.location);
-        var border = new BorderNode(location, json, model);
+    static _fromJson(json, model) {
+        const location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.getByName(json.location);
+        const border = new BorderNode(location, json, model);
         if (json.children) {
-            border._children = json.children.map(function (jsonChild) {
-                var child = TabNode_1.TabNode._fromJson(jsonChild, model);
+            border._children = json.children.map((jsonChild) => {
+                const child = _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode._fromJson(jsonChild, model);
                 child._setParent(border);
                 return child;
             });
         }
         return border;
-    };
+    }
     /** @internal */
-    BorderNode._createAttributeDefinitions = function () {
-        var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
-        attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
-        attributeDefinitions.add("selected", -1).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("show", true).setType(Attribute_1.Attribute.BOOLEAN);
+    static _createAttributeDefinitions() {
+        const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
+        attributeDefinitions.add("type", BorderNode.TYPE, true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING).setFixed();
+        attributeDefinitions.add("selected", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("show", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("config", undefined).setType("any");
-        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("size", "borderSize").setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("barSize", "borderBarSize").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("className", "borderClassName").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("size", "borderSize").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.addInherited("minSize", "borderMinSize").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         return attributeDefinitions;
-    };
-    BorderNode.prototype.getLocation = function () {
+    }
+    getLocation() {
         return this._location;
-    };
-    BorderNode.prototype.getTabHeaderRect = function () {
+    }
+    getTabHeaderRect() {
         return this._tabHeaderRect;
-    };
-    BorderNode.prototype.getRect = function () {
+    }
+    getRect() {
         return this._tabHeaderRect;
-    };
-    BorderNode.prototype.getContentRect = function () {
+    }
+    getContentRect() {
         return this._contentRect;
-    };
-    BorderNode.prototype.isEnableDrop = function () {
+    }
+    isEnableDrop() {
         return this._getAttr("enableDrop");
-    };
-    BorderNode.prototype.isAutoSelectTab = function (whenOpen) {
+    }
+    isAutoSelectTab(whenOpen) {
         if (whenOpen == null) {
             whenOpen = this.getSelected() !== -1;
         }
@@ -38798,13 +37723,13 @@ var BorderNode = /** @class */ (function (_super) {
         else {
             return this._getAttr("autoSelectTabWhenClosed");
         }
-    };
-    BorderNode.prototype.getClassName = function () {
+    }
+    getClassName() {
         return this._getAttr("className");
-    };
+    }
     /** @internal */
-    BorderNode.prototype.calcBorderBarSize = function (metrics) {
-        var barSize = this._getAttr("barSize");
+    calcBorderBarSize(metrics) {
+        const barSize = this._getAttr("barSize");
         if (barSize !== 0) {
             // its defined
             this._calculatedBorderBarSize = barSize;
@@ -38812,19 +37737,19 @@ var BorderNode = /** @class */ (function (_super) {
         else {
             this._calculatedBorderBarSize = metrics.borderBarSize;
         }
-    };
-    BorderNode.prototype.getBorderBarSize = function () {
+    }
+    getBorderBarSize() {
         return this._calculatedBorderBarSize;
-    };
-    BorderNode.prototype.getSize = function () {
-        var defaultSize = this._getAttr("size");
-        var selected = this.getSelected();
+    }
+    getSize() {
+        const defaultSize = this._getAttr("size");
+        const selected = this.getSelected();
         if (selected === -1) {
             return defaultSize;
         }
         else {
-            var tabNode = this._children[selected];
-            var tabBorderSize = (this._location._orientation === Orientation_1.Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            const tabNode = this._children[selected];
+            const tabBorderSize = (this._location._orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
             if (tabBorderSize === -1) {
                 return defaultSize;
             }
@@ -38832,22 +37757,22 @@ var BorderNode = /** @class */ (function (_super) {
                 return tabBorderSize;
             }
         }
-    };
-    BorderNode.prototype.getMinSize = function () {
+    }
+    getMinSize() {
         return this._getAttr("minSize");
-    };
-    BorderNode.prototype.getSelected = function () {
+    }
+    getSelected() {
         return this._attributes.selected;
-    };
-    BorderNode.prototype.getSelectedNode = function () {
+    }
+    getSelectedNode() {
         if (this.getSelected() !== -1) {
             return this._children[this.getSelected()];
         }
         return undefined;
-    };
-    BorderNode.prototype.getOrientation = function () {
+    }
+    getOrientation() {
         return this._location.getOrientation();
-    };
+    }
     /**
      * Returns the config attribute that can be used to store node specific data that
      * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
@@ -38855,14 +37780,14 @@ var BorderNode = /** @class */ (function (_super) {
      * this.state.model.doAction(
      *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
      */
-    BorderNode.prototype.getConfig = function () {
+    getConfig() {
         return this._attributes.config;
-    };
-    BorderNode.prototype.isMaximized = function () {
+    }
+    isMaximized() {
         return false;
-    };
-    BorderNode.prototype.isShowing = function () {
-        var show = this._attributes.show;
+    }
+    isShowing() {
+        const show = this._attributes.show;
         if (show) {
             if (this._model._getShowHiddenBorder() !== this._location && this.isAutoHide() && this._children.length === 0) {
                 return false;
@@ -38872,28 +37797,28 @@ var BorderNode = /** @class */ (function (_super) {
         else {
             return false;
         }
-    };
-    BorderNode.prototype.isAutoHide = function () {
+    }
+    isAutoHide() {
         return this._getAttr("enableAutoHide");
-    };
+    }
     /** @internal */
-    BorderNode.prototype._setSelected = function (index) {
+    _setSelected(index) {
         this._attributes.selected = index;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._setSize = function (pos) {
-        var selected = this.getSelected();
+    _setSize(pos) {
+        const selected = this.getSelected();
         if (selected === -1) {
             this._attributes.size = pos;
         }
         else {
-            var tabNode = this._children[selected];
-            var tabBorderSize = (this._location._orientation === Orientation_1.Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
+            const tabNode = this._children[selected];
+            const tabBorderSize = (this._location._orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) ? tabNode._getAttr("borderWidth") : tabNode._getAttr("borderHeight");
             if (tabBorderSize === -1) {
                 this._attributes.size = pos;
             }
             else {
-                if (this._location._orientation === Orientation_1.Orientation.HORZ) {
+                if (this._location._orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
                     tabNode._setBorderWidth(pos);
                 }
                 else {
@@ -38901,39 +37826,39 @@ var BorderNode = /** @class */ (function (_super) {
                 }
             }
         }
-    };
+    }
     /** @internal */
-    BorderNode.prototype._updateAttrs = function (json) {
+    _updateAttrs(json) {
         BorderNode._attributeDefinitions.update(json, this._attributes);
-    };
+    }
     /** @internal */
-    BorderNode.prototype._getDrawChildren = function () {
+    _getDrawChildren() {
         return this._drawChildren;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._setAdjustedSize = function (size) {
+    _setAdjustedSize(size) {
         this._adjustedSize = size;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._getAdjustedSize = function () {
+    _getAdjustedSize() {
         return this._adjustedSize;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._layoutBorderOuter = function (outer, metrics) {
+    _layoutBorderOuter(outer, metrics) {
         this.calcBorderBarSize(metrics);
-        var split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
+        const split1 = this._location.split(outer, this.getBorderBarSize()); // split border outer
         this._tabHeaderRect = split1.start;
         return split1.end;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._layoutBorderInner = function (inner, metrics) {
+    _layoutBorderInner(inner, metrics) {
         this._drawChildren = [];
-        var location = this._location;
-        var split1 = location.split(inner, this._adjustedSize + this._model.getSplitterSize()); // split off tab contents
-        var split2 = location.reflect().split(split1.start, this._model.getSplitterSize()); // split contents into content and splitter
+        const location = this._location;
+        const split1 = location.split(inner, this._adjustedSize + this._model.getSplitterSize()); // split off tab contents
+        const split2 = location.reflect().split(split1.start, this._model.getSplitterSize()); // split contents into content and splitter
         this._contentRect = split2.end;
-        for (var i = 0; i < this._children.length; i++) {
-            var child = this._children[i];
+        for (let i = 0; i < this._children.length; i++) {
+            const child = this._children[i];
             child._layout(this._contentRect, metrics);
             child._setVisible(i === this.getSelected());
             this._drawChildren.push(child);
@@ -38942,84 +37867,84 @@ var BorderNode = /** @class */ (function (_super) {
             return inner;
         }
         else {
-            var newSplitter = new SplitterNode_1.SplitterNode(this._model);
+            const newSplitter = new _SplitterNode__WEBPACK_IMPORTED_MODULE_8__.SplitterNode(this._model);
             newSplitter._setParent(this);
             newSplitter._setRect(split2.start);
             this._drawChildren.push(newSplitter);
             return split1.end;
         }
-    };
+    }
     /** @internal */
-    BorderNode.prototype._remove = function (node) {
-        var removedIndex = this._removeChild(node);
+    _remove(node) {
+        const removedIndex = this._removeChild(node);
         if (this.getSelected() !== -1) {
-            (0, Utils_1.adjustSelectedIndex)(this, removedIndex);
+            (0,_Utils__WEBPACK_IMPORTED_MODULE_10__.adjustSelectedIndex)(this, removedIndex);
         }
-    };
+    }
     /** @internal */
-    BorderNode.prototype.canDrop = function (dragNode, x, y) {
-        if (dragNode.getType() !== TabNode_1.TabNode.TYPE) {
+    canDrop(dragNode, x, y) {
+        if (dragNode.getType() !== _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode.TYPE) {
             return undefined;
         }
-        var dropInfo;
-        var dockLocation = DockLocation_1.DockLocation.CENTER;
+        let dropInfo;
+        const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
         if (this._tabHeaderRect.contains(x, y)) {
-            if (this._location._orientation === Orientation_1.Orientation.VERT) {
+            if (this._location._orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT) {
                 if (this._children.length > 0) {
-                    var child = this._children[0];
-                    var childRect = child.getTabRect();
-                    var childY = childRect.y;
-                    var childHeight = childRect.height;
-                    var pos = this._tabHeaderRect.x;
-                    var childCenter = 0;
-                    for (var i = 0; i < this._children.length; i++) {
+                    let child = this._children[0];
+                    let childRect = child.getTabRect();
+                    const childY = childRect.y;
+                    const childHeight = childRect.height;
+                    let pos = this._tabHeaderRect.x;
+                    let childCenter = 0;
+                    for (let i = 0; i < this._children.length; i++) {
                         child = this._children[i];
                         childRect = child.getTabRect();
                         childCenter = childRect.x + childRect.width / 2;
                         if (x >= pos && x < childCenter) {
-                            var outlineRect = new Rect_1.Rect(childRect.x - 2, childY, 3, childHeight);
-                            dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, i, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                            const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(childRect.x - 2, childY, 3, childHeight);
+                            dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, i, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
-                        var outlineRect = new Rect_1.Rect(childRect.getRight() - 2, childY, 3, childHeight);
-                        dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, this._children.length, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                        const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(childRect.getRight() - 2, childY, 3, childHeight);
+                        dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, this._children.length, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                     }
                 }
                 else {
-                    var outlineRect = new Rect_1.Rect(this._tabHeaderRect.x + 1, this._tabHeaderRect.y + 2, 3, 18);
-                    dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, 0, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                    const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(this._tabHeaderRect.x + 1, this._tabHeaderRect.y + 2, 3, 18);
+                    dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, 0, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                 }
             }
             else {
                 if (this._children.length > 0) {
-                    var child = this._children[0];
-                    var childRect = child.getTabRect();
-                    var childX = childRect.x;
-                    var childWidth = childRect.width;
-                    var pos = this._tabHeaderRect.y;
-                    var childCenter = 0;
-                    for (var i = 0; i < this._children.length; i++) {
+                    let child = this._children[0];
+                    let childRect = child.getTabRect();
+                    const childX = childRect.x;
+                    const childWidth = childRect.width;
+                    let pos = this._tabHeaderRect.y;
+                    let childCenter = 0;
+                    for (let i = 0; i < this._children.length; i++) {
                         child = this._children[i];
                         childRect = child.getTabRect();
                         childCenter = childRect.y + childRect.height / 2;
                         if (y >= pos && y < childCenter) {
-                            var outlineRect = new Rect_1.Rect(childX, childRect.y - 2, childWidth, 3);
-                            dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, i, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                            const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(childX, childRect.y - 2, childWidth, 3);
+                            dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, i, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                             break;
                         }
                         pos = childCenter;
                     }
                     if (dropInfo == null) {
-                        var outlineRect = new Rect_1.Rect(childX, childRect.getBottom() - 2, childWidth, 3);
-                        dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, this._children.length, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                        const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(childX, childRect.getBottom() - 2, childWidth, 3);
+                        dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, this._children.length, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                     }
                 }
                 else {
-                    var outlineRect = new Rect_1.Rect(this._tabHeaderRect.x + 2, this._tabHeaderRect.y + 1, 18, 3);
-                    dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, 0, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                    const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(this._tabHeaderRect.x + 2, this._tabHeaderRect.y + 1, 18, 3);
+                    dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, 0, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                 }
             }
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
@@ -39027,18 +37952,18 @@ var BorderNode = /** @class */ (function (_super) {
             }
         }
         else if (this.getSelected() !== -1 && this._contentRect.contains(x, y)) {
-            var outlineRect = this._contentRect;
-            dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            const outlineRect = this._contentRect;
+            dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
             if (!dragNode._canDockInto(dragNode, dropInfo)) {
                 return undefined;
             }
         }
         return dropInfo;
-    };
+    }
     /** @internal */
-    BorderNode.prototype.drop = function (dragNode, location, index, select) {
-        var fromIndex = 0;
-        var dragParent = dragNode.getParent();
+    drop(dragNode, location, index, select) {
+        let fromIndex = 0;
+        const dragParent = dragNode.getParent();
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
             // if selected node in border is being docked into a different border then deselect border tabs
@@ -39046,83 +37971,80 @@ var BorderNode = /** @class */ (function (_super) {
                 dragParent._setSelected(-1);
             }
             else {
-                (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+                (0,_Utils__WEBPACK_IMPORTED_MODULE_10__.adjustSelectedIndex)(dragParent, fromIndex);
             }
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
+        if (dragNode.getType() === _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
             index--;
         }
         // simple_bundled dock to existing tabset
-        var insertPos = index;
+        let insertPos = index;
         if (insertPos === -1) {
             insertPos = this._children.length;
         }
-        if (dragNode.getType() === TabNode_1.TabNode.TYPE) {
+        if (dragNode.getType() === _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode.TYPE) {
             this._addChild(dragNode, insertPos);
         }
         if (select || (select !== false && this.isAutoSelectTab())) {
             this._setSelected(insertPos);
         }
         this._model._tidy();
-    };
-    BorderNode.prototype.toJson = function () {
-        var json = {};
+    }
+    toJson() {
+        const json = {};
         BorderNode._attributeDefinitions.toJson(json, this._attributes);
         json.location = this._location.getName();
-        json.children = this._children.map(function (child) { return child.toJson(); });
+        json.children = this._children.map((child) => child.toJson());
         return json;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._getSplitterBounds = function (splitter, useMinSize) {
-        if (useMinSize === void 0) { useMinSize = false; }
-        var pBounds = [0, 0];
-        var minSize = useMinSize ? this.getMinSize() : 0;
-        var outerRect = this._model._getOuterInnerRects().outer;
-        var innerRect = this._model._getOuterInnerRects().inner;
-        var rootRow = this._model.getRoot();
-        if (this._location === DockLocation_1.DockLocation.TOP) {
+    _getSplitterBounds(splitter, useMinSize = false) {
+        const pBounds = [0, 0];
+        const minSize = useMinSize ? this.getMinSize() : 0;
+        const outerRect = this._model._getOuterInnerRects().outer;
+        const innerRect = this._model._getOuterInnerRects().inner;
+        const rootRow = this._model.getRoot();
+        if (this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.TOP) {
             pBounds[0] = outerRect.y + minSize;
             pBounds[1] = Math.max(pBounds[0], innerRect.getBottom() - splitter.getHeight() - rootRow.getMinHeight());
         }
-        else if (this._location === DockLocation_1.DockLocation.LEFT) {
+        else if (this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.LEFT) {
             pBounds[0] = outerRect.x + minSize;
             pBounds[1] = Math.max(pBounds[0], innerRect.getRight() - splitter.getWidth() - rootRow.getMinWidth());
         }
-        else if (this._location === DockLocation_1.DockLocation.BOTTOM) {
+        else if (this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM) {
             pBounds[1] = outerRect.getBottom() - splitter.getHeight() - minSize;
             pBounds[0] = Math.min(pBounds[1], innerRect.y + rootRow.getMinHeight());
         }
-        else if (this._location === DockLocation_1.DockLocation.RIGHT) {
+        else if (this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT) {
             pBounds[1] = outerRect.getRight() - splitter.getWidth() - minSize;
             pBounds[0] = Math.min(pBounds[1], innerRect.x + rootRow.getMinWidth());
         }
         return pBounds;
-    };
+    }
     /** @internal */
-    BorderNode.prototype._calculateSplit = function (splitter, splitterPos) {
-        var pBounds = this._getSplitterBounds(splitter);
-        if (this._location === DockLocation_1.DockLocation.BOTTOM || this._location === DockLocation_1.DockLocation.RIGHT) {
+    _calculateSplit(splitter, splitterPos) {
+        const pBounds = this._getSplitterBounds(splitter);
+        if (this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM || this._location === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT) {
             return Math.max(0, pBounds[1] - splitterPos);
         }
         else {
             return Math.max(0, splitterPos - pBounds[0]);
         }
-    };
+    }
     /** @internal */
-    BorderNode.prototype._getAttributeDefinitions = function () {
+    _getAttributeDefinitions() {
         return BorderNode._attributeDefinitions;
-    };
+    }
     /** @internal */
-    BorderNode.getAttributeDefinitions = function () {
+    static getAttributeDefinitions() {
         return BorderNode._attributeDefinitions;
-    };
-    BorderNode.TYPE = "border";
-    /** @internal */
-    BorderNode._attributeDefinitions = BorderNode._createAttributeDefinitions();
-    return BorderNode;
-}(Node_1.Node));
-exports.BorderNode = BorderNode;
+    }
+}
+BorderNode.TYPE = "border";
+/** @internal */
+BorderNode._attributeDefinitions = BorderNode._createAttributeDefinitions();
 
 
 /***/ }),
@@ -39131,61 +38053,61 @@ exports.BorderNode = BorderNode;
 /*!********************************!*\
   !*** ./src/model/BorderSet.ts ***!
   \********************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "BorderSet": () => (/* binding */ BorderSet)
+/* harmony export */ });
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _BorderNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BorderSet = void 0;
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
-var BorderSet = /** @class */ (function () {
+
+class BorderSet {
     /** @internal */
-    function BorderSet(model) {
+    constructor(model) {
         this._model = model;
         this._borders = [];
     }
     /** @internal */
-    BorderSet._fromJson = function (json, model) {
-        var borderSet = new BorderSet(model);
-        borderSet._borders = json.map(function (borderJson) { return BorderNode_1.BorderNode._fromJson(borderJson, model); });
+    static _fromJson(json, model) {
+        const borderSet = new BorderSet(model);
+        borderSet._borders = json.map((borderJson) => _BorderNode__WEBPACK_IMPORTED_MODULE_1__.BorderNode._fromJson(borderJson, model));
         return borderSet;
-    };
-    BorderSet.prototype.getBorders = function () {
+    }
+    getBorders() {
         return this._borders;
-    };
+    }
     /** @internal */
-    BorderSet.prototype._forEachNode = function (fn) {
-        for (var _i = 0, _a = this._borders; _i < _a.length; _i++) {
-            var borderNode = _a[_i];
+    _forEachNode(fn) {
+        for (const borderNode of this._borders) {
             fn(borderNode, 0);
-            for (var _b = 0, _c = borderNode.getChildren(); _b < _c.length; _b++) {
-                var node = _c[_b];
+            for (const node of borderNode.getChildren()) {
                 node._forEachNode(fn, 1);
             }
         }
-    };
+    }
     /** @internal */
-    BorderSet.prototype._toJson = function () {
-        return this._borders.map(function (borderNode) { return borderNode.toJson(); });
-    };
+    _toJson() {
+        return this._borders.map((borderNode) => borderNode.toJson());
+    }
     /** @internal */
-    BorderSet.prototype._layoutBorder = function (outerInnerRects, metrics) {
-        var rect = outerInnerRects.outer;
-        var rootRow = this._model.getRoot();
-        var height = Math.max(0, rect.height - rootRow.getMinHeight());
-        var width = Math.max(0, rect.width - rootRow.getMinWidth());
-        var sumHeight = 0;
-        var sumWidth = 0;
-        var adjustableHeight = 0;
-        var adjustableWidth = 0;
-        var showingBorders = this._borders.filter(function (border) { return border.isShowing(); });
+    _layoutBorder(outerInnerRects, metrics) {
+        const rect = outerInnerRects.outer;
+        const rootRow = this._model.getRoot();
+        let height = Math.max(0, rect.height - rootRow.getMinHeight());
+        let width = Math.max(0, rect.width - rootRow.getMinWidth());
+        let sumHeight = 0;
+        let sumWidth = 0;
+        let adjustableHeight = 0;
+        let adjustableWidth = 0;
+        const showingBorders = this._borders.filter((border) => border.isShowing());
         // sum size of borders to see they will fit
-        for (var _i = 0, showingBorders_1 = showingBorders; _i < showingBorders_1.length; _i++) {
-            var border = showingBorders_1[_i];
+        for (const border of showingBorders) {
             border._setAdjustedSize(border.getSize());
-            var visible = border.getSelected() !== -1;
-            if (border.getLocation().getOrientation() === Orientation_1.Orientation.HORZ) {
+            const visible = border.getSelected() !== -1;
+            if (border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.HORZ) {
                 sumWidth += border.getBorderBarSize();
                 if (visible) {
                     width -= this._model.getSplitterSize();
@@ -39203,21 +38125,21 @@ var BorderSet = /** @class */ (function () {
             }
         }
         // adjust border sizes if too large
-        var j = 0;
-        var adjusted = false;
+        let j = 0;
+        let adjusted = false;
         while ((sumWidth > width && adjustableWidth > 0) || (sumHeight > height && adjustableHeight > 0)) {
-            var border = showingBorders[j];
+            const border = showingBorders[j];
             if (border.getSelected() !== -1) {
                 // visible
-                var size = border._getAdjustedSize();
-                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === Orientation_1.Orientation.HORZ && size > 0
+                const size = border._getAdjustedSize();
+                if (sumWidth > width && adjustableWidth > 0 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.HORZ && size > 0
                     && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumWidth--;
                     adjustableWidth--;
                     adjusted = true;
                 }
-                else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === Orientation_1.Orientation.VERT && size > 0
+                else if (sumHeight > height && adjustableHeight > 0 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_0__.Orientation.VERT && size > 0
                     && size > border.getMinSize()) {
                     border._setAdjustedSize(size - 1);
                     sumHeight--;
@@ -39235,33 +38157,28 @@ var BorderSet = /** @class */ (function () {
                 }
             }
         }
-        for (var _a = 0, showingBorders_2 = showingBorders; _a < showingBorders_2.length; _a++) {
-            var border = showingBorders_2[_a];
+        for (const border of showingBorders) {
             outerInnerRects.outer = border._layoutBorderOuter(outerInnerRects.outer, metrics);
         }
         outerInnerRects.inner = outerInnerRects.outer;
-        for (var _b = 0, showingBorders_3 = showingBorders; _b < showingBorders_3.length; _b++) {
-            var border = showingBorders_3[_b];
+        for (const border of showingBorders) {
             outerInnerRects.inner = border._layoutBorderInner(outerInnerRects.inner, metrics);
         }
         return outerInnerRects;
-    };
+    }
     /** @internal */
-    BorderSet.prototype._findDropTargetNode = function (dragNode, x, y) {
-        for (var _i = 0, _a = this._borders; _i < _a.length; _i++) {
-            var border = _a[_i];
+    _findDropTargetNode(dragNode, x, y) {
+        for (const border of this._borders) {
             if (border.isShowing()) {
-                var dropInfo = border.canDrop(dragNode, x, y);
+                const dropInfo = border.canDrop(dragNode, x, y);
                 if (dropInfo !== undefined) {
                     return dropInfo;
                 }
             }
         }
         return undefined;
-    };
-    return BorderSet;
-}());
-exports.BorderSet = BorderSet;
+    }
+}
 
 
 /***/ }),
@@ -39270,18 +38187,19 @@ exports.BorderSet = BorderSet;
 /*!*********************************!*\
   !*** ./src/model/ICloseType.ts ***!
   \*********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ICloseType = void 0;
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ICloseType": () => (/* binding */ ICloseType)
+/* harmony export */ });
 var ICloseType;
 (function (ICloseType) {
     ICloseType[ICloseType["Visible"] = 1] = "Visible";
     ICloseType[ICloseType["Always"] = 2] = "Always";
     ICloseType[ICloseType["Selected"] = 3] = "Selected";
-})(ICloseType = exports.ICloseType || (exports.ICloseType = {}));
+})(ICloseType || (ICloseType = {}));
 
 
 /***/ }),
@@ -39290,11 +38208,11 @@ var ICloseType;
 /*!*********************************!*\
   !*** ./src/model/IDraggable.ts ***!
   \*********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -39303,11 +38221,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 /*!**********************************!*\
   !*** ./src/model/IDropTarget.ts ***!
   \**********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -39316,11 +38234,11 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 /*!*********************************!*\
   !*** ./src/model/IJsonModel.ts ***!
   \*********************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 
 /***/ }),
@@ -39329,248 +38247,253 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 /*!****************************!*\
   !*** ./src/model/Model.ts ***!
   \****************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Model": () => (/* binding */ Model)
+/* harmony export */ });
+/* harmony import */ var uuid__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/v4.js");
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Actions__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _BorderNode__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _BorderSet__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./BorderSet */ "./src/model/BorderSet.ts");
+/* harmony import */ var _RowNode__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
+/* harmony import */ var _TabNode__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
+/* harmony import */ var _TabSetNode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Model = void 0;
-var uuid_1 = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-browser/index.js");
-var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Actions_1 = __webpack_require__(/*! ./Actions */ "./src/model/Actions.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
-var BorderSet_1 = __webpack_require__(/*! ./BorderSet */ "./src/model/BorderSet.ts");
-var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
-var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
-var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Class containing the Tree of Nodes used by the FlexLayout component
  */
-var Model = /** @class */ (function () {
+class Model {
     /**
      * 'private' constructor. Use the static method Model.fromJson(json) to create a model
      *  @internal
      */
-    function Model() {
+    constructor() {
         /** @internal */
-        this._borderRects = { inner: Rect_1.Rect.empty(), outer: Rect_1.Rect.empty() };
+        this._borderRects = { inner: _Rect__WEBPACK_IMPORTED_MODULE_4__.Rect.empty(), outer: _Rect__WEBPACK_IMPORTED_MODULE_4__.Rect.empty() };
         this._attributes = {};
         this._idMap = {};
-        this._borders = new BorderSet_1.BorderSet(this);
+        this._borders = new _BorderSet__WEBPACK_IMPORTED_MODULE_7__.BorderSet(this);
         this._pointerFine = true;
-        this._showHiddenBorder = DockLocation_1.DockLocation.CENTER;
+        this._showHiddenBorder = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
     }
     /**
      * Loads the model from the given json object
      * @param json the json model to load
      * @returns {Model} a new Model object
      */
-    Model.fromJson = function (json) {
-        var model = new Model();
+    static fromJson(json) {
+        const model = new Model();
         Model._attributeDefinitions.fromJson(json.global, model._attributes);
         if (json.borders) {
-            model._borders = BorderSet_1.BorderSet._fromJson(json.borders, model);
+            model._borders = _BorderSet__WEBPACK_IMPORTED_MODULE_7__.BorderSet._fromJson(json.borders, model);
         }
-        model._root = RowNode_1.RowNode._fromJson(json.layout, model);
+        model._root = _RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode._fromJson(json.layout, model);
         model._tidy(); // initial tidy of node tree
         return model;
-    };
+    }
     /** @internal */
-    Model._createAttributeDefinitions = function () {
-        var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
-        attributeDefinitions.add("legacyOverflowMenu", false).setType(Attribute_1.Attribute.BOOLEAN);
+    static _createAttributeDefinitions() {
+        const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
+        attributeDefinitions.add("legacyOverflowMenu", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         // splitter
-        attributeDefinitions.add("splitterSize", -1).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("splitterExtra", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("enableEdgeDock", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.add("splitterSize", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("splitterExtra", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("enableEdgeDock", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("rootOrientationVertical", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
-        attributeDefinitions.add("enableUseVisibility", false).setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.add("enableUseVisibility", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         // tab
-        attributeDefinitions.add("tabEnableClose", true).setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabEnableClose", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabCloseType", 1).setType("ICloseType");
-        attributeDefinitions.add("tabEnableFloat", false).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabEnableDrag", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabEnableRename", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabClassName", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("tabIcon", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabDragSpeed", 0.3).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("tabBorderWidth", -1).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("tabBorderHeight", -1).setType(Attribute_1.Attribute.NUMBER);
+        attributeDefinitions.add("tabEnableFloat", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabEnableDrag", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabEnableRename", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabClassName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("tabIcon", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabDragSpeed", 0.3).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("tabBorderWidth", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("tabBorderHeight", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         // tabset
-        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableMaximize", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetEnableClose", false).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetAutoSelectTab", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("tabSetEnableTabStrip", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(Attribute_1.Attribute.NUMBER);
+        attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableDrop", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableDrag", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableDivide", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableMaximize", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableClose", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetAutoSelectTab", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("tabSetEnableTabStrip", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetHeaderHeight", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("tabSetTabStripHeight", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         attributeDefinitions.add("tabSetMarginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
         attributeDefinitions.add("tabSetBorderInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
         attributeDefinitions.add("tabSetTabLocation", "top").setType("ITabLocation");
-        attributeDefinitions.add("tabSetMinWidth", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("tabSetMinHeight", 0).setType(Attribute_1.Attribute.NUMBER);
+        attributeDefinitions.add("tabSetMinWidth", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("tabSetMinHeight", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         // border
-        attributeDefinitions.add("borderSize", 200).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("borderMinSize", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("borderBarSize", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("borderEnableDrop", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.add("borderClassName", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("borderEnableAutoHide", false).setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.add("borderSize", 200).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("borderMinSize", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("borderBarSize", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("borderEnableDrop", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("borderAutoSelectTabWhenOpen", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("borderClassName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("borderEnableAutoHide", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         return attributeDefinitions;
-    };
+    }
     /** @internal */
-    Model.prototype._setChangeListener = function (listener) {
+    _setChangeListener(listener) {
         this._changeListener = listener;
-    };
+    }
     /**
      * Get the currently active tabset node
      */
-    Model.prototype.getActiveTabset = function () {
+    getActiveTabset() {
         if (this._activeTabSet && this.getNodeById(this._activeTabSet.getId())) {
             return this._activeTabSet;
         }
         else {
             return undefined;
         }
-    };
+    }
     /** @internal */
-    Model.prototype._getShowHiddenBorder = function () {
+    _getShowHiddenBorder() {
         return this._showHiddenBorder;
-    };
+    }
     /** @internal */
-    Model.prototype._setShowHiddenBorder = function (location) {
+    _setShowHiddenBorder(location) {
         this._showHiddenBorder = location;
-    };
+    }
     /** @internal */
-    Model.prototype._setActiveTabset = function (tabsetNode) {
+    _setActiveTabset(tabsetNode) {
         this._activeTabSet = tabsetNode;
-    };
+    }
     /**
      * Get the currently maximized tabset node
      */
-    Model.prototype.getMaximizedTabset = function () {
+    getMaximizedTabset() {
         return this._maximizedTabSet;
-    };
+    }
     /** @internal */
-    Model.prototype._setMaximizedTabset = function (tabsetNode) {
+    _setMaximizedTabset(tabsetNode) {
         this._maximizedTabSet = tabsetNode;
-    };
+    }
     /**
      * Gets the root RowNode of the model
      * @returns {RowNode}
      */
-    Model.prototype.getRoot = function () {
+    getRoot() {
         return this._root;
-    };
-    Model.prototype.isRootOrientationVertical = function () {
+    }
+    isRootOrientationVertical() {
         return this._attributes.rootOrientationVertical;
-    };
-    Model.prototype.isUseVisibility = function () {
+    }
+    isUseVisibility() {
         return this._attributes.enableUseVisibility;
-    };
+    }
     /**
      * Gets the
      * @returns {BorderSet|*}
      */
-    Model.prototype.getBorderSet = function () {
+    getBorderSet() {
         return this._borders;
-    };
+    }
     /** @internal */
-    Model.prototype._getOuterInnerRects = function () {
+    _getOuterInnerRects() {
         return this._borderRects;
-    };
+    }
     /** @internal */
-    Model.prototype._getPointerFine = function () {
+    _getPointerFine() {
         return this._pointerFine;
-    };
+    }
     /** @internal */
-    Model.prototype._setPointerFine = function (pointerFine) {
+    _setPointerFine(pointerFine) {
         this._pointerFine = pointerFine;
-    };
+    }
     /**
      * Visits all the nodes in the model and calls the given function for each
      * @param fn a function that takes visited node and a integer level as parameters
      */
-    Model.prototype.visitNodes = function (fn) {
+    visitNodes(fn) {
         this._borders._forEachNode(fn);
         this._root._forEachNode(fn, 0);
-    };
+    }
     /**
      * Gets a node by its id
      * @param id the id to find
      */
-    Model.prototype.getNodeById = function (id) {
+    getNodeById(id) {
         return this._idMap[id];
-    };
+    }
     /**
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
      * @param action the action to perform
      * @returns added Node for Actions.addNode; undefined otherwise
      */
-    Model.prototype.doAction = function (action) {
-        var returnVal = undefined;
+    doAction(action) {
+        let returnVal = undefined;
         // console.log(action);
         switch (action.type) {
-            case Actions_1.Actions.ADD_NODE: {
-                var newNode = new TabNode_1.TabNode(this, action.data.json, true);
-                var toNode = this._idMap[action.data.toNode];
-                if (toNode instanceof TabSetNode_1.TabSetNode || toNode instanceof BorderNode_1.BorderNode || toNode instanceof RowNode_1.RowNode) {
-                    toNode.drop(newNode, DockLocation_1.DockLocation.getByName(action.data.location), action.data.index, action.data.select);
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.ADD_NODE: {
+                const newNode = new _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode(this, action.data.json, true);
+                const toNode = this._idMap[action.data.toNode];
+                if (toNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode || toNode instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode || toNode instanceof _RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode) {
+                    toNode.drop(newNode, _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.getByName(action.data.location), action.data.index, action.data.select);
                     returnVal = newNode;
                 }
                 break;
             }
-            case Actions_1.Actions.MOVE_NODE: {
-                var fromNode = this._idMap[action.data.fromNode];
-                if (fromNode instanceof TabNode_1.TabNode || fromNode instanceof TabSetNode_1.TabSetNode) {
-                    var toNode = this._idMap[action.data.toNode];
-                    if (toNode instanceof TabSetNode_1.TabSetNode || toNode instanceof BorderNode_1.BorderNode || toNode instanceof RowNode_1.RowNode) {
-                        toNode.drop(fromNode, DockLocation_1.DockLocation.getByName(action.data.location), action.data.index, action.data.select);
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.MOVE_NODE: {
+                const fromNode = this._idMap[action.data.fromNode];
+                if (fromNode instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode || fromNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
+                    const toNode = this._idMap[action.data.toNode];
+                    if (toNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode || toNode instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode || toNode instanceof _RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode) {
+                        toNode.drop(fromNode, _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.getByName(action.data.location), action.data.index, action.data.select);
                     }
                 }
                 break;
             }
-            case Actions_1.Actions.DELETE_TAB: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabNode_1.TabNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.DELETE_TAB: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode) {
                     node._delete();
                 }
                 break;
             }
-            case Actions_1.Actions.DELETE_TABSET: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabSetNode_1.TabSetNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.DELETE_TABSET: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
                     // first delete all child tabs that are closeable
-                    var children = __spreadArray([], node.getChildren(), true);
-                    for (var i = 0; i < children.length; i++) {
-                        var child = children[i];
+                    const children = [...node.getChildren()];
+                    for (let i = 0; i < children.length; i++) {
+                        const child = children[i];
                         if (child.isEnableClose()) {
                             child._delete();
                         }
@@ -39582,77 +38505,77 @@ var Model = /** @class */ (function () {
                 }
                 break;
             }
-            case Actions_1.Actions.FLOAT_TAB: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabNode_1.TabNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.FLOAT_TAB: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode) {
                     node._setFloating(true);
-                    (0, Utils_1.adjustSelectedIndexAfterFloat)(node);
+                    (0,_Utils__WEBPACK_IMPORTED_MODULE_11__.adjustSelectedIndexAfterFloat)(node);
                 }
                 break;
             }
-            case Actions_1.Actions.UNFLOAT_TAB: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabNode_1.TabNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.UNFLOAT_TAB: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode) {
                     node._setFloating(false);
-                    (0, Utils_1.adjustSelectedIndexAfterDock)(node);
+                    (0,_Utils__WEBPACK_IMPORTED_MODULE_11__.adjustSelectedIndexAfterDock)(node);
                 }
                 break;
             }
-            case Actions_1.Actions.RENAME_TAB: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabNode_1.TabNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.RENAME_TAB: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode) {
                     node._setName(action.data.text);
                 }
                 break;
             }
-            case Actions_1.Actions.SELECT_TAB: {
-                var tabNode = this._idMap[action.data.tabNode];
-                if (tabNode instanceof TabNode_1.TabNode) {
-                    var parent_1 = tabNode.getParent();
-                    var pos = parent_1.getChildren().indexOf(tabNode);
-                    if (parent_1 instanceof BorderNode_1.BorderNode) {
-                        if (parent_1.getSelected() === pos) {
-                            parent_1._setSelected(-1);
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.SELECT_TAB: {
+                const tabNode = this._idMap[action.data.tabNode];
+                if (tabNode instanceof _TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode) {
+                    const parent = tabNode.getParent();
+                    const pos = parent.getChildren().indexOf(tabNode);
+                    if (parent instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode) {
+                        if (parent.getSelected() === pos) {
+                            parent._setSelected(-1);
                         }
                         else {
-                            parent_1._setSelected(pos);
+                            parent._setSelected(pos);
                         }
                     }
-                    else if (parent_1 instanceof TabSetNode_1.TabSetNode) {
-                        if (parent_1.getSelected() !== pos) {
-                            parent_1._setSelected(pos);
+                    else if (parent instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
+                        if (parent.getSelected() !== pos) {
+                            parent._setSelected(pos);
                         }
-                        this._activeTabSet = parent_1;
+                        this._activeTabSet = parent;
                     }
                 }
                 break;
             }
-            case Actions_1.Actions.SET_ACTIVE_TABSET: {
-                var tabsetNode = this._idMap[action.data.tabsetNode];
-                if (tabsetNode instanceof TabSetNode_1.TabSetNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.SET_ACTIVE_TABSET: {
+                const tabsetNode = this._idMap[action.data.tabsetNode];
+                if (tabsetNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
                     this._activeTabSet = tabsetNode;
                 }
                 break;
             }
-            case Actions_1.Actions.ADJUST_SPLIT: {
-                var node1 = this._idMap[action.data.node1];
-                var node2 = this._idMap[action.data.node2];
-                if ((node1 instanceof TabSetNode_1.TabSetNode || node1 instanceof RowNode_1.RowNode) && (node2 instanceof TabSetNode_1.TabSetNode || node2 instanceof RowNode_1.RowNode)) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.ADJUST_SPLIT: {
+                const node1 = this._idMap[action.data.node1];
+                const node2 = this._idMap[action.data.node2];
+                if ((node1 instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode || node1 instanceof _RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode) && (node2 instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode || node2 instanceof _RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode)) {
                     this._adjustSplitSide(node1, action.data.weight1, action.data.pixelWidth1);
                     this._adjustSplitSide(node2, action.data.weight2, action.data.pixelWidth2);
                 }
                 break;
             }
-            case Actions_1.Actions.ADJUST_BORDER_SPLIT: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof BorderNode_1.BorderNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.ADJUST_BORDER_SPLIT: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode) {
                     node._setSize(action.data.pos);
                 }
                 break;
             }
-            case Actions_1.Actions.MAXIMIZE_TOGGLE: {
-                var node = this._idMap[action.data.node];
-                if (node instanceof TabSetNode_1.TabSetNode) {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.MAXIMIZE_TOGGLE: {
+                const node = this._idMap[action.data.node];
+                if (node instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
                     if (node === this._maximizedTabSet) {
                         this._maximizedTabSet = undefined;
                     }
@@ -39663,12 +38586,12 @@ var Model = /** @class */ (function () {
                 }
                 break;
             }
-            case Actions_1.Actions.UPDATE_MODEL_ATTRIBUTES: {
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.UPDATE_MODEL_ATTRIBUTES: {
                 this._updateAttrs(action.data.json);
                 break;
             }
-            case Actions_1.Actions.UPDATE_NODE_ATTRIBUTES: {
-                var node = this._idMap[action.data.node];
+            case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.UPDATE_NODE_ATTRIBUTES: {
+                const node = this._idMap[action.data.node];
                 node._updateAttrs(action.data.json);
                 break;
             }
@@ -39680,67 +38603,66 @@ var Model = /** @class */ (function () {
             this._changeListener();
         }
         return returnVal;
-    };
+    }
     /** @internal */
-    Model.prototype._updateIdMap = function () {
-        var _this = this;
+    _updateIdMap() {
         // regenerate idMap to stop it building up
         this._idMap = {};
-        this.visitNodes(function (node) { return (_this._idMap[node.getId()] = node); });
+        this.visitNodes((node) => (this._idMap[node.getId()] = node));
         // console.log(JSON.stringify(Object.keys(this._idMap)));
-    };
+    }
     /** @internal */
-    Model.prototype._adjustSplitSide = function (node, weight, pixels) {
+    _adjustSplitSide(node, weight, pixels) {
         node._setWeight(weight);
-        if (node.getWidth() != null && node.getOrientation() === Orientation_1.Orientation.VERT) {
+        if (node.getWidth() != null && node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_3__.Orientation.VERT) {
             node._updateAttrs({ width: pixels });
         }
-        else if (node.getHeight() != null && node.getOrientation() === Orientation_1.Orientation.HORZ) {
+        else if (node.getHeight() != null && node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_3__.Orientation.HORZ) {
             node._updateAttrs({ height: pixels });
         }
-    };
+    }
     /**
      * Converts the model to a json object
      * @returns {IJsonModel} json object that represents this model
      */
-    Model.prototype.toJson = function () {
-        var global = {};
+    toJson() {
+        const global = {};
         Model._attributeDefinitions.toJson(global, this._attributes);
         // save state of nodes
-        this.visitNodes(function (node) {
+        this.visitNodes((node) => {
             node._fireEvent("save", undefined);
         });
-        return { global: global, borders: this._borders._toJson(), layout: this._root.toJson() };
-    };
-    Model.prototype.getSplitterSize = function () {
-        var splitterSize = this._attributes.splitterSize;
+        return { global, borders: this._borders._toJson(), layout: this._root.toJson() };
+    }
+    getSplitterSize() {
+        let splitterSize = this._attributes.splitterSize;
         if (splitterSize === -1) {
             // use defaults
             splitterSize = this._pointerFine ? 8 : 12; // larger for mobile
         }
         return splitterSize;
-    };
-    Model.prototype.isLegacyOverflowMenu = function () {
+    }
+    isLegacyOverflowMenu() {
         return this._attributes.legacyOverflowMenu;
-    };
-    Model.prototype.getSplitterExtra = function () {
+    }
+    getSplitterExtra() {
         return this._attributes.splitterExtra;
-    };
-    Model.prototype.isEnableEdgeDock = function () {
+    }
+    isEnableEdgeDock() {
         return this._attributes.enableEdgeDock;
-    };
+    }
     /** @internal */
-    Model.prototype._addNode = function (node) {
-        var id = node.getId();
+    _addNode(node) {
+        const id = node.getId();
         if (this._idMap[id] !== undefined) {
-            throw new Error("Error: each node must have a unique id, duplicate id:".concat(node.getId()));
+            throw new Error(`Error: each node must have a unique id, duplicate id:${node.getId()}`);
         }
         if (node.getType() !== "splitter") {
             this._idMap[id] = node;
         }
-    };
+    }
     /** @internal */
-    Model.prototype._layout = function (rect, metrics) {
+    _layout(rect, metrics) {
         var _a;
         // let start = Date.now();
         this._borderRects = this._borders._layoutBorder({ outer: rect, inner: rect }, metrics);
@@ -39749,72 +38671,70 @@ var Model = /** @class */ (function () {
         this._root._layout(rect, metrics);
         // console.log("layout time: " + (Date.now() - start));
         return rect;
-    };
+    }
     /** @internal */
-    Model.prototype._findDropTargetNode = function (dragNode, x, y) {
-        var node = this._root._findDropTargetNode(dragNode, x, y);
+    _findDropTargetNode(dragNode, x, y) {
+        let node = this._root._findDropTargetNode(dragNode, x, y);
         if (node === undefined) {
             node = this._borders._findDropTargetNode(dragNode, x, y);
         }
         return node;
-    };
+    }
     /** @internal */
-    Model.prototype._tidy = function () {
+    _tidy() {
         // console.log("before _tidy", this.toString());
         this._root._tidy();
         // console.log("after _tidy", this.toString());
-    };
+    }
     /** @internal */
-    Model.prototype._updateAttrs = function (json) {
+    _updateAttrs(json) {
         Model._attributeDefinitions.update(json, this._attributes);
-    };
+    }
     /** @internal */
-    Model.prototype._nextUniqueId = function () {
-        return '#' + (0, uuid_1.v4)();
-    };
+    _nextUniqueId() {
+        return '#' + (0,uuid__WEBPACK_IMPORTED_MODULE_12__["default"])();
+    }
     /** @internal */
-    Model.prototype._getAttribute = function (name) {
+    _getAttribute(name) {
         return this._attributes[name];
-    };
+    }
     /**
      * Sets a function to allow/deny dropping a node
      * @param onAllowDrop function that takes the drag node and DropInfo and returns true if the drop is allowed
      */
-    Model.prototype.setOnAllowDrop = function (onAllowDrop) {
+    setOnAllowDrop(onAllowDrop) {
         this._onAllowDrop = onAllowDrop;
-    };
+    }
     /** @internal */
-    Model.prototype._getOnAllowDrop = function () {
+    _getOnAllowDrop() {
         return this._onAllowDrop;
-    };
+    }
     /**
      * set callback called when a new TabSet is created.
      * The tabNode can be undefined if it's the auto created first tabset in the root row (when the last
      * tab is deleted, the root tabset can be recreated)
      * @param onCreateTabSet
      */
-    Model.prototype.setOnCreateTabSet = function (onCreateTabSet) {
+    setOnCreateTabSet(onCreateTabSet) {
         this._onCreateTabSet = onCreateTabSet;
-    };
+    }
     /** @internal */
-    Model.prototype._getOnCreateTabSet = function () {
+    _getOnCreateTabSet() {
         return this._onCreateTabSet;
-    };
-    Model.toTypescriptInterfaces = function () {
+    }
+    static toTypescriptInterfaces() {
         console.log(Model._attributeDefinitions.toTypescriptInterface("Global", undefined));
-        console.log(RowNode_1.RowNode.getAttributeDefinitions().toTypescriptInterface("Row", Model._attributeDefinitions));
-        console.log(TabSetNode_1.TabSetNode.getAttributeDefinitions().toTypescriptInterface("TabSet", Model._attributeDefinitions));
-        console.log(TabNode_1.TabNode.getAttributeDefinitions().toTypescriptInterface("Tab", Model._attributeDefinitions));
-        console.log(BorderNode_1.BorderNode.getAttributeDefinitions().toTypescriptInterface("Border", Model._attributeDefinitions));
-    };
-    Model.prototype.toString = function () {
+        console.log(_RowNode__WEBPACK_IMPORTED_MODULE_8__.RowNode.getAttributeDefinitions().toTypescriptInterface("Row", Model._attributeDefinitions));
+        console.log(_TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode.getAttributeDefinitions().toTypescriptInterface("TabSet", Model._attributeDefinitions));
+        console.log(_TabNode__WEBPACK_IMPORTED_MODULE_9__.TabNode.getAttributeDefinitions().toTypescriptInterface("Tab", Model._attributeDefinitions));
+        console.log(_BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode.getAttributeDefinitions().toTypescriptInterface("Border", Model._attributeDefinitions));
+    }
+    toString() {
         return JSON.stringify(this.toJson());
-    };
-    /** @internal */
-    Model._attributeDefinitions = Model._createAttributeDefinitions();
-    return Model;
-}());
-exports.Model = Model;
+    }
+}
+/** @internal */
+Model._attributeDefinitions = Model._createAttributeDefinitions();
 
 
 /***/ }),
@@ -39823,18 +38743,22 @@ exports.Model = Model;
 /*!***************************!*\
   !*** ./src/model/Node.ts ***!
   \***************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Node": () => (/* binding */ Node)
+/* harmony export */ });
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Node = void 0;
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Node = /** @class */ (function () {
+
+
+class Node {
     /** @internal */
-    function Node(model) {
+    constructor(model) {
         /** @internal */
         this._dirty = false;
         /** @internal */
@@ -39843,122 +38767,121 @@ var Node = /** @class */ (function () {
         this._attributes = {};
         this._children = [];
         this._fixed = false;
-        this._rect = Rect_1.Rect.empty();
+        this._rect = _Rect__WEBPACK_IMPORTED_MODULE_2__.Rect.empty();
         this._visible = false;
         this._listeners = {};
     }
-    Node.prototype.getId = function () {
-        var id = this._attributes.id;
+    getId() {
+        let id = this._attributes.id;
         if (id !== undefined) {
             return id;
         }
         id = this._model._nextUniqueId();
         this._setId(id);
         return id;
-    };
-    Node.prototype.getModel = function () {
+    }
+    getModel() {
         return this._model;
-    };
-    Node.prototype.getType = function () {
+    }
+    getType() {
         return this._attributes.type;
-    };
-    Node.prototype.getParent = function () {
+    }
+    getParent() {
         return this._parent;
-    };
-    Node.prototype.getChildren = function () {
+    }
+    getChildren() {
         return this._children;
-    };
-    Node.prototype.getRect = function () {
+    }
+    getRect() {
         return this._rect;
-    };
-    Node.prototype.isVisible = function () {
+    }
+    isVisible() {
         return this._visible;
-    };
-    Node.prototype.getOrientation = function () {
+    }
+    getOrientation() {
         if (this._parent === undefined) {
-            return this._model.isRootOrientationVertical() ? Orientation_1.Orientation.VERT : Orientation_1.Orientation.HORZ;
+            return this._model.isRootOrientationVertical() ? _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.VERT : _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.HORZ;
         }
         else {
-            return Orientation_1.Orientation.flip(this._parent.getOrientation());
+            return _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.flip(this._parent.getOrientation());
         }
-    };
+    }
     // event can be: resize, visibility, maximize (on tabset), close
-    Node.prototype.setEventListener = function (event, callback) {
+    setEventListener(event, callback) {
         this._listeners[event] = callback;
-    };
-    Node.prototype.removeEventListener = function (event) {
+    }
+    removeEventListener(event) {
         delete this._listeners[event];
-    };
+    }
     /** @internal */
-    Node.prototype._setId = function (id) {
+    _setId(id) {
         this._attributes.id = id;
-    };
+    }
     /** @internal */
-    Node.prototype._fireEvent = function (event, params) {
+    _fireEvent(event, params) {
         // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this._listeners[event] !== undefined) {
             this._listeners[event](params);
         }
-    };
+    }
     /** @internal */
-    Node.prototype._getAttr = function (name) {
-        var val = this._attributes[name];
+    _getAttr(name) {
+        let val = this._attributes[name];
         if (val === undefined) {
-            var modelName = this._getAttributeDefinitions().getModelName(name);
+            const modelName = this._getAttributeDefinitions().getModelName(name);
             if (modelName !== undefined) {
                 val = this._model._getAttribute(modelName);
             }
         }
         // console.log(name + "=" + val);
         return val;
-    };
+    }
     /** @internal */
-    Node.prototype._forEachNode = function (fn, level) {
+    _forEachNode(fn, level) {
         fn(this, level);
         level++;
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var node = _a[_i];
+        for (const node of this._children) {
             node._forEachNode(fn, level);
         }
-    };
+    }
     /** @internal */
-    Node.prototype._setVisible = function (visible) {
+    _setVisible(visible) {
         if (visible !== this._visible) {
-            this._fireEvent("visibility", { visible: visible });
+            this._fireEvent("visibility", { visible });
             this._visible = visible;
         }
-    };
+    }
     /** @internal */
-    Node.prototype._getDrawChildren = function () {
+    _getDrawChildren() {
         return this._children;
-    };
+    }
     /** @internal */
-    Node.prototype._setParent = function (parent) {
+    _setParent(parent) {
         this._parent = parent;
-    };
+    }
     /** @internal */
-    Node.prototype._setRect = function (rect) {
+    _setRect(rect) {
         this._rect = rect;
-    };
+    }
     /** @internal */
-    Node.prototype._setWeight = function (weight) {
+    _setWeight(weight) {
         this._attributes.weight = weight;
-    };
+    }
     /** @internal */
-    Node.prototype._setSelected = function (index) {
+    _setSelected(index) {
         this._attributes.selected = index;
-    };
+    }
     /** @internal */
-    Node.prototype._isFixed = function () {
+    _isFixed() {
         return this._fixed;
-    };
+    }
     /** @internal */
-    Node.prototype._layout = function (rect, metrics) {
+    _layout(rect, metrics) {
         this._rect = rect;
-    };
+    }
     /** @internal */
-    Node.prototype._findDropTargetNode = function (dragNode, x, y) {
-        var rtn;
+    _findDropTargetNode(dragNode, x, y) {
+        let rtn;
         if (this._rect.contains(x, y)) {
             if (this._model.getMaximizedTabset() !== undefined) {
                 rtn = this._model.getMaximizedTabset().canDrop(dragNode, x, y);
@@ -39967,8 +38890,7 @@ var Node = /** @class */ (function () {
                 rtn = this.canDrop(dragNode, x, y);
                 if (rtn === undefined) {
                     if (this._children.length !== 0) {
-                        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                            var child = _a[_i];
+                        for (const child of this._children) {
                             rtn = child._findDropTargetNode(dragNode, x, y);
                             if (rtn !== undefined) {
                                 break;
@@ -39979,22 +38901,22 @@ var Node = /** @class */ (function () {
             }
         }
         return rtn;
-    };
+    }
     /** @internal */
-    Node.prototype.canDrop = function (dragNode, x, y) {
+    canDrop(dragNode, x, y) {
         return undefined;
-    };
+    }
     /** @internal */
-    Node.prototype._canDockInto = function (dragNode, dropInfo) {
+    _canDockInto(dragNode, dropInfo) {
         if (dropInfo != null) {
-            if (dropInfo.location === DockLocation_1.DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
+            if (dropInfo.location === _DockLocation__WEBPACK_IMPORTED_MODULE_0__.DockLocation.CENTER && dropInfo.node.isEnableDrop() === false) {
                 return false;
             }
             // prevent named tabset docking into another tabset, since this would lose the header
-            if (dropInfo.location === DockLocation_1.DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== undefined) {
+            if (dropInfo.location === _DockLocation__WEBPACK_IMPORTED_MODULE_0__.DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== undefined) {
                 return false;
             }
-            if (dropInfo.location !== DockLocation_1.DockLocation.CENTER && dropInfo.node.isEnableDivide() === false) {
+            if (dropInfo.location !== _DockLocation__WEBPACK_IMPORTED_MODULE_0__.DockLocation.CENTER && dropInfo.node.isEnableDivide() === false) {
                 return false;
             }
             // finally check model callback to check if drop allowed
@@ -40003,18 +38925,18 @@ var Node = /** @class */ (function () {
             }
         }
         return true;
-    };
+    }
     /** @internal */
-    Node.prototype._removeChild = function (childNode) {
-        var pos = this._children.indexOf(childNode);
+    _removeChild(childNode) {
+        const pos = this._children.indexOf(childNode);
         if (pos !== -1) {
             this._children.splice(pos, 1);
         }
         this._dirty = true;
         return pos;
-    };
+    }
     /** @internal */
-    Node.prototype._addChild = function (childNode, pos) {
+    _addChild(childNode, pos) {
         if (pos != null) {
             this._children.splice(pos, 0, childNode);
         }
@@ -40025,38 +38947,36 @@ var Node = /** @class */ (function () {
         childNode._parent = this;
         this._dirty = true;
         return pos;
-    };
+    }
     /** @internal */
-    Node.prototype._removeAll = function () {
+    _removeAll() {
         this._children = [];
         this._dirty = true;
-    };
+    }
     /** @internal */
-    Node.prototype._styleWithPosition = function (style) {
+    _styleWithPosition(style) {
         if (style == null) {
             style = {};
         }
         return this._rect.styleWithPosition(style);
-    };
+    }
     /** @internal */
-    Node.prototype._getTempSize = function () {
+    _getTempSize() {
         return this._tempSize;
-    };
+    }
     /** @internal */
-    Node.prototype._setTempSize = function (value) {
+    _setTempSize(value) {
         this._tempSize = value;
-    };
+    }
     /** @internal */
-    Node.prototype.isEnableDivide = function () {
+    isEnableDivide() {
         return true;
-    };
+    }
     /** @internal */
-    Node.prototype._toAttributeString = function () {
+    _toAttributeString() {
         return JSON.stringify(this._attributes, undefined, "\t");
-    };
-    return Node;
-}());
-exports.Node = Node;
+    }
+}
 
 
 /***/ }),
@@ -40065,115 +38985,97 @@ exports.Node = Node;
 /*!******************************!*\
   !*** ./src/model/RowNode.ts ***!
   \******************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "RowNode": () => (/* binding */ RowNode)
+/* harmony export */ });
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _DropInfo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _BorderNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _Node__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
+/* harmony import */ var _SplitterNode__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./SplitterNode */ "./src/model/SplitterNode.ts");
+/* harmony import */ var _TabSetNode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RowNode = void 0;
-var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
-var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
-var SplitterNode_1 = __webpack_require__(/*! ./SplitterNode */ "./src/model/SplitterNode.ts");
-var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
-var RowNode = /** @class */ (function (_super) {
-    __extends(RowNode, _super);
+
+
+
+
+
+
+
+
+
+
+class RowNode extends _Node__WEBPACK_IMPORTED_MODULE_8__.Node {
     /** @internal */
-    function RowNode(model, json) {
-        var _this = _super.call(this, model) || this;
-        _this._dirty = true;
-        _this._drawChildren = [];
-        _this._minHeight = 0;
-        _this._minWidth = 0;
-        RowNode._attributeDefinitions.fromJson(json, _this._attributes);
-        model._addNode(_this);
-        return _this;
+    constructor(model, json) {
+        super(model);
+        this._dirty = true;
+        this._drawChildren = [];
+        this._minHeight = 0;
+        this._minWidth = 0;
+        RowNode._attributeDefinitions.fromJson(json, this._attributes);
+        model._addNode(this);
     }
     /** @internal */
-    RowNode._fromJson = function (json, model) {
-        var newLayoutNode = new RowNode(model, json);
+    static _fromJson(json, model) {
+        const newLayoutNode = new RowNode(model, json);
         if (json.children != null) {
-            for (var _i = 0, _a = json.children; _i < _a.length; _i++) {
-                var jsonChild = _a[_i];
-                if (jsonChild.type === TabSetNode_1.TabSetNode.TYPE) {
-                    var child = TabSetNode_1.TabSetNode._fromJson(jsonChild, model);
+            for (const jsonChild of json.children) {
+                if (jsonChild.type === _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode.TYPE) {
+                    const child = _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
                 else {
-                    var child = RowNode._fromJson(jsonChild, model);
+                    const child = RowNode._fromJson(jsonChild, model);
                     newLayoutNode._addChild(child);
                 }
             }
         }
         return newLayoutNode;
-    };
+    }
     /** @internal */
-    RowNode._createAttributeDefinitions = function () {
-        var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
-        attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
-        attributeDefinitions.add("id", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("weight", 100).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("width", undefined).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("height", undefined).setType(Attribute_1.Attribute.NUMBER);
+    static _createAttributeDefinitions() {
+        const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
+        attributeDefinitions.add("type", RowNode.TYPE, true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("weight", 100).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         return attributeDefinitions;
-    };
-    RowNode.prototype.getWeight = function () {
+    }
+    getWeight() {
         return this._attributes.weight;
-    };
-    RowNode.prototype.getWidth = function () {
+    }
+    getWidth() {
         return this._getAttr("width");
-    };
-    RowNode.prototype.getHeight = function () {
+    }
+    getHeight() {
         return this._getAttr("height");
-    };
+    }
     /** @internal */
-    RowNode.prototype._setWeight = function (weight) {
+    _setWeight(weight) {
         this._attributes.weight = weight;
-    };
+    }
     /** @internal */
-    RowNode.prototype._layout = function (rect, metrics) {
-        _super.prototype._layout.call(this, rect, metrics);
-        var pixelSize = this._rect._getSize(this.getOrientation());
-        var totalWeight = 0;
-        var fixedPixels = 0;
-        var prefPixels = 0;
-        var totalPrefWeight = 0;
-        var drawChildren = this._getDrawChildren();
-        for (var _i = 0, drawChildren_1 = drawChildren; _i < drawChildren_1.length; _i++) {
-            var child = drawChildren_1[_i];
-            var prefSize = child._getPrefSize(this.getOrientation());
+    _layout(rect, metrics) {
+        super._layout(rect, metrics);
+        const pixelSize = this._rect._getSize(this.getOrientation());
+        let totalWeight = 0;
+        let fixedPixels = 0;
+        let prefPixels = 0;
+        let totalPrefWeight = 0;
+        const drawChildren = this._getDrawChildren();
+        for (const child of drawChildren) {
+            const prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
                 if (prefSize !== undefined) {
                     fixedPixels += prefSize;
@@ -40189,19 +39091,18 @@ var RowNode = /** @class */ (function (_super) {
                 }
             }
         }
-        var resizePreferred = false;
-        var availablePixels = pixelSize - fixedPixels - prefPixels;
+        let resizePreferred = false;
+        let availablePixels = pixelSize - fixedPixels - prefPixels;
         if (availablePixels < 0) {
             availablePixels = pixelSize - fixedPixels;
             resizePreferred = true;
             totalWeight += totalPrefWeight;
         }
         // assign actual pixel sizes
-        var totalSizeGiven = 0;
-        var variableSize = 0;
-        for (var _a = 0, drawChildren_2 = drawChildren; _a < drawChildren_2.length; _a++) {
-            var child = drawChildren_2[_a];
-            var prefSize = child._getPrefSize(this.getOrientation());
+        let totalSizeGiven = 0;
+        let variableSize = 0;
+        for (const child of drawChildren) {
+            const prefSize = child._getPrefSize(this.getOrientation());
             if (child._isFixed()) {
                 if (prefSize !== undefined) {
                     child._setTempSize(prefSize);
@@ -40213,8 +39114,8 @@ var RowNode = /** @class */ (function (_super) {
                         child._setTempSize(0);
                     }
                     else {
-                        var minSize = child.getMinSize(this.getOrientation());
-                        var size = Math.floor(availablePixels * (child.getWeight() / totalWeight));
+                        const minSize = child.getMinSize(this.getOrientation());
+                        const size = Math.floor(availablePixels * (child.getWeight() / totalWeight));
                         child._setTempSize(Math.max(minSize, size));
                     }
                     variableSize += child._getTempSize();
@@ -40228,10 +39129,9 @@ var RowNode = /** @class */ (function (_super) {
         // adjust sizes to exactly fit
         if (variableSize > 0) {
             while (totalSizeGiven < pixelSize) {
-                for (var _b = 0, drawChildren_3 = drawChildren; _b < drawChildren_3.length; _b++) {
-                    var child = drawChildren_3[_b];
-                    if (!(child instanceof SplitterNode_1.SplitterNode)) {
-                        var prefSize = child._getPrefSize(this.getOrientation());
+                for (const child of drawChildren) {
+                    if (!(child instanceof _SplitterNode__WEBPACK_IMPORTED_MODULE_9__.SplitterNode)) {
+                        const prefSize = child._getPrefSize(this.getOrientation());
                         if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
                             child._setTempSize(child._getTempSize() + 1);
                             totalSizeGiven++;
@@ -40241,12 +39141,11 @@ var RowNode = /** @class */ (function (_super) {
             }
             // decrease size using nodes not at there minimum
             while (totalSizeGiven > pixelSize) {
-                var changed = false;
-                for (var _c = 0, drawChildren_4 = drawChildren; _c < drawChildren_4.length; _c++) {
-                    var child = drawChildren_4[_c];
-                    if (!(child instanceof SplitterNode_1.SplitterNode)) {
-                        var minSize = child.getMinSize(this.getOrientation());
-                        var size = child._getTempSize();
+                let changed = false;
+                for (const child of drawChildren) {
+                    if (!(child instanceof _SplitterNode__WEBPACK_IMPORTED_MODULE_9__.SplitterNode)) {
+                        const minSize = child.getMinSize(this.getOrientation());
+                        const size = child._getTempSize();
                         if (size > minSize && totalSizeGiven > pixelSize) {
                             child._setTempSize(child._getTempSize() - 1);
                             totalSizeGiven--;
@@ -40261,11 +39160,10 @@ var RowNode = /** @class */ (function (_super) {
             }
             // if still too big then simply reduce all nodes until fits
             while (totalSizeGiven > pixelSize) {
-                var changed = false;
-                for (var _d = 0, drawChildren_5 = drawChildren; _d < drawChildren_5.length; _d++) {
-                    var child = drawChildren_5[_d];
-                    if (!(child instanceof SplitterNode_1.SplitterNode)) {
-                        var size = child._getTempSize();
+                let changed = false;
+                for (const child of drawChildren) {
+                    if (!(child instanceof _SplitterNode__WEBPACK_IMPORTED_MODULE_9__.SplitterNode)) {
+                        const size = child._getTempSize();
                         if (size > 0 && totalSizeGiven > pixelSize) {
                             child._setTempSize(child._getTempSize() - 1);
                             totalSizeGiven--;
@@ -40280,72 +39178,70 @@ var RowNode = /** @class */ (function (_super) {
             }
         }
         // layout children
-        var p = 0;
-        for (var _e = 0, drawChildren_6 = drawChildren; _e < drawChildren_6.length; _e++) {
-            var child = drawChildren_6[_e];
-            if (this.getOrientation() === Orientation_1.Orientation.HORZ) {
-                child._layout(new Rect_1.Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height), metrics);
+        let p = 0;
+        for (const child of drawChildren) {
+            if (this.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
+                child._layout(new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height), metrics);
             }
             else {
-                child._layout(new Rect_1.Rect(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()), metrics);
+                child._layout(new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()), metrics);
             }
             p += child._getTempSize();
         }
         return true;
-    };
+    }
     /** @internal */
-    RowNode.prototype._getSplitterBounds = function (splitterNode, useMinSize) {
-        if (useMinSize === void 0) { useMinSize = false; }
-        var pBounds = [0, 0];
-        var drawChildren = this._getDrawChildren();
-        var p = drawChildren.indexOf(splitterNode);
-        var node1 = drawChildren[p - 1];
-        var node2 = drawChildren[p + 1];
-        if (this.getOrientation() === Orientation_1.Orientation.HORZ) {
-            var minSize1 = useMinSize ? node1.getMinWidth() : 0;
-            var minSize2 = useMinSize ? node2.getMinWidth() : 0;
+    _getSplitterBounds(splitterNode, useMinSize = false) {
+        const pBounds = [0, 0];
+        const drawChildren = this._getDrawChildren();
+        const p = drawChildren.indexOf(splitterNode);
+        const node1 = drawChildren[p - 1];
+        const node2 = drawChildren[p + 1];
+        if (this.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
+            const minSize1 = useMinSize ? node1.getMinWidth() : 0;
+            const minSize2 = useMinSize ? node2.getMinWidth() : 0;
             pBounds[0] = node1.getRect().x + minSize1;
             pBounds[1] = node2.getRect().getRight() - splitterNode.getWidth() - minSize2;
         }
         else {
-            var minSize1 = useMinSize ? node1.getMinHeight() : 0;
-            var minSize2 = useMinSize ? node2.getMinHeight() : 0;
+            const minSize1 = useMinSize ? node1.getMinHeight() : 0;
+            const minSize2 = useMinSize ? node2.getMinHeight() : 0;
             pBounds[0] = node1.getRect().y + minSize1;
             pBounds[1] = node2.getRect().getBottom() - splitterNode.getHeight() - minSize2;
         }
         return pBounds;
-    };
+    }
     /** @internal */
-    RowNode.prototype._calculateSplit = function (splitter, splitterPos) {
-        var rtn;
-        var drawChildren = this._getDrawChildren();
-        var p = drawChildren.indexOf(splitter);
-        var pBounds = this._getSplitterBounds(splitter);
-        var weightedLength = drawChildren[p - 1].getWeight() + drawChildren[p + 1].getWeight();
-        var pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
-        var pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
+    _calculateSplit(splitter, splitterPos) {
+        let rtn;
+        const drawChildren = this._getDrawChildren();
+        const p = drawChildren.indexOf(splitter);
+        const pBounds = this._getSplitterBounds(splitter);
+        const weightedLength = drawChildren[p - 1].getWeight() + drawChildren[p + 1].getWeight();
+        const pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
+        const pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
         if (pixelWidth1 + pixelWidth2 > 0) {
-            var weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
-            var weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
+            const weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
+            const weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
             rtn = {
                 node1Id: drawChildren[p - 1].getId(),
-                weight1: weight1,
-                pixelWidth1: pixelWidth1,
+                weight1,
+                pixelWidth1,
                 node2Id: drawChildren[p + 1].getId(),
-                weight2: weight2,
-                pixelWidth2: pixelWidth2,
+                weight2,
+                pixelWidth2,
             };
         }
         return rtn;
-    };
+    }
     /** @internal */
-    RowNode.prototype._getDrawChildren = function () {
+    _getDrawChildren() {
         if (this._dirty) {
             this._drawChildren = [];
-            for (var i = 0; i < this._children.length; i++) {
-                var child = this._children[i];
+            for (let i = 0; i < this._children.length; i++) {
+                const child = this._children[i];
                 if (i !== 0) {
-                    var newSplitter = new SplitterNode_1.SplitterNode(this._model);
+                    const newSplitter = new _SplitterNode__WEBPACK_IMPORTED_MODULE_9__.SplitterNode(this._model);
                     newSplitter._setParent(this);
                     this._drawChildren.push(newSplitter);
                 }
@@ -40354,36 +39250,35 @@ var RowNode = /** @class */ (function (_super) {
             this._dirty = false;
         }
         return this._drawChildren;
-    };
+    }
     /** @internal */
-    RowNode.prototype.getMinSize = function (orientation) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    getMinSize(orientation) {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
             return this.getMinWidth();
         }
         else {
             return this.getMinHeight();
         }
-    };
+    }
     /** @internal */
-    RowNode.prototype.getMinWidth = function () {
+    getMinWidth() {
         return this._minWidth;
-    };
+    }
     /** @internal */
-    RowNode.prototype.getMinHeight = function () {
+    getMinHeight() {
         return this._minHeight;
-    };
+    }
     /** @internal */
-    RowNode.prototype.calcMinSize = function () {
+    calcMinSize() {
         this._minHeight = 0;
         this._minWidth = 0;
-        var first = true;
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var child = _a[_i];
-            var c = child;
+        let first = true;
+        for (const child of this._children) {
+            const c = child;
             if (c instanceof RowNode) {
                 c.calcMinSize();
             }
-            if (this.getOrientation() === Orientation_1.Orientation.VERT) {
+            if (this.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT) {
                 this._minHeight += c.getMinHeight();
                 if (!first) {
                     this._minHeight += this._model.getSplitterSize();
@@ -40399,32 +39294,31 @@ var RowNode = /** @class */ (function (_super) {
             }
             first = false;
         }
-    };
+    }
     /** @internal */
-    RowNode.prototype._tidy = function () {
-        var i = 0;
+    _tidy() {
+        let i = 0;
         while (i < this._children.length) {
-            var child = this._children[i];
+            const child = this._children[i];
             if (child instanceof RowNode) {
                 child._tidy();
-                var childChildren = child.getChildren();
+                const childChildren = child.getChildren();
                 if (childChildren.length === 0) {
                     this._removeChild(child);
                 }
                 else if (childChildren.length === 1) {
                     // hoist child/children up to this level
-                    var subchild = childChildren[0];
+                    const subchild = childChildren[0];
                     this._removeChild(child);
                     if (subchild instanceof RowNode) {
-                        var subChildrenTotal = 0;
-                        var subChildChildren = subchild.getChildren();
-                        for (var _i = 0, subChildChildren_1 = subChildChildren; _i < subChildChildren_1.length; _i++) {
-                            var ssc = subChildChildren_1[_i];
-                            var subsubChild = ssc;
+                        let subChildrenTotal = 0;
+                        const subChildChildren = subchild.getChildren();
+                        for (const ssc of subChildChildren) {
+                            const subsubChild = ssc;
                             subChildrenTotal += subsubChild.getWeight();
                         }
-                        for (var j = 0; j < subChildChildren.length; j++) {
-                            var subsubChild = subChildChildren[j];
+                        for (let j = 0; j < subChildChildren.length; j++) {
+                            const subsubChild = subChildChildren[j];
                             subsubChild._setWeight((child.getWeight() * subsubChild.getWeight()) / subChildrenTotal);
                             this._addChild(subsubChild, i + j);
                         }
@@ -40438,7 +39332,7 @@ var RowNode = /** @class */ (function (_super) {
                     i++;
                 }
             }
-            else if (child instanceof TabSetNode_1.TabSetNode && child.getChildren().length === 0) {
+            else if (child instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode && child.getChildren().length === 0) {
                 if (child.isEnableDeleteWhenEmpty()) {
                     this._removeChild(child);
                     if (child === this._model.getMaximizedTabset()) {
@@ -40455,50 +39349,50 @@ var RowNode = /** @class */ (function (_super) {
         }
         // add tabset into empty root
         if (this === this._model.getRoot() && this._children.length === 0) {
-            var callback = this._model._getOnCreateTabSet();
-            var attrs = callback ? callback() : {};
-            attrs = __assign(__assign({}, attrs), { selected: -1 });
-            var child = new TabSetNode_1.TabSetNode(this._model, attrs);
+            const callback = this._model._getOnCreateTabSet();
+            let attrs = callback ? callback() : {};
+            attrs = Object.assign(Object.assign({}, attrs), { selected: -1 });
+            const child = new _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode(this._model, attrs);
             this._model._setActiveTabset(child);
             this._addChild(child);
         }
-    };
+    }
     /** @internal */
-    RowNode.prototype.canDrop = function (dragNode, x, y) {
-        var yy = y - this._rect.y;
-        var xx = x - this._rect.x;
-        var w = this._rect.width;
-        var h = this._rect.height;
-        var margin = 10; // height of edge rect
-        var half = 50; // half width of edge rect
-        var dropInfo;
+    canDrop(dragNode, x, y) {
+        const yy = y - this._rect.y;
+        const xx = x - this._rect.x;
+        const w = this._rect.width;
+        const h = this._rect.height;
+        const margin = 10; // height of edge rect
+        const half = 50; // half width of edge rect
+        let dropInfo;
         if (this._model.isEnableEdgeDock() && this._parent === undefined) {
             // _root row
             if (x < this._rect.x + margin && yy > h / 2 - half && yy < h / 2 + half) {
-                var dockLocation = DockLocation_1.DockLocation.LEFT;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.LEFT;
+                const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
-                dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
+                dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
             else if (x > this._rect.getRight() - margin && yy > h / 2 - half && yy < h / 2 + half) {
-                var dockLocation = DockLocation_1.DockLocation.RIGHT;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT;
+                const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
-                dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
+                dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
             else if (y < this._rect.y + margin && xx > w / 2 - half && xx < w / 2 + half) {
-                var dockLocation = DockLocation_1.DockLocation.TOP;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.TOP;
+                const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
-                dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
+                dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
             else if (y > this._rect.getBottom() - margin && xx > w / 2 - half && xx < w / 2 + half) {
-                var dockLocation = DockLocation_1.DockLocation.BOTTOM;
-                var outlineRect = dockLocation.getDockRect(this._rect);
+                const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM;
+                const outlineRect = dockLocation.getDockRect(this._rect);
                 outlineRect.height = outlineRect.height / 2;
                 outlineRect.y += outlineRect.height;
-                dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
+                dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
             if (dropInfo !== undefined) {
                 if (!dragNode._canDockInto(dragNode, dropInfo)) {
@@ -40507,50 +39401,49 @@ var RowNode = /** @class */ (function (_super) {
             }
         }
         return dropInfo;
-    };
+    }
     /** @internal */
-    RowNode.prototype.drop = function (dragNode, location, index) {
-        var dockLocation = location;
-        var parent = dragNode.getParent();
+    drop(dragNode, location, index) {
+        const dockLocation = location;
+        const parent = dragNode.getParent();
         if (parent) {
             parent._removeChild(dragNode);
         }
-        if (parent !== undefined && parent.getType() === TabSetNode_1.TabSetNode.TYPE) {
+        if (parent !== undefined && parent.getType() === _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode.TYPE) {
             parent._setSelected(0);
         }
-        if (parent !== undefined && parent.getType() === BorderNode_1.BorderNode.TYPE) {
+        if (parent !== undefined && parent.getType() === _BorderNode__WEBPACK_IMPORTED_MODULE_7__.BorderNode.TYPE) {
             parent._setSelected(-1);
         }
-        var tabSet;
-        if (dragNode instanceof TabSetNode_1.TabSetNode) {
+        let tabSet;
+        if (dragNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
             tabSet = dragNode;
         }
         else {
-            var callback = this._model._getOnCreateTabSet();
-            tabSet = new TabSetNode_1.TabSetNode(this._model, callback ? callback(dragNode) : {});
+            const callback = this._model._getOnCreateTabSet();
+            tabSet = new _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode(this._model, callback ? callback(dragNode) : {});
             tabSet._addChild(dragNode);
         }
-        var size = this._children.reduce(function (sum, child) {
+        let size = this._children.reduce((sum, child) => {
             return sum + child.getWeight();
         }, 0);
         if (size === 0) {
             size = 100;
         }
         tabSet._setWeight(size / 3);
-        var horz = !this._model.isRootOrientationVertical();
-        if (horz && dockLocation === DockLocation_1.DockLocation.LEFT || !horz && dockLocation === DockLocation_1.DockLocation.TOP) {
+        const horz = !this._model.isRootOrientationVertical();
+        if (horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.LEFT || !horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.TOP) {
             this._addChild(tabSet, 0);
         }
-        else if (horz && dockLocation === DockLocation_1.DockLocation.RIGHT || !horz && dockLocation === DockLocation_1.DockLocation.BOTTOM) {
+        else if (horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT || !horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM) {
             this._addChild(tabSet);
         }
-        else if (horz && dockLocation === DockLocation_1.DockLocation.TOP || !horz && dockLocation === DockLocation_1.DockLocation.LEFT) {
-            var vrow = new RowNode(this._model, {});
-            var hrow = new RowNode(this._model, {});
+        else if (horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.TOP || !horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.LEFT) {
+            const vrow = new RowNode(this._model, {});
+            const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);
             tabSet._setWeight(25);
-            for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-                var child = _a[_i];
+            for (const child of this._children) {
                 hrow._addChild(child);
             }
             this._removeAll();
@@ -40558,13 +39451,12 @@ var RowNode = /** @class */ (function (_super) {
             vrow._addChild(hrow);
             this._addChild(vrow);
         }
-        else if (horz && dockLocation === DockLocation_1.DockLocation.BOTTOM || !horz && dockLocation === DockLocation_1.DockLocation.RIGHT) {
-            var vrow = new RowNode(this._model, {});
-            var hrow = new RowNode(this._model, {});
+        else if (horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM || !horz && dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT) {
+            const vrow = new RowNode(this._model, {});
+            const hrow = new RowNode(this._model, {});
             hrow._setWeight(75);
             tabSet._setWeight(25);
-            for (var _b = 0, _c = this._children; _b < _c.length; _b++) {
-                var child = _c[_b];
+            for (const child of this._children) {
                 hrow._addChild(child);
             }
             this._removeAll();
@@ -40574,46 +39466,43 @@ var RowNode = /** @class */ (function (_super) {
         }
         this._model._setActiveTabset(tabSet);
         this._model._tidy();
-    };
-    RowNode.prototype.toJson = function () {
-        var json = {};
+    }
+    toJson() {
+        const json = {};
         RowNode._attributeDefinitions.toJson(json, this._attributes);
         json.children = [];
-        for (var _i = 0, _a = this._children; _i < _a.length; _i++) {
-            var child = _a[_i];
+        for (const child of this._children) {
             json.children.push(child.toJson());
         }
         return json;
-    };
-    RowNode.prototype.isEnableDrop = function () {
+    }
+    isEnableDrop() {
         return true;
-    };
+    }
     /** @internal */
-    RowNode.prototype._getPrefSize = function (orientation) {
-        var prefSize = this.getWidth();
-        if (orientation === Orientation_1.Orientation.VERT) {
+    _getPrefSize(orientation) {
+        let prefSize = this.getWidth();
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT) {
             prefSize = this.getHeight();
         }
         return prefSize;
-    };
+    }
     /** @internal */
-    RowNode.prototype._getAttributeDefinitions = function () {
+    _getAttributeDefinitions() {
         return RowNode._attributeDefinitions;
-    };
+    }
     /** @internal */
-    RowNode.prototype._updateAttrs = function (json) {
+    _updateAttrs(json) {
         RowNode._attributeDefinitions.update(json, this._attributes);
-    };
+    }
     /** @internal */
-    RowNode.getAttributeDefinitions = function () {
+    static getAttributeDefinitions() {
         return RowNode._attributeDefinitions;
-    };
-    RowNode.TYPE = "row";
-    /** @internal */
-    RowNode._attributeDefinitions = RowNode._createAttributeDefinitions();
-    return RowNode;
-}(Node_1.Node));
-exports.RowNode = RowNode;
+    }
+}
+RowNode.TYPE = "row";
+/** @internal */
+RowNode._attributeDefinitions = RowNode._createAttributeDefinitions();
 
 
 /***/ }),
@@ -40622,98 +39511,83 @@ exports.RowNode = RowNode;
 /*!***********************************!*\
   !*** ./src/model/SplitterNode.ts ***!
   \***********************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "SplitterNode": () => (/* binding */ SplitterNode)
+/* harmony export */ });
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Node__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.SplitterNode = void 0;
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
-var SplitterNode = /** @class */ (function (_super) {
-    __extends(SplitterNode, _super);
+
+
+class SplitterNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
     /** @internal */
-    function SplitterNode(model) {
-        var _this = _super.call(this, model) || this;
-        _this._fixed = true;
-        _this._attributes.type = SplitterNode.TYPE;
-        model._addNode(_this);
-        return _this;
+    constructor(model) {
+        super(model);
+        this._fixed = true;
+        this._attributes.type = SplitterNode.TYPE;
+        model._addNode(this);
     }
     /** @internal */
-    SplitterNode.prototype.getWidth = function () {
+    getWidth() {
         return this._model.getSplitterSize();
-    };
+    }
     /** @internal */
-    SplitterNode.prototype.getMinWidth = function () {
-        if (this.getOrientation() === Orientation_1.Orientation.VERT) {
+    getMinWidth() {
+        if (this.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.VERT) {
             return this._model.getSplitterSize();
         }
         else {
             return 0;
         }
-    };
+    }
     /** @internal */
-    SplitterNode.prototype.getHeight = function () {
+    getHeight() {
         return this._model.getSplitterSize();
-    };
+    }
     /** @internal */
-    SplitterNode.prototype.getMinHeight = function () {
-        if (this.getOrientation() === Orientation_1.Orientation.HORZ) {
+    getMinHeight() {
+        if (this.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.HORZ) {
             return this._model.getSplitterSize();
         }
         else {
             return 0;
         }
-    };
+    }
     /** @internal */
-    SplitterNode.prototype.getMinSize = function (orientation) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    getMinSize(orientation) {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_1__.Orientation.HORZ) {
             return this.getMinWidth();
         }
         else {
             return this.getMinHeight();
         }
-    };
+    }
     /** @internal */
-    SplitterNode.prototype.getWeight = function () {
+    getWeight() {
         return 0;
-    };
+    }
     /** @internal */
-    SplitterNode.prototype._setWeight = function (value) { };
+    _setWeight(value) { }
     /** @internal */
-    SplitterNode.prototype._getPrefSize = function (orientation) {
+    _getPrefSize(orientation) {
         return this._model.getSplitterSize();
-    };
+    }
     /** @internal */
-    SplitterNode.prototype._updateAttrs = function (json) { };
+    _updateAttrs(json) { }
     /** @internal */
-    SplitterNode.prototype._getAttributeDefinitions = function () {
-        return new AttributeDefinitions_1.AttributeDefinitions();
-    };
-    SplitterNode.prototype.toJson = function () {
+    _getAttributeDefinitions() {
+        return new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_0__.AttributeDefinitions();
+    }
+    toJson() {
         return undefined;
-    };
-    SplitterNode.TYPE = "splitter";
-    return SplitterNode;
-}(Node_1.Node));
-exports.SplitterNode = SplitterNode;
+    }
+}
+SplitterNode.TYPE = "splitter";
 
 
 /***/ }),
@@ -40722,103 +39596,88 @@ exports.SplitterNode = SplitterNode;
 /*!******************************!*\
   !*** ./src/model/TabNode.ts ***!
   \******************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabNode": () => (/* binding */ TabNode)
+/* harmony export */ });
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _Node__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabNode = void 0;
-var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
-var TabNode = /** @class */ (function (_super) {
-    __extends(TabNode, _super);
+
+
+class TabNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
     /** @internal */
-    function TabNode(model, json, addToModel) {
-        if (addToModel === void 0) { addToModel = true; }
-        var _this = _super.call(this, model) || this;
-        _this._extra = {}; // extra data added to node not saved in json
-        TabNode._attributeDefinitions.fromJson(json, _this._attributes);
+    constructor(model, json, addToModel = true) {
+        super(model);
+        this._extra = {}; // extra data added to node not saved in json
+        TabNode._attributeDefinitions.fromJson(json, this._attributes);
         if (addToModel === true) {
-            model._addNode(_this);
+            model._addNode(this);
         }
-        return _this;
     }
     /** @internal */
-    TabNode._fromJson = function (json, model, addToModel) {
-        if (addToModel === void 0) { addToModel = true; }
-        var newLayoutNode = new TabNode(model, json, addToModel);
+    static _fromJson(json, model, addToModel = true) {
+        const newLayoutNode = new TabNode(model, json, addToModel);
         return newLayoutNode;
-    };
+    }
     /** @internal */
-    TabNode._createAttributeDefinitions = function () {
-        var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
-        attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("id", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("altName", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("helpText", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("component", undefined).setType(Attribute_1.Attribute.STRING);
+    static _createAttributeDefinitions() {
+        const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
+        attributeDefinitions.add("type", TabNode.TYPE, true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("id", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("name", "[Unnamed Tab]").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("altName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("helpText", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("component", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
-        attributeDefinitions.add("floating", false).setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.add("floating", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
-        attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute_1.Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(Attribute_1.Attribute.NUMBER);
+        attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("className", "tabClassName").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.addInherited("icon", "tabIcon").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         return attributeDefinitions;
-    };
-    TabNode.prototype.getWindow = function () {
+    }
+    getWindow() {
         return this._window;
-    };
-    TabNode.prototype.getTabRect = function () {
+    }
+    getTabRect() {
         return this._tabRect;
-    };
+    }
     /** @internal */
-    TabNode.prototype._setTabRect = function (rect) {
+    _setTabRect(rect) {
         this._tabRect = rect;
-    };
+    }
     /** @internal */
-    TabNode.prototype._setRenderedName = function (name) {
+    _setRenderedName(name) {
         this._renderedName = name;
-    };
+    }
     /** @internal */
-    TabNode.prototype._getNameForOverflowMenu = function () {
-        var altName = this._getAttr("altName");
+    _getNameForOverflowMenu() {
+        const altName = this._getAttr("altName");
         if (altName !== undefined) {
             return altName;
         }
         return this._renderedName;
-    };
-    TabNode.prototype.getName = function () {
+    }
+    getName() {
         return this._getAttr("name");
-    };
-    TabNode.prototype.getHelpText = function () {
+    }
+    getHelpText() {
         return this._getAttr("helpText");
-    };
-    TabNode.prototype.getComponent = function () {
+    }
+    getComponent() {
         return this._getAttr("component");
-    };
+    }
     /**
      * Returns the config attribute that can be used to store node specific data that
      * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
@@ -40826,101 +39685,99 @@ var TabNode = /** @class */ (function (_super) {
      * this.state.model.doAction(
      *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
      */
-    TabNode.prototype.getConfig = function () {
+    getConfig() {
         return this._attributes.config;
-    };
+    }
     /**
      * Returns an object that can be used to store transient node specific data that will
      * NOT be saved in the json.
      */
-    TabNode.prototype.getExtraData = function () {
+    getExtraData() {
         return this._extra;
-    };
-    TabNode.prototype.isFloating = function () {
+    }
+    isFloating() {
         return this._getAttr("floating");
-    };
-    TabNode.prototype.getIcon = function () {
+    }
+    getIcon() {
         return this._getAttr("icon");
-    };
-    TabNode.prototype.isEnableClose = function () {
+    }
+    isEnableClose() {
         return this._getAttr("enableClose");
-    };
-    TabNode.prototype.getCloseType = function () {
+    }
+    getCloseType() {
         return this._getAttr("closeType");
-    };
-    TabNode.prototype.isEnableFloat = function () {
+    }
+    isEnableFloat() {
         return this._getAttr("enableFloat");
-    };
-    TabNode.prototype.isEnableDrag = function () {
+    }
+    isEnableDrag() {
         return this._getAttr("enableDrag");
-    };
-    TabNode.prototype.isEnableRename = function () {
+    }
+    isEnableRename() {
         return this._getAttr("enableRename");
-    };
-    TabNode.prototype.getClassName = function () {
+    }
+    getClassName() {
         return this._getAttr("className");
-    };
-    TabNode.prototype.isEnableRenderOnDemand = function () {
+    }
+    isEnableRenderOnDemand() {
         return this._getAttr("enableRenderOnDemand");
-    };
+    }
     /** @internal */
-    TabNode.prototype._setName = function (name) {
+    _setName(name) {
         this._attributes.name = name;
         if (this._window && this._window.document) {
             this._window.document.title = name;
         }
-    };
+    }
     /** @internal */
-    TabNode.prototype._setFloating = function (float) {
+    _setFloating(float) {
         this._attributes.floating = float;
-    };
+    }
     /** @internal */
-    TabNode.prototype._layout = function (rect, metrics) {
+    _layout(rect, metrics) {
         if (!rect.equals(this._rect)) {
-            this._fireEvent("resize", { rect: rect });
+            this._fireEvent("resize", { rect });
         }
         this._rect = rect;
-    };
+    }
     /** @internal */
-    TabNode.prototype._delete = function () {
+    _delete() {
         this._parent._remove(this);
         this._fireEvent("close", {});
-    };
-    TabNode.prototype.toJson = function () {
-        var json = {};
+    }
+    toJson() {
+        const json = {};
         TabNode._attributeDefinitions.toJson(json, this._attributes);
         return json;
-    };
+    }
     /** @internal */
-    TabNode.prototype._updateAttrs = function (json) {
+    _updateAttrs(json) {
         TabNode._attributeDefinitions.update(json, this._attributes);
-    };
+    }
     /** @internal */
-    TabNode.prototype._getAttributeDefinitions = function () {
+    _getAttributeDefinitions() {
         return TabNode._attributeDefinitions;
-    };
+    }
     /** @internal */
-    TabNode.prototype._setWindow = function (window) {
+    _setWindow(window) {
         this._window = window;
-    };
+    }
     /** @internal */
-    TabNode.prototype._setBorderWidth = function (width) {
+    _setBorderWidth(width) {
         this._attributes.borderWidth = width;
-    };
+    }
     /** @internal */
-    TabNode.prototype._setBorderHeight = function (height) {
+    _setBorderHeight(height) {
         this._attributes.borderHeight = height;
-    };
+    }
     /** @internal */
-    TabNode.getAttributeDefinitions = function () {
+    static getAttributeDefinitions() {
         return TabNode._attributeDefinitions;
-    };
-    TabNode.TYPE = "tab";
-    /** @internal */
-    TabNode._attributeDefinitions = TabNode._createAttributeDefinitions();
-    return TabNode;
-}(Node_1.Node));
-exports.TabNode = TabNode;
+    }
+}
+TabNode.TYPE = "tab";
+/** @internal */
+TabNode._attributeDefinitions = TabNode._createAttributeDefinitions();
 
 
 /***/ }),
@@ -40929,57 +39786,52 @@ exports.TabNode = TabNode;
 /*!*********************************!*\
   !*** ./src/model/TabSetNode.ts ***!
   \*********************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabSetNode": () => (/* binding */ TabSetNode)
+/* harmony export */ });
+/* harmony import */ var _Attribute__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
+/* harmony import */ var _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _DropInfo__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _BorderNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _Node__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
+/* harmony import */ var _RowNode__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
+/* harmony import */ var _TabNode__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabSetNode = void 0;
-var Attribute_1 = __webpack_require__(/*! ../Attribute */ "./src/Attribute.ts");
-var AttributeDefinitions_1 = __webpack_require__(/*! ../AttributeDefinitions */ "./src/AttributeDefinitions.ts");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var DropInfo_1 = __webpack_require__(/*! ../DropInfo */ "./src/DropInfo.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
-var Node_1 = __webpack_require__(/*! ./Node */ "./src/model/Node.ts");
-var RowNode_1 = __webpack_require__(/*! ./RowNode */ "./src/model/RowNode.ts");
-var TabNode_1 = __webpack_require__(/*! ./TabNode */ "./src/model/TabNode.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/model/Utils.ts");
-var TabSetNode = /** @class */ (function (_super) {
-    __extends(TabSetNode, _super);
+
+
+
+
+
+
+
+
+
+
+
+class TabSetNode extends _Node__WEBPACK_IMPORTED_MODULE_8__.Node {
     /** @internal */
-    function TabSetNode(model, json) {
-        var _this = _super.call(this, model) || this;
-        TabSetNode._attributeDefinitions.fromJson(json, _this._attributes);
-        model._addNode(_this);
-        _this._calculatedTabBarHeight = 0;
-        _this._calculatedHeaderBarHeight = 0;
-        return _this;
+    constructor(model, json) {
+        super(model);
+        TabSetNode._attributeDefinitions.fromJson(json, this._attributes);
+        model._addNode(this);
+        this._calculatedTabBarHeight = 0;
+        this._calculatedHeaderBarHeight = 0;
     }
     /** @internal */
-    TabSetNode._fromJson = function (json, model) {
-        var newLayoutNode = new TabSetNode(model, json);
+    static _fromJson(json, model) {
+        const newLayoutNode = new TabSetNode(model, json);
         if (json.children != null) {
-            for (var _i = 0, _a = json.children; _i < _a.length; _i++) {
-                var jsonChild = _a[_i];
-                var child = TabNode_1.TabNode._fromJson(jsonChild, model);
+            for (const jsonChild of json.children) {
+                const child = _TabNode__WEBPACK_IMPORTED_MODULE_10__.TabNode._fromJson(jsonChild, model);
                 newLayoutNode._addChild(child);
             }
         }
@@ -40993,17 +39845,17 @@ var TabSetNode = /** @class */ (function (_super) {
             model._setActiveTabset(newLayoutNode);
         }
         return newLayoutNode;
-    };
+    }
     /** @internal */
-    TabSetNode._createAttributeDefinitions = function () {
-        var attributeDefinitions = new AttributeDefinitions_1.AttributeDefinitions();
-        attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(Attribute_1.Attribute.STRING).setFixed();
-        attributeDefinitions.add("id", undefined).setType(Attribute_1.Attribute.STRING);
-        attributeDefinitions.add("weight", 100).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("width", undefined).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("height", undefined).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("selected", 0).setType(Attribute_1.Attribute.NUMBER);
-        attributeDefinitions.add("name", undefined).setType(Attribute_1.Attribute.STRING);
+    static _createAttributeDefinitions() {
+        const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
+        attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.add("weight", 100).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("width", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("height", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("selected", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("name", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty");
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop");
@@ -41021,50 +39873,50 @@ var TabSetNode = /** @class */ (function (_super) {
         attributeDefinitions.addInherited("headerHeight", "tabSetHeaderHeight");
         attributeDefinitions.addInherited("tabStripHeight", "tabSetTabStripHeight");
         attributeDefinitions.addInherited("tabLocation", "tabSetTabLocation");
-        attributeDefinitions.addInherited("autoSelectTab", "tabSetAutoSelectTab").setType(Attribute_1.Attribute.BOOLEAN);
+        attributeDefinitions.addInherited("autoSelectTab", "tabSetAutoSelectTab").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         return attributeDefinitions;
-    };
-    TabSetNode.prototype.getName = function () {
+    }
+    getName() {
         return this._getAttr("name");
-    };
-    TabSetNode.prototype.getSelected = function () {
-        var selected = this._attributes.selected;
+    }
+    getSelected() {
+        const selected = this._attributes.selected;
         if (selected !== undefined) {
             return selected;
         }
         return -1;
-    };
-    TabSetNode.prototype.getSelectedNode = function () {
-        var selected = this.getSelected();
+    }
+    getSelectedNode() {
+        const selected = this.getSelected();
         if (selected !== -1) {
             return this._children[selected];
         }
         return undefined;
-    };
-    TabSetNode.prototype.getWeight = function () {
+    }
+    getWeight() {
         return this._getAttr("weight");
-    };
-    TabSetNode.prototype.getWidth = function () {
+    }
+    getWidth() {
         return this._getAttr("width");
-    };
-    TabSetNode.prototype.getMinWidth = function () {
+    }
+    getMinWidth() {
         return this._getAttr("minWidth");
-    };
-    TabSetNode.prototype.getHeight = function () {
+    }
+    getHeight() {
         return this._getAttr("height");
-    };
-    TabSetNode.prototype.getMinHeight = function () {
+    }
+    getMinHeight() {
         return this._getAttr("minHeight");
-    };
+    }
     /** @internal */
-    TabSetNode.prototype.getMinSize = function (orientation) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    getMinSize(orientation) {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
             return this.getMinWidth();
         }
         else {
             return this.getMinHeight();
         }
-    };
+    }
     /**
      * Returns the config attribute that can be used to store node specific data that
      * WILL be saved to the json. The config attribute should be changed via the action Actions.updateNodeAttributes rather
@@ -41072,34 +39924,34 @@ var TabSetNode = /** @class */ (function (_super) {
      * this.state.model.doAction(
      *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
      */
-    TabSetNode.prototype.getConfig = function () {
+    getConfig() {
         return this._attributes.config;
-    };
-    TabSetNode.prototype.isMaximized = function () {
+    }
+    isMaximized() {
         return this._model.getMaximizedTabset() === this;
-    };
-    TabSetNode.prototype.isActive = function () {
+    }
+    isActive() {
         return this._model.getActiveTabset() === this;
-    };
-    TabSetNode.prototype.isEnableDeleteWhenEmpty = function () {
+    }
+    isEnableDeleteWhenEmpty() {
         return this._getAttr("enableDeleteWhenEmpty");
-    };
-    TabSetNode.prototype.isEnableDrop = function () {
+    }
+    isEnableDrop() {
         return this._getAttr("enableDrop");
-    };
-    TabSetNode.prototype.isEnableDrag = function () {
+    }
+    isEnableDrag() {
         return this._getAttr("enableDrag");
-    };
-    TabSetNode.prototype.isEnableDivide = function () {
+    }
+    isEnableDivide() {
         return this._getAttr("enableDivide");
-    };
-    TabSetNode.prototype.isEnableMaximize = function () {
+    }
+    isEnableMaximize() {
         return this._getAttr("enableMaximize");
-    };
-    TabSetNode.prototype.isEnableClose = function () {
+    }
+    isEnableClose() {
         return this._getAttr("enableClose");
-    };
-    TabSetNode.prototype.canMaximize = function () {
+    }
+    canMaximize() {
         if (this.isEnableMaximize()) {
             // always allow maximize toggle if already maximized
             if (this.getModel().getMaximizedTabset() === this) {
@@ -41112,22 +39964,22 @@ var TabSetNode = /** @class */ (function (_super) {
             return true;
         }
         return false;
-    };
-    TabSetNode.prototype.isEnableTabStrip = function () {
+    }
+    isEnableTabStrip() {
         return this._getAttr("enableTabStrip");
-    };
-    TabSetNode.prototype.isAutoSelectTab = function () {
+    }
+    isAutoSelectTab() {
         return this._getAttr("autoSelectTab");
-    };
-    TabSetNode.prototype.getClassNameTabStrip = function () {
+    }
+    getClassNameTabStrip() {
         return this._getAttr("classNameTabStrip");
-    };
-    TabSetNode.prototype.getClassNameHeader = function () {
+    }
+    getClassNameHeader() {
         return this._getAttr("classNameHeader");
-    };
+    }
     /** @internal */
-    TabSetNode.prototype.calculateHeaderBarHeight = function (metrics) {
-        var headerBarHeight = this._getAttr("headerHeight");
+    calculateHeaderBarHeight(metrics) {
+        const headerBarHeight = this._getAttr("headerHeight");
         if (headerBarHeight !== 0) {
             // its defined
             this._calculatedHeaderBarHeight = headerBarHeight;
@@ -41135,10 +39987,10 @@ var TabSetNode = /** @class */ (function (_super) {
         else {
             this._calculatedHeaderBarHeight = metrics.headerBarSize;
         }
-    };
+    }
     /** @internal */
-    TabSetNode.prototype.calculateTabBarHeight = function (metrics) {
-        var tabBarHeight = this._getAttr("tabStripHeight");
+    calculateTabBarHeight(metrics) {
+        const tabBarHeight = this._getAttr("tabStripHeight");
         if (tabBarHeight !== 0) {
             // its defined
             this._calculatedTabBarHeight = tabBarHeight;
@@ -41146,44 +39998,44 @@ var TabSetNode = /** @class */ (function (_super) {
         else {
             this._calculatedTabBarHeight = metrics.tabBarSize;
         }
-    };
-    TabSetNode.prototype.getHeaderHeight = function () {
+    }
+    getHeaderHeight() {
         return this._calculatedHeaderBarHeight;
-    };
-    TabSetNode.prototype.getTabStripHeight = function () {
+    }
+    getTabStripHeight() {
         return this._calculatedTabBarHeight;
-    };
-    TabSetNode.prototype.getTabLocation = function () {
+    }
+    getTabLocation() {
         return this._getAttr("tabLocation");
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._setWeight = function (weight) {
+    _setWeight(weight) {
         this._attributes.weight = weight;
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._setSelected = function (index) {
+    _setSelected(index) {
         this._attributes.selected = index;
-    };
+    }
     /** @internal */
-    TabSetNode.prototype.canDrop = function (dragNode, x, y) {
-        var dropInfo;
+    canDrop(dragNode, x, y) {
+        let dropInfo;
         if (dragNode === this) {
-            var dockLocation = DockLocation_1.DockLocation.CENTER;
-            var outlineRect = this._tabHeaderRect;
-            dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
+            const outlineRect = this._tabHeaderRect;
+            dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         }
         else if (this._contentRect.contains(x, y)) {
-            var dockLocation = DockLocation_1.DockLocation.CENTER;
+            let dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
             if (this._model.getMaximizedTabset() === undefined) {
-                dockLocation = DockLocation_1.DockLocation.getLocation(this._contentRect, x, y);
+                dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.getLocation(this._contentRect, x, y);
             }
-            var outlineRect = dockLocation.getDockRect(this._rect);
-            dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, -1, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            const outlineRect = dockLocation.getDockRect(this._rect);
+            dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, -1, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         }
         else if (this._tabHeaderRect != null && this._tabHeaderRect.contains(x, y)) {
-            var r = void 0;
-            var yy = void 0;
-            var h = void 0;
+            let r;
+            let yy;
+            let h;
             if (this._children.length === 0) {
                 r = this._tabHeaderRect.clone();
                 yy = r.y + 3;
@@ -41191,38 +40043,38 @@ var TabSetNode = /** @class */ (function (_super) {
                 r.width = 2;
             }
             else {
-                var child = this._children[0];
+                let child = this._children[0];
                 r = child.getTabRect();
                 yy = r.y;
                 h = r.height;
-                var p = this._tabHeaderRect.x;
-                var childCenter = 0;
-                for (var i = 0; i < this._children.length; i++) {
+                let p = this._tabHeaderRect.x;
+                let childCenter = 0;
+                for (let i = 0; i < this._children.length; i++) {
                     child = this._children[i];
                     r = child.getTabRect();
                     childCenter = r.x + r.width / 2;
                     if (x >= p && x < childCenter) {
-                        var dockLocation = DockLocation_1.DockLocation.CENTER;
-                        var outlineRect = new Rect_1.Rect(r.x - 2, yy, 3, h);
-                        dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, i, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                        const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
+                        const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(r.x - 2, yy, 3, h);
+                        dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, i, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                         break;
                     }
                     p = childCenter;
                 }
             }
             if (dropInfo == null) {
-                var dockLocation = DockLocation_1.DockLocation.CENTER;
-                var outlineRect = new Rect_1.Rect(r.getRight() - 2, yy, 3, h);
-                dropInfo = new DropInfo_1.DropInfo(this, outlineRect, dockLocation, this._children.length, Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                const dockLocation = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
+                const outlineRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(r.getRight() - 2, yy, 3, h);
+                dropInfo = new _DropInfo__WEBPACK_IMPORTED_MODULE_3__.DropInfo(this, outlineRect, dockLocation, this._children.length, _Types__WEBPACK_IMPORTED_MODULE_6__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
             }
         }
         if (!dragNode._canDockInto(dragNode, dropInfo)) {
             return undefined;
         }
         return dropInfo;
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._layout = function (rect, metrics) {
+    _layout(rect, metrics) {
         this.calculateHeaderBarHeight(metrics);
         this.calculateTabBarHeight(metrics);
         if (this.isMaximized()) {
@@ -41231,72 +40083,72 @@ var TabSetNode = /** @class */ (function (_super) {
         rect = rect.removeInsets(this._getAttr("marginInsets"));
         this._rect = rect;
         rect = rect.removeInsets(this._getAttr("borderInsets"));
-        var showHeader = this.getName() !== undefined;
-        var y = 0;
-        var h = 0;
+        const showHeader = this.getName() !== undefined;
+        let y = 0;
+        let h = 0;
         if (showHeader) {
             y += this._calculatedHeaderBarHeight;
             h += this._calculatedHeaderBarHeight;
         }
         if (this.isEnableTabStrip()) {
             if (this.getTabLocation() === "top") {
-                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + y, rect.width, this._calculatedTabBarHeight);
+                this._tabHeaderRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(rect.x, rect.y + y, rect.width, this._calculatedTabBarHeight);
             }
             else {
-                this._tabHeaderRect = new Rect_1.Rect(rect.x, rect.y + rect.height - this._calculatedTabBarHeight, rect.width, this._calculatedTabBarHeight);
+                this._tabHeaderRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(rect.x, rect.y + rect.height - this._calculatedTabBarHeight, rect.width, this._calculatedTabBarHeight);
             }
             h += this._calculatedTabBarHeight;
             if (this.getTabLocation() === "top") {
                 y += this._calculatedTabBarHeight;
             }
         }
-        this._contentRect = new Rect_1.Rect(rect.x, rect.y + y, rect.width, rect.height - h);
-        for (var i = 0; i < this._children.length; i++) {
-            var child = this._children[i];
+        this._contentRect = new _Rect__WEBPACK_IMPORTED_MODULE_5__.Rect(rect.x, rect.y + y, rect.width, rect.height - h);
+        for (let i = 0; i < this._children.length; i++) {
+            const child = this._children[i];
             child._layout(this._contentRect, metrics);
             child._setVisible(i === this.getSelected());
         }
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._delete = function () {
+    _delete() {
         this._parent._removeChild(this);
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._remove = function (node) {
-        var removedIndex = this._removeChild(node);
+    _remove(node) {
+        const removedIndex = this._removeChild(node);
         this._model._tidy();
-        (0, Utils_1.adjustSelectedIndex)(this, removedIndex);
-    };
+        (0,_Utils__WEBPACK_IMPORTED_MODULE_11__.adjustSelectedIndex)(this, removedIndex);
+    }
     /** @internal */
-    TabSetNode.prototype.drop = function (dragNode, location, index, select) {
-        var dockLocation = location;
+    drop(dragNode, location, index, select) {
+        const dockLocation = location;
         if (this === dragNode) {
             // tabset drop into itself
             return; // dock back to itself
         }
-        var dragParent = dragNode.getParent();
-        var fromIndex = 0;
+        let dragParent = dragNode.getParent();
+        let fromIndex = 0;
         if (dragParent !== undefined) {
             fromIndex = dragParent._removeChild(dragNode);
             // if selected node in border is being docked into tabset then deselect border tabs
-            if (dragParent instanceof BorderNode_1.BorderNode && dragParent.getSelected() === fromIndex) {
+            if (dragParent instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_7__.BorderNode && dragParent.getSelected() === fromIndex) {
                 dragParent._setSelected(-1);
             }
             else {
-                (0, Utils_1.adjustSelectedIndex)(dragParent, fromIndex);
+                (0,_Utils__WEBPACK_IMPORTED_MODULE_11__.adjustSelectedIndex)(dragParent, fromIndex);
             }
         }
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode.getType() === TabNode_1.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
+        if (dragNode.getType() === _TabNode__WEBPACK_IMPORTED_MODULE_10__.TabNode.TYPE && dragParent === this && fromIndex < index && index > 0) {
             index--;
         }
         // simple_bundled dock to existing tabset
-        if (dockLocation === DockLocation_1.DockLocation.CENTER) {
-            var insertPos = index;
+        if (dockLocation === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER) {
+            let insertPos = index;
             if (insertPos === -1) {
                 insertPos = this._children.length;
             }
-            if (dragNode.getType() === TabNode_1.TabNode.TYPE) {
+            if (dragNode.getType() === _TabNode__WEBPACK_IMPORTED_MODULE_10__.TabNode.TYPE) {
                 this._addChild(dragNode, insertPos);
                 if (select || (select !== false && this.isAutoSelectTab())) {
                     this._setSelected(insertPos);
@@ -41304,8 +40156,8 @@ var TabSetNode = /** @class */ (function (_super) {
                 // console.log("added child at : " + insertPos);
             }
             else {
-                for (var i = 0; i < dragNode.getChildren().length; i++) {
-                    var child = dragNode.getChildren()[i];
+                for (let i = 0; i < dragNode.getChildren().length; i++) {
+                    const child = dragNode.getChildren()[i];
                     this._addChild(child, insertPos);
                     // console.log("added child at : " + insertPos);
                     insertPos++;
@@ -41314,11 +40166,11 @@ var TabSetNode = /** @class */ (function (_super) {
             this._model._setActiveTabset(this);
         }
         else {
-            var tabSet = void 0;
-            if (dragNode instanceof TabNode_1.TabNode) {
+            let tabSet;
+            if (dragNode instanceof _TabNode__WEBPACK_IMPORTED_MODULE_10__.TabNode) {
                 // create new tabset parent
                 // console.log("create a new tabset");
-                var callback = this._model._getOnCreateTabSet();
+                const callback = this._model._getOnCreateTabSet();
                 tabSet = new TabSetNode(this._model, callback ? callback(dragNode) : {});
                 tabSet._addChild(dragNode);
                 // console.log("added child at end");
@@ -41327,8 +40179,8 @@ var TabSetNode = /** @class */ (function (_super) {
             else {
                 tabSet = dragNode;
             }
-            var parentRow = this._parent;
-            var pos = parentRow.getChildren().indexOf(this);
+            const parentRow = this._parent;
+            const pos = parentRow.getChildren().indexOf(this);
             if (parentRow.getOrientation() === dockLocation._orientation) {
                 tabSet._setWeight(this.getWeight() / 2);
                 this._setWeight(this.getWeight() / 2);
@@ -41338,7 +40190,7 @@ var TabSetNode = /** @class */ (function (_super) {
             else {
                 // create a new row to host the new tabset (it will go in the opposite direction)
                 // console.log("create a new row");
-                var newRow = new RowNode_1.RowNode(this._model, {});
+                const newRow = new _RowNode__WEBPACK_IMPORTED_MODULE_9__.RowNode(this._model, {});
                 newRow._setWeight(this.getWeight());
                 newRow._addChild(this);
                 this._setWeight(50);
@@ -41351,11 +40203,11 @@ var TabSetNode = /** @class */ (function (_super) {
             this._model._setActiveTabset(tabSet);
         }
         this._model._tidy();
-    };
-    TabSetNode.prototype.toJson = function () {
-        var json = {};
+    }
+    toJson() {
+        const json = {};
         TabSetNode._attributeDefinitions.toJson(json, this._attributes);
-        json.children = this._children.map(function (child) { return child.toJson(); });
+        json.children = this._children.map((child) => child.toJson());
         if (this.isActive()) {
             json.active = true;
         }
@@ -41363,33 +40215,31 @@ var TabSetNode = /** @class */ (function (_super) {
             json.maximized = true;
         }
         return json;
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._updateAttrs = function (json) {
+    _updateAttrs(json) {
         TabSetNode._attributeDefinitions.update(json, this._attributes);
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._getAttributeDefinitions = function () {
+    _getAttributeDefinitions() {
         return TabSetNode._attributeDefinitions;
-    };
+    }
     /** @internal */
-    TabSetNode.prototype._getPrefSize = function (orientation) {
-        var prefSize = this.getWidth();
-        if (orientation === Orientation_1.Orientation.VERT) {
+    _getPrefSize(orientation) {
+        let prefSize = this.getWidth();
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT) {
             prefSize = this.getHeight();
         }
         return prefSize;
-    };
+    }
     /** @internal */
-    TabSetNode.getAttributeDefinitions = function () {
+    static getAttributeDefinitions() {
         return TabSetNode._attributeDefinitions;
-    };
-    TabSetNode.TYPE = "tabset";
-    /** @internal */
-    TabSetNode._attributeDefinitions = TabSetNode._createAttributeDefinitions();
-    return TabSetNode;
-}(Node_1.Node));
-exports.TabSetNode = TabSetNode;
+    }
+}
+TabSetNode.TYPE = "tabset";
+/** @internal */
+TabSetNode._attributeDefinitions = TabSetNode._createAttributeDefinitions();
 
 
 /***/ }),
@@ -41398,24 +40248,29 @@ exports.TabSetNode = TabSetNode;
 /*!****************************!*\
   !*** ./src/model/Utils.ts ***!
   \****************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "adjustSelectedIndex": () => (/* binding */ adjustSelectedIndex),
+/* harmony export */   "adjustSelectedIndexAfterDock": () => (/* binding */ adjustSelectedIndexAfterDock),
+/* harmony export */   "adjustSelectedIndexAfterFloat": () => (/* binding */ adjustSelectedIndexAfterFloat)
+/* harmony export */ });
+/* harmony import */ var _TabSetNode__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _BorderNode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.adjustSelectedIndex = exports.adjustSelectedIndexAfterDock = exports.adjustSelectedIndexAfterFloat = void 0;
-var TabSetNode_1 = __webpack_require__(/*! ./TabSetNode */ "./src/model/TabSetNode.ts");
-var BorderNode_1 = __webpack_require__(/*! ./BorderNode */ "./src/model/BorderNode.ts");
+
 /** @internal */
 function adjustSelectedIndexAfterFloat(node) {
-    var parent = node.getParent();
+    const parent = node.getParent();
     if (parent !== null) {
-        if (parent instanceof TabSetNode_1.TabSetNode) {
-            var found = false;
-            var newSelected = 0;
-            var children = parent.getChildren();
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
+        if (parent instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_0__.TabSetNode) {
+            let found = false;
+            let newSelected = 0;
+            const children = parent.getChildren();
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
                 if (child === node) {
                     found = true;
                 }
@@ -41429,19 +40284,18 @@ function adjustSelectedIndexAfterFloat(node) {
             }
             parent._setSelected(newSelected);
         }
-        else if (parent instanceof BorderNode_1.BorderNode) {
+        else if (parent instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_1__.BorderNode) {
             parent._setSelected(-1);
         }
     }
 }
-exports.adjustSelectedIndexAfterFloat = adjustSelectedIndexAfterFloat;
 /** @internal */
 function adjustSelectedIndexAfterDock(node) {
-    var parent = node.getParent();
-    if (parent !== null && (parent instanceof TabSetNode_1.TabSetNode || parent instanceof BorderNode_1.BorderNode)) {
-        var children = parent.getChildren();
-        for (var i = 0; i < children.length; i++) {
-            var child = children[i];
+    const parent = node.getParent();
+    if (parent !== null && (parent instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_0__.TabSetNode || parent instanceof _BorderNode__WEBPACK_IMPORTED_MODULE_1__.BorderNode)) {
+        const children = parent.getChildren();
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
             if (child === node) {
                 parent._setSelected(i);
                 return;
@@ -41449,12 +40303,11 @@ function adjustSelectedIndexAfterDock(node) {
         }
     }
 }
-exports.adjustSelectedIndexAfterDock = adjustSelectedIndexAfterDock;
 /** @internal */
 function adjustSelectedIndex(parent, removedIndex) {
     // for the tabset/border being removed from set the selected index
-    if (parent !== undefined && (parent.getType() === TabSetNode_1.TabSetNode.TYPE || parent.getType() === BorderNode_1.BorderNode.TYPE)) {
-        var selectedIndex = parent.getSelected();
+    if (parent !== undefined && (parent.getType() === _TabSetNode__WEBPACK_IMPORTED_MODULE_0__.TabSetNode.TYPE || parent.getType() === _BorderNode__WEBPACK_IMPORTED_MODULE_1__.BorderNode.TYPE)) {
+        const selectedIndex = parent.getSelected();
         if (selectedIndex !== -1) {
             if (removedIndex === selectedIndex && parent.getChildren().length > 0) {
                 if (removedIndex >= parent.getChildren().length) {
@@ -41477,7 +40330,6 @@ function adjustSelectedIndex(parent, removedIndex) {
         }
     }
 }
-exports.adjustSelectedIndex = adjustSelectedIndex;
 
 
 /***/ }),
@@ -41486,41 +40338,50 @@ exports.adjustSelectedIndex = adjustSelectedIndex;
 /*!***********************************!*\
   !*** ./src/view/BorderButton.tsx ***!
   \***********************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "BorderButton": () => (/* binding */ BorderButton)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BorderButton = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
+
 /** @internal */
-var BorderButton = function (props) {
-    var layout = props.layout, node = props.node, selected = props.selected, border = props.border, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
-    var selfRef = React.useRef(null);
-    var contentRef = React.useRef(null);
-    var onMouseDown = function (event) {
-        if (!(0, Utils_1.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
+const BorderButton = (props) => {
+    const { layout, node, selected, border, iconFactory, titleFactory, icons, path } = props;
+    const selfRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const contentRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const onMouseDown = (event) => {
+        if (!(0,_Utils__WEBPACK_IMPORTED_MODULE_6__.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
             layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
-    var onAuxMouseClick = function (event) {
-        if ((0, Utils_1.isAuxMouseEvent)(event)) {
+    const onAuxMouseClick = (event) => {
+        if ((0,_Utils__WEBPACK_IMPORTED_MODULE_6__.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
-    var onContextMenu = function (event) {
+    const onContextMenu = (event) => {
         layout.showContextMenu(node, event);
     };
-    var onClick = function () {
-        layout.doAction(Actions_1.Actions.selectTab(node.getId()));
+    const onClick = () => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.selectTab(node.getId()));
     };
-    var onDoubleClick = function (event) {
+    const onDoubleClick = (event) => {
         // if (node.isEnableRename()) {
         //     onRename();
         // }
@@ -41530,19 +40391,19 @@ var BorderButton = function (props) {
     //     layout.getCurrentDocument()!.body.addEventListener("mousedown", onEndEdit);
     //     layout.getCurrentDocument()!.body.addEventListener("touchstart", onEndEdit);
     // };
-    var onEndEdit = function (event) {
+    const onEndEdit = (event) => {
         if (event.target !== contentRef.current) {
             layout.getCurrentDocument().body.removeEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
             layout.setEditingTab(undefined);
         }
     };
-    var isClosable = function () {
-        var closeType = node.getCloseType();
-        if (selected || closeType === ICloseType_1.ICloseType.Always) {
+    const isClosable = () => {
+        const closeType = node.getCloseType();
+        if (selected || closeType === _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__.ICloseType.Always) {
             return true;
         }
-        if (closeType === ICloseType_1.ICloseType.Visible) {
+        if (closeType === _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__.ICloseType.Visible) {
             // not selected but x should be visible due to hover
             if (window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                 return true;
@@ -41550,34 +40411,34 @@ var BorderButton = function (props) {
         }
         return false;
     };
-    var onClose = function (event) {
+    const onClose = (event) => {
         if (isClosable()) {
-            layout.doAction(Actions_1.Actions.deleteTab(node.getId()));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.deleteTab(node.getId()));
         }
         else {
             onClick();
         }
     };
-    var onCloseMouseDown = function (event) {
+    const onCloseMouseDown = (event) => {
         event.stopPropagation();
     };
-    React.useLayoutEffect(function () {
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         updateRect();
         if (layout.getEditingTab() === node) {
             contentRef.current.select();
         }
     });
-    var updateRect = function () {
+    const updateRect = () => {
         // record position of tab in node
-        var layoutRect = layout.getDomRect();
-        var r = selfRef.current.getBoundingClientRect();
-        node._setTabRect(new Rect_1.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        const layoutRect = layout.getDomRect();
+        const r = selfRef.current.getBoundingClientRect();
+        node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
     };
-    var onTextBoxMouseDown = function (event) {
+    const onTextBoxMouseDown = (event) => {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     };
-    var onTextBoxKeyPress = function (event) {
+    const onTextBoxKeyPress = (event) => {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) {
             // esc
@@ -41586,36 +40447,35 @@ var BorderButton = function (props) {
         else if (event.keyCode === 13) {
             // enter
             layout.setEditingTab(undefined);
-            layout.doAction(Actions_1.Actions.renameTab(node.getId(), event.target.value));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.renameTab(node.getId(), event.target.value));
         }
     };
-    var cm = layout.getClassName;
-    var classNames = cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_ + border);
+    const cm = layout.getClassName;
+    let classNames = cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_ + border);
     if (selected) {
-        classNames += " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON__SELECTED);
+        classNames += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON__SELECTED);
     }
     else {
-        classNames += " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON__UNSELECTED);
+        classNames += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON__UNSELECTED);
     }
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
     }
-    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
-    var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT) }, renderState.content)) : null;
-    var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING) }, renderState.leading)) : null;
+    const renderState = (0,_Utils__WEBPACK_IMPORTED_MODULE_6__.getRenderStateEx)(layout, node, iconFactory, titleFactory);
+    let content = renderState.content ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT) }, renderState.content)) : null;
+    const leading = renderState.leading ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING) }, renderState.leading)) : null;
     if (layout.getEditingTab() === node) {
-        content = (React.createElement("input", { ref: contentRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
+        content = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("input", { ref: contentRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
     }
     if (node.isEnableClose()) {
-        var closeTitle = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tab);
-        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
+        const closeTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tab);
+        renderState.buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
     }
-    return (React.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         renderState.buttons));
 };
-exports.BorderButton = BorderButton;
 
 
 /***/ }),
@@ -41624,126 +40484,137 @@ exports.BorderButton = BorderButton;
 /*!***********************************!*\
   !*** ./src/view/BorderTabSet.tsx ***!
   \***********************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "BorderTabSet": () => (/* binding */ BorderTabSet)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _BorderButton__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./BorderButton */ "./src/view/BorderButton.tsx");
+/* harmony import */ var _PopupMenu__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _TabOverflowHook__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BorderTabSet = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var BorderButton_1 = __webpack_require__(/*! ./BorderButton */ "./src/view/BorderButton.tsx");
-var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
+
+
+
+
 /** @internal */
-var BorderTabSet = function (props) {
-    var border = props.border, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
-    var toolbarRef = React.useRef(null);
-    var overflowbuttonRef = React.useRef(null);
-    var stickyButtonsRef = React.useRef(null);
-    var _a = (0, TabOverflowHook_1.useTabOverflow)(border, Orientation_1.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel;
-    var onAuxMouseClick = function (event) {
-        if ((0, Utils_1.isAuxMouseEvent)(event)) {
+const BorderTabSet = (props) => {
+    const { border, layout, iconFactory, titleFactory, icons, path } = props;
+    const toolbarRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const overflowbuttonRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const stickyButtonsRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = (0,_TabOverflowHook__WEBPACK_IMPORTED_MODULE_6__.useTabOverflow)(border, _Orientation__WEBPACK_IMPORTED_MODULE_7__.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
+    const onAuxMouseClick = (event) => {
+        if ((0,_Utils__WEBPACK_IMPORTED_MODULE_9__.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(border, event);
         }
     };
-    var onContextMenu = function (event) {
+    const onContextMenu = (event) => {
         layout.showContextMenu(border, event);
     };
-    var onInterceptMouseDown = function (event) {
+    const onInterceptMouseDown = (event) => {
         event.stopPropagation();
     };
-    var onOverflowClick = function (event) {
-        var callback = layout.getShowOverflowMenu();
+    const onOverflowClick = (event) => {
+        const callback = layout.getShowOverflowMenu();
         if (callback !== undefined) {
             callback(border, event, hiddenTabs, onOverflowItemSelect);
         }
         else {
-            var element = overflowbuttonRef.current;
-            (0, PopupMenu_1.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+            const element = overflowbuttonRef.current;
+            (0,_PopupMenu__WEBPACK_IMPORTED_MODULE_3__.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
         }
         event.stopPropagation();
     };
-    var onOverflowItemSelect = function (item) {
-        layout.doAction(Actions_1.Actions.selectTab(item.node.getId()));
+    const onOverflowItemSelect = (item) => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.selectTab(item.node.getId()));
         userControlledLeft.current = false;
     };
-    var onFloatTab = function (event) {
-        var selectedTabNode = border.getChildren()[border.getSelected()];
+    const onFloatTab = (event) => {
+        const selectedTabNode = border.getChildren()[border.getSelected()];
         if (selectedTabNode !== undefined) {
-            layout.doAction(Actions_1.Actions.floatTab(selectedTabNode.getId()));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.floatTab(selectedTabNode.getId()));
         }
         event.stopPropagation();
     };
-    var cm = layout.getClassName;
-    var style = border.getTabHeaderRect().styleWithPosition({});
-    var tabs = [];
-    var layoutTab = function (i) {
-        var isSelected = border.getSelected() === i;
-        var child = border.getChildren()[i];
-        tabs.push(React.createElement(BorderButton_1.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+    const cm = layout.getClassName;
+    let style = border.getTabHeaderRect().styleWithPosition({});
+    const tabs = [];
+    const layoutTab = (i) => {
+        let isSelected = border.getSelected() === i;
+        let child = border.getChildren()[i];
+        tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_BorderButton__WEBPACK_IMPORTED_MODULE_2__.BorderButton, { layout: layout, border: border.getLocation().getName(), node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
         if (i < border.getChildren().length - 1) {
-            tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER) }));
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "divider" + i, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER) }));
         }
     };
-    for (var i = 0; i < border.getChildren().length; i++) {
+    for (let i = 0; i < border.getChildren().length; i++) {
         layoutTab(i);
     }
-    var borderClasses = cm(Types_1.CLASSES.FLEXLAYOUT__BORDER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_ + border.getLocation().getName());
+    let borderClasses = cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_ + border.getLocation().getName());
     if (border.getClassName() !== undefined) {
         borderClasses += " " + border.getClassName();
     }
     // allow customization of tabset right/bottom buttons
-    var buttons = [];
-    var renderState = { headerContent: undefined, buttons: buttons, stickyButtons: [], headerButtons: [] };
+    let buttons = [];
+    const renderState = { headerContent: undefined, buttons, stickyButtons: [], headerButtons: [] };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
-    var toolbar;
+    let toolbar;
     if (hiddenTabs.length > 0) {
-        var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
-        var overflowContent = void 0;
+        const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
         if (typeof icons.more === "function") {
             overflowContent = icons.more(border, hiddenTabs);
         }
         else {
-            overflowContent = (React.createElement(React.Fragment, null,
+            overflowContent = (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
                 icons.more,
-                React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.push(React.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+        buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
-    var selectedIndex = border.getSelected();
+    const selectedIndex = border.getSelected();
     if (selectedIndex !== -1) {
-        var selectedTabNode = border.getChildren()[selectedIndex];
+        const selectedTabNode = border.getChildren()[selectedIndex];
         if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-            var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-            buttons.push(React.createElement("button", { key: "float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
+            const floatTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Float_Tab);
+            buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "float", title: floatTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
         }
     }
-    toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName()) }, buttons));
+    toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName()) }, buttons));
     style = layout.styleFont(style);
-    var innerStyle = {};
-    var borderHeight = border.getBorderBarSize() - 1;
-    if (border.getLocation() === DockLocation_1.DockLocation.LEFT) {
+    let innerStyle = {};
+    const borderHeight = border.getBorderBarSize() - 1;
+    if (border.getLocation() === _DockLocation__WEBPACK_IMPORTED_MODULE_1__.DockLocation.LEFT) {
         innerStyle = { right: borderHeight, height: borderHeight, top: position };
     }
-    else if (border.getLocation() === DockLocation_1.DockLocation.RIGHT) {
+    else if (border.getLocation() === _DockLocation__WEBPACK_IMPORTED_MODULE_1__.DockLocation.RIGHT) {
         innerStyle = { left: borderHeight, height: borderHeight, top: position };
     }
     else {
         innerStyle = { height: borderHeight, left: position };
     }
-    return (React.createElement("div", { ref: selfRef, dir: "ltr", style: style, className: borderClasses, "data-layout-path": path, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onWheel: onMouseWheel },
-        React.createElement("div", { style: { height: borderHeight }, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName()) },
-            React.createElement("div", { style: innerStyle, className: cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName()) }, tabs)),
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: selfRef, dir: "ltr", style: style, className: borderClasses, "data-layout-path": path, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onWheel: onMouseWheel },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { height: borderHeight }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName()) },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: innerStyle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName()) }, tabs)),
         toolbar));
 };
-exports.BorderTabSet = BorderTabSet;
 
 
 /***/ }),
@@ -41752,54 +40623,39 @@ exports.BorderTabSet = BorderTabSet;
 /*!************************************!*\
   !*** ./src/view/ErrorBoundary.tsx ***!
   \************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "ErrorBoundary": () => (/* binding */ ErrorBoundary)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ErrorBoundary = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+
 /** @internal */
-var ErrorBoundary = /** @class */ (function (_super) {
-    __extends(ErrorBoundary, _super);
-    function ErrorBoundary(props) {
-        var _this = _super.call(this, props) || this;
-        _this.state = { hasError: false };
-        return _this;
+class ErrorBoundary extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
     }
-    ErrorBoundary.getDerivedStateFromError = function (error) {
+    static getDerivedStateFromError(error) {
         return { hasError: true };
-    };
-    ErrorBoundary.prototype.componentDidCatch = function (error, errorInfo) {
+    }
+    componentDidCatch(error, errorInfo) {
         console.debug(error);
         console.debug(errorInfo);
-    };
-    ErrorBoundary.prototype.render = function () {
+    }
+    render() {
         if (this.state.hasError) {
-            return (React.createElement("div", { className: Types_1.CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER },
-                React.createElement("div", { className: Types_1.CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTENT }, this.props.message)));
+            return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: _Types__WEBPACK_IMPORTED_MODULE_1__.CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: _Types__WEBPACK_IMPORTED_MODULE_1__.CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTENT }, this.props.message)));
         }
         return this.props.children;
-    };
-    return ErrorBoundary;
-}(React.Component));
-exports.ErrorBoundary = ErrorBoundary;
+    }
+}
 
 
 /***/ }),
@@ -41808,36 +40664,36 @@ exports.ErrorBoundary = ErrorBoundary;
 /*!*************************************!*\
   !*** ./src/view/FloatingWindow.tsx ***!
   \*************************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "FloatingWindow": () => (/* binding */ FloatingWindow)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.FloatingWindow = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var react_dom_1 = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+
+
 /** @internal */
-var FloatingWindow = function (props) {
-    var title = props.title, id = props.id, url = props.url, rect = props.rect, onCloseWindow = props.onCloseWindow, onSetWindow = props.onSetWindow, children = props.children;
-    var popoutWindow = React.useRef(null);
-    var _a = React.useState(undefined), content = _a[0], setContent = _a[1];
-    React.useLayoutEffect(function () {
-        var r = rect;
+const FloatingWindow = (props) => {
+    const { title, id, url, rect, onCloseWindow, onSetWindow, children } = props;
+    const popoutWindow = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const timerId = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const [content, setContent] = react__WEBPACK_IMPORTED_MODULE_0__.useState(undefined);
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
+        if (timerId.current) {
+            clearTimeout(timerId.current);
+        }
+        const r = rect;
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
-        var styles = Array.from(window.document.styleSheets).reduce(function (result, styleSheet) {
-            var rules = undefined;
+        const styles = Array.from(window.document.styleSheets).reduce((result, styleSheet) => {
+            let rules = undefined;
             try {
                 rules = styleSheet.cssRules;
             }
@@ -41845,50 +40701,51 @@ var FloatingWindow = function (props) {
                 // styleSheet.cssRules can throw security exception
             }
             try {
-                return __spreadArray(__spreadArray([], result, true), [
+                return [
+                    ...result,
                     {
                         href: styleSheet.href,
                         type: styleSheet.type,
-                        rules: rules ? Array.from(rules).map(function (rule) { return rule.cssText; }) : null,
+                        rules: rules ? Array.from(rules).map(rule => rule.cssText) : null,
                     }
-                ], false);
+                ];
             }
             catch (e) {
                 return result;
             }
         }, []);
-        popoutWindow.current = window.open(url, id, "left=".concat(r.x, ",top=").concat(r.y, ",width=").concat(r.width, ",height=").concat(r.height));
+        popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
         if (popoutWindow.current !== null) {
             onSetWindow(id, popoutWindow.current);
             // listen for parent unloading to remove all popouts
-            window.addEventListener("beforeunload", function () {
+            window.addEventListener("beforeunload", () => {
                 if (popoutWindow.current) {
                     popoutWindow.current.close();
                     popoutWindow.current = null;
                 }
             });
-            popoutWindow.current.addEventListener("load", function () {
-                var popoutDocument = popoutWindow.current.document;
+            popoutWindow.current.addEventListener("load", () => {
+                const popoutDocument = popoutWindow.current.document;
                 popoutDocument.title = title;
-                var popoutContent = popoutDocument.createElement("div");
-                popoutContent.className = Types_1.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
+                const popoutContent = popoutDocument.createElement("div");
+                popoutContent.className = _Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
                 popoutDocument.body.appendChild(popoutContent);
-                copyStyles(popoutDocument, styles).then(function () {
+                copyStyles(popoutDocument, styles).then(() => {
                     setContent(popoutContent);
                 });
                 // listen for popout unloading (needs to be after load for safari)
-                popoutWindow.current.addEventListener("beforeunload", function () {
+                popoutWindow.current.addEventListener("beforeunload", () => {
                     onCloseWindow(id);
                 });
             });
         }
         else {
-            console.warn("Unable to open window ".concat(url));
+            console.warn(`Unable to open window ${url}`);
             onCloseWindow(id);
         }
-        return function () {
+        return () => {
             // delay so refresh will close window
-            setTimeout(function () {
+            timerId.current = setTimeout(() => {
                 if (popoutWindow.current) {
                     popoutWindow.current.close();
                     popoutWindow.current = null;
@@ -41897,43 +40754,37 @@ var FloatingWindow = function (props) {
         };
     }, []);
     if (content !== undefined) {
-        return (0, react_dom_1.createPortal)(children, content);
+        return (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(children, content);
     }
     else {
         return null;
     }
 };
-exports.FloatingWindow = FloatingWindow;
 /** @internal */
 function copyStyles(doc, styleSheets) {
-    var head = doc.head;
-    var promises = [];
-    var _loop_1 = function (styleSheet) {
+    const head = doc.head;
+    const promises = [];
+    for (const styleSheet of styleSheets) {
         if (styleSheet.href) {
             // prefer links since they will keep paths to images etc
-            var styleElement_1 = doc.createElement("link");
-            styleElement_1.type = styleSheet.type;
-            styleElement_1.rel = "stylesheet";
-            styleElement_1.href = styleSheet.href;
-            head.appendChild(styleElement_1);
-            promises.push(new Promise(function (resolve, reject) {
-                styleElement_1.onload = function () { return resolve(true); };
+            const styleElement = doc.createElement("link");
+            styleElement.type = styleSheet.type;
+            styleElement.rel = "stylesheet";
+            styleElement.href = styleSheet.href;
+            head.appendChild(styleElement);
+            promises.push(new Promise((resolve, reject) => {
+                styleElement.onload = () => resolve(true);
             }));
         }
         else {
             if (styleSheet.rules) {
-                var style = doc.createElement("style");
-                for (var _a = 0, _b = styleSheet.rules; _a < _b.length; _a++) {
-                    var rule = _b[_a];
+                const style = doc.createElement("style");
+                for (const rule of styleSheet.rules) {
                     style.appendChild(doc.createTextNode(rule));
                 }
                 head.appendChild(style);
             }
         }
-    };
-    for (var _i = 0, styleSheets_1 = styleSheets; _i < styleSheets_1.length; _i++) {
-        var styleSheet = styleSheets_1[_i];
-        _loop_1(styleSheet);
     }
     return Promise.all(promises);
 }
@@ -41945,27 +40796,32 @@ function copyStyles(doc, styleSheets) {
 /*!****************************************!*\
   !*** ./src/view/FloatingWindowTab.tsx ***!
   \****************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "FloatingWindowTab": () => (/* binding */ FloatingWindowTab)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _ErrorBoundary__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.FloatingWindowTab = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+
+
+
+
 /** @internal */
-var FloatingWindowTab = function (props) {
-    var layout = props.layout, node = props.node, factory = props.factory;
-    var cm = layout.getClassName;
-    var child = factory(node);
-    return (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_TAB) },
-        React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
-            React.createElement(react_1.Fragment, null, child))));
+const FloatingWindowTab = (props) => {
+    const { layout, node, factory } = props;
+    const cm = layout.getClassName;
+    const child = factory(node);
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_TAB) },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement(_ErrorBoundary__WEBPACK_IMPORTED_MODULE_1__.ErrorBoundary, { message: props.layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_2__.I18nLabel.Error_rendering_component) },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, child))));
 };
-exports.FloatingWindowTab = FloatingWindowTab;
 
 
 /***/ }),
@@ -41974,49 +40830,51 @@ exports.FloatingWindowTab = FloatingWindowTab;
 /*!****************************!*\
   !*** ./src/view/Icons.tsx ***!
   \****************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "CloseIcon": () => (/* binding */ CloseIcon),
+/* harmony export */   "MaximizeIcon": () => (/* binding */ MaximizeIcon),
+/* harmony export */   "OverflowIcon": () => (/* binding */ OverflowIcon),
+/* harmony export */   "PopoutIcon": () => (/* binding */ PopoutIcon),
+/* harmony export */   "RestoreIcon": () => (/* binding */ RestoreIcon)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.RestoreIcon = exports.PopoutIcon = exports.OverflowIcon = exports.MaximizeIcon = exports.CloseIcon = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var style = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
-var CloseIcon = function () {
-    return (React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24" },
-        React.createElement("path", { fill: "none", d: "M0 0h24v24H0z" }),
-        React.createElement("path", { stroke: "var(--color-icon)", fill: "var(--color-icon)", d: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" })));
+const style = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
+const CloseIcon = () => {
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { fill: "none", d: "M0 0h24v24H0z" }),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { stroke: "var(--color-icon)", fill: "var(--color-icon)", d: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" })));
 };
-exports.CloseIcon = CloseIcon;
-var MaximizeIcon = function () {
-    return (React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
-        React.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
-        React.createElement("path", { stroke: "var(--color-icon)", d: "M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" })));
+const MaximizeIcon = () => {
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { stroke: "var(--color-icon)", d: "M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" })));
 };
-exports.MaximizeIcon = MaximizeIcon;
-var OverflowIcon = function () {
-    return (React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
-        React.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
-        React.createElement("path", { stroke: "var(--color-icon)", d: "M7 10l5 5 5-5z" })));
+const OverflowIcon = () => {
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { stroke: "var(--color-icon)", d: "M7 10l5 5 5-5z" })));
 };
-exports.OverflowIcon = OverflowIcon;
-var PopoutIcon = function () {
+const PopoutIcon = () => {
     return (
     // <svg xmlns="http://www.w3.org/2000/svg"  style={style}  viewBox="0 0 24 24" fill="var(--color-icon)"><path d="M0 0h24v24H0z" fill="none"/><path stroke="var(--color-icon)" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>
     // <svg xmlns="http://www.w3.org/2000/svg" style={style} fill="none" viewBox="0 0 24 24" stroke="var(--color-icon)" stroke-width="2">
     //     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
     // </svg>
-    React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 20 20", fill: "var(--color-icon)" },
-        React.createElement("path", { d: "M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" }),
-        React.createElement("path", { d: "M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" })));
+    react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 20 20", fill: "var(--color-icon)" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" }),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" })));
 };
-exports.PopoutIcon = PopoutIcon;
-var RestoreIcon = function () {
-    return (React.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
-        React.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
-        React.createElement("path", { stroke: "var(--color-icon)", d: "M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" })));
+const RestoreIcon = () => {
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { stroke: "var(--color-icon)", d: "M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" })));
 };
-exports.RestoreIcon = RestoreIcon;
 
 
 /***/ }),
@@ -42025,396 +40883,380 @@ exports.RestoreIcon = RestoreIcon;
 /*!*****************************!*\
   !*** ./src/view/Layout.tsx ***!
   \*****************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Layout": () => (/* binding */ Layout)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
+/* harmony import */ var _DockLocation__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
+/* harmony import */ var _DragDrop__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _model_BorderNode__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _model_SplitterNode__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../model/SplitterNode */ "./src/model/SplitterNode.ts");
+/* harmony import */ var _model_TabNode__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../model/TabNode */ "./src/model/TabNode.ts");
+/* harmony import */ var _model_TabSetNode__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _BorderTabSet__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./BorderTabSet */ "./src/view/BorderTabSet.tsx");
+/* harmony import */ var _Splitter__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./Splitter */ "./src/view/Splitter.tsx");
+/* harmony import */ var _Tab__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
+/* harmony import */ var _TabSet__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
+/* harmony import */ var _FloatingWindow__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./FloatingWindow */ "./src/view/FloatingWindow.tsx");
+/* harmony import */ var _FloatingWindowTab__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./FloatingWindowTab */ "./src/view/FloatingWindowTab.tsx");
+/* harmony import */ var _TabFloating__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Icons__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./Icons */ "./src/view/Icons.tsx");
+/* harmony import */ var _TabButtonStamp__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
 
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Layout = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var react_dom_1 = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-var DockLocation_1 = __webpack_require__(/*! ../DockLocation */ "./src/DockLocation.ts");
-var DragDrop_1 = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
-var SplitterNode_1 = __webpack_require__(/*! ../model/SplitterNode */ "./src/model/SplitterNode.ts");
-var TabNode_1 = __webpack_require__(/*! ../model/TabNode */ "./src/model/TabNode.ts");
-var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var BorderTabSet_1 = __webpack_require__(/*! ./BorderTabSet */ "./src/view/BorderTabSet.tsx");
-var Splitter_1 = __webpack_require__(/*! ./Splitter */ "./src/view/Splitter.tsx");
-var Tab_1 = __webpack_require__(/*! ./Tab */ "./src/view/Tab.tsx");
-var TabSet_1 = __webpack_require__(/*! ./TabSet */ "./src/view/TabSet.tsx");
-var FloatingWindow_1 = __webpack_require__(/*! ./FloatingWindow */ "./src/view/FloatingWindow.tsx");
-var FloatingWindowTab_1 = __webpack_require__(/*! ./FloatingWindowTab */ "./src/view/FloatingWindowTab.tsx");
-var TabFloating_1 = __webpack_require__(/*! ./TabFloating */ "./src/view/TabFloating.tsx");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Icons_1 = __webpack_require__(/*! ./Icons */ "./src/view/Icons.tsx");
-var TabButtonStamp_1 = __webpack_require__(/*! ./TabButtonStamp */ "./src/view/TabButtonStamp.tsx");
-var defaultIcons = {
-    close: React.createElement(Icons_1.CloseIcon, null),
-    closeTabset: React.createElement(Icons_1.CloseIcon, null),
-    popout: React.createElement(Icons_1.PopoutIcon, null),
-    maximize: React.createElement(Icons_1.MaximizeIcon, null),
-    restore: React.createElement(Icons_1.RestoreIcon, null),
-    more: React.createElement(Icons_1.OverflowIcon, null),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const defaultIcons = {
+    close: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.CloseIcon, null),
+    closeTabset: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.CloseIcon, null),
+    popout: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.PopoutIcon, null),
+    maximize: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.MaximizeIcon, null),
+    restore: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.RestoreIcon, null),
+    more: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.OverflowIcon, null),
 };
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
 // Assume any recent desktop browser not IE or original Edge will work
 /** @internal */
 // @ts-ignore
-var isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
+const isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
 /** @internal */
-var isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 /** @internal */
-var defaultSupportsPopout = isDesktop && !isIEorEdge;
+const defaultSupportsPopout = isDesktop && !isIEorEdge;
 /**
  * A React component that hosts a multi-tabbed layout
  */
-var Layout = /** @class */ (function (_super) {
-    __extends(Layout, _super);
-    function Layout(props) {
-        var _this = _super.call(this, props) || this;
+class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
+    constructor(props) {
+        super(props);
         /** @internal */
-        _this.firstMove = false;
+        this.firstMove = false;
         /** @internal */
-        _this.dragRectRendered = true;
+        this.dragRectRendered = true;
         /** @internal */
-        _this.dragDivText = undefined;
+        this.dragDivText = undefined;
         /** @internal */
-        _this.edgeRectLength = 100;
+        this.edgeRectLength = 100;
         /** @internal */
-        _this.edgeRectWidth = 10;
+        this.edgeRectWidth = 10;
         /** @internal */
-        _this.onModelChange = function () {
-            _this.forceUpdate();
-            if (_this.props.onModelChange) {
-                _this.props.onModelChange(_this.props.model);
+        this.onModelChange = () => {
+            this.forceUpdate();
+            if (this.props.onModelChange) {
+                this.props.onModelChange(this.props.model);
             }
         };
         /** @internal */
-        _this.updateRect = function (domRect) {
-            if (domRect === void 0) { domRect = _this.getDomRect(); }
-            var rect = new Rect_1.Rect(0, 0, domRect.width, domRect.height);
-            if (!rect.equals(_this.state.rect) && rect.width !== 0 && rect.height !== 0) {
-                _this.setState({ rect: rect });
+        this.updateRect = (domRect = this.getDomRect()) => {
+            const rect = new _Rect__WEBPACK_IMPORTED_MODULE_9__.Rect(0, 0, domRect.width, domRect.height);
+            if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+                this.setState({ rect });
             }
         };
         /** @internal */
-        _this.updateLayoutMetrics = function () {
-            if (_this.findHeaderBarSizeRef.current) {
-                var headerBarSize = _this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
-                if (headerBarSize !== _this.state.calculatedHeaderBarSize) {
-                    _this.setState({ calculatedHeaderBarSize: headerBarSize });
+        this.updateLayoutMetrics = () => {
+            if (this.findHeaderBarSizeRef.current) {
+                const headerBarSize = this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
+                if (headerBarSize !== this.state.calculatedHeaderBarSize) {
+                    this.setState({ calculatedHeaderBarSize: headerBarSize });
                 }
             }
-            if (_this.findTabBarSizeRef.current) {
-                var tabBarSize = _this.findTabBarSizeRef.current.getBoundingClientRect().height;
-                if (tabBarSize !== _this.state.calculatedTabBarSize) {
-                    _this.setState({ calculatedTabBarSize: tabBarSize });
+            if (this.findTabBarSizeRef.current) {
+                const tabBarSize = this.findTabBarSizeRef.current.getBoundingClientRect().height;
+                if (tabBarSize !== this.state.calculatedTabBarSize) {
+                    this.setState({ calculatedTabBarSize: tabBarSize });
                 }
             }
-            if (_this.findBorderBarSizeRef.current) {
-                var borderBarSize = _this.findBorderBarSizeRef.current.getBoundingClientRect().height;
-                if (borderBarSize !== _this.state.calculatedBorderBarSize) {
-                    _this.setState({ calculatedBorderBarSize: borderBarSize });
+            if (this.findBorderBarSizeRef.current) {
+                const borderBarSize = this.findBorderBarSizeRef.current.getBoundingClientRect().height;
+                if (borderBarSize !== this.state.calculatedBorderBarSize) {
+                    this.setState({ calculatedBorderBarSize: borderBarSize });
                 }
             }
         };
         /** @internal */
-        _this.getClassName = function (defaultClassName) {
-            if (_this.props.classNameMapper === undefined) {
+        this.getClassName = (defaultClassName) => {
+            if (this.props.classNameMapper === undefined) {
                 return defaultClassName;
             }
             else {
-                return _this.props.classNameMapper(defaultClassName);
+                return this.props.classNameMapper(defaultClassName);
             }
         };
         /** @internal */
-        _this.onCloseWindow = function (id) {
-            _this.doAction(Actions_1.Actions.unFloatTab(id));
+        this.onCloseWindow = (id) => {
+            this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.unFloatTab(id));
             try {
-                _this.props.model.getNodeById(id)._setWindow(undefined);
+                this.props.model.getNodeById(id)._setWindow(undefined);
             }
             catch (e) {
                 // catch incase it was a model change
             }
         };
         /** @internal */
-        _this.onSetWindow = function (id, window) {
-            _this.props.model.getNodeById(id)._setWindow(window);
+        this.onSetWindow = (id, window) => {
+            this.props.model.getNodeById(id)._setWindow(window);
         };
         /** @internal */
-        _this.onCancelAdd = function () {
+        this.onCancelAdd = () => {
             var _a, _b;
-            var rootdiv = _this.selfRef.current;
-            rootdiv.removeChild(_this.dragDiv);
-            _this.dragDiv = undefined;
-            _this.hidePortal();
-            if (_this.fnNewNodeDropped != null) {
-                _this.fnNewNodeDropped();
-                _this.fnNewNodeDropped = undefined;
+            const rootdiv = this.selfRef.current;
+            rootdiv.removeChild(this.dragDiv);
+            this.dragDiv = undefined;
+            this.hidePortal();
+            if (this.fnNewNodeDropped != null) {
+                this.fnNewNodeDropped();
+                this.fnNewNodeDropped = undefined;
             }
             try {
-                (_b = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
+                (_b = (_a = this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
             }
             catch (e) {
                 console.error(e);
             }
-            DragDrop_1.DragDrop.instance.hideGlass();
-            _this.newTabJson = undefined;
-            _this.customDrop = undefined;
+            _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.hideGlass();
+            this.newTabJson = undefined;
+            this.customDrop = undefined;
         };
         /** @internal */
-        _this.onCancelDrag = function (wasDragging) {
+        this.onCancelDrag = (wasDragging) => {
             var _a, _b;
             if (wasDragging) {
-                var rootdiv = _this.selfRef.current;
+                const rootdiv = this.selfRef.current;
                 try {
-                    rootdiv.removeChild(_this.outlineDiv);
+                    rootdiv.removeChild(this.outlineDiv);
                 }
                 catch (e) { }
                 try {
-                    rootdiv.removeChild(_this.dragDiv);
+                    rootdiv.removeChild(this.dragDiv);
                 }
                 catch (e) { }
-                _this.dragDiv = undefined;
-                _this.hidePortal();
-                _this.setState({ showEdges: false });
-                if (_this.fnNewNodeDropped != null) {
-                    _this.fnNewNodeDropped();
-                    _this.fnNewNodeDropped = undefined;
+                this.dragDiv = undefined;
+                this.hidePortal();
+                this.setState({ showEdges: false });
+                if (this.fnNewNodeDropped != null) {
+                    this.fnNewNodeDropped();
+                    this.fnNewNodeDropped = undefined;
                 }
                 try {
-                    (_b = (_a = _this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
+                    (_b = (_a = this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated) === null || _b === void 0 ? void 0 : _b.call(_a);
                 }
                 catch (e) {
                     console.error(e);
                 }
-                DragDrop_1.DragDrop.instance.hideGlass();
-                _this.newTabJson = undefined;
-                _this.customDrop = undefined;
+                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.hideGlass();
+                this.newTabJson = undefined;
+                this.customDrop = undefined;
             }
-            _this.setState({ showHiddenBorder: DockLocation_1.DockLocation.CENTER });
+            this.setState({ showHiddenBorder: _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER });
         };
         /** @internal */
-        _this.onDragDivMouseDown = function (event) {
+        this.onDragDivMouseDown = (event) => {
             event.preventDefault();
-            _this.dragStart(event, _this.dragDivText, TabNode_1.TabNode._fromJson(_this.newTabJson, _this.props.model, false), true, undefined, undefined);
+            this.dragStart(event, this.dragDivText, _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode._fromJson(this.newTabJson, this.props.model, false), true, undefined, undefined);
         };
         /** @internal */
-        _this.dragStart = function (event, dragDivText, node, allowDrag, onClick, onDoubleClick) {
+        this.dragStart = (event, dragDivText, node, allowDrag, onClick, onDoubleClick) => {
             if (!allowDrag) {
-                DragDrop_1.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
+                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, this.selfRef.current);
             }
             else {
-                _this.dragNode = node;
-                _this.dragDivText = dragDivText;
-                DragDrop_1.DragDrop.instance.startDrag(event, _this.onDragStart, _this.onDragMove, _this.onDragEnd, _this.onCancelDrag, onClick, onDoubleClick, _this.currentDocument, _this.selfRef.current);
+                this.dragNode = node;
+                this.dragDivText = dragDivText;
+                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument, this.selfRef.current);
             }
         };
         /** @internal */
-        _this.dragRectRender = function (text, node, json, onRendered) {
-            var content;
+        this.dragRectRender = (text, node, json, onRendered) => {
+            let content;
             if (text !== undefined) {
-                content = React.createElement("div", { style: { whiteSpace: "pre" } }, text.replace("<br>", "\n"));
+                content = react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { whiteSpace: "pre" } }, text.replace("<br>", "\n"));
             }
             else {
-                if (node && node instanceof TabNode_1.TabNode) {
-                    content = (React.createElement(TabButtonStamp_1.TabButtonStamp, { node: node, layout: _this, iconFactory: _this.props.iconFactory, titleFactory: _this.props.titleFactory }));
+                if (node && node instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode) {
+                    content = (react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabButtonStamp__WEBPACK_IMPORTED_MODULE_20__.TabButtonStamp, { node: node, layout: this, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory }));
                 }
             }
-            if (_this.props.onRenderDragRect !== undefined) {
-                var customContent = _this.props.onRenderDragRect(content, node, json);
+            if (this.props.onRenderDragRect !== undefined) {
+                const customContent = this.props.onRenderDragRect(content, node, json);
                 if (customContent !== undefined) {
                     content = customContent;
                 }
             }
             // hide div until the render is complete
-            _this.dragDiv.style.visibility = "hidden";
-            _this.dragRectRendered = false;
-            _this.showPortal(React.createElement(DragRectRenderWrapper
+            this.dragDiv.style.visibility = "hidden";
+            this.dragRectRendered = false;
+            this.showPortal(react__WEBPACK_IMPORTED_MODULE_0__.createElement(DragRectRenderWrapper
             // wait for it to be rendered
             , { 
                 // wait for it to be rendered
-                onRendered: function () {
-                    _this.dragRectRendered = true;
+                onRendered: () => {
+                    this.dragRectRendered = true;
                     onRendered === null || onRendered === void 0 ? void 0 : onRendered();
-                } }, content), _this.dragDiv);
+                } }, content), this.dragDiv);
         };
         /** @internal */
-        _this.showPortal = function (control, element) {
-            var portal = (0, react_dom_1.createPortal)(control, element);
-            _this.setState({ portal: portal });
+        this.showPortal = (control, element) => {
+            const portal = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(control, element);
+            this.setState({ portal });
         };
         /** @internal */
-        _this.hidePortal = function () {
-            _this.setState({ portal: undefined });
+        this.hidePortal = () => {
+            this.setState({ portal: undefined });
         };
         /** @internal */
-        _this.onDragStart = function () {
-            _this.dropInfo = undefined;
-            _this.customDrop = undefined;
-            var rootdiv = _this.selfRef.current;
-            _this.outlineDiv = _this.currentDocument.createElement("div");
-            _this.outlineDiv.className = _this.getClassName(Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
-            _this.outlineDiv.style.visibility = "hidden";
-            rootdiv.appendChild(_this.outlineDiv);
-            if (_this.dragDiv == null) {
-                _this.dragDiv = _this.currentDocument.createElement("div");
-                _this.dragDiv.className = _this.getClassName(Types_1.CLASSES.FLEXLAYOUT__DRAG_RECT);
-                _this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
-                _this.dragRectRender(_this.dragDivText, _this.dragNode, _this.newTabJson);
-                rootdiv.appendChild(_this.dragDiv);
+        this.onDragStart = () => {
+            this.dropInfo = undefined;
+            this.customDrop = undefined;
+            const rootdiv = this.selfRef.current;
+            this.outlineDiv = this.currentDocument.createElement("div");
+            this.outlineDiv.className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            this.outlineDiv.style.visibility = "hidden";
+            rootdiv.appendChild(this.outlineDiv);
+            if (this.dragDiv == null) {
+                this.dragDiv = this.currentDocument.createElement("div");
+                this.dragDiv.className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__DRAG_RECT);
+                this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
+                this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
+                rootdiv.appendChild(this.dragDiv);
             }
             // add edge indicators
-            if (_this.props.model.getMaximizedTabset() === undefined) {
-                _this.setState({ showEdges: true });
+            if (this.props.model.getMaximizedTabset() === undefined) {
+                this.setState({ showEdges: true });
             }
-            if (_this.dragNode !== undefined && _this.dragNode instanceof TabNode_1.TabNode && _this.dragNode.getTabRect() !== undefined) {
-                _this.dragNode.getTabRect().positionElement(_this.outlineDiv);
+            if (this.dragNode !== undefined && this.dragNode instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode && this.dragNode.getTabRect() !== undefined) {
+                this.dragNode.getTabRect().positionElement(this.outlineDiv);
             }
-            _this.firstMove = true;
+            this.firstMove = true;
             return true;
         };
         /** @internal */
-        _this.onDragMove = function (event) {
-            if (_this.firstMove === false) {
-                var speed = _this.props.model._getAttribute("tabDragSpeed");
-                _this.outlineDiv.style.transition = "top ".concat(speed, "s, left ").concat(speed, "s, width ").concat(speed, "s, height ").concat(speed, "s");
+        this.onDragMove = (event) => {
+            if (this.firstMove === false) {
+                const speed = this.props.model._getAttribute("tabDragSpeed");
+                this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
             }
-            _this.firstMove = false;
-            var clientRect = _this.selfRef.current.getBoundingClientRect();
-            var pos = {
+            this.firstMove = false;
+            const clientRect = this.selfRef.current.getBoundingClientRect();
+            const pos = {
                 x: event.clientX - clientRect.left,
                 y: event.clientY - clientRect.top,
             };
-            _this.checkForBorderToShow(pos.x, pos.y);
+            this.checkForBorderToShow(pos.x, pos.y);
             // keep it between left & right
-            var dragRect = _this.dragDiv.getBoundingClientRect();
-            var newLeft = pos.x - dragRect.width / 2;
+            const dragRect = this.dragDiv.getBoundingClientRect();
+            let newLeft = pos.x - dragRect.width / 2;
             if (newLeft + dragRect.width > clientRect.width) {
                 newLeft = clientRect.width - dragRect.width;
             }
             newLeft = Math.max(0, newLeft);
-            _this.dragDiv.style.left = newLeft + "px";
-            _this.dragDiv.style.top = pos.y + 5 + "px";
-            if (_this.dragRectRendered && _this.dragDiv.style.visibility === "hidden") {
+            this.dragDiv.style.left = newLeft + "px";
+            this.dragDiv.style.top = pos.y + 5 + "px";
+            if (this.dragRectRendered && this.dragDiv.style.visibility === "hidden") {
                 // make visible once the drag rect has been rendered
-                _this.dragDiv.style.visibility = "visible";
+                this.dragDiv.style.visibility = "visible";
             }
-            var dropInfo = _this.props.model._findDropTargetNode(_this.dragNode, pos.x, pos.y);
+            let dropInfo = this.props.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
             if (dropInfo) {
-                if (_this.props.onTabDrag) {
-                    _this.handleCustomTabDrag(dropInfo, pos, event);
+                if (this.props.onTabDrag) {
+                    this.handleCustomTabDrag(dropInfo, pos, event);
                 }
                 else {
-                    _this.dropInfo = dropInfo;
-                    _this.outlineDiv.className = _this.getClassName(dropInfo.className);
-                    dropInfo.rect.positionElement(_this.outlineDiv);
-                    _this.outlineDiv.style.visibility = "visible";
+                    this.dropInfo = dropInfo;
+                    this.outlineDiv.className = this.getClassName(dropInfo.className);
+                    dropInfo.rect.positionElement(this.outlineDiv);
+                    this.outlineDiv.style.visibility = "visible";
                 }
             }
         };
         /** @internal */
-        _this.onDragEnd = function (event) {
-            var rootdiv = _this.selfRef.current;
-            rootdiv.removeChild(_this.outlineDiv);
-            rootdiv.removeChild(_this.dragDiv);
-            _this.dragDiv = undefined;
-            _this.hidePortal();
-            _this.setState({ showEdges: false });
-            DragDrop_1.DragDrop.instance.hideGlass();
-            if (_this.dropInfo) {
-                if (_this.customDrop) {
-                    _this.newTabJson = undefined;
+        this.onDragEnd = (event) => {
+            const rootdiv = this.selfRef.current;
+            rootdiv.removeChild(this.outlineDiv);
+            rootdiv.removeChild(this.dragDiv);
+            this.dragDiv = undefined;
+            this.hidePortal();
+            this.setState({ showEdges: false });
+            _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.hideGlass();
+            if (this.dropInfo) {
+                if (this.customDrop) {
+                    this.newTabJson = undefined;
                     try {
-                        var _a = _this.customDrop, callback = _a.callback, dragging = _a.dragging, over = _a.over, x = _a.x, y = _a.y, location_1 = _a.location;
-                        callback(dragging, over, x, y, location_1);
-                        if (_this.fnNewNodeDropped != null) {
-                            _this.fnNewNodeDropped();
-                            _this.fnNewNodeDropped = undefined;
+                        const { callback, dragging, over, x, y, location } = this.customDrop;
+                        callback(dragging, over, x, y, location);
+                        if (this.fnNewNodeDropped != null) {
+                            this.fnNewNodeDropped();
+                            this.fnNewNodeDropped = undefined;
                         }
                     }
                     catch (e) {
                         console.error(e);
                     }
                 }
-                else if (_this.newTabJson !== undefined) {
-                    var newNode = _this.doAction(Actions_1.Actions.addNode(_this.newTabJson, _this.dropInfo.node.getId(), _this.dropInfo.location, _this.dropInfo.index));
-                    if (_this.fnNewNodeDropped != null) {
-                        _this.fnNewNodeDropped(newNode, event);
-                        _this.fnNewNodeDropped = undefined;
+                else if (this.newTabJson !== undefined) {
+                    const newNode = this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
+                    if (this.fnNewNodeDropped != null) {
+                        this.fnNewNodeDropped(newNode, event);
+                        this.fnNewNodeDropped = undefined;
                     }
-                    _this.newTabJson = undefined;
+                    this.newTabJson = undefined;
                 }
-                else if (_this.dragNode !== undefined) {
-                    _this.doAction(Actions_1.Actions.moveNode(_this.dragNode.getId(), _this.dropInfo.node.getId(), _this.dropInfo.location, _this.dropInfo.index));
+                else if (this.dragNode !== undefined) {
+                    this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.moveNode(this.dragNode.getId(), this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
                 }
             }
-            _this.setState({ showHiddenBorder: DockLocation_1.DockLocation.CENTER });
+            this.setState({ showHiddenBorder: _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER });
         };
-        _this.props.model._setChangeListener(_this.onModelChange);
-        _this.tabIds = [];
-        _this.selfRef = React.createRef();
-        _this.findHeaderBarSizeRef = React.createRef();
-        _this.findTabBarSizeRef = React.createRef();
-        _this.findBorderBarSizeRef = React.createRef();
-        _this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
-        _this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
-        _this.icons = __assign(__assign({}, defaultIcons), props.icons);
-        _this.firstRender = true;
-        _this.state = {
-            rect: new Rect_1.Rect(0, 0, 0, 0),
+        this.props.model._setChangeListener(this.onModelChange);
+        this.tabIds = [];
+        this.selfRef = react__WEBPACK_IMPORTED_MODULE_0__.createRef();
+        this.findHeaderBarSizeRef = react__WEBPACK_IMPORTED_MODULE_0__.createRef();
+        this.findTabBarSizeRef = react__WEBPACK_IMPORTED_MODULE_0__.createRef();
+        this.findBorderBarSizeRef = react__WEBPACK_IMPORTED_MODULE_0__.createRef();
+        this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
+        this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
+        this.icons = Object.assign(Object.assign({}, defaultIcons), props.icons);
+        this.state = {
+            rect: new _Rect__WEBPACK_IMPORTED_MODULE_9__.Rect(0, 0, 0, 0),
             calculatedHeaderBarSize: 25,
             calculatedTabBarSize: 26,
             calculatedBorderBarSize: 30,
             editingTab: undefined,
-            showHiddenBorder: DockLocation_1.DockLocation.CENTER,
+            showHiddenBorder: _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER,
             showEdges: false,
         };
-        _this.onDragEnter = _this.onDragEnter.bind(_this);
-        return _this;
+        this.onDragEnter = this.onDragEnter.bind(this);
     }
     /** @internal */
-    Layout.prototype.styleFont = function (style) {
+    styleFont(style) {
         if (this.props.font) {
             if (this.selfRef.current) {
                 if (this.props.font.size) {
@@ -42432,11 +41274,11 @@ var Layout = /** @class */ (function (_super) {
             }
         }
         return style;
-    };
+    }
     /** @internal */
-    Layout.prototype.doAction = function (action) {
+    doAction(action) {
         if (this.props.onAction !== undefined) {
-            var outcome = this.props.onAction(action);
+            const outcome = this.props.onAction(action);
             if (outcome !== undefined) {
                 return this.props.model.doAction(outcome);
             }
@@ -42445,22 +41287,21 @@ var Layout = /** @class */ (function (_super) {
         else {
             return this.props.model.doAction(action);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.componentDidMount = function () {
-        var _this = this;
+    componentDidMount() {
         this.updateRect();
         this.updateLayoutMetrics();
         // need to re-render if size changes
         this.currentDocument = this.selfRef.current.ownerDocument;
         this.currentWindow = this.currentDocument.defaultView;
-        this.resizeObserver = new ResizeObserver(function (entries) {
-            _this.updateRect(entries[0].contentRect);
+        this.resizeObserver = new ResizeObserver(entries => {
+            this.updateRect(entries[0].contentRect);
         });
         this.resizeObserver.observe(this.selfRef.current);
-    };
+    }
     /** @internal */
-    Layout.prototype.componentDidUpdate = function () {
+    componentDidUpdate() {
         this.updateLayoutMetrics();
         if (this.props.model !== this.previousModel) {
             if (this.previousModel !== undefined) {
@@ -42470,69 +41311,64 @@ var Layout = /** @class */ (function (_super) {
             this.previousModel = this.props.model;
         }
         // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
-    };
+    }
     /** @internal */
-    Layout.prototype.getCurrentDocument = function () {
+    getCurrentDocument() {
         return this.currentDocument;
-    };
+    }
     /** @internal */
-    Layout.prototype.getDomRect = function () {
+    getDomRect() {
         return this.selfRef.current.getBoundingClientRect();
-    };
+    }
     /** @internal */
-    Layout.prototype.getRootDiv = function () {
+    getRootDiv() {
         return this.selfRef.current;
-    };
+    }
     /** @internal */
-    Layout.prototype.isSupportsPopout = function () {
+    isSupportsPopout() {
         return this.supportsPopout;
-    };
+    }
     /** @internal */
-    Layout.prototype.isRealtimeResize = function () {
+    isRealtimeResize() {
         var _a;
         return (_a = this.props.realtimeResize) !== null && _a !== void 0 ? _a : false;
-    };
+    }
     /** @internal */
-    Layout.prototype.onTabDrag = function () {
+    onTabDrag(...args) {
         var _a, _b;
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call.apply(_b, __spreadArray([_a], args, false));
-    };
+        return (_b = (_a = this.props).onTabDrag) === null || _b === void 0 ? void 0 : _b.call(_a, ...args);
+    }
     /** @internal */
-    Layout.prototype.getPopoutURL = function () {
+    getPopoutURL() {
         return this.popoutURL;
-    };
+    }
     /** @internal */
-    Layout.prototype.componentWillUnmount = function () {
+    componentWillUnmount() {
         var _a;
         (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.selfRef.current);
-    };
+    }
     /** @internal */
-    Layout.prototype.setEditingTab = function (tabNode) {
+    setEditingTab(tabNode) {
         this.setState({ editingTab: tabNode });
-    };
+    }
     /** @internal */
-    Layout.prototype.getEditingTab = function () {
+    getEditingTab() {
         return this.state.editingTab;
-    };
+    }
     /** @internal */
-    Layout.prototype.render = function () {
+    render() {
         // first render will be used to find the size (via selfRef)
-        if (this.firstRender) {
-            this.firstRender = false;
-            return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT) }, this.metricsElements()));
+        if (!this.selfRef.current) {
+            return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: this.selfRef, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__LAYOUT) }, this.metricsElements()));
         }
         this.props.model._setPointerFine(window && window.matchMedia && window.matchMedia("(pointer: fine)").matches);
         // this.start = Date.now();
-        var borderComponents = [];
-        var tabSetComponents = [];
-        var floatingWindows = [];
-        var tabComponents = {};
-        var splitterComponents = [];
-        var metrics = {
+        const borderComponents = [];
+        const tabSetComponents = [];
+        const floatingWindows = [];
+        const tabComponents = {};
+        const splitterComponents = [];
+        const metrics = {
             headerBarSize: this.state.calculatedHeaderBarSize,
             tabBarSize: this.state.calculatedTabBarSize,
             borderBarSize: this.state.calculatedBorderBarSize
@@ -42541,11 +41377,10 @@ var Layout = /** @class */ (function (_super) {
         this.centerRect = this.props.model._layout(this.state.rect, metrics);
         this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
         this.renderChildren("", this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
-        var nextTopIds = [];
-        var nextTopIdsMap = {};
+        const nextTopIds = [];
+        const nextTopIdsMap = {};
         // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
-        for (var _i = 0, _a = this.tabIds; _i < _a.length; _i++) {
-            var t = _a[_i];
+        for (const t of this.tabIds) {
             if (tabComponents[t]) {
                 nextTopIds.push(t);
                 nextTopIdsMap[t] = t;
@@ -42553,29 +41388,28 @@ var Layout = /** @class */ (function (_super) {
         }
         this.tabIds = nextTopIds;
         // Add tabs that have been added to the DOM
-        for (var _b = 0, _c = Object.keys(tabComponents); _b < _c.length; _b++) {
-            var t = _c[_b];
+        for (const t of Object.keys(tabComponents)) {
             if (!nextTopIdsMap[t]) {
                 this.tabIds.push(t);
             }
         }
-        var edges = [];
+        const edges = [];
         if (this.state.showEdges) {
-            var r = this.centerRect;
-            var length_1 = this.edgeRectLength;
-            var width = this.edgeRectWidth;
-            var offset = this.edgeRectLength / 2;
-            var className = this.getClassName(Types_1.CLASSES.FLEXLAYOUT__EDGE_RECT);
-            var radius = 50;
-            edges.push(React.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length_1, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className }));
-            edges.push(React.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length_1, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className }));
-            edges.push(React.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length_1, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className }));
-            edges.push(React.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length_1, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className }));
+            const r = this.centerRect;
+            const length = this.edgeRectLength;
+            const width = this.edgeRectWidth;
+            const offset = this.edgeRectLength / 2;
+            const className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT);
+            const radius = 50;
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className }));
         }
         // this.layoutTime = (Date.now() - this.start);
-        return (React.createElement("div", { ref: this.selfRef, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: this.selfRef, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
             tabSetComponents,
-            this.tabIds.map(function (t) {
+            this.tabIds.map((t) => {
                 return tabComponents[t];
             }),
             borderComponents,
@@ -42584,140 +41418,137 @@ var Layout = /** @class */ (function (_super) {
             floatingWindows,
             this.metricsElements(),
             this.state.portal));
-    };
+    }
     /** @internal */
-    Layout.prototype.metricsElements = function () {
+    metricsElements() {
         // used to measure the tab and border tab sizes
-        var fontStyle = this.styleFont({ visibility: "hidden" });
-        return (React.createElement(React.Fragment, null,
-            React.createElement("div", { key: "findHeaderBarSize", ref: this.findHeaderBarSizeRef, style: fontStyle, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__TABSET_HEADER_SIZER) }, "FindHeaderBarSize"),
-            React.createElement("div", { key: "findTabBarSize", ref: this.findTabBarSizeRef, style: fontStyle, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__TABSET_SIZER) }, "FindTabBarSize"),
-            React.createElement("div", { key: "findBorderBarSize", ref: this.findBorderBarSizeRef, style: fontStyle, className: this.getClassName(Types_1.CLASSES.FLEXLAYOUT__BORDER_SIZER) }, "FindBorderBarSize")));
-    };
+        const fontStyle = this.styleFont({ visibility: "hidden" });
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "findHeaderBarSize", ref: this.findHeaderBarSizeRef, style: fontStyle, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__TABSET_HEADER_SIZER) }, "FindHeaderBarSize"),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "findTabBarSize", ref: this.findTabBarSizeRef, style: fontStyle, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__TABSET_SIZER) }, "FindTabBarSize"),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "findBorderBarSize", ref: this.findBorderBarSizeRef, style: fontStyle, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__BORDER_SIZER) }, "FindBorderBarSize")));
+    }
     /** @internal */
-    Layout.prototype.renderBorder = function (borderSet, borderComponents, tabComponents, floatingWindows, splitterComponents) {
-        for (var _i = 0, _a = borderSet.getBorders(); _i < _a.length; _i++) {
-            var border = _a[_i];
-            var borderPath = "/border/".concat(border.getLocation().getName());
+    renderBorder(borderSet, borderComponents, tabComponents, floatingWindows, splitterComponents) {
+        for (const border of borderSet.getBorders()) {
+            const borderPath = `/border/${border.getLocation().getName()}`;
             if (border.isShowing()) {
-                borderComponents.push(React.createElement(BorderTabSet_1.BorderTabSet, { key: "border_".concat(border.getLocation().getName()), path: borderPath, border: border, layout: this, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
-                var drawChildren = border._getDrawChildren();
-                var i = 0;
-                var tabCount = 0;
-                for (var _b = 0, drawChildren_1 = drawChildren; _b < drawChildren_1.length; _b++) {
-                    var child = drawChildren_1[_b];
-                    if (child instanceof SplitterNode_1.SplitterNode) {
-                        var path = borderPath + "/s";
-                        splitterComponents.push(React.createElement(Splitter_1.Splitter, { key: child.getId(), layout: this, node: child, path: path }));
+                borderComponents.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_BorderTabSet__WEBPACK_IMPORTED_MODULE_11__.BorderTabSet, { key: `border_${border.getLocation().getName()}`, path: borderPath, border: border, layout: this, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
+                const drawChildren = border._getDrawChildren();
+                let i = 0;
+                let tabCount = 0;
+                for (const child of drawChildren) {
+                    if (child instanceof _model_SplitterNode__WEBPACK_IMPORTED_MODULE_6__.SplitterNode) {
+                        let path = borderPath + "/s";
+                        splitterComponents.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Splitter__WEBPACK_IMPORTED_MODULE_12__.Splitter, { key: child.getId(), layout: this, node: child, path: path }));
                     }
-                    else if (child instanceof TabNode_1.TabNode) {
-                        var path = borderPath + "/t" + tabCount++;
+                    else if (child instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode) {
+                        let path = borderPath + "/t" + tabCount++;
                         if (this.supportsPopout && child.isFloating()) {
-                            var rect = this._getScreenRect(child);
-                            floatingWindows.push(React.createElement(FloatingWindow_1.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
-                                React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory })));
-                            tabComponents[child.getId()] = React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, path: path, node: child, selected: i === border.getSelected() });
+                            const rect = this._getScreenRect(child);
+                            floatingWindows.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindow__WEBPACK_IMPORTED_MODULE_15__.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                                react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindowTab__WEBPACK_IMPORTED_MODULE_16__.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory })));
+                            tabComponents[child.getId()] = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabFloating__WEBPACK_IMPORTED_MODULE_17__.TabFloating, { key: child.getId(), layout: this, path: path, node: child, selected: i === border.getSelected() });
                         }
                         else {
-                            tabComponents[child.getId()] = React.createElement(Tab_1.Tab, { key: child.getId(), layout: this, path: path, node: child, selected: i === border.getSelected(), factory: this.props.factory });
+                            tabComponents[child.getId()] = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Tab__WEBPACK_IMPORTED_MODULE_13__.Tab, { key: child.getId(), layout: this, path: path, node: child, selected: i === border.getSelected(), factory: this.props.factory });
                         }
                     }
                     i++;
                 }
             }
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.renderChildren = function (path, node, tabSetComponents, tabComponents, floatingWindows, splitterComponents) {
-        var drawChildren = node._getDrawChildren();
-        var splitterCount = 0;
-        var tabCount = 0;
-        var rowCount = 0;
-        for (var _i = 0, _a = drawChildren; _i < _a.length; _i++) {
-            var child = _a[_i];
-            if (child instanceof SplitterNode_1.SplitterNode) {
-                var newPath = path + "/s" + (splitterCount++);
-                splitterComponents.push(React.createElement(Splitter_1.Splitter, { key: child.getId(), layout: this, path: newPath, node: child }));
+    renderChildren(path, node, tabSetComponents, tabComponents, floatingWindows, splitterComponents) {
+        const drawChildren = node._getDrawChildren();
+        let splitterCount = 0;
+        let tabCount = 0;
+        let rowCount = 0;
+        for (const child of drawChildren) {
+            if (child instanceof _model_SplitterNode__WEBPACK_IMPORTED_MODULE_6__.SplitterNode) {
+                const newPath = path + "/s" + (splitterCount++);
+                splitterComponents.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Splitter__WEBPACK_IMPORTED_MODULE_12__.Splitter, { key: child.getId(), layout: this, path: newPath, node: child }));
             }
-            else if (child instanceof TabSetNode_1.TabSetNode) {
-                var newPath = path + "/ts" + (rowCount++);
-                tabSetComponents.push(React.createElement(TabSet_1.TabSet, { key: child.getId(), layout: this, path: newPath, node: child, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
+            else if (child instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_8__.TabSetNode) {
+                const newPath = path + "/ts" + (rowCount++);
+                tabSetComponents.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabSet__WEBPACK_IMPORTED_MODULE_14__.TabSet, { key: child.getId(), layout: this, path: newPath, node: child, iconFactory: this.props.iconFactory, titleFactory: this.props.titleFactory, icons: this.icons }));
                 this.renderChildren(newPath, child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
             }
-            else if (child instanceof TabNode_1.TabNode) {
-                var newPath = path + "/t" + (tabCount++);
-                var selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
+            else if (child instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode) {
+                const newPath = path + "/t" + (tabCount++);
+                const selectedTab = child.getParent().getChildren()[child.getParent().getSelected()];
                 if (selectedTab === undefined) {
                     // this should not happen!
                     console.warn("undefined selectedTab should not happen");
                 }
                 if (this.supportsPopout && child.isFloating()) {
-                    var rect = this._getScreenRect(child);
-                    floatingWindows.push(React.createElement(FloatingWindow_1.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
-                        React.createElement(FloatingWindowTab_1.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory })));
-                    tabComponents[child.getId()] = React.createElement(TabFloating_1.TabFloating, { key: child.getId(), layout: this, path: newPath, node: child, selected: child === selectedTab });
+                    const rect = this._getScreenRect(child);
+                    floatingWindows.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindow__WEBPACK_IMPORTED_MODULE_15__.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindowTab__WEBPACK_IMPORTED_MODULE_16__.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory })));
+                    tabComponents[child.getId()] = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabFloating__WEBPACK_IMPORTED_MODULE_17__.TabFloating, { key: child.getId(), layout: this, path: newPath, node: child, selected: child === selectedTab });
                 }
                 else {
-                    tabComponents[child.getId()] = React.createElement(Tab_1.Tab, { key: child.getId(), layout: this, path: newPath, node: child, selected: child === selectedTab, factory: this.props.factory });
+                    tabComponents[child.getId()] = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Tab__WEBPACK_IMPORTED_MODULE_13__.Tab, { key: child.getId(), layout: this, path: newPath, node: child, selected: child === selectedTab, factory: this.props.factory });
                 }
             }
             else {
                 // is row
-                var newPath = path + ((child.getOrientation() === Orientation_1.Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
+                const newPath = path + ((child.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_18__.Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
                 this.renderChildren(newPath, child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
             }
         }
-    };
+    }
     /** @internal */
-    Layout.prototype._getScreenRect = function (node) {
-        var rect = node.getRect().clone();
-        var bodyRect = this.selfRef.current.getBoundingClientRect();
-        var navHeight = Math.min(80, this.currentWindow.outerHeight - this.currentWindow.innerHeight);
-        var navWidth = Math.min(80, this.currentWindow.outerWidth - this.currentWindow.innerWidth);
+    _getScreenRect(node) {
+        const rect = node.getRect().clone();
+        const bodyRect = this.selfRef.current.getBoundingClientRect();
+        const navHeight = Math.min(80, this.currentWindow.outerHeight - this.currentWindow.innerHeight);
+        const navWidth = Math.min(80, this.currentWindow.outerWidth - this.currentWindow.innerWidth);
         rect.x = rect.x + bodyRect.x + this.currentWindow.screenX + navWidth;
         rect.y = rect.y + bodyRect.y + this.currentWindow.screenY + navHeight;
         return rect;
-    };
+    }
     /**
      * Adds a new tab to the given tabset
      * @param tabsetId the id of the tabset where the new tab will be added
      * @param json the json for the new tab node
      */
-    Layout.prototype.addTabToTabSet = function (tabsetId, json) {
-        var tabsetNode = this.props.model.getNodeById(tabsetId);
+    addTabToTabSet(tabsetId, json) {
+        const tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
-            this.doAction(Actions_1.Actions.addNode(json, tabsetId, DockLocation_1.DockLocation.CENTER, -1));
+            this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetId, _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
         }
-    };
+    }
     /**
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
      */
-    Layout.prototype.addTabToActiveTabSet = function (json) {
-        var tabsetNode = this.props.model.getActiveTabset();
+    addTabToActiveTabSet(json) {
+        const tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
-            this.doAction(Actions_1.Actions.addNode(json, tabsetNode.getId(), DockLocation_1.DockLocation.CENTER, -1));
+            this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetNode.getId(), _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
         }
-    };
+    }
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
      * @param dragText the text to show on the drag panel
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
-    Layout.prototype.addTabWithDragAndDrop = function (dragText, json, onDrop) {
+    addTabWithDragAndDrop(dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
-        this.dragStart(undefined, dragText, TabNode_1.TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
-    };
+        this.dragStart(undefined, dragText, _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
+    }
     /**
      * Move a tab/tabset using drag and drop
      * @param node the tab or tabset to drag
      * @param dragText the text to show on the drag panel
      */
-    Layout.prototype.moveTabWithDragAndDrop = function (node, dragText) {
+    moveTabWithDragAndDrop(node, dragText) {
         this.dragStart(undefined, dragText, node, true, undefined, undefined);
-    };
+    }
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
      * mouse down on the panel
@@ -42726,49 +41557,47 @@ var Layout = /** @class */ (function (_super) {
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
      */
-    Layout.prototype.addTabWithDragAndDropIndirect = function (dragText, json, onDrop) {
-        var _this = this;
+    addTabWithDragAndDropIndirect(dragText, json, onDrop) {
         this.fnNewNodeDropped = onDrop;
         this.newTabJson = json;
-        DragDrop_1.DragDrop.instance.addGlass(this.onCancelAdd);
+        _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.addGlass(this.onCancelAdd);
         this.dragDivText = dragText;
         this.dragDiv = this.currentDocument.createElement("div");
-        this.dragDiv.className = this.getClassName(Types_1.CLASSES.FLEXLAYOUT__DRAG_RECT);
+        this.dragDiv.className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__DRAG_RECT);
         this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
         this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown, { passive: false });
-        this.dragRectRender(this.dragDivText, undefined, this.newTabJson, function () {
-            if (_this.dragDiv) {
+        this.dragRectRender(this.dragDivText, undefined, this.newTabJson, () => {
+            if (this.dragDiv) {
                 // now it's been rendered into the dom it can be centered
-                _this.dragDiv.style.visibility = "visible";
-                var domRect = _this.dragDiv.getBoundingClientRect();
-                var r = new Rect_1.Rect(0, 0, domRect === null || domRect === void 0 ? void 0 : domRect.width, domRect === null || domRect === void 0 ? void 0 : domRect.height);
-                r.centerInRect(_this.state.rect);
-                _this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
-                _this.dragDiv.style.left = r.x + "px";
-                _this.dragDiv.style.top = r.y + "px";
+                this.dragDiv.style.visibility = "visible";
+                const domRect = this.dragDiv.getBoundingClientRect();
+                const r = new _Rect__WEBPACK_IMPORTED_MODULE_9__.Rect(0, 0, domRect === null || domRect === void 0 ? void 0 : domRect.width, domRect === null || domRect === void 0 ? void 0 : domRect.height);
+                r.centerInRect(this.state.rect);
+                this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
+                this.dragDiv.style.left = r.x + "px";
+                this.dragDiv.style.top = r.y + "px";
             }
         });
-        var rootdiv = this.selfRef.current;
+        const rootdiv = this.selfRef.current;
         rootdiv.appendChild(this.dragDiv);
-    };
+    }
     /** @internal */
-    Layout.prototype.handleCustomTabDrag = function (dropInfo, pos, event) {
-        var _this = this;
+    handleCustomTabDrag(dropInfo, pos, event) {
         var _a, _b, _c;
-        var invalidated = (_a = this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated;
-        var currentCallback = (_b = this.customDrop) === null || _b === void 0 ? void 0 : _b.callback;
+        let invalidated = (_a = this.customDrop) === null || _a === void 0 ? void 0 : _a.invalidated;
+        const currentCallback = (_b = this.customDrop) === null || _b === void 0 ? void 0 : _b.callback;
         this.customDrop = undefined;
-        var dragging = this.newTabJson || (this.dragNode instanceof TabNode_1.TabNode ? this.dragNode : undefined);
-        if (dragging && (dropInfo.node instanceof TabSetNode_1.TabSetNode || dropInfo.node instanceof BorderNode_1.BorderNode) && dropInfo.index === -1) {
-            var selected = dropInfo.node.getSelectedNode();
-            var tabRect = selected === null || selected === void 0 ? void 0 : selected.getRect();
+        const dragging = this.newTabJson || (this.dragNode instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode ? this.dragNode : undefined);
+        if (dragging && (dropInfo.node instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_8__.TabSetNode || dropInfo.node instanceof _model_BorderNode__WEBPACK_IMPORTED_MODULE_5__.BorderNode) && dropInfo.index === -1) {
+            const selected = dropInfo.node.getSelectedNode();
+            const tabRect = selected === null || selected === void 0 ? void 0 : selected.getRect();
             if (selected && (tabRect === null || tabRect === void 0 ? void 0 : tabRect.contains(pos.x, pos.y))) {
-                var customDrop = undefined;
+                let customDrop = undefined;
                 try {
-                    var dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, function () { return _this.onDragMove(event); });
+                    const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, () => this.onDragMove(event));
                     if (dest) {
                         customDrop = {
-                            rect: new Rect_1.Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
+                            rect: new _Rect__WEBPACK_IMPORTED_MODULE_9__.Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
                             callback: dest.callback,
                             invalidated: dest.invalidated,
                             dragging: dragging,
@@ -42790,14 +41619,14 @@ var Layout = /** @class */ (function (_super) {
             }
         }
         this.dropInfo = dropInfo;
-        this.outlineDiv.className = this.getClassName(this.customDrop ? Types_1.CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
+        this.outlineDiv.className = this.getClassName(this.customDrop ? _Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
         if (this.customDrop) {
             this.customDrop.rect.positionElement(this.outlineDiv);
         }
         else {
             dropInfo.rect.positionElement(this.outlineDiv);
         }
-        DragDrop_1.DragDrop.instance.setGlassCursorOverride((_c = this.customDrop) === null || _c === void 0 ? void 0 : _c.cursor);
+        _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.setGlassCursorOverride((_c = this.customDrop) === null || _c === void 0 ? void 0 : _c.cursor);
         this.outlineDiv.style.visibility = "visible";
         try {
             invalidated === null || invalidated === void 0 ? void 0 : invalidated();
@@ -42805,72 +41634,72 @@ var Layout = /** @class */ (function (_super) {
         catch (e) {
             console.error(e);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.onDragEnter = function (event) {
+    onDragEnter(event) {
         // DragDrop keeps track of number of dragenters minus the number of
         // dragleaves. Only start a new drag if there isn't one already.
-        if (DragDrop_1.DragDrop.instance.isDragging())
+        if (_DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.isDragging())
             return;
-        var drag = this.props.onExternalDrag(event);
+        const drag = this.props.onExternalDrag(event);
         if (drag) {
             // Mimic addTabWithDragAndDrop, but pass in DragEvent
             this.fnNewNodeDropped = drag.onDrop;
             this.newTabJson = drag.json;
-            this.dragStart(event, drag.dragText, TabNode_1.TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
+            this.dragStart(event, drag.dragText, _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.checkForBorderToShow = function (x, y) {
-        var r = this.props.model._getOuterInnerRects().outer;
-        var c = r.getCenter();
-        var margin = this.edgeRectWidth;
-        var offset = this.edgeRectLength / 2;
-        var overEdge = false;
-        if (this.props.model.isEnableEdgeDock() && this.state.showHiddenBorder === DockLocation_1.DockLocation.CENTER) {
+    checkForBorderToShow(x, y) {
+        const r = this.props.model._getOuterInnerRects().outer;
+        const c = r.getCenter();
+        const margin = this.edgeRectWidth;
+        const offset = this.edgeRectLength / 2;
+        let overEdge = false;
+        if (this.props.model.isEnableEdgeDock() && this.state.showHiddenBorder === _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER) {
             if ((y > c.y - offset && y < c.y + offset) ||
                 (x > c.x - offset && x < c.x + offset)) {
                 overEdge = true;
             }
         }
-        var location = DockLocation_1.DockLocation.CENTER;
+        let location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER;
         if (!overEdge) {
             if (x <= r.x + margin) {
-                location = DockLocation_1.DockLocation.LEFT;
+                location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.LEFT;
             }
             else if (x >= r.getRight() - margin) {
-                location = DockLocation_1.DockLocation.RIGHT;
+                location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.RIGHT;
             }
             else if (y <= r.y + margin) {
-                location = DockLocation_1.DockLocation.TOP;
+                location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.TOP;
             }
             else if (y >= r.getBottom() - margin) {
-                location = DockLocation_1.DockLocation.BOTTOM;
+                location = _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.BOTTOM;
             }
         }
         if (location !== this.state.showHiddenBorder) {
             this.setState({ showHiddenBorder: location });
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.maximize = function (tabsetNode) {
-        this.doAction(Actions_1.Actions.maximizeToggle(tabsetNode.getId()));
-    };
+    maximize(tabsetNode) {
+        this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.maximizeToggle(tabsetNode.getId()));
+    }
     /** @internal */
-    Layout.prototype.customizeTab = function (tabNode, renderValues) {
+    customizeTab(tabNode, renderValues) {
         if (this.props.onRenderTab) {
             this.props.onRenderTab(tabNode, renderValues);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.customizeTabSet = function (tabSetNode, renderValues) {
+    customizeTabSet(tabSetNode, renderValues) {
         if (this.props.onRenderTabSet) {
             this.props.onRenderTabSet(tabSetNode, renderValues);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.i18nName = function (id, param) {
-        var message;
+    i18nName(id, param) {
+        let message;
         if (this.props.i18nMapper) {
             message = this.props.i18nMapper(id, param);
         }
@@ -42878,41 +41707,39 @@ var Layout = /** @class */ (function (_super) {
             message = id + (param === undefined ? "" : param);
         }
         return message;
-    };
+    }
     /** @internal */
-    Layout.prototype.getOnRenderFloatingTabPlaceholder = function () {
+    getOnRenderFloatingTabPlaceholder() {
         return this.props.onRenderFloatingTabPlaceholder;
-    };
+    }
     /** @internal */
-    Layout.prototype.getShowOverflowMenu = function () {
+    getShowOverflowMenu() {
         return this.props.onShowOverflowMenu;
-    };
+    }
     /** @internal */
-    Layout.prototype.getTabSetPlaceHolderCallback = function () {
+    getTabSetPlaceHolderCallback() {
         return this.props.onTabSetPlaceHolder;
-    };
+    }
     /** @internal */
-    Layout.prototype.showContextMenu = function (node, event) {
+    showContextMenu(node, event) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
         }
-    };
+    }
     /** @internal */
-    Layout.prototype.auxMouseClick = function (node, event) {
+    auxMouseClick(node, event) {
         if (this.props.onAuxMouseClick) {
             this.props.onAuxMouseClick(node, event);
         }
-    };
-    return Layout;
-}(React.Component));
-exports.Layout = Layout;
+    }
+}
 /** @internal */
-var DragRectRenderWrapper = function (props) {
-    React.useEffect(function () {
+const DragRectRenderWrapper = (props) => {
+    react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
         var _a;
         (_a = props.onRendered) === null || _a === void 0 ? void 0 : _a.call(props);
     }, [props]);
-    return (React.createElement(React.Fragment, null, props.children));
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, props.children));
 };
 
 
@@ -42922,58 +41749,66 @@ var DragRectRenderWrapper = function (props) {
 /*!*******************************!*\
   !*** ./src/view/Splitter.tsx ***!
   \*******************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Splitter": () => (/* binding */ Splitter)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _DragDrop__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _model_BorderNode__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Splitter = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var DragDrop_1 = __webpack_require__(/*! ../DragDrop */ "./src/DragDrop.ts");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+
+
+
+
+
 /** @internal */
-var Splitter = function (props) {
-    var layout = props.layout, node = props.node, path = props.path;
-    var pBounds = React.useRef([]);
-    var outlineDiv = React.useRef(undefined);
-    var parentNode = node.getParent();
-    var onMouseDown = function (event) {
-        DragDrop_1.DragDrop.instance.setGlassCursorOverride(node.getOrientation() === Orientation_1.Orientation.HORZ ? "ns-resize" : "ew-resize");
-        DragDrop_1.DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
+const Splitter = (props) => {
+    const { layout, node, path } = props;
+    const pBounds = react__WEBPACK_IMPORTED_MODULE_0__.useRef([]);
+    const outlineDiv = react__WEBPACK_IMPORTED_MODULE_0__.useRef(undefined);
+    const parentNode = node.getParent();
+    const onMouseDown = (event) => {
+        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.setGlassCursorOverride(node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ ? "ns-resize" : "ew-resize");
+        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
         pBounds.current = parentNode._getSplitterBounds(node, true);
-        var rootdiv = layout.getRootDiv();
+        const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument().createElement("div");
         outlineDiv.current.style.position = "absolute";
-        outlineDiv.current.className = layout.getClassName(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_DRAG);
-        outlineDiv.current.style.cursor = node.getOrientation() === Orientation_1.Orientation.HORZ ? "ns-resize" : "ew-resize";
-        var r = node.getRect();
-        if (node.getOrientation() === Orientation_1.Orientation.VERT && r.width < 2) {
+        outlineDiv.current.className = layout.getClassName(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__SPLITTER_DRAG);
+        outlineDiv.current.style.cursor = node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ ? "ns-resize" : "ew-resize";
+        const r = node.getRect();
+        if (node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT && r.width < 2) {
             r.width = 2;
         }
-        else if (node.getOrientation() === Orientation_1.Orientation.HORZ && r.height < 2) {
+        else if (node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ && r.height < 2) {
             r.height = 2;
         }
         r.positionElement(outlineDiv.current);
         rootdiv.appendChild(outlineDiv.current);
     };
-    var onDragCancel = function (wasDragging) {
-        var rootdiv = layout.getRootDiv();
+    const onDragCancel = (wasDragging) => {
+        const rootdiv = layout.getRootDiv();
         rootdiv.removeChild(outlineDiv.current);
     };
-    var onDragStart = function () {
+    const onDragStart = () => {
         return true;
     };
-    var onDragMove = function (event) {
-        var clientRect = layout.getDomRect();
-        var pos = {
+    const onDragMove = (event) => {
+        const clientRect = layout.getDomRect();
+        const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top,
         };
         if (outlineDiv) {
-            if (node.getOrientation() === Orientation_1.Orientation.HORZ) {
+            if (node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
                 outlineDiv.current.style.top = getBoundPosition(pos.y - 4) + "px";
             }
             else {
@@ -42984,35 +41819,35 @@ var Splitter = function (props) {
             updateLayout();
         }
     };
-    var updateLayout = function () {
-        var value = 0;
+    const updateLayout = () => {
+        let value = 0;
         if (outlineDiv) {
-            if (node.getOrientation() === Orientation_1.Orientation.HORZ) {
+            if (node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ) {
                 value = outlineDiv.current.offsetTop;
             }
             else {
                 value = outlineDiv.current.offsetLeft;
             }
         }
-        if (parentNode instanceof BorderNode_1.BorderNode) {
-            var pos = parentNode._calculateSplit(node, value);
-            layout.doAction(Actions_1.Actions.adjustBorderSplit(node.getParent().getId(), pos));
+        if (parentNode instanceof _model_BorderNode__WEBPACK_IMPORTED_MODULE_3__.BorderNode) {
+            const pos = parentNode._calculateSplit(node, value);
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.adjustBorderSplit(node.getParent().getId(), pos));
         }
         else {
-            var splitSpec = parentNode._calculateSplit(node, value);
+            const splitSpec = parentNode._calculateSplit(node, value);
             if (splitSpec !== undefined) {
-                layout.doAction(Actions_1.Actions.adjustSplit(splitSpec));
+                layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.adjustSplit(splitSpec));
             }
         }
     };
-    var onDragEnd = function () {
+    const onDragEnd = () => {
         updateLayout();
-        var rootdiv = layout.getRootDiv();
+        const rootdiv = layout.getRootDiv();
         rootdiv.removeChild(outlineDiv.current);
     };
-    var getBoundPosition = function (p) {
-        var bounds = pBounds.current;
-        var rtn = p;
+    const getBoundPosition = (p) => {
+        const bounds = pBounds.current;
+        let rtn = p;
         if (p < bounds[0]) {
             rtn = bounds[0];
         }
@@ -43021,45 +41856,44 @@ var Splitter = function (props) {
         }
         return rtn;
     };
-    var cm = layout.getClassName;
-    var r = node.getRect();
-    var style = r.styleWithPosition({
-        cursor: node.getOrientation() === Orientation_1.Orientation.HORZ ? "ns-resize" : "ew-resize",
+    const cm = layout.getClassName;
+    let r = node.getRect();
+    const style = r.styleWithPosition({
+        cursor: node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ ? "ns-resize" : "ew-resize",
     });
-    var className = cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
-    if (parentNode instanceof BorderNode_1.BorderNode) {
-        className += " " + cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_BORDER);
+    let className = cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
+    if (parentNode instanceof _model_BorderNode__WEBPACK_IMPORTED_MODULE_3__.BorderNode) {
+        className += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__SPLITTER_BORDER);
     }
     else {
         if (node.getModel().getMaximizedTabset() !== undefined) {
             style.display = "none";
         }
     }
-    var extra = node.getModel().getSplitterExtra();
+    const extra = node.getModel().getSplitterExtra();
     if (extra === 0) {
-        return (React.createElement("div", { style: style, "data-layout-path": path, className: className, onTouchStart: onMouseDown, onMouseDown: onMouseDown }));
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: style, "data-layout-path": path, className: className, onTouchStart: onMouseDown, onMouseDown: onMouseDown }));
     }
     else {
         // add extended transparent div for hit testing
         // extends forward only, so as not to interfere with scrollbars
-        var r2 = r.clone();
+        let r2 = r.clone();
         r2.x = 0;
         r2.y = 0;
-        if (node.getOrientation() === Orientation_1.Orientation.VERT) {
+        if (node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.VERT) {
             r2.width += extra;
         }
         else {
             r2.height += extra;
         }
-        var style2 = r2.styleWithPosition({
-            cursor: node.getOrientation() === Orientation_1.Orientation.HORZ ? "ns-resize" : "ew-resize"
+        const style2 = r2.styleWithPosition({
+            cursor: node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ ? "ns-resize" : "ew-resize"
         });
-        var className2 = cm(Types_1.CLASSES.FLEXLAYOUT__SPLITTER_EXTRA);
-        return (React.createElement("div", { style: style, "data-layout-path": path, className: className },
-            React.createElement("div", { style: style2, className: className2, onTouchStart: onMouseDown, onMouseDown: onMouseDown })));
+        const className2 = cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__SPLITTER_EXTRA);
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: style, "data-layout-path": path, className: className },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: style2, className: className2, onTouchStart: onMouseDown, onMouseDown: onMouseDown })));
     }
 };
-exports.Splitter = Splitter;
 
 
 /***/ }),
@@ -43068,66 +41902,75 @@ exports.Splitter = Splitter;
 /*!**************************!*\
   !*** ./src/view/Tab.tsx ***!
   \**************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "Tab": () => (/* binding */ Tab)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _ErrorBoundary__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _model_BorderNode__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Tab = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var ErrorBoundary_1 = __webpack_require__(/*! ./ErrorBoundary */ "./src/view/ErrorBoundary.tsx");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var BorderNode_1 = __webpack_require__(/*! ../model/BorderNode */ "./src/model/BorderNode.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
+
+
+
 /** @internal */
-var Tab = function (props) {
-    var layout = props.layout, selected = props.selected, node = props.node, factory = props.factory, path = props.path;
-    var _a = React.useState(!props.node.isEnableRenderOnDemand() || props.selected), renderComponent = _a[0], setRenderComponent = _a[1];
-    React.useLayoutEffect(function () {
+const Tab = (props) => {
+    const { layout, selected, node, factory, path } = props;
+    const [renderComponent, setRenderComponent] = react__WEBPACK_IMPORTED_MODULE_0__.useState(!props.node.isEnableRenderOnDemand() || props.selected);
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         if (!renderComponent && selected) {
             // load on demand
             // console.log("load on demand: " + node.getName());
             setRenderComponent(true);
         }
     });
-    var onMouseDown = function () {
-        var parent = node.getParent();
-        if (parent.getType() === TabSetNode_1.TabSetNode.TYPE) {
+    const onMouseDown = () => {
+        const parent = node.getParent();
+        if (parent.getType() === _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode.TYPE) {
             if (!parent.isActive()) {
-                layout.doAction(Actions_1.Actions.setActiveTabset(parent.getId()));
+                layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_1__.Actions.setActiveTabset(parent.getId()));
             }
         }
     };
-    var cm = layout.getClassName;
-    var useVisibility = node.getModel().isUseVisibility();
-    var parentNode = node.getParent();
-    var style = node._styleWithPosition();
+    const cm = layout.getClassName;
+    const useVisibility = node.getModel().isUseVisibility();
+    const parentNode = node.getParent();
+    const style = node._styleWithPosition();
     if (!selected) {
-        (0, Utils_1.hideElement)(style, useVisibility);
+        (0,_Utils__WEBPACK_IMPORTED_MODULE_7__.hideElement)(style, useVisibility);
     }
-    if (parentNode instanceof TabSetNode_1.TabSetNode) {
+    if (parentNode instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode) {
         if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
-            (0, Utils_1.hideElement)(style, useVisibility);
+            (0,_Utils__WEBPACK_IMPORTED_MODULE_7__.hideElement)(style, useVisibility);
         }
     }
-    var child;
+    let child;
     if (renderComponent) {
         child = factory(node);
     }
-    var className = cm(Types_1.CLASSES.FLEXLAYOUT__TAB);
-    if (parentNode instanceof BorderNode_1.BorderNode) {
-        className += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BORDER);
-        className += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
+    let className = cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB);
+    if (parentNode instanceof _model_BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode) {
+        className += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_BORDER);
+        className += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
     }
-    return (React.createElement("div", { className: className, "data-layout-path": path, onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
-        React.createElement(ErrorBoundary_1.ErrorBoundary, { message: props.layout.i18nName(I18nLabel_1.I18nLabel.Error_rendering_component) },
-            React.createElement(react_1.Fragment, null, child))));
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: className, "data-layout-path": path, onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement(_ErrorBoundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, { message: props.layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Error_rendering_component) },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, child))));
 };
-exports.Tab = Tab;
 
 
 /***/ }),
@@ -43136,63 +41979,72 @@ exports.Tab = Tab;
 /*!********************************!*\
   !*** ./src/view/TabButton.tsx ***!
   \********************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabButton": () => (/* binding */ TabButton)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabButton = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var ICloseType_1 = __webpack_require__(/*! ../model/ICloseType */ "./src/model/ICloseType.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
+
 /** @internal */
-var TabButton = function (props) {
-    var layout = props.layout, node = props.node, selected = props.selected, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
-    var selfRef = React.useRef(null);
-    var contentRef = React.useRef(null);
-    var onMouseDown = function (event) {
-        if (!(0, Utils_1.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
+const TabButton = (props) => {
+    const { layout, node, selected, iconFactory, titleFactory, icons, path } = props;
+    const selfRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const contentRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const onMouseDown = (event) => {
+        if (!(0,_Utils__WEBPACK_IMPORTED_MODULE_6__.isAuxMouseEvent)(event) && !layout.getEditingTab()) {
             layout.dragStart(event, undefined, node, node.isEnableDrag(), onClick, onDoubleClick);
         }
     };
-    var onAuxMouseClick = function (event) {
-        if ((0, Utils_1.isAuxMouseEvent)(event)) {
+    const onAuxMouseClick = (event) => {
+        if ((0,_Utils__WEBPACK_IMPORTED_MODULE_6__.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
-    var onContextMenu = function (event) {
+    const onContextMenu = (event) => {
         layout.showContextMenu(node, event);
     };
-    var onClick = function () {
-        layout.doAction(Actions_1.Actions.selectTab(node.getId()));
+    const onClick = () => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.selectTab(node.getId()));
     };
-    var onDoubleClick = function (event) {
+    const onDoubleClick = (event) => {
         if (node.isEnableRename()) {
             onRename();
         }
     };
-    var onRename = function () {
+    const onRename = () => {
         layout.setEditingTab(node);
         layout.getCurrentDocument().body.addEventListener("mousedown", onEndEdit);
         layout.getCurrentDocument().body.addEventListener("touchstart", onEndEdit);
     };
-    var onEndEdit = function (event) {
+    const onEndEdit = (event) => {
         if (event.target !== contentRef.current) {
             layout.getCurrentDocument().body.removeEventListener("mousedown", onEndEdit);
             layout.getCurrentDocument().body.removeEventListener("touchstart", onEndEdit);
             layout.setEditingTab(undefined);
         }
     };
-    var isClosable = function () {
-        var closeType = node.getCloseType();
-        if (selected || closeType === ICloseType_1.ICloseType.Always) {
+    const isClosable = () => {
+        const closeType = node.getCloseType();
+        if (selected || closeType === _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__.ICloseType.Always) {
             return true;
         }
-        if (closeType === ICloseType_1.ICloseType.Visible) {
+        if (closeType === _model_ICloseType__WEBPACK_IMPORTED_MODULE_4__.ICloseType.Visible) {
             // not selected but x should be visible due to hover
             if (window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
                 return true;
@@ -43200,34 +42052,34 @@ var TabButton = function (props) {
         }
         return false;
     };
-    var onClose = function (event) {
+    const onClose = (event) => {
         if (isClosable()) {
-            layout.doAction(Actions_1.Actions.deleteTab(node.getId()));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.deleteTab(node.getId()));
         }
         else {
             onClick();
         }
     };
-    var onCloseMouseDown = function (event) {
+    const onCloseMouseDown = (event) => {
         event.stopPropagation();
     };
-    React.useLayoutEffect(function () {
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         updateRect();
         if (layout.getEditingTab() === node) {
             contentRef.current.select();
         }
     });
-    var updateRect = function () {
+    const updateRect = () => {
         // record position of tab in node
-        var layoutRect = layout.getDomRect();
-        var r = selfRef.current.getBoundingClientRect();
-        node._setTabRect(new Rect_1.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        const layoutRect = layout.getDomRect();
+        const r = selfRef.current.getBoundingClientRect();
+        node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
     };
-    var onTextBoxMouseDown = function (event) {
+    const onTextBoxMouseDown = (event) => {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     };
-    var onTextBoxKeyPress = function (event) {
+    const onTextBoxKeyPress = (event) => {
         // console.log(event, event.keyCode);
         if (event.keyCode === 27) {
             // esc
@@ -43236,13 +42088,13 @@ var TabButton = function (props) {
         else if (event.keyCode === 13) {
             // enter
             layout.setEditingTab(undefined);
-            layout.doAction(Actions_1.Actions.renameTab(node.getId(), event.target.value));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.renameTab(node.getId(), event.target.value));
         }
     };
-    var cm = layout.getClassName;
-    var parentNode = node.getParent();
-    var baseClassName = Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON;
-    var classNames = cm(baseClassName);
+    const cm = layout.getClassName;
+    const parentNode = node.getParent();
+    let baseClassName = _Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON;
+    let classNames = cm(baseClassName);
     classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
     if (selected) {
         classNames += " " + cm(baseClassName + "--selected");
@@ -43253,22 +42105,21 @@ var TabButton = function (props) {
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
     }
-    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
-    var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content)) : null;
-    var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
+    const renderState = (0,_Utils__WEBPACK_IMPORTED_MODULE_6__.getRenderStateEx)(layout, node, iconFactory, titleFactory);
+    let content = renderState.content ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content)) : null;
+    const leading = renderState.leading ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
     if (layout.getEditingTab() === node) {
-        content = (React.createElement("input", { ref: contentRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
+        content = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("input", { ref: contentRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
     }
     if (node.isEnableClose()) {
-        var closeTitle = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tab);
-        renderState.buttons.push(React.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
+        const closeTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tab);
+        renderState.buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
     }
-    return (React.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: selfRef, "data-layout-path": path, className: classNames, onMouseDown: onMouseDown, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onContextMenu: onContextMenu, onTouchStart: onMouseDown, title: node.getHelpText() },
         leading,
         content,
         renderState.buttons));
 };
-exports.TabButton = TabButton;
 
 
 /***/ }),
@@ -43277,30 +42128,34 @@ exports.TabButton = TabButton;
 /*!*************************************!*\
   !*** ./src/view/TabButtonStamp.tsx ***!
   \*************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabButtonStamp": () => (/* binding */ TabButtonStamp)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabButtonStamp = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
 /** @internal */
-var TabButtonStamp = function (props) {
-    var layout = props.layout, node = props.node, iconFactory = props.iconFactory, titleFactory = props.titleFactory;
-    var selfRef = React.useRef(null);
-    var cm = layout.getClassName;
-    var classNames = cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
-    var renderState = (0, Utils_1.getRenderStateEx)(layout, node, iconFactory, titleFactory);
-    var content = renderState.content ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content))
+const TabButtonStamp = (props) => {
+    const { layout, node, iconFactory, titleFactory } = props;
+    const selfRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const cm = layout.getClassName;
+    let classNames = cm(_Types__WEBPACK_IMPORTED_MODULE_1__.CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
+    const renderState = (0,_Utils__WEBPACK_IMPORTED_MODULE_2__.getRenderStateEx)(layout, node, iconFactory, titleFactory);
+    let content = renderState.content ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_1__.CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT) }, renderState.content))
         : node._getNameForOverflowMenu();
-    var leading = renderState.leading ? (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
-    return (React.createElement("div", { ref: selfRef, className: classNames, title: node.getHelpText() },
+    const leading = renderState.leading ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_1__.CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING) }, renderState.leading)) : null;
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: selfRef, className: classNames, title: node.getHelpText() },
         leading,
         content));
 };
-exports.TabButtonStamp = TabButtonStamp;
 
 
 /***/ }),
@@ -43309,74 +42164,81 @@ exports.TabButtonStamp = TabButtonStamp;
 /*!**********************************!*\
   !*** ./src/view/TabFloating.tsx ***!
   \**********************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabFloating": () => (/* binding */ TabFloating)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabFloating = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
 /** @internal */
-var TabFloating = function (props) {
-    var layout = props.layout, selected = props.selected, node = props.node, path = props.path;
-    var showPopout = function () {
+const TabFloating = (props) => {
+    const { layout, selected, node, path } = props;
+    const showPopout = () => {
         if (node.getWindow()) {
             node.getWindow().focus();
         }
     };
-    var dockPopout = function () {
-        layout.doAction(Actions_1.Actions.unFloatTab(node.getId()));
+    const dockPopout = () => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_1__.Actions.unFloatTab(node.getId()));
     };
-    var onMouseDown = function () {
-        var parent = node.getParent();
-        if (parent.getType() === TabSetNode_1.TabSetNode.TYPE) {
+    const onMouseDown = () => {
+        const parent = node.getParent();
+        if (parent.getType() === _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode.TYPE) {
             if (!parent.isActive()) {
-                layout.doAction(Actions_1.Actions.setActiveTabset(parent.getId()));
+                layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_1__.Actions.setActiveTabset(parent.getId()));
             }
         }
     };
-    var onClickFocus = function (event) {
+    const onClickFocus = (event) => {
         event.preventDefault();
         showPopout();
     };
-    var onClickDock = function (event) {
+    const onClickDock = (event) => {
         event.preventDefault();
         dockPopout();
     };
-    var cm = layout.getClassName;
-    var parentNode = node.getParent();
-    var style = node._styleWithPosition();
+    const cm = layout.getClassName;
+    const parentNode = node.getParent();
+    const style = node._styleWithPosition();
     if (!selected) {
-        (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
+        (0,_Utils__WEBPACK_IMPORTED_MODULE_5__.hideElement)(style, node.getModel().isUseVisibility());
     }
-    if (parentNode instanceof TabSetNode_1.TabSetNode) {
+    if (parentNode instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode) {
         if (node.getModel().getMaximizedTabset() !== undefined && !parentNode.isMaximized()) {
-            (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
+            (0,_Utils__WEBPACK_IMPORTED_MODULE_5__.hideElement)(style, node.getModel().isUseVisibility());
         }
     }
-    var message = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Message);
-    var showMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Show_Window);
-    var dockMessage = layout.i18nName(I18nLabel_1.I18nLabel.Floating_Window_Dock_Window);
-    var customRenderCallback = layout.getOnRenderFloatingTabPlaceholder();
+    const message = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_4__.I18nLabel.Floating_Window_Message);
+    const showMessage = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_4__.I18nLabel.Floating_Window_Show_Window);
+    const dockMessage = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_4__.I18nLabel.Floating_Window_Dock_Window);
+    const customRenderCallback = layout.getOnRenderFloatingTabPlaceholder();
     if (customRenderCallback) {
-        return (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_FLOATING), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style }, customRenderCallback(dockPopout, showPopout)));
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_FLOATING), onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style }, customRenderCallback(dockPopout, showPopout)));
     }
     else {
-        return (React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_FLOATING), "data-layout-path": path, onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
-            React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER) },
-                React.createElement("div", null, message),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: onClickFocus }, showMessage)),
-                React.createElement("div", null,
-                    React.createElement("a", { href: "#", onClick: onClickDock }, dockMessage)))));
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_FLOATING), "data-layout-path": path, onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER) },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, message),
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", { href: "#", onClick: onClickFocus }, showMessage)),
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", { href: "#", onClick: onClickDock }, dockMessage)))));
     }
 };
-exports.TabFloating = TabFloating;
 
 
 /***/ }),
@@ -43385,84 +42247,90 @@ exports.TabFloating = TabFloating;
 /*!**************************************!*\
   !*** ./src/view/TabOverflowHook.tsx ***!
   \**************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "useTabOverflow": () => (/* binding */ useTabOverflow)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.useTabOverflow = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Rect_1 = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
-var TabSetNode_1 = __webpack_require__(/*! ../model/TabSetNode */ "./src/model/TabSetNode.ts");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+
+
+
 /** @internal */
-var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) {
-    var firstRender = React.useRef(true);
-    var tabsTruncated = React.useRef(false);
-    var lastRect = React.useRef(new Rect_1.Rect(0, 0, 0, 0));
-    var selfRef = React.useRef(null);
-    var _a = React.useState(0), position = _a[0], setPosition = _a[1];
-    var userControlledLeft = React.useRef(false);
-    var _b = React.useState([]), hiddenTabs = _b[0], setHiddenTabs = _b[1];
-    var lastHiddenCount = React.useRef(0);
+const useTabOverflow = (node, orientation, toolbarRef, stickyButtonsRef) => {
+    const firstRender = react__WEBPACK_IMPORTED_MODULE_0__.useRef(true);
+    const tabsTruncated = react__WEBPACK_IMPORTED_MODULE_0__.useRef(false);
+    const lastRect = react__WEBPACK_IMPORTED_MODULE_0__.useRef(new _Rect__WEBPACK_IMPORTED_MODULE_1__.Rect(0, 0, 0, 0));
+    const selfRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const [position, setPosition] = react__WEBPACK_IMPORTED_MODULE_0__.useState(0);
+    const userControlledLeft = react__WEBPACK_IMPORTED_MODULE_0__.useRef(false);
+    const [hiddenTabs, setHiddenTabs] = react__WEBPACK_IMPORTED_MODULE_0__.useState([]);
+    const lastHiddenCount = react__WEBPACK_IMPORTED_MODULE_0__.useRef(0);
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
-    React.useLayoutEffect(function () {
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         userControlledLeft.current = false;
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
-    React.useLayoutEffect(function () {
+    react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         updateVisibleTabs();
     });
-    React.useEffect(function () {
-        var instance = selfRef.current;
+    react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
+        const instance = selfRef.current;
         instance.addEventListener('wheel', onWheel, { passive: false });
-        return function () {
+        return () => {
             instance.removeEventListener('wheel', onWheel);
         };
     }, []);
     // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
-    var onWheel = function (event) {
+    const onWheel = (event) => {
         event.preventDefault();
     };
-    var getNear = function (rect) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    const getNear = (rect) => {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_3__.Orientation.HORZ) {
             return rect.x;
         }
         else {
             return rect.y;
         }
     };
-    var getFar = function (rect) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    const getFar = (rect) => {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_3__.Orientation.HORZ) {
             return rect.getRight();
         }
         else {
             return rect.getBottom();
         }
     };
-    var getSize = function (rect) {
-        if (orientation === Orientation_1.Orientation.HORZ) {
+    const getSize = (rect) => {
+        if (orientation === _Orientation__WEBPACK_IMPORTED_MODULE_3__.Orientation.HORZ) {
             return rect.width;
         }
         else {
             return rect.height;
         }
     };
-    var updateVisibleTabs = function () {
-        var tabMargin = 2;
+    const updateVisibleTabs = () => {
+        const tabMargin = 2;
         if (firstRender.current === true) {
             tabsTruncated.current = false;
         }
-        var nodeRect = node instanceof TabSetNode_1.TabSetNode ? node.getRect() : node.getTabHeaderRect();
-        var lastChild = node.getChildren()[node.getChildren().length - 1];
-        var stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current.getBoundingClientRect());
+        const nodeRect = node instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode ? node.getRect() : node.getTabHeaderRect();
+        let lastChild = node.getChildren()[node.getChildren().length - 1];
+        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current.getBoundingClientRect());
         if (firstRender.current === true ||
             (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) ||
             nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
             nodeRect.height !== lastRect.current.height) {
             lastHiddenCount.current = hiddenTabs.length;
             lastRect.current = nodeRect;
-            var enabled = node instanceof TabSetNode_1.TabSetNode ? node.isEnableTabStrip() === true : true;
-            var endPos = getFar(nodeRect) - stickyButtonsSize;
+            const enabled = node instanceof _model_TabSetNode__WEBPACK_IMPORTED_MODULE_2__.TabSetNode ? node.isEnableTabStrip() === true : true;
+            let endPos = getFar(nodeRect) - stickyButtonsSize;
             if (toolbarRef.current !== null) {
                 endPos -= getSize(toolbarRef.current.getBoundingClientRect());
             }
@@ -43470,12 +42338,12 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
                 if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()) + tabMargin < endPos) {
                     return; // nothing to do all tabs are shown in available space
                 }
-                var shiftPos = 0;
-                var selectedTab = node.getSelectedNode();
+                let shiftPos = 0;
+                const selectedTab = node.getSelectedNode();
                 if (selectedTab && !userControlledLeft.current) {
-                    var selectedRect = selectedTab.getTabRect();
-                    var selectedStart = getNear(selectedRect) - tabMargin;
-                    var selectedEnd = getFar(selectedRect) + tabMargin;
+                    const selectedRect = selectedTab.getTabRect();
+                    const selectedStart = getNear(selectedRect) - tabMargin;
+                    const selectedEnd = getFar(selectedRect) + tabMargin;
                     // when selected tab is larger than available space then align left
                     if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect)) {
                         shiftPos = getNear(nodeRect) - selectedStart;
@@ -43492,13 +42360,13 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
                         }
                     }
                 }
-                var extraSpace = Math.max(0, endPos - (getFar(lastChild.getTabRect()) + tabMargin + shiftPos));
-                var newPosition = Math.min(0, position + shiftPos + extraSpace);
+                const extraSpace = Math.max(0, endPos - (getFar(lastChild.getTabRect()) + tabMargin + shiftPos));
+                const newPosition = Math.min(0, position + shiftPos + extraSpace);
                 // find hidden tabs
-                var diff = newPosition - position;
-                var hidden = [];
-                for (var i = 0; i < node.getChildren().length; i++) {
-                    var child = node.getChildren()[i];
+                const diff = newPosition - position;
+                const hidden = [];
+                for (let i = 0; i < node.getChildren().length; i++) {
+                    const child = node.getChildren()[i];
                     if (getNear(child.getTabRect()) + diff < getNear(nodeRect) || getFar(child.getTabRect()) + diff > endPos) {
                         hidden.push({ node: child, index: i });
                     }
@@ -43515,8 +42383,8 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
             firstRender.current = true;
         }
     };
-    var onMouseWheel = function (event) {
-        var delta = 0;
+    const onMouseWheel = (event) => {
+        let delta = 0;
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
             delta = -event.deltaX;
         }
@@ -43531,9 +42399,8 @@ var useTabOverflow = function (node, orientation, toolbarRef, stickyButtonsRef) 
         userControlledLeft.current = true;
         event.stopPropagation();
     };
-    return { selfRef: selfRef, position: position, userControlledLeft: userControlledLeft, hiddenTabs: hiddenTabs, onMouseWheel: onMouseWheel, tabsTruncated: tabsTruncated.current };
+    return { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated: tabsTruncated.current };
 };
-exports.useTabOverflow = useTabOverflow;
 
 
 /***/ }),
@@ -43542,238 +42409,239 @@ exports.useTabOverflow = useTabOverflow;
 /*!*****************************!*\
   !*** ./src/view/TabSet.tsx ***!
   \*****************************/
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TabSet": () => (/* binding */ TabSet)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _I18nLabel__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
+/* harmony import */ var _model_Actions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
+/* harmony import */ var _PopupMenu__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
+/* harmony import */ var _TabButton__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
+/* harmony import */ var _TabOverflowHook__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
+/* harmony import */ var _Orientation__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
 
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TabSet = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var I18nLabel_1 = __webpack_require__(/*! ../I18nLabel */ "./src/I18nLabel.ts");
-var Actions_1 = __webpack_require__(/*! ../model/Actions */ "./src/model/Actions.ts");
-var PopupMenu_1 = __webpack_require__(/*! ../PopupMenu */ "./src/PopupMenu.tsx");
-var TabButton_1 = __webpack_require__(/*! ./TabButton */ "./src/view/TabButton.tsx");
-var TabOverflowHook_1 = __webpack_require__(/*! ./TabOverflowHook */ "./src/view/TabOverflowHook.tsx");
-var Orientation_1 = __webpack_require__(/*! ../Orientation */ "./src/Orientation.ts");
-var Types_1 = __webpack_require__(/*! ../Types */ "./src/Types.ts");
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./src/view/Utils.tsx");
+
+
+
+
+
+
+
+
 /** @internal */
-var TabSet = function (props) {
-    var node = props.node, layout = props.layout, iconFactory = props.iconFactory, titleFactory = props.titleFactory, icons = props.icons, path = props.path;
-    var toolbarRef = React.useRef(null);
-    var overflowbuttonRef = React.useRef(null);
-    var tabbarInnerRef = React.useRef(null);
-    var stickyButtonsRef = React.useRef(null);
-    var _a = (0, TabOverflowHook_1.useTabOverflow)(node, Orientation_1.Orientation.HORZ, toolbarRef, stickyButtonsRef), selfRef = _a.selfRef, position = _a.position, userControlledLeft = _a.userControlledLeft, hiddenTabs = _a.hiddenTabs, onMouseWheel = _a.onMouseWheel, tabsTruncated = _a.tabsTruncated;
-    var onOverflowClick = function (event) {
-        var callback = layout.getShowOverflowMenu();
+const TabSet = (props) => {
+    const { node, layout, iconFactory, titleFactory, icons, path } = props;
+    const toolbarRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const overflowbuttonRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const tabbarInnerRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const stickyButtonsRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = (0,_TabOverflowHook__WEBPACK_IMPORTED_MODULE_5__.useTabOverflow)(node, _Orientation__WEBPACK_IMPORTED_MODULE_6__.Orientation.HORZ, toolbarRef, stickyButtonsRef);
+    const onOverflowClick = (event) => {
+        const callback = layout.getShowOverflowMenu();
         if (callback !== undefined) {
             callback(node, event, hiddenTabs, onOverflowItemSelect);
         }
         else {
-            var element = overflowbuttonRef.current;
-            (0, PopupMenu_1.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
+            const element = overflowbuttonRef.current;
+            (0,_PopupMenu__WEBPACK_IMPORTED_MODULE_3__.showPopup)(element, hiddenTabs, onOverflowItemSelect, layout, iconFactory, titleFactory);
         }
         event.stopPropagation();
     };
-    var onOverflowItemSelect = function (item) {
-        layout.doAction(Actions_1.Actions.selectTab(item.node.getId()));
+    const onOverflowItemSelect = (item) => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.selectTab(item.node.getId()));
         userControlledLeft.current = false;
     };
-    var onMouseDown = function (event) {
-        if (!(0, Utils_1.isAuxMouseEvent)(event)) {
-            var name_1 = node.getName();
-            if (name_1 === undefined) {
-                name_1 = "";
+    const onMouseDown = (event) => {
+        if (!(0,_Utils__WEBPACK_IMPORTED_MODULE_8__.isAuxMouseEvent)(event)) {
+            let name = node.getName();
+            if (name === undefined) {
+                name = "";
             }
             else {
-                name_1 = ": " + name_1;
+                name = ": " + name;
             }
-            layout.doAction(Actions_1.Actions.setActiveTabset(node.getId()));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.setActiveTabset(node.getId()));
             if (!layout.getEditingTab()) {
-                var message = layout.i18nName(I18nLabel_1.I18nLabel.Move_Tabset, name_1);
+                const message = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Move_Tabset, name);
                 if (node.getModel().getMaximizedTabset() !== undefined) {
-                    layout.dragStart(event, message, node, false, function (event2) { return undefined; }, onDoubleClick);
+                    layout.dragStart(event, message, node, false, (event2) => undefined, onDoubleClick);
                 }
                 else {
-                    layout.dragStart(event, message, node, node.isEnableDrag(), function (event2) { return undefined; }, onDoubleClick);
+                    layout.dragStart(event, message, node, node.isEnableDrag(), (event2) => undefined, onDoubleClick);
                 }
             }
         }
     };
-    var onAuxMouseClick = function (event) {
-        if ((0, Utils_1.isAuxMouseEvent)(event)) {
+    const onAuxMouseClick = (event) => {
+        if ((0,_Utils__WEBPACK_IMPORTED_MODULE_8__.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(node, event);
         }
     };
-    var onContextMenu = function (event) {
+    const onContextMenu = (event) => {
         layout.showContextMenu(node, event);
     };
-    var onInterceptMouseDown = function (event) {
+    const onInterceptMouseDown = (event) => {
         event.stopPropagation();
     };
-    var onMaximizeToggle = function (event) {
+    const onMaximizeToggle = (event) => {
         if (node.canMaximize()) {
             layout.maximize(node);
         }
         event.stopPropagation();
     };
-    var onClose = function (event) {
-        layout.doAction(Actions_1.Actions.deleteTabset(node.getId()));
+    const onClose = (event) => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.deleteTabset(node.getId()));
         event.stopPropagation();
     };
-    var onFloatTab = function (event) {
+    const onFloatTab = (event) => {
         if (selectedTabNode !== undefined) {
-            layout.doAction(Actions_1.Actions.floatTab(selectedTabNode.getId()));
+            layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.floatTab(selectedTabNode.getId()));
         }
         event.stopPropagation();
     };
-    var onDoubleClick = function (event) {
+    const onDoubleClick = (event) => {
         if (node.canMaximize()) {
             layout.maximize(node);
         }
     };
     // Start Render
-    var cm = layout.getClassName;
+    const cm = layout.getClassName;
     // tabbar inner can get shifted left via tab rename, this resets scrollleft to 0
     if (tabbarInnerRef.current !== null && tabbarInnerRef.current.scrollLeft !== 0) {
         tabbarInnerRef.current.scrollLeft = 0;
     }
-    var selectedTabNode = node.getSelectedNode();
-    var style = node._styleWithPosition();
+    const selectedTabNode = node.getSelectedNode();
+    let style = node._styleWithPosition();
     if (node.getModel().getMaximizedTabset() !== undefined && !node.isMaximized()) {
-        (0, Utils_1.hideElement)(style, node.getModel().isUseVisibility());
+        (0,_Utils__WEBPACK_IMPORTED_MODULE_8__.hideElement)(style, node.getModel().isUseVisibility());
     }
-    var tabs = [];
+    const tabs = [];
     if (node.isEnableTabStrip()) {
-        for (var i = 0; i < node.getChildren().length; i++) {
-            var child = node.getChildren()[i];
-            var isSelected = node.getSelected() === i;
-            tabs.push(React.createElement(TabButton_1.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
+        for (let i = 0; i < node.getChildren().length; i++) {
+            const child = node.getChildren()[i];
+            let isSelected = node.getSelected() === i;
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabButton__WEBPACK_IMPORTED_MODULE_4__.TabButton, { layout: layout, node: child, path: path + "/tb" + i, key: child.getId(), selected: isSelected, iconFactory: iconFactory, titleFactory: titleFactory, icons: icons }));
             if (i < node.getChildren().length - 1) {
-                tabs.push(React.createElement("div", { key: "divider" + i, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER) }));
+                tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "divider" + i, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER) }));
             }
         }
     }
-    var showHeader = node.getName() !== undefined;
-    var stickyButtons = [];
-    var buttons = [];
-    var headerButtons = [];
+    const showHeader = node.getName() !== undefined;
+    let stickyButtons = [];
+    let buttons = [];
+    let headerButtons = [];
     // allow customization of header contents and buttons
-    var renderState = { headerContent: node.getName(), stickyButtons: stickyButtons, buttons: buttons, headerButtons: headerButtons };
+    const renderState = { headerContent: node.getName(), stickyButtons, buttons, headerButtons };
     layout.customizeTabSet(node, renderState);
-    var headerContent = renderState.headerContent;
+    const headerContent = renderState.headerContent;
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
-            buttons = __spreadArray(__spreadArray([], stickyButtons, true), buttons, true);
+            buttons = [...stickyButtons, ...buttons];
         }
         else {
-            tabs.push(React.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
         }
     }
-    var toolbar;
+    let toolbar;
     if (hiddenTabs.length > 0) {
-        var overflowTitle = layout.i18nName(I18nLabel_1.I18nLabel.Overflow_Menu_Tooltip);
-        var overflowContent = void 0;
+        const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
         if (typeof icons.more === "function") {
             overflowContent = icons.more(node, hiddenTabs);
         }
         else {
-            overflowContent = (React.createElement(React.Fragment, null,
+            overflowContent = (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
                 icons.more,
-                React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.push(React.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+        buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
-        var floatTitle = layout.i18nName(I18nLabel_1.I18nLabel.Float_Tab);
-        buttons.push(React.createElement("button", { key: "float", "data-layout-path": path + "/button/float", title: floatTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
+        const floatTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Float_Tab);
+        buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "float", "data-layout-path": path + "/button/float", title: floatTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
     }
     if (node.canMaximize()) {
-        var minTitle = layout.i18nName(I18nLabel_1.I18nLabel.Restore);
-        var maxTitle = layout.i18nName(I18nLabel_1.I18nLabel.Maximize);
-        var btns = showHeader ? headerButtons : buttons;
-        btns.push(React.createElement("button", { key: "max", "data-layout-path": path + "/button/max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ?
+        const minTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Restore);
+        const maxTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Maximize);
+        const btns = showHeader ? headerButtons : buttons;
+        btns.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "max", "data-layout-path": path + "/button/max", title: node.isMaximized() ? minTitle : maxTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min")), onClick: onMaximizeToggle, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, node.isMaximized() ?
             (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
             (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize));
     }
     if (!node.isMaximized() && node.isEnableClose()) {
-        var title = layout.i18nName(I18nLabel_1.I18nLabel.Close_Tabset);
-        var btns = showHeader ? headerButtons : buttons;
-        btns.push(React.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
+        const title = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tabset);
+        const btns = showHeader ? headerButtons : buttons;
+        btns.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
     }
-    toolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, buttons));
-    var header;
-    var tabStrip;
-    var tabStripClasses = cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
+    toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, buttons));
+    let header;
+    let tabStrip;
+    let tabStripClasses = cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
     if (node.getClassNameTabStrip() !== undefined) {
         tabStripClasses += " " + node.getClassNameTabStrip();
     }
-    tabStripClasses += " " + Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER_ + node.getTabLocation();
+    tabStripClasses += " " + _Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER_ + node.getTabLocation();
     if (node.isActive() && !showHeader) {
-        tabStripClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_SELECTED);
+        tabStripClasses += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_SELECTED);
     }
     if (node.isMaximized() && !showHeader) {
-        tabStripClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
+        tabStripClasses += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
     }
     if (showHeader) {
-        var headerToolbar = (React.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: function (e) { e.preventDefault(); } }, headerButtons));
-        var tabHeaderClasses = cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_HEADER);
+        const headerToolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, headerButtons));
+        let tabHeaderClasses = cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_HEADER);
         if (node.isActive()) {
-            tabHeaderClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_SELECTED);
+            tabHeaderClasses += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_SELECTED);
         }
         if (node.isMaximized()) {
-            tabHeaderClasses += " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
+            tabHeaderClasses += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
         }
         if (node.getClassNameHeader() !== undefined) {
             tabHeaderClasses += " " + node.getClassNameHeader();
         }
-        header = (React.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, "data-layout-path": path + "/header", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
-            React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT) }, headerContent),
+        header = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: tabHeaderClasses, style: { height: node.getHeaderHeight() + "px" }, "data-layout-path": path + "/header", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_HEADER_CONTENT) }, headerContent),
             headerToolbar));
     }
-    var tabStripStyle = { height: node.getTabStripHeight() + "px" };
-    tabStrip = (React.createElement("div", { className: tabStripClasses, style: tabStripStyle, "data-layout-path": path + "/tabstrip", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
-        React.createElement("div", { ref: tabbarInnerRef, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
-            React.createElement("div", { style: { left: position }, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
+    const tabStripStyle = { height: node.getTabStripHeight() + "px" };
+    tabStrip = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: tabStripClasses, style: tabStripStyle, "data-layout-path": path + "/tabstrip", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: tabbarInnerRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { left: position }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
         toolbar));
     style = layout.styleFont(style);
     var placeHolder = undefined;
     if (node.getChildren().length === 0) {
-        var placeHolderCallback = layout.getTabSetPlaceHolderCallback();
+        const placeHolderCallback = layout.getTabSetPlaceHolderCallback();
         if (placeHolderCallback) {
             placeHolder = placeHolderCallback(node);
         }
     }
-    var center = React.createElement("div", { className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET_CONTENT) }, placeHolder);
+    const center = react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_CONTENT) }, placeHolder);
     var content;
     if (node.getTabLocation() === "top") {
-        content = React.createElement(React.Fragment, null,
+        content = react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
             header,
             tabStrip,
             center);
     }
     else {
-        content = React.createElement(React.Fragment, null,
+        content = react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
             header,
             center,
             tabStrip);
     }
-    return (React.createElement("div", { ref: selfRef, dir: "ltr", "data-layout-path": path, style: style, className: cm(Types_1.CLASSES.FLEXLAYOUT__TABSET), onWheel: onMouseWheel }, content));
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: selfRef, dir: "ltr", "data-layout-path": path, style: style, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET), onWheel: onMouseWheel }, content));
 };
-exports.TabSet = TabSet;
 
 
 /***/ }),
@@ -43782,23 +42650,28 @@ exports.TabSet = TabSet;
 /*!****************************!*\
   !*** ./src/view/Utils.tsx ***!
   \****************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "getRenderStateEx": () => (/* binding */ getRenderStateEx),
+/* harmony export */   "hideElement": () => (/* binding */ hideElement),
+/* harmony export */   "isAuxMouseEvent": () => (/* binding */ isAuxMouseEvent)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isAuxMouseEvent = exports.hideElement = exports.getRenderStateEx = void 0;
-var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /** @internal */
 function getRenderStateEx(layout, node, iconFactory, titleFactory) {
-    var leadingContent = iconFactory ? iconFactory(node) : undefined;
-    var titleContent = node.getName();
-    var name = node.getName();
+    let leadingContent = iconFactory ? iconFactory(node) : undefined;
+    let titleContent = node.getName();
+    let name = node.getName();
     function isTitleObject(obj) {
         return obj.titleContent !== undefined;
     }
     if (titleFactory !== undefined) {
-        var titleObj = titleFactory(node);
+        const titleObj = titleFactory(node);
         if (titleObj !== undefined) {
             if (typeof titleObj === "string") {
                 titleContent = titleObj;
@@ -43814,16 +42687,15 @@ function getRenderStateEx(layout, node, iconFactory, titleFactory) {
         }
     }
     if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = React.createElement("img", { style: { width: "1em", height: "1em" }, src: node.getIcon(), alt: "leadingContent" });
+        leadingContent = react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { style: { width: "1em", height: "1em" }, src: node.getIcon(), alt: "leadingContent" });
     }
-    var buttons = [];
+    let buttons = [];
     // allow customization of leading contents (icon) and contents
-    var renderState = { leading: leadingContent, content: titleContent, name: name, buttons: buttons };
+    const renderState = { leading: leadingContent, content: titleContent, name, buttons };
     layout.customizeTab(node, renderState);
     node._setRenderedName(renderState.name);
     return renderState;
 }
-exports.getRenderStateEx = getRenderStateEx;
 /** @internal */
 function hideElement(style, useVisibility) {
     if (useVisibility) {
@@ -43833,10 +42705,9 @@ function hideElement(style, useVisibility) {
         style.display = "none";
     }
 }
-exports.hideElement = hideElement;
 /** @internal */
 function isAuxMouseEvent(event) {
-    var auxEvent = false;
+    let auxEvent = false;
     if (event.nativeEvent instanceof MouseEvent) {
         if (event.nativeEvent.button !== 0 || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
             auxEvent = true;
@@ -43844,7 +42715,6 @@ function isAuxMouseEvent(event) {
     }
     return auxEvent;
 }
-exports.isAuxMouseEvent = isAuxMouseEvent;
 
 
 /***/ })
@@ -43869,7 +42739,7 @@ exports.isAuxMouseEvent = isAuxMouseEvent;
 /******/ 		};
 /******/ 	
 /******/ 		// Execute the module function
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
 /******/ 	
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
@@ -43941,12 +42811,471 @@ exports.isAuxMouseEvent = isAuxMouseEvent;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __webpack_require__("./examples/demo/App.tsx");
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+/*!*******************************!*\
+  !*** ./examples/demo/App.tsx ***!
+  \*******************************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var prismjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prismjs */ "./node_modules/prismjs/prism.js");
+/* harmony import */ var prismjs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prismjs__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
+/* harmony import */ var _src_index__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../src/index */ "./src/index.ts");
+/* harmony import */ var _NewFeatures__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./NewFeatures */ "./examples/demo/NewFeatures.tsx");
+/* harmony import */ var _PopupMenu__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./PopupMenu */ "./examples/demo/PopupMenu.tsx");
+/* harmony import */ var _TabStorage__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./TabStorage */ "./examples/demo/TabStorage.tsx");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./Utils */ "./examples/demo/Utils.tsx");
+/* harmony import */ var prismjs_themes_prism_coy_css__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! prismjs/themes/prism-coy.css */ "./node_modules/prismjs/themes/prism-coy.css");
+
+
+
+
+
+
+
+
+
+var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
+const ContextExample = react__WEBPACK_IMPORTED_MODULE_0__.createContext('');
+class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
+    constructor(props) {
+        super(props);
+        this.nextGridIndex = 1;
+        this.showingPopupMenu = false;
+        this.htmlTimer = null;
+        this.onModelChange = () => {
+            if (this.htmlTimer) {
+                clearTimeout(this.htmlTimer);
+            }
+            this.htmlTimer = setTimeout(() => {
+                const jsonText = JSON.stringify(this.state.model.toJson(), null, "\t");
+                const html = prismjs__WEBPACK_IMPORTED_MODULE_1__.highlight(jsonText, prismjs__WEBPACK_IMPORTED_MODULE_1__.languages.javascript, 'javascript');
+                this.setState({ json: html });
+                this.htmlTimer = null;
+            }, 500);
+        };
+        this.load = (jsonText) => {
+            let json = JSON.parse(jsonText);
+            let model = _src_index__WEBPACK_IMPORTED_MODULE_3__.Model.fromJson(json);
+            // model.setOnCreateTabSet((tabNode?: TabNode) => {
+            //     console.log("onCreateTabSet " + tabNode);
+            //     // return { type: "tabset", name: "Header Text" };
+            //     return { type: "tabset" };
+            // });
+            // you can control where nodes can be dropped
+            //model.setOnAllowDrop(this.allowDrop);
+            const html = prismjs__WEBPACK_IMPORTED_MODULE_1__.highlight(jsonText, prismjs__WEBPACK_IMPORTED_MODULE_1__.languages.javascript, 'javascript');
+            this.setState({ layoutFile: this.loadingLayoutName, model: model, json: html });
+        };
+        this.allowDrop = (dragNode, dropInfo) => {
+            let dropNode = dropInfo.node;
+            // prevent non-border tabs dropping into borders
+            if (dropNode.getType() === "border" && (dragNode.getParent() == null || dragNode.getParent().getType() != "border"))
+                return false;
+            // prevent border tabs dropping into main layout
+            if (dropNode.getType() !== "border" && (dragNode.getParent() != null && dragNode.getParent().getType() == "border"))
+                return false;
+            return true;
+        };
+        this.error = (reason) => {
+            alert("Error loading json config file: " + this.loadingLayoutName + "\n" + reason);
+        };
+        this.onAddDragMouseDown = (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            (this.layoutRef.current).addTabWithDragAndDrop(undefined, {
+                component: "grid",
+                icon: "images/article.svg",
+                name: "Grid " + this.nextGridIndex++
+            }, this.onAdded);
+            // this.setState({ adding: true });
+        };
+        this.onAddActiveClick = (event) => {
+            (this.layoutRef.current).addTabToActiveTabSet({
+                component: "grid",
+                icon: "images/article.svg",
+                name: "Grid " + this.nextGridIndex++
+            });
+        };
+        this.onAddFromTabSetButton = (node) => {
+            (this.layoutRef.current).addTabToTabSet(node.getId(), {
+                component: "grid",
+                name: "Grid " + this.nextGridIndex++
+            });
+        };
+        this.onAddIndirectClick = (event) => {
+            (this.layoutRef.current).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
+                component: "grid",
+                name: "Grid " + this.nextGridIndex++
+            }, this.onAdded);
+            this.setState({ adding: true });
+        };
+        this.onRealtimeResize = (event) => {
+            this.setState({
+                realtimeResize: event.target.checked
+            });
+        };
+        this.onRenderDragRect = (content, node, json) => {
+            if (this.state.layoutFile === "newfeatures") {
+                return (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
+                    content,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { whiteSpace: "pre" } },
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+                        "This is a customized",
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("br", null),
+                        "drag rectangle")));
+            }
+            else {
+                return undefined; // use default rendering
+            }
+        };
+        this.onContextMenu = (node, event) => {
+            if (!this.showingPopupMenu) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log(node, event);
+                (0,_PopupMenu__WEBPACK_IMPORTED_MODULE_5__.showPopup)(node instanceof _src_index__WEBPACK_IMPORTED_MODULE_3__.TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(), (this.layoutRef.current).getRootDiv(), event.clientX, event.clientY, ["Option 1", "Option 2"], (item) => {
+                    console.log("selected: " + item);
+                    this.showingPopupMenu = false;
+                });
+                this.showingPopupMenu = true;
+            }
+        };
+        this.onAuxMouseClick = (node, event) => {
+            console.log(node, event);
+        };
+        this.onRenderFloatingTabPlaceholder = (dockPopout, showPopout) => {
+            return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: _src_index__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_FLOATING_INNER },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, "Custom renderer for floating tab placeholder"),
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", { href: "#", onClick: showPopout }, "show the tab")),
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("a", { href: "#", onClick: dockPopout }, "dock the tab"))));
+        };
+        this.onExternalDrag = (e) => {
+            // console.log("onExternaldrag ", e.dataTransfer.types);
+            // Check for supported content type
+            const validTypes = ["text/uri-list", "text/html", "text/plain"];
+            if (e.dataTransfer.types.find(t => validTypes.indexOf(t) !== -1) === undefined)
+                return;
+            // Set dropEffect (icon)
+            e.dataTransfer.dropEffect = "link";
+            return {
+                dragText: "Drag To New Tab",
+                json: {
+                    type: "tab",
+                    component: "multitype"
+                },
+                onDrop: (node, event) => {
+                    if (!node || !event)
+                        return; // aborted drag
+                    if (node instanceof _src_index__WEBPACK_IMPORTED_MODULE_3__.TabNode && event instanceof DragEvent) {
+                        const dragEvent = event;
+                        if (dragEvent.dataTransfer) {
+                            if (dragEvent.dataTransfer.types.indexOf("text/uri-list") !== -1) {
+                                const data = dragEvent.dataTransfer.getData("text/uri-list");
+                                this.state.model.doAction(_src_index__WEBPACK_IMPORTED_MODULE_3__.Actions.updateNodeAttributes(node.getId(), { name: "Url", config: { data, type: "url" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/html") !== -1) {
+                                const data = dragEvent.dataTransfer.getData("text/html");
+                                this.state.model.doAction(_src_index__WEBPACK_IMPORTED_MODULE_3__.Actions.updateNodeAttributes(node.getId(), { name: "Html", config: { data, type: "html" } }));
+                            }
+                            else if (dragEvent.dataTransfer.types.indexOf("text/plain") !== -1) {
+                                const data = dragEvent.dataTransfer.getData("text/plain");
+                                this.state.model.doAction(_src_index__WEBPACK_IMPORTED_MODULE_3__.Actions.updateNodeAttributes(node.getId(), { name: "Text", config: { data, type: "text" } }));
+                            }
+                        }
+                    }
+                }
+            };
+        };
+        this.onTabDrag = (dragging, over, x, y, location, refresh) => {
+            const tabStorageImpl = over.getExtraData().tabStorage_onTabDrag;
+            if (tabStorageImpl) {
+                return tabStorageImpl(dragging, over, x, y, location, refresh);
+            }
+            return undefined;
+        };
+        this.onShowLayoutClick = (event) => {
+            console.log(JSON.stringify(this.state.model.toJson(), null, "\t"));
+        };
+        this.onAdded = () => {
+            this.setState({ adding: false });
+        };
+        this.onTableClick = (node, event) => {
+            // console.log("tab: \n" + node._toAttributeString());
+            // console.log("tabset: \n" + node.getParent()!._toAttributeString());
+            // const n = this.state.model?.getNodeById("#750f823f-8eda-44b7-a887-f8b287ace2c8");
+            // (this.refs.layout as Layout).moveTabWithDragAndDrop(n as TabSetNode, "move tabset");
+            // (this.refs.layout as Layout).moveTabWithDragAndDrop(node as TabNode);
+        };
+        this.onAction = (action) => {
+            return action;
+        };
+        this.factory = (node) => {
+            // log lifecycle events
+            //node.setEventListener("resize", function(p){console.log("resize", node);});
+            //node.setEventListener("visibility", function(p){console.log("visibility", node);});
+            //node.setEventListener("close", function(p){console.log("close", node);});
+            var component = node.getComponent();
+            if (component === "json") {
+                return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("pre", { style: { tabSize: "20px" }, dangerouslySetInnerHTML: { __html: this.state.json } }));
+            }
+            else if (component === "grid") {
+                if (node.getExtraData().data == null) {
+                    // create data in node extra data first time accessed
+                    node.getExtraData().data = this.makeFakeData();
+                }
+                return react__WEBPACK_IMPORTED_MODULE_0__.createElement(SimpleTable, { fields: fields, onClick: this.onTableClick.bind(this, node), data: node.getExtraData().data });
+            }
+            else if (component === "sub") {
+                var model = node.getExtraData().model;
+                if (model == null) {
+                    node.getExtraData().model = _src_index__WEBPACK_IMPORTED_MODULE_3__.Model.fromJson(node.getConfig().model);
+                    model = node.getExtraData().model;
+                    // save submodel on save event
+                    node.setEventListener("save", (p) => {
+                        this.state.model.doAction(_src_index__WEBPACK_IMPORTED_MODULE_3__.Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                        //  node.getConfig().model = node.getExtraData().model.toJson();
+                    });
+                }
+                return react__WEBPACK_IMPORTED_MODULE_0__.createElement(_src_index__WEBPACK_IMPORTED_MODULE_3__.Layout, { model: model, factory: this.factory });
+            }
+            else if (component === "text") {
+                try {
+                    return react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { dangerouslySetInnerHTML: { __html: node.getConfig().text } });
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }
+            else if (component === "newfeatures") {
+                return react__WEBPACK_IMPORTED_MODULE_0__.createElement(_NewFeatures__WEBPACK_IMPORTED_MODULE_4__.NewFeatures, null);
+            }
+            else if (component === "multitype") {
+                try {
+                    const config = node.getConfig();
+                    if (config.type === "url") {
+                        return react__WEBPACK_IMPORTED_MODULE_0__.createElement("iframe", { title: node.getId(), src: config.data, style: { display: "block", border: "none", boxSizing: "border-box" }, width: "100%", height: "100%" });
+                    }
+                    else if (config.type === "html") {
+                        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { dangerouslySetInnerHTML: { __html: config.data } }));
+                    }
+                    else if (config.type === "text") {
+                        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("textarea", { style: { position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }, defaultValue: config.data }));
+                    }
+                }
+                catch (e) {
+                    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, String(e)));
+                }
+            }
+            else if (component === "tabstorage") {
+                return react__WEBPACK_IMPORTED_MODULE_0__.createElement(_TabStorage__WEBPACK_IMPORTED_MODULE_6__.TabStorage, { tab: node, layout: this.layoutRef.current });
+            }
+            return null;
+        };
+        this.titleFactory = (node) => {
+            if (node.getId() === "custom-tab") {
+                // return "(Added by titleFactory) " + node.getName();
+                return {
+                    titleContent: react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null,
+                        "(Added by titleFactory) ",
+                        node.getName()),
+                    name: "the name for custom tab"
+                };
+            }
+            return;
+        };
+        this.iconFactory = (node) => {
+            if (node.getId() === "custom-tab") {
+                return react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null,
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", { style: { marginRight: 3 } }, ":)"));
+            }
+            return;
+        };
+        this.onSelectLayout = (event) => {
+            var target = event.target;
+            this.loadLayout(target.value);
+        };
+        this.onReloadFromFile = (event) => {
+            this.loadLayout(this.state.layoutFile, true);
+        };
+        this.onThemeChange = (event) => {
+            var target = event.target;
+            let flexlayout_stylesheet = window.document.getElementById("flexlayout-stylesheet");
+            let index = flexlayout_stylesheet.href.lastIndexOf("/");
+            let newAddress = flexlayout_stylesheet.href.substr(0, index);
+            flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
+            let page_stylesheet = window.document.getElementById("page-stylesheet");
+            page_stylesheet.setAttribute("href", target.value + ".css");
+            this.forceUpdate();
+        };
+        this.onSizeChange = (event) => {
+            var target = event.target;
+            this.setState({ fontSize: target.value });
+        };
+        this.onRenderTab = (node, renderValues) => {
+            // renderValues.content = (<InnerComponent/>);
+            // renderValues.content += " *";
+            // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
+            // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+            // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+        };
+        this.onRenderTabSet = (node, renderValues) => {
+            if (this.state.layoutFile === "default") {
+                //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
+                //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+                renderValues.stickyButtons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: () => this.onAddFromTabSetButton(node) }));
+            }
+        };
+        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
+        this.layoutRef = react__WEBPACK_IMPORTED_MODULE_0__.createRef();
+        // save layout when unloading page
+        window.onbeforeunload = (event) => {
+            this.save();
+        };
+    }
+    preventIOSScrollingWhenDragging(e) {
+        if (_src_index__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.isActive()) {
+            e.preventDefault();
+        }
+    }
+    componentDidMount() {
+        this.loadLayout("default", false);
+        document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
+        // use to generate json typescript interfaces 
+        // Model.toTypescriptInterfaces();
+    }
+    save() {
+        var jsonStr = JSON.stringify(this.state.model.toJson(), null, "\t");
+        localStorage.setItem(this.state.layoutFile, jsonStr);
+    }
+    loadLayout(layoutName, reload) {
+        if (this.state.layoutFile !== null) {
+            this.save();
+        }
+        this.loadingLayoutName = layoutName;
+        let loaded = false;
+        if (!reload) {
+            var json = localStorage.getItem(layoutName);
+            if (json != null) {
+                this.load(json);
+                loaded = true;
+            }
+        }
+        if (!loaded) {
+            _Utils__WEBPACK_IMPORTED_MODULE_7__.Utils.downloadFile("layouts/" + layoutName + ".layout", this.load, this.error);
+        }
+    }
+    onTabSetPlaceHolder(node) {
+        return react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, "Drag tabs to this area");
+    }
+    render() {
+        let contents = "loading ...";
+        if (this.state.model !== null) {
+            contents = react__WEBPACK_IMPORTED_MODULE_0__.createElement(_src_index__WEBPACK_IMPORTED_MODULE_3__.Layout, { ref: this.layoutRef, model: this.state.model, factory: this.factory, font: { size: this.state.fontSize }, onAction: this.onAction, onModelChange: this.onModelChange, titleFactory: this.titleFactory, iconFactory: this.iconFactory, onRenderTab: this.onRenderTab, onRenderTabSet: this.onRenderTabSet, onRenderDragRect: this.onRenderDragRect, onRenderFloatingTabPlaceholder: this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined, onExternalDrag: this.onExternalDrag, realtimeResize: this.state.realtimeResize, onTabDrag: this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined, onContextMenu: this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined, onAuxMouseClick: this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined, 
+                // icons={{
+                //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
+                //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
+                //     }
+                // }}
+                onTabSetPlaceHolder: this.onTabSetPlaceHolder });
+        }
+        return (react__WEBPACK_IMPORTED_MODULE_0__.createElement(react__WEBPACK_IMPORTED_MODULE_0__.StrictMode, null,
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement(ContextExample.Provider, { value: "from context" },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "app" },
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "toolbar", dir: "ltr" },
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("select", { className: "toolbar_control", onChange: this.onSelectLayout },
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "default" }, "Default"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "newfeatures" }, "New Features"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "simple" }, "Simple"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "sub" }, "SubLayout"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "complex" }, "Complex"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "headers" }, "Headers")),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { className: "toolbar_control", onClick: this.onReloadFromFile, style: { marginLeft: 5 } }, "Reload"),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { flexGrow: 1 } }),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("span", { style: { fontSize: "14px" } }, "Realtime resize"),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("input", { name: "realtimeResize", type: "checkbox", checked: this.state.realtimeResize, onChange: this.onRealtimeResize }),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, onChange: this.onSizeChange, defaultValue: "medium" },
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "xx-small" }, "Size xx-small"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "x-small" }, "Size x-small"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "small" }, "Size small"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "medium" }, "Size medium"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "large" }, "Size large"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "8px" }, "Size 8px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "10px" }, "Size 10px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "12px" }, "Size 12px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "14px" }, "Size 14px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "16px" }, "Size 16px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "18px" }, "Size 18px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "20px" }, "Size 20px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "25px" }, "Size 25px"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "30px" }, "Size 30px")),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("select", { className: "toolbar_control", style: { marginLeft: 5 }, defaultValue: "light", onChange: this.onThemeChange },
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "underline" }, "Underline"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "light" }, "Light"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "gray" }, "Gray"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "dark" }, "Dark")),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { className: "toolbar_control", style: { marginLeft: 5 }, onClick: this.onShowLayoutClick }, "Show Layout JSON in Console"),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { className: "toolbar_control drag-from", disabled: this.state.adding, style: { height: "30px", marginLeft: 5, border: "none", outline: "none" }, title: "Add using Layout.addTabWithDragAndDrop", onMouseDown: this.onAddDragMouseDown, onTouchStart: this.onAddDragMouseDown }, "Add Drag"),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabToActiveTabSet", onClick: this.onAddActiveClick }, "Add Active"),
+                        react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { className: "toolbar_control", disabled: this.state.adding, style: { marginLeft: 5 }, title: "Add using Layout.addTabWithDragAndDropIndirect", onClick: this.onAddIndirectClick }, "Add Indirect")),
+                    react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: "contents" }, contents)))));
+    }
+    makeFakeData() {
+        var data = [];
+        var r = Math.random() * 50;
+        for (var i = 0; i < r; i++) {
+            var rec = {};
+            rec.Name = this.randomString(5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            for (var j = 1; j < fields.length; j++) {
+                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
+            }
+            data.push(rec);
+        }
+        return data;
+    }
+    randomString(len, chars) {
+        var a = [];
+        for (var i = 0; i < len; i++) {
+            a.push(chars[Math.floor(Math.random() * chars.length)]);
+        }
+        return a.join("");
+    }
+}
+class SimpleTable extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
+    shouldComponentUpdate() {
+        return true;
+    }
+    render() {
+        // if (Math.random()>0.8) throw Error("oppps I crashed");
+        var headercells = this.props.fields.map(function (field) {
+            return react__WEBPACK_IMPORTED_MODULE_0__.createElement("th", { key: field }, field);
+        });
+        var rows = [];
+        for (var i = 0; i < this.props.data.length; i++) {
+            var row = this.props.fields.map((field) => react__WEBPACK_IMPORTED_MODULE_0__.createElement("td", { key: field }, this.props.data[i][field]));
+            rows.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", { key: i }, row));
+        }
+        return react__WEBPACK_IMPORTED_MODULE_0__.createElement("table", { className: "simple_table", onClick: this.props.onClick },
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("tbody", null,
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("tr", null, headercells),
+                rows));
+    }
+}
+// function InnerComponent() {
+//     const value = React.useContext(ContextExample);
+//     return <span>{value}</span>;
+// }
+const root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_2__.createRoot)(document.getElementById("container"));
+root.render(react__WEBPACK_IMPORTED_MODULE_0__.createElement(App, null));
+
+})();
+
 /******/ })()
 ;
 //# sourceMappingURL=demo.js.map
