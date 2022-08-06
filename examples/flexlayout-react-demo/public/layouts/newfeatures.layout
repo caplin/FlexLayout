@@ -1,0 +1,104 @@
+{
+	"global": {
+		"tabEnableFloat": true,
+        "tabSetMinHeight":100,
+        "tabSetMinWidth":100,
+        "borderMinSize":100,
+        "borderEnableAutoHide": true,
+        "tabSetEnableClose":true,
+        "splitterSize":1,
+        "splitterExtra":4
+	},
+	"layout": {
+		"type": "row",
+		"children": [
+			{
+				"type": "tabset",
+				"weight": 12.5,
+				"active": true,
+				"children": [
+					{
+						"type": "tab",
+						"name": "New",
+                        "helpText": "this tab has helpText defined",
+						"component": "newfeatures"
+					},
+					{
+						"type": "tab",
+						"name": "Two",
+						"component": "grid"
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"weight": 25,
+				"children": [
+					{
+						"type": "tab",
+                        "borderWidth":500,
+						"name": "Tab Storage",
+						"component": "tabstorage"
+					}
+				]
+			}
+		]
+	},
+	"borders": [
+		{
+		    "type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Output",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Terminal",
+					"component": "grid"
+				},
+                {
+                    "type": "tab",
+                    "name": "Layout JSON",
+                    "component": "json"
+                }
+			]
+		},
+		 {
+		    "type": "border",
+		 	"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Navigation",
+					"component": "grid"
+				},
+                {
+                    "type": "tab",
+					"enableClose":false,
+                    "borderWidth":500,
+                    "borderHeight":500,
+                    "name": "With border sizes",
+                    "component": "grid"
+                }
+			]
+		},
+		{
+		    "type": "border",
+		 	"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Options",
+					"component": "grid"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,104 @@
+{
+	"global": {
+   		"tabEnableFloat": true,
+        "tabSetMinHeight":100,
+        "tabSetMinWidth":100,
+        "borderMinSize":100
+	},
+	"layout": {
+		"type": "row",
+		"children": [
+			{
+				"type": "tabset",
+				"weight": 12.5,
+				"active": true,
+				"children": [
+					{
+						"type": "tab",
+						"name": "One",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"name": "Two",
+						"component": "grid"
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"weight": 25,
+				"children": [
+					{
+						"type": "tab",
+						"name": "Three",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"name": "Wikipedia",
+						"component": "multitype",
+						"config": {
+                            "type":"url",
+							"data": "https://en.wikipedia.org/wiki/Main_Page"
+						}
+					}
+				]
+			}
+		]
+	},
+	"borders": [
+		{
+		    "type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Output",
+					"component": "grid",
+                    "icon":"images/bar_chart.svg"
+				},
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Terminal",
+					"component": "grid",
+                    "icon":"images/terminal.svg"
+				},
+                {
+                    "type": "tab",
+                    "name": "Layout JSON",
+                    "component": "json"
+                }
+			]
+		},
+		 {
+		    "type": "border",
+		 	"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Navigation",
+                    "altName": "The Navigation Tab",
+					"component": "grid",
+                    "icon":"images/folder.svg"
+				}
+			]
+		},
+		{
+		    "type": "border",
+		 	"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"enableClose":false,
+					"name": "Options",
+					"component": "grid",
+                    "icon":"images/settings.svg"
+				}
+			]
+		}
+	]
+}
