@@ -1,3 +1,6 @@
+0.7.5
+Fix for #340 - error dragging a tabset into an empty tabset
+
 0.7.4
 Fixed popout windows when using </React.StrictMode>
 Output now targets ES6
