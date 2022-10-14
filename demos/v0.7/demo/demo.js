@@ -40162,6 +40162,9 @@ class TabSetNode extends _Node__WEBPACK_IMPORTED_MODULE_8__.Node {
                     // console.log("added child at : " + insertPos);
                     insertPos++;
                 }
+                if (this.getSelected() === -1 && this._children.length > 0) {
+                    this._setSelected(0);
+                }
             }
             this._model._setActiveTabset(this);
         }
