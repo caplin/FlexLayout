@@ -422,6 +422,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
                     // console.log("added child at : " + insertPos);
                     insertPos++;
                 }
+                if (this.getSelected() === -1 && this._children.length > 0) {
+                    this._setSelected(0);
+                }
             }
             this._model._setActiveTabset(this);
         } else {
