@@ -62,6 +62,7 @@ export const Tab = (props: ITabProps) => {
     }
 
     let className = cm(CLASSES.FLEXLAYOUT__TAB);
+    if (node.getClassName()) className += " " + node.getClassName()
     if (parentNode instanceof BorderNode) {
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER);
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
