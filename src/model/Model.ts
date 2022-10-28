@@ -1,4 +1,3 @@
-import { v4 as getUUID } from "uuid";
 import { Attribute } from "../Attribute";
 import { AttributeDefinitions } from "../AttributeDefinitions";
 import { DockLocation } from "../DockLocation";
@@ -510,7 +509,7 @@ export class Model {
 
     /** @internal */
     _nextUniqueId() {
-        return '#' + getUUID();
+        return '#' + crypto.randomUUID  ();
     }
 
     /** @internal */
