@@ -60,7 +60,7 @@ export interface ILayoutProps {
         tabSetNode: TabSetNode | BorderNode,
         renderValues: ITabSetRenderValues, // change the values in this object as required
     ) => void;
-    onModelChange?: (model: Model) => void;
+    onModelChange?: (model: Model, action: Action) => void;
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
         dragText: string,
         json: any,
@@ -316,10 +316,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @internal */
-    onModelChange = () => {
+    onModelChange = (action: Action) => {
         this.forceUpdate();
         if (this.props.onModelChange) {
-            this.props.onModelChange(this.props.model);
+            this.props.onModelChange(this.props.model, action);
         }
     };
 
