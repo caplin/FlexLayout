@@ -1,3 +1,7 @@
+0.7.6
+Remove dependency on uuid package
+Add action arg to onModelChange callback
+
 0.7.5
 Fix for #340 - error dragging a tabset into an empty tabset
 

@@ -16,7 +16,7 @@ Try it now using [JSFiddle](https://jsfiddle.net/10kmLzvu/)
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-FlexLayout's only dependencies are React and uuid.
+FlexLayout's only dependency is React.
 
 Features:
 *	splitters
@@ -37,6 +37,7 @@ Features:
 *   headed tabsets
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
+*   component state is preserved when tabs are moved
 *	typescript type declarations included
 
 ## Installation
