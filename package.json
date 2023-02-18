@@ -49,12 +49,13 @@
         "@types/prismjs": "^1.26.0",
         "@types/react": "^18.0.5",
         "@types/react-dom": "^18.0.1",
-        "@types/uuid": "^8.3.3",
         "css-loader": "^6.7.1",
         "cypress": "^9.5.4",
         "html-webpack-plugin": "^5.5.0",
         "prettier": "^2.6.2",
         "prismjs": "^1.28.0",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
         "react-scripts": "5.0.1",
         "sass": "^1.50.0",
         "source-map-loader": "^3.0.0",
@@ -66,7 +67,5 @@
         "webpack-cli": "^4.9.1",
         "webpack-dev-server": "^4.8.1"
     },
-    "dependencies": {
-        "uuid": "^8.3.2"
-    }
+    "dependencies": {}
 }
