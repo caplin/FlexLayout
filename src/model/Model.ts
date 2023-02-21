@@ -243,7 +243,7 @@ export class Model {
      * Gets a node by its id
      * @param id the id to find
      */
-    getNodeById(id: string) {
+    getNodeById(id: string): Node | undefined {
         return this._idMap[id];
     }
 
