@@ -1,3 +1,6 @@
+0.7.7
+Fix for #379 - uuid could only be generated in secure contexts
+
 0.7.6
 Remove dependency on uuid package
 Add action arg to onModelChange callback
