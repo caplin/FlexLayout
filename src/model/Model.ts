@@ -15,7 +15,7 @@ import { Node } from "./Node";
 import { RowNode } from "./RowNode";
 import { TabNode } from "./TabNode";
 import { TabSetNode } from "./TabSetNode";
-import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat } from "./Utils";
+import { adjustSelectedIndexAfterDock, adjustSelectedIndexAfterFloat, randomUUID } from "./Utils";
 
 /** @internal */
 export interface ILayoutMetrics {
@@ -509,7 +509,7 @@ export class Model {
 
     /** @internal */
     _nextUniqueId() {
-        return '#' + crypto.randomUUID  ();
+        return '#' + randomUUID();
     }
 
     /** @internal */
