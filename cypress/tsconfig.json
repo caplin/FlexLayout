@@ -9,10 +9,12 @@
         "alwaysStrict": false,
         "forceConsistentCasingInFileNames": false,
         "noImplicitReturns": false,
+        "noImplicitAny": false,
         "strict": false,
         "noUnusedLocals": false,
         "jsx": "react",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "moduleResolution":"node"
     },
     "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }
