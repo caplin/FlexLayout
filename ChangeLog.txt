@@ -1,3 +1,8 @@
+0.7.8
+Fix popout size of tab with individual border size
+Hide edge handles when disabled
+Update version of Cypress
+
 0.7.7
 Fix for #379 - uuid could only be generated in secure contexts
 
