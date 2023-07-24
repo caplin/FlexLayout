@@ -595,6 +595,15 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                         let path = borderPath + "/t" + tabCount++;
                         if (this.supportsPopout && child.isFloating()) {
                             const rect = this._getScreenRect(child);
+
+                            const tabBorderWidth= child._getAttr("borderWidth");
+                            const tabBorderHeight= child._getAttr("borderHeight");
+                            if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
+                                rect.width = tabBorderWidth;
+                            } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
+                                rect.height = tabBorderHeight;
+                            }
+
                             floatingWindows.push(
                                 <FloatingWindow
                                     key={child.getId()}
@@ -921,7 +930,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
         // add edge indicators
         if (this.props.model.getMaximizedTabset() === undefined) {
-            this.setState({ showEdges: true });
+            this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
         }
 
         if (this.dragNode !== undefined && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {
