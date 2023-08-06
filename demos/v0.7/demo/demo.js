@@ -36580,6 +36580,9 @@ class DragDrop {
         if (event && this._lastEvent && this._lastEvent.type.startsWith("touch") && event.type.startsWith("mouse") && event.timeStamp - this._lastEvent.timeStamp < 500) {
             return;
         }
+        if (this._dragging) {
+            return;
+        }
         this._lastEvent = event;
         if (currentDocument) {
             this._document = currentDocument;
@@ -36595,9 +36598,6 @@ class DragDrop {
         }
         const posEvent = this._getLocationEvent(event);
         this.addGlass(fDragCancel);
-        if (this._dragging) {
-            console.warn("this._dragging true on startDrag should never happen");
-        }
         if (event) {
             this._startX = posEvent.clientX;
             this._startY = posEvent.clientY;
@@ -40480,6 +40480,7 @@ const FloatingWindow = (props) => {
         if (timerId.current) {
             clearTimeout(timerId.current);
         }
+        let isMounted = true;
         const r = rect;
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
@@ -40517,18 +40518,20 @@ const FloatingWindow = (props) => {
                 }
             });
             popoutWindow.current.addEventListener("load", () => {
-                const popoutDocument = popoutWindow.current.document;
-                popoutDocument.title = title;
-                const popoutContent = popoutDocument.createElement("div");
-                popoutContent.className = _Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
-                popoutDocument.body.appendChild(popoutContent);
-                copyStyles(popoutDocument, styles).then(() => {
-                    setContent(popoutContent);
-                });
-                // listen for popout unloading (needs to be after load for safari)
-                popoutWindow.current.addEventListener("beforeunload", () => {
-                    onCloseWindow(id);
-                });
+                if (isMounted) {
+                    const popoutDocument = popoutWindow.current.document;
+                    popoutDocument.title = title;
+                    const popoutContent = popoutDocument.createElement("div");
+                    popoutContent.className = _Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
+                    popoutDocument.body.appendChild(popoutContent);
+                    copyStyles(popoutDocument, styles).then(() => {
+                        setContent(popoutContent);
+                    });
+                    // listen for popout unloading (needs to be after load for safari)
+                    popoutWindow.current.addEventListener("beforeunload", () => {
+                        onCloseWindow(id);
+                    });
+                }
             });
         }
         else {
@@ -40536,6 +40539,7 @@ const FloatingWindow = (props) => {
             onCloseWindow(id);
         }
         return () => {
+            isMounted = false;
             // delay so refresh will close window
             timerId.current = setTimeout(() => {
                 if (popoutWindow.current) {
