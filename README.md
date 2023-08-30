@@ -438,6 +438,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | name | null | named tabsets will show a header bar above the tabs |
 | config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
+| active | false | whether tabset is currently active; this attribute can only be used in the initial configuration, to change the active tabset you should use the `setActiveTabset` action on the model |
 | maximized | false | whether tabset is currently maximized to fill view |
 | enableClose | false | allow user to close tabset via a close button |
 | id | auto generated | |
