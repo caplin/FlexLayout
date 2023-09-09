@@ -30,7 +30,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
     const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
 
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
@@ -42,7 +42,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         layout.showContextMenu(border, event);
     };
 
-    const onInterceptMouseDown = (event: React.MouseEvent<HTMLDivElement, MouseEvent> | React.MouseEvent<HTMLButtonElement, MouseEvent> | React.TouchEvent<HTMLButtonElement>) => {
+    const onInterceptMouseDown = (event: React.MouseEvent | React.TouchEvent) => {
         event.stopPropagation();
     };
 
@@ -116,11 +116,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     // allow customization of tabset right/bottom buttons
     let buttons: any[] = [];
-    const renderState = { headerContent: undefined, buttons, stickyButtons: [], headerButtons: [] };
+    let stickyButtons: any[] = [];
+    const renderState = { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [] };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
-
-    let toolbar;
 
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
@@ -133,7 +132,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
             </>);
         }
-        buttons.push(
+        buttons.unshift(
             <button
                 key="overflowbutton"
                 ref={overflowbuttonRef}
@@ -146,6 +145,23 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 {overflowContent}
             </button>
         );
+    }
+    
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        } else {
+            tabs.push(<div
+                ref={stickyButtonsRef}
+                key="sticky_buttons_container"
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+                onDragStart={(e) => { e.preventDefault() }}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+            >
+                {stickyButtons}
+            </div>);
+        }
     }
 
     const selectedIndex = border.getSelected();
@@ -167,7 +183,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             );
         }
     }
-    toolbar = (
+    const toolbar = (
         <div key="toolbar" ref={toolbarRef} className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName())}>
             {buttons}
         </div>

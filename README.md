@@ -58,7 +58,15 @@ import { createRoot } from "react-dom/client";
 import * as FlexLayout from "flexlayout-react";
 ```
 
-Include the light, underline, gray or dark style in your html:
+Include the light, underline, gray or dark theme by either:
+
+Adding an additional import:
+
+```
+import 'flexlayout-react/style/light.css';  
+```
+
+or by adding the css to your html:
 
 ```
 <link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
@@ -614,6 +622,7 @@ To build the npm distribution run 'yarn build', this will create the artifacts i
 | Name | Repository |
 | ------------- |:-------------|
 | rc-dock | https://github.com/ticlo/rc-dock | 
+| Dockview | https://dockview.dev/ | 
 | lumino | https://github.com/jupyterlab/lumino | 
 | golden-layout | https://github.com/golden-layout/golden-layout |
 | react-mosaic | https://github.com/nomcopter/react-mosaic |

@@ -167,6 +167,34 @@ export const TabSet = (props: ITabSetProps) => {
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
 
+    if (hiddenTabs.length > 0) {
+        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(node, hiddenTabs);
+        } else {
+            overflowContent = (<>
+                {icons.more}
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+            </>);
+        }
+        buttons.unshift(
+            <button
+                key="overflowbutton"
+                data-layout-path={path + "/button/overflow"}
+
+                ref={overflowbuttonRef}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
+                title={overflowTitle}
+                onClick={onOverflowClick}
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+            >
+                {overflowContent}
+            </button>
+        );
+    }
+
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
             buttons = [...stickyButtons, ...buttons];
@@ -182,35 +210,6 @@ export const TabSet = (props: ITabSetProps) => {
                 {stickyButtons}
             </div>);
         }
-    }
-
-    let toolbar;
-    if (hiddenTabs.length > 0) {
-        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
-        let overflowContent;
-        if (typeof icons.more === "function") {
-            overflowContent = icons.more(node, hiddenTabs);
-        } else {
-            overflowContent = (<>
-                {icons.more}
-                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
-            </>);
-        }
-        buttons.push(
-            <button
-                key="overflowbutton"
-                data-layout-path={path + "/button/overflow"}
-
-                ref={overflowbuttonRef}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
-                title={overflowTitle}
-                onClick={onOverflowClick}
-                onMouseDown={onInterceptMouseDown}
-                onTouchStart={onInterceptMouseDown}
-            >
-                {overflowContent}
-            </button>
-        );
     }
 
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
@@ -268,7 +267,7 @@ export const TabSet = (props: ITabSetProps) => {
         );
     }
 
-    toolbar = (
+    const toolbar = (
         <div key="toolbar" ref={toolbarRef}
             className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
             onMouseDown={onInterceptMouseDown}
