@@ -40310,7 +40310,7 @@ const BorderTabSet = (props) => {
     const toolbarRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
     const overflowbuttonRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
     const stickyButtonsRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel } = (0,_TabOverflowHook__WEBPACK_IMPORTED_MODULE_6__.useTabOverflow)(border, _Orientation__WEBPACK_IMPORTED_MODULE_7__.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
+    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = (0,_TabOverflowHook__WEBPACK_IMPORTED_MODULE_6__.useTabOverflow)(border, _Orientation__WEBPACK_IMPORTED_MODULE_7__.Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
     const onAuxMouseClick = (event) => {
         if ((0,_Utils__WEBPACK_IMPORTED_MODULE_9__.isAuxMouseEvent)(event)) {
             layout.auxMouseClick(border, event);
@@ -40364,10 +40364,10 @@ const BorderTabSet = (props) => {
     }
     // allow customization of tabset right/bottom buttons
     let buttons = [];
-    const renderState = { headerContent: undefined, buttons, stickyButtons: [], headerButtons: [] };
+    let stickyButtons = [];
+    const renderState = { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [] };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
-    let toolbar;
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
@@ -40379,7 +40379,15 @@ const BorderTabSet = (props) => {
                 icons.more,
                 react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+        buttons.unshift(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+    }
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        }
+        else {
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+        }
     }
     const selectedIndex = border.getSelected();
     if (selectedIndex !== -1) {
@@ -40389,7 +40397,7 @@ const BorderTabSet = (props) => {
             buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "float", title: floatTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT), onClick: onFloatTab, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout));
         }
     }
-    toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName()) }, buttons));
+    const toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_ + border.getLocation().getName()) }, buttons));
     style = layout.styleFont(style);
     let innerStyle = {};
     const borderHeight = border.getBorderBarSize() - 1;
@@ -42348,15 +42356,6 @@ const TabSet = (props) => {
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
-    if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
-            buttons = [...stickyButtons, ...buttons];
-        }
-        else {
-            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
-        }
-    }
-    let toolbar;
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
@@ -42368,7 +42367,15 @@ const TabSet = (props) => {
                 icons.more,
                 react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+        buttons.unshift(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
+    }
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        }
+        else {
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+        }
     }
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
         const floatTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Float_Tab);
@@ -42387,7 +42394,7 @@ const TabSet = (props) => {
         const btns = showHeader ? headerButtons : buttons;
         btns.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
     }
-    toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, buttons));
+    const toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, buttons));
     let header;
     let tabStrip;
     let tabStripClasses = cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
@@ -42937,8 +42944,10 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         this.onRenderTabSet = (node, renderValues) => {
             if (this.state.layoutFile === "default") {
                 //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-                //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-                renderValues.stickyButtons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: () => this.onAddFromTabSetButton(node) }));
+                // renderValues.buttons.push(<img key="folder" style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+                if (node instanceof _src_index__WEBPACK_IMPORTED_MODULE_3__.TabSetNode) { // don't show + button on border tabsets
+                    renderValues.stickyButtons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: () => this.onAddFromTabSetButton(node) }));
+                }
             }
         };
         this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
