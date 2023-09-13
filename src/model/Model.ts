@@ -248,6 +248,24 @@ export class Model {
     }
 
     /**
+     * Finds the first/top left tab set of the given node.
+     * @param node The top node you want to begin searching from, deafults to the root node
+     * @returns The first Tab Set
+     */
+    getFirstTabSet(node = this._root as Node): Node
+    {
+        const child = node.getChildren()[0];
+        if (child instanceof TabSetNode)
+        {
+            return child;
+        }
+        else
+        {
+            return this.getFirstTabSet(child);
+        }
+    }
+
+    /**
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
      * @param action the action to perform
