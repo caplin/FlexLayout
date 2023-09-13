@@ -462,8 +462,8 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | height in pixels of tab strip |
 | tabLocation | *inherited* | show tabs in location top or bottom |
-| minHeight | *inherited* | minimum width (in px) for this tabset |
-| minWidth | *inherited* | minimum height (in px) for this tabset |
+| minHeight | *inherited* | minimum height (in px) for this tabset |
+| minWidth | *inherited* | minimum width (in px) for this tabset |
 
 ## Border Attributes
 
