@@ -412,6 +412,9 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                         className="flexlayout__tab_toolbar_button"
                         onClick={() => this.onAddFromTabSetButton(node)}
                     />);
+
+                // put overflow button before + button (default is after)
+                // renderValues.overflowPosition=0    
             }
         }
     }

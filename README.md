@@ -348,6 +348,7 @@ Attributes allowed in the 'global' element
 | splitterExtra | 0 | additional width in pixels of the splitter hit test area |
 | legacyOverflowMenu | false | use the legacy text only overflow menu |
 | enableEdgeDock | true | |
+| enableRotateBorderIcons | true | boolean indicating if tab icons should rotate with the text in the left and right borders |
 | tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |
 | tabEnableDrag | true | allow user to drag all tabs to new location |
@@ -446,7 +447,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | name | null | named tabsets will show a header bar above the tabs |
 | config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
-| active | false | whether tabset is currently active; this attribute can only be used in the initial configuration, to change the active tabset you should use the `setActiveTabset` action on the model |
+| active | false | whether tabset is currently active; this attribute can only be used in the initial configuration, to change the active tabset you should use the `setActiveTabset` action on the model |
 | maximized | false | whether tabset is currently maximized to fill view |
 | enableClose | false | allow user to close tabset via a close button |
 | id | auto generated | |

@@ -3,7 +3,7 @@ import { DockLocation } from "../DockLocation";
 import { BorderNode } from "../model/BorderNode";
 import { TabNode } from "../model/TabNode";
 import { BorderButton } from "./BorderButton";
-import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
+import { IIcons, ILayoutCallbacks, ITabSetRenderValues, ITitleObject } from "./Layout";
 import { showPopup } from "../PopupMenu";
 import { Actions } from "../model/Actions";
 import { I18nLabel } from "../I18nLabel";
@@ -117,36 +117,14 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     // allow customization of tabset right/bottom buttons
     let buttons: any[] = [];
     let stickyButtons: any[] = [];
-    const renderState = { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [] };
+    const renderState : ITabSetRenderValues= { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [], overflowPosition: undefined };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
-
-    if (hiddenTabs.length > 0) {
-        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
-        let overflowContent;
-        if (typeof icons.more === "function") {
-            overflowContent = icons.more(border, hiddenTabs);
-        } else {
-            overflowContent = (<>
-                {icons.more}
-                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
-            </>);
-        }
-        buttons.unshift(
-            <button
-                key="overflowbutton"
-                ref={overflowbuttonRef}
-                className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName())}
-                title={overflowTitle}
-                onClick={onOverflowClick}
-                onMouseDown={onInterceptMouseDown}
-                onTouchStart={onInterceptMouseDown}
-            >
-                {overflowContent}
-            </button>
-        );
-    }
     
+    if (renderState.overflowPosition === undefined) {
+        renderState.overflowPosition = stickyButtons.length;
+    }
+
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
             buttons = [...stickyButtons, ...buttons];
@@ -162,6 +140,32 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 {stickyButtons}
             </div>);
         }
+    }
+
+    if (hiddenTabs.length > 0) {
+        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(border, hiddenTabs);
+        } else {
+            overflowContent = (<>
+                {icons.more}
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+            </>);
+        }
+        buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+            <button
+                key="overflowbutton"
+                ref={overflowbuttonRef}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName())}
+                title={overflowTitle}
+                onClick={onOverflowClick}
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+            >
+                {overflowContent}
+            </button>
+        );
     }
 
     const selectedIndex = border.getSelected();

@@ -52,15 +52,16 @@ export class Model {
         const attributeDefinitions = new AttributeDefinitions();
 
         attributeDefinitions.add("legacyOverflowMenu", false).setType(Attribute.BOOLEAN);
-
-        // splitter
-        attributeDefinitions.add("splitterSize", -1).setType(Attribute.NUMBER);
-        attributeDefinitions.add("splitterExtra", 0).setType(Attribute.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
         attributeDefinitions.add("enableUseVisibility", false).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("enableRotateBorderIcons", true).setType(Attribute.BOOLEAN);
+
+        // splitter
+        attributeDefinitions.add("splitterSize", -1).setType(Attribute.NUMBER);
+        attributeDefinitions.add("splitterExtra", 0).setType(Attribute.NUMBER);
 
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
@@ -205,6 +206,10 @@ export class Model {
 
     isUseVisibility() {
         return this._attributes.enableUseVisibility as boolean;
+    }
+
+    isEnableRotateBorderIcons() {
+        return this._attributes.enableRotateBorderIcons as boolean;
     }
 
     /**

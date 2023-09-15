@@ -4,7 +4,7 @@ import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
 import { showPopup } from "../PopupMenu";
-import { IIcons, ILayoutCallbacks, ITitleObject } from "./Layout";
+import { IIcons, ILayoutCallbacks, ITabSetRenderValues, ITitleObject } from "./Layout";
 import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
 import { Orientation } from "../Orientation";
@@ -160,41 +160,17 @@ export const TabSet = (props: ITabSetProps) => {
     let headerButtons: React.ReactNode[] = [];
 
     // allow customization of header contents and buttons
-    const renderState = { headerContent: node.getName(), stickyButtons, buttons, headerButtons };
+    const renderState : ITabSetRenderValues = { headerContent: node.getName(), stickyButtons, buttons, headerButtons, overflowPosition: undefined };
     layout.customizeTabSet(node, renderState);
     const headerContent = renderState.headerContent;
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
 
-    if (hiddenTabs.length > 0) {
-        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
-        let overflowContent;
-        if (typeof icons.more === "function") {
-            overflowContent = icons.more(node, hiddenTabs);
-        } else {
-            overflowContent = (<>
-                {icons.more}
-                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
-            </>);
-        }
-        buttons.unshift(
-            <button
-                key="overflowbutton"
-                data-layout-path={path + "/button/overflow"}
-
-                ref={overflowbuttonRef}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
-                title={overflowTitle}
-                onClick={onOverflowClick}
-                onMouseDown={onInterceptMouseDown}
-                onTouchStart={onInterceptMouseDown}
-            >
-                {overflowContent}
-            </button>
-        );
+    if (renderState.overflowPosition === undefined) {
+        renderState.overflowPosition = stickyButtons.length;
     }
-
+    
     if (stickyButtons.length > 0) {
         if (tabsTruncated) {
             buttons = [...stickyButtons, ...buttons];
@@ -210,6 +186,34 @@ export const TabSet = (props: ITabSetProps) => {
                 {stickyButtons}
             </div>);
         }
+    }
+    
+    if (hiddenTabs.length > 0) {
+        const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
+        let overflowContent;
+        if (typeof icons.more === "function") {
+            overflowContent = icons.more(node, hiddenTabs);
+        } else {
+            overflowContent = (<>
+                {icons.more}
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+            </>);
+        }
+        buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+            <button
+                key="overflowbutton"
+                data-layout-path={path + "/button/overflow"}
+
+                ref={overflowbuttonRef}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
+                title={overflowTitle}
+                onClick={onOverflowClick}
+                onMouseDown={onInterceptMouseDown}
+                onTouchStart={onInterceptMouseDown}
+            >
+                {overflowContent}
+            </button>
+        );
     }
 
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {

@@ -101,6 +101,9 @@ export interface ITabSetRenderValues {
     stickyButtons: React.ReactNode[];
     buttons: React.ReactNode[];
     headerButtons: React.ReactNode[];
+    // position to insert overflow button within [...stickyButtons, ...buttons]
+    // if left undefined position will be after the sticky buttons (if any)
+    overflowPosition: number | undefined; 
 }
 
 export interface ITabRenderValues {
@@ -510,10 +513,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             const offset = this.edgeRectLength / 2;
             const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             const radius = 50;
-            edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className}></div>)
+            edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}></div>);
+            edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}></div>);
+            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}></div>);
+            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}></div>);
         }
 
         // this.layoutTime = (Date.now() - this.start);
@@ -596,8 +599,8 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                         if (this.supportsPopout && child.isFloating()) {
                             const rect = this._getScreenRect(child);
 
-                            const tabBorderWidth= child._getAttr("borderWidth");
-                            const tabBorderHeight= child._getAttr("borderHeight");
+                            const tabBorderWidth = child._getAttr("borderWidth");
+                            const tabBorderHeight = child._getAttr("borderHeight");
                             if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
                                 rect.width = tabBorderWidth;
                             } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
