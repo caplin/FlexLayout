@@ -37088,6 +37088,10 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT"] = "flexlayout__border_toolbar_button-float";
     CLASSES["FLEXLAYOUT__DRAG_RECT"] = "flexlayout__drag_rect";
     CLASSES["FLEXLAYOUT__EDGE_RECT"] = "flexlayout__edge_rect";
+    CLASSES["FLEXLAYOUT__EDGE_RECT_TOP"] = "flexlayout__edge_rect_top";
+    CLASSES["FLEXLAYOUT__EDGE_RECT_LEFT"] = "flexlayout__edge_rect_left";
+    CLASSES["FLEXLAYOUT__EDGE_RECT_BOTTOM"] = "flexlayout__edge_rect_bottom";
+    CLASSES["FLEXLAYOUT__EDGE_RECT_RIGHT"] = "flexlayout__edge_rect_right";
     CLASSES["FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER"] = "flexlayout__error_boundary_container";
     CLASSES["FLEXLAYOUT__ERROR_BOUNDARY_CONTENT"] = "flexlayout__error_boundary_content";
     CLASSES["FLEXLAYOUT__FLOATING_WINDOW_CONTENT"] = "flexlayout__floating_window_content";
@@ -38087,14 +38091,15 @@ class Model {
     static _createAttributeDefinitions() {
         const attributeDefinitions = new _AttributeDefinitions__WEBPACK_IMPORTED_MODULE_1__.AttributeDefinitions();
         attributeDefinitions.add("legacyOverflowMenu", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
-        // splitter
-        attributeDefinitions.add("splitterSize", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
-        attributeDefinitions.add("splitterExtra", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         attributeDefinitions.add("enableEdgeDock", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("rootOrientationVertical", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("marginInsets", { top: 0, right: 0, bottom: 0, left: 0 })
             .setType("IInsets");
         attributeDefinitions.add("enableUseVisibility", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("enableRotateBorderIcons", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        // splitter
+        attributeDefinitions.add("splitterSize", -1).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
+        attributeDefinitions.add("splitterExtra", 0).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.NUMBER);
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabCloseType", 1).setType("ICloseType");
@@ -38201,6 +38206,9 @@ class Model {
     isUseVisibility() {
         return this._attributes.enableUseVisibility;
     }
+    isEnableRotateBorderIcons() {
+        return this._attributes.enableRotateBorderIcons;
+    }
     /**
      * Gets the
      * @returns {BorderSet|*}
@@ -38234,6 +38242,20 @@ class Model {
      */
     getNodeById(id) {
         return this._idMap[id];
+    }
+    /**
+     * Finds the first/top left tab set of the given node.
+     * @param node The top node you want to begin searching from, deafults to the root node
+     * @returns The first Tab Set
+     */
+    getFirstTabSet(node = this._root) {
+        const child = node.getChildren()[0];
+        if (child instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
+            return child;
+        }
+        else {
+            return this.getFirstTabSet(child);
+        }
     }
     /**
      * Update the node tree by performing the given action,
@@ -40253,7 +40275,16 @@ const BorderButton = (props) => {
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
     }
-    const renderState = (0,_Utils__WEBPACK_IMPORTED_MODULE_6__.getRenderStateEx)(layout, node, iconFactory, titleFactory);
+    let iconAngle = 0;
+    if (node.getModel().isEnableRotateBorderIcons() === false) {
+        if (border === "left") {
+            iconAngle = 90;
+        }
+        else if (border === "right") {
+            iconAngle = -90;
+        }
+    }
+    const renderState = (0,_Utils__WEBPACK_IMPORTED_MODULE_6__.getRenderStateEx)(layout, node, iconFactory, titleFactory, iconAngle);
     let content = renderState.content ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT) }, renderState.content)) : null;
     const leading = renderState.leading ? (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING) }, renderState.leading)) : null;
     if (layout.getEditingTab() === node) {
@@ -40365,9 +40396,20 @@ const BorderTabSet = (props) => {
     // allow customization of tabset right/bottom buttons
     let buttons = [];
     let stickyButtons = [];
-    const renderState = { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [] };
+    const renderState = { headerContent: undefined, buttons, stickyButtons: stickyButtons, headerButtons: [], overflowPosition: undefined };
     layout.customizeTabSet(border, renderState);
     buttons = renderState.buttons;
+    if (renderState.overflowPosition === undefined) {
+        renderState.overflowPosition = stickyButtons.length;
+    }
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        }
+        else {
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+        }
+    }
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
@@ -40379,15 +40421,7 @@ const BorderTabSet = (props) => {
                 icons.more,
                 react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.unshift(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
-    }
-    if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
-            buttons = [...stickyButtons, ...buttons];
-        }
-        else {
-            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
-        }
+        buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0, react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_8__.CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + border.getLocation().getName()), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
     const selectedIndex = border.getSelected();
     if (selectedIndex !== -1) {
@@ -41205,10 +41239,10 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             const offset = this.edgeRectLength / 2;
             const className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT);
             const radius = 50;
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_TOP) }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT) }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM) }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT) }));
         }
         // this.layoutTime = (Date.now() - this.start);
         return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: this.selfRef, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },
@@ -42350,12 +42384,23 @@ const TabSet = (props) => {
     let buttons = [];
     let headerButtons = [];
     // allow customization of header contents and buttons
-    const renderState = { headerContent: node.getName(), stickyButtons, buttons, headerButtons };
+    const renderState = { headerContent: node.getName(), stickyButtons, buttons, headerButtons, overflowPosition: undefined };
     layout.customizeTabSet(node, renderState);
     const headerContent = renderState.headerContent;
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
+    if (renderState.overflowPosition === undefined) {
+        renderState.overflowPosition = stickyButtons.length;
+    }
+    if (stickyButtons.length > 0) {
+        if (tabsTruncated) {
+            buttons = [...stickyButtons, ...buttons];
+        }
+        else {
+            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
+        }
+    }
     if (hiddenTabs.length > 0) {
         const overflowTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
@@ -42367,15 +42412,7 @@ const TabSet = (props) => {
                 icons.more,
                 react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT) }, hiddenTabs.length)));
         }
-        buttons.unshift(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
-    }
-    if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
-            buttons = [...stickyButtons, ...buttons];
-        }
-        else {
-            tabs.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: stickyButtonsRef, key: "sticky_buttons_container", onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER) }, stickyButtons));
-        }
+        buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0, react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "overflowbutton", "data-layout-path": path + "/button/overflow", ref: overflowbuttonRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW), title: overflowTitle, onClick: onOverflowClick, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, overflowContent));
     }
     if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnableFloat() && !selectedTabNode.isFloating()) {
         const floatTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Float_Tab);
@@ -42474,10 +42511,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 
 /** @internal */
-function getRenderStateEx(layout, node, iconFactory, titleFactory) {
+function getRenderStateEx(layout, node, iconFactory, titleFactory, iconAngle) {
     let leadingContent = iconFactory ? iconFactory(node) : undefined;
     let titleContent = node.getName();
     let name = node.getName();
+    if (iconAngle === undefined) {
+        iconAngle = 0;
+    }
     function isTitleObject(obj) {
         return obj.titleContent !== undefined;
     }
@@ -42498,7 +42538,12 @@ function getRenderStateEx(layout, node, iconFactory, titleFactory) {
         }
     }
     if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { style: { width: "1em", height: "1em" }, src: node.getIcon(), alt: "leadingContent" });
+        if (iconAngle !== 0) {
+            leadingContent = react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { style: { width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }, src: node.getIcon(), alt: "leadingContent" });
+        }
+        else {
+            leadingContent = react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { style: { width: "1em", height: "1em" }, src: node.getIcon(), alt: "leadingContent" });
+        }
     }
     let buttons = [];
     // allow customization of leading contents (icon) and contents
@@ -42944,9 +42989,11 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         this.onRenderTabSet = (node, renderValues) => {
             if (this.state.layoutFile === "default") {
                 //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-                // renderValues.buttons.push(<img key="folder" style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+                //renderValues.buttons.push(<img key="folder" style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
                 if (node instanceof _src_index__WEBPACK_IMPORTED_MODULE_3__.TabSetNode) { // don't show + button on border tabsets
                     renderValues.stickyButtons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { src: "images/add.svg", alt: "Add", key: "Add button", title: "Add Tab (using onRenderTabSet callback, see Demo)", style: { width: "1.1em", height: "1.1em" }, className: "flexlayout__tab_toolbar_button", onClick: () => this.onAddFromTabSetButton(node) }));
+                    // put overflow button before + button (default is after)
+                    // renderValues.overflowPosition=0    
                 }
             }
         };
