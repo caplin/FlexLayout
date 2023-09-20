@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { v4 } from "uuid";
 import { Actions, IJsonTabNode, ILayoutProps, Layout, TabNode } from "../../src/index";
+import { randomUUID } from "../../src/model/Utils";
 
 export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
     const [storedTabs, setStoredTabs] = useState<IJsonTabNode[]>(tab.getConfig()?.storedTabs ?? []);
@@ -48,7 +48,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging;
 
         if (json.id === undefined) {
-            json.id = `#${v4()}`;
+            json.id = `#${randomUUID()}`;
         }
 
         setStoredTabs(tabs => [...tabs, json]);
@@ -89,7 +89,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging;
 
         if (json.id === undefined) {
-            json.id = `#${v4()}`;
+            json.id = `#${randomUUID()}`;
         }
 
         setStoredTabs(tabs => {

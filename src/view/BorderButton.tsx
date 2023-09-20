@@ -137,7 +137,16 @@ export const BorderButton = (props: IBorderButtonProps) => {
         classNames += " " + node.getClassName();
     }
 
-    const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory);
+    let iconAngle = 0;
+    if (node.getModel().isEnableRotateBorderIcons() === false) {
+        if (border === "left") {
+            iconAngle = 90;
+        } else if (border === "right") {
+            iconAngle = -90;
+        }
+    }
+
+    const renderState = getRenderStateEx(layout, node, iconFactory, titleFactory, iconAngle);
 
     let content = renderState.content ? (
         <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>

@@ -41,6 +41,7 @@ export interface IGlobalAttributes {
 	borderSize?: number; // default: 200
 	enableEdgeDock?: boolean; // default: true
 	enableUseVisibility?: boolean; // default: false
+	enableRotateBorderIcons?: boolean; // default: true
 	legacyOverflowMenu?: boolean; // default: false
 	marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	rootOrientationVertical?: boolean; // default: false
@@ -108,6 +109,10 @@ export interface ITabSetAttributes {
 	type: "tabset";
 	weight?: number; // default: 100
 	width?: number;
+
+	// special attributes are read from initial json but must subseqently be set on the model
+	maximized?: boolean; // default false
+	active?:boolean; // default false
 }
 export interface ITabAttributes {
 	altName?: string;

@@ -401,16 +401,21 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (this.state.layoutFile === "default") {
             //renderValues.headerContent = "-- " + renderValues.headerContent + " --";
-            //renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
-            renderValues.stickyButtons.push(
-                <img src="images/add.svg"
-                    alt="Add"
-                    key="Add button"
-                    title="Add Tab (using onRenderTabSet callback, see Demo)"
-                    style={{ width: "1.1em", height: "1.1em" }}
-                    className="flexlayout__tab_toolbar_button"
-                    onClick={() => this.onAddFromTabSetButton(node)}
-                />);
+            //renderValues.buttons.push(<img key="folder" style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
+            if (node instanceof TabSetNode) { // don't show + button on border tabsets
+                renderValues.stickyButtons.push(
+                    <img src="images/add.svg"
+                        alt="Add"
+                        key="Add button"
+                        title="Add Tab (using onRenderTabSet callback, see Demo)"
+                        style={{ width: "1.1em", height: "1.1em" }}
+                        className="flexlayout__tab_toolbar_button"
+                        onClick={() => this.onAddFromTabSetButton(node)}
+                    />);
+
+                // put overflow button before + button (default is after)
+                // renderValues.overflowPosition=0    
+            }
         }
     }
 

@@ -16,7 +16,7 @@ Try it now using [JSFiddle](https://jsfiddle.net/10kmLzvu/)
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-FlexLayout's only dependencies are React and uuid.
+FlexLayout's only dependency is React.
 
 Features:
 *	splitters
@@ -37,6 +37,7 @@ Features:
 *   headed tabsets
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
+*   component state is preserved when tabs are moved
 *	typescript type declarations included
 
 ## Installation
@@ -57,7 +58,15 @@ import { createRoot } from "react-dom/client";
 import * as FlexLayout from "flexlayout-react";
 ```
 
-Include the light, underline, gray or dark style in your html:
+Include the light, underline, gray or dark theme by either:
+
+Adding an additional import:
+
+```
+import 'flexlayout-react/style/light.css';  
+```
+
+or by adding the css to your html:
 
 ```
 <link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
@@ -339,6 +348,7 @@ Attributes allowed in the 'global' element
 | splitterExtra | 0 | additional width in pixels of the splitter hit test area |
 | legacyOverflowMenu | false | use the legacy text only overflow menu |
 | enableEdgeDock | true | |
+| enableRotateBorderIcons | true | boolean indicating if tab icons should rotate with the text in the left and right borders |
 | tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |
 | tabEnableDrag | true | allow user to drag all tabs to new location |
@@ -437,6 +447,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | name | null | named tabsets will show a header bar above the tabs |
 | config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
+| active | false | whether tabset is currently active; this attribute can only be used in the initial configuration, to change the active tabset you should use the `setActiveTabset` action on the model |
 | maximized | false | whether tabset is currently maximized to fill view |
 | enableClose | false | allow user to close tabset via a close button |
 | id | auto generated | |
@@ -453,8 +464,8 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | height in pixels of tab strip |
 | tabLocation | *inherited* | show tabs in location top or bottom |
-| minHeight | *inherited* | minimum width (in px) for this tabset |
-| minWidth | *inherited* | minimum height (in px) for this tabset |
+| minHeight | *inherited* | minimum height (in px) for this tabset |
+| minWidth | *inherited* | minimum width (in px) for this tabset |
 
 ## Border Attributes
 
@@ -613,6 +624,7 @@ To build the npm distribution run 'yarn build', this will create the artifacts i
 | Name | Repository |
 | ------------- |:-------------|
 | rc-dock | https://github.com/ticlo/rc-dock | 
+| Dockview | https://dockview.dev/ | 
 | lumino | https://github.com/jupyterlab/lumino | 
 | golden-layout | https://github.com/golden-layout/golden-layout |
 | react-mosaic | https://github.com/nomcopter/react-mosaic |

@@ -30,6 +30,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
         if (timerId.current) {
             clearTimeout(timerId.current);
         }
+        let isMounted = true;
         const r = rect;
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
@@ -68,19 +69,21 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
             });
 
             popoutWindow.current.addEventListener("load", () => {
-                const popoutDocument = popoutWindow.current!.document;
-                popoutDocument.title = title;
-                const popoutContent = popoutDocument.createElement("div");
-                popoutContent.className = CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
-                popoutDocument.body.appendChild(popoutContent);
-                copyStyles(popoutDocument, styles).then(() => {
-                    setContent(popoutContent);
-                });
+                if (isMounted) {
+                    const popoutDocument = popoutWindow.current!.document;
+                    popoutDocument.title = title;
+                    const popoutContent = popoutDocument.createElement("div");
+                    popoutContent.className = CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
+                    popoutDocument.body.appendChild(popoutContent);
+                    copyStyles(popoutDocument, styles).then(() => {
+                        setContent(popoutContent);
+                    });
 
-                // listen for popout unloading (needs to be after load for safari)
-                popoutWindow.current!.addEventListener("beforeunload", () => {
-                    onCloseWindow(id);
-                });
+                    // listen for popout unloading (needs to be after load for safari)
+                    popoutWindow.current!.addEventListener("beforeunload", () => {
+                        onCloseWindow(id);
+                    });
+                }
             });
         } else {
             console.warn(`Unable to open window ${url}`);
@@ -88,6 +91,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
         }
 
         return () => {
+            isMounted = false;
             // delay so refresh will close window
             timerId.current = setTimeout(() => {
                 if (popoutWindow.current) {
