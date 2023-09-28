@@ -100,7 +100,7 @@ export class Actions {
      * @param tabsetNodeId the id of the tabset node to set as active
      * @returns {Action} the action
      */
-    static setActiveTabset(tabsetNodeId: string): Action {
+    static setActiveTabset(tabsetNodeId: string | undefined): Action {
         return new Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId });
     }
 

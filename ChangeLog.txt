@@ -1,3 +1,7 @@
+0.7.12
+Action.setActiveTabset can now take undefined to unset the active tabset.
+Added Tab attribute contentClassName to add a class to the tab content.
+
 0.7.11
 Added ITabSetRenderValues.overflowPosition to allow overflow button position to be 
 specified, if left undefined, position will be after sticky buttons as before.

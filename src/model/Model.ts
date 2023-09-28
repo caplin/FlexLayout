@@ -69,6 +69,7 @@ export class Model {
         attributeDefinitions.add("tabEnableFloat", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabContentClassName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabClassName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabIcon", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(Attribute.BOOLEAN);
@@ -371,9 +372,13 @@ export class Model {
                 break;
             }
             case Actions.SET_ACTIVE_TABSET: {
-                const tabsetNode = this._idMap[action.data.tabsetNode];
-                if (tabsetNode instanceof TabSetNode) {
-                    this._activeTabSet = tabsetNode;
+                if (action.data.tabsetNode === undefined) {
+                    this._activeTabSet = undefined;
+                } else {
+                    const tabsetNode = this._idMap[action.data.tabsetNode];
+                    if (tabsetNode instanceof TabSetNode) {
+                        this._activeTabSet = tabsetNode;
+                    }
                 }
                 break;
             }

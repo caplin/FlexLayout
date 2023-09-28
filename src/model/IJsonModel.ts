@@ -40,8 +40,8 @@ export interface IGlobalAttributes {
 	borderMinSize?: number; // default: 0
 	borderSize?: number; // default: 200
 	enableEdgeDock?: boolean; // default: true
-	enableUseVisibility?: boolean; // default: false
 	enableRotateBorderIcons?: boolean; // default: true
+	enableUseVisibility?: boolean; // default: false
 	legacyOverflowMenu?: boolean; // default: false
 	marginInsets?: IInsets; // default: {"top":0,"right":0,"bottom":0,"left":0}
 	rootOrientationVertical?: boolean; // default: false
@@ -51,6 +51,7 @@ export interface IGlobalAttributes {
 	tabBorderWidth?: number; // default: -1
 	tabClassName?: string;
 	tabCloseType?: ICloseType; // default: 1
+	tabContentClassName?: string;
 	tabDragSpeed?: number; // default: 0.3
 	tabEnableClose?: boolean; // default: true
 	tabEnableDrag?: boolean; // default: true
@@ -122,6 +123,7 @@ export interface ITabAttributes {
 	closeType?: ICloseType; // default: 1 - inherited from global tabCloseType
 	component?: string;
 	config?: any;
+	contentClassName?: string;
 	enableClose?: boolean; // default: true - inherited from global tabEnableClose
 	enableDrag?: boolean; // default: true - inherited from global tabEnableDrag
 	enableFloat?: boolean; // default: false - inherited from global tabEnableFloat
