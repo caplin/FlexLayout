@@ -38106,6 +38106,7 @@ class Model {
         attributeDefinitions.add("tabEnableFloat", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableDrag", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabEnableRename", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabContentClassName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("tabClassName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("tabIcon", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
@@ -38357,9 +38358,14 @@ class Model {
                 break;
             }
             case _Actions__WEBPACK_IMPORTED_MODULE_5__.Actions.SET_ACTIVE_TABSET: {
-                const tabsetNode = this._idMap[action.data.tabsetNode];
-                if (tabsetNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
-                    this._activeTabSet = tabsetNode;
+                if (action.data.tabsetNode === undefined) {
+                    this._activeTabSet = undefined;
+                }
+                else {
+                    const tabsetNode = this._idMap[action.data.tabsetNode];
+                    if (tabsetNode instanceof _TabSetNode__WEBPACK_IMPORTED_MODULE_10__.TabSetNode) {
+                        this._activeTabSet = tabsetNode;
+                    }
                 }
                 break;
             }
@@ -39437,6 +39443,7 @@ class TabNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
+        attributeDefinitions.addInherited("contentClassName", "tabContentClassName").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.addInherited("icon", "tabIcon").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
@@ -39524,6 +39531,9 @@ class TabNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
     }
     getClassName() {
         return this._getAttr("className");
+    }
+    getContentClassName() {
+        return this._getAttr("contentClassName");
     }
     isEnableRenderOnDemand() {
         return this._getAttr("enableRenderOnDemand");
@@ -41812,6 +41822,9 @@ const Tab = (props) => {
     if (parentNode instanceof _model_BorderNode__WEBPACK_IMPORTED_MODULE_6__.BorderNode) {
         className += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_BORDER);
         className += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
+    }
+    if (node.getContentClassName() !== undefined) {
+        className += " " + node.getContentClassName();
     }
     return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: className, "data-layout-path": path, onMouseDown: onMouseDown, onTouchStart: onMouseDown, style: style },
         react__WEBPACK_IMPORTED_MODULE_0__.createElement(_ErrorBoundary__WEBPACK_IMPORTED_MODULE_4__.ErrorBoundary, { message: props.layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_5__.I18nLabel.Error_rendering_component) },
