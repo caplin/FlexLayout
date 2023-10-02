@@ -16,7 +16,7 @@ Try it now using [JSFiddle](https://jsfiddle.net/10kmLzvu/)
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-FlexLayout's only dependencies are React and uuid.
+FlexLayout's only dependency is React.
 
 Features:
 *	splitters
@@ -37,27 +37,32 @@ Features:
 *   headed tabsets
 *	tab and tabset attributes: enableHeader, enableTabStrip, enableDock, enableDrop...
 *	customizable tabs and tabset header rendering
+*   component state is preserved when tabs are moved
 *	typescript type declarations included
 
 ## Installation
 
-FlexLayout is in the npm repository. Simply install React and FlexLayout from npm:
+FlexLayout is in the npm repository. install using:
 
 ```
-npm install react
-npm install react-dom
 npm install flexlayout-react
 ```
 
-Import React and FlexLayout in your modules:
+Import FlexLayout in your modules:
 
 ```
-import * as React from "react";
-import { createRoot } from "react-dom/client";
-import * as FlexLayout from "flexlayout-react";
+import {Layout, Model} from 'flexlayout-react';
 ```
 
-Include the light, underline, gray or dark style in your html:
+Include the light, underline, gray or dark theme by either:
+
+Adding an additional import:
+
+```
+import 'flexlayout-react/style/light.css';  
+```
+
+or by adding the css to your html:
 
 ```
 <link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
@@ -83,14 +88,6 @@ The model is tree of Node objects that define the structure of the layout.
 The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout.
 
 The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
-
-```javascript
-this.state = {model: FlexLayout.Model.fromJson(json)};
-
-render() {
-	<FlexLayout.Layout model={this.state.model} factory={factory}/>
-}
-```
 
 ## Example Configuration:
 
@@ -131,34 +128,25 @@ var json = {
 
 ## Example Code
 
-```
-import * as React from "react";
-import { createRoot } from "react-dom/client";
-import * as FlexLayout from "flexlayout-react";
+```javascript
+const model = Model.fromJson(json);
 
-class Main extends React.Component {
+function App() {
 
-    constructor(props) {
-        super(props);
-        this.state = {model: FlexLayout.Model.fromJson(json)};
+  const factory = (node) => {
+    var component = node.getComponent();
+
+    if (component === "button") {
+      return <button>{node.getName()}</button>;
     }
+  }
 
-    factory = (node) => {
-        var component = node.getComponent();
-        if (component === "button") {
-            return <button>{node.getName()}</button>;
-        }
-    }
-
-    render() {
-        return (
-            <FlexLayout.Layout model={this.state.model} factory={this.factory}/>
-        )
-    }
+  return (
+    <Layout
+      model={model}
+      factory={factory} />
+  );
 }
-
-const root = createRoot(document.getElementById("container"));
-root.render(<Main/>);
 ```		
 
 The above code would render two tabsets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
@@ -194,55 +182,6 @@ Weights on rows and tabsets specify the relative weight of these nodes within th
 NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.7/demo/index.html) app, modify one of the 
 existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
 
-
-example borders section:
-```
-    borders: [
-         {
-            type: "border",
-            location: "left",
-            children: [
-                {
-                    type: "tab",
-                    enableClose: false,
-                    name: "Navigation",
-                    component: "grid",
-                }
-            ]
-        },
-        {
-            type: "border",
-            location: "right",
-            children: [
-                {
-                    type: "tab",
-                    enableClose: false,
-                    name: "Options",
-                    component: "grid",
-                }
-            ]
-        },
-        {
-            type: "border",
-            location: "bottom",
-            children: [
-                {
-                    type: "tab",
-                    enableClose: false,
-                    name: "Activity Blotter",
-                    component: "grid",
-                },
-                {
-                    type: "tab",
-                    enableClose: false,
-                    name: "Execution Blotter",
-                    component: "grid",
-                }
-            ]
-        }
-    ]
-```
-
 To control where nodes can be dropped you can add a callback function to the model:
 
 ```
@@ -250,7 +189,7 @@ model.setOnAllowDrop(this.allowDrop);
 ```
 
 example:
-```
+```javascript
     allowDrop(dragNode, dropInfo) {
         let dropNode = dropInfo.node;
 
@@ -339,12 +278,14 @@ Attributes allowed in the 'global' element
 | splitterExtra | 0 | additional width in pixels of the splitter hit test area |
 | legacyOverflowMenu | false | use the legacy text only overflow menu |
 | enableEdgeDock | true | |
+| enableRotateBorderIcons | true | boolean indicating if tab icons should rotate with the text in the left and right borders |
 | tabEnableClose | true | allow user to close all tabs via close button |
 | tabCloseType | 1 | see values in ICloseType |
 | tabEnableDrag | true | allow user to drag all tabs to new location |
 | tabEnableRename | true | allow user to rename all tabs by double clicking |
 | tabEnableFloat | false | enable popouts in all tabs (in popout capable browser) |
 | tabClassName | null | |
+| tabContentClassName | null | |
 | tabIcon | null | |
 | tabEnableRenderOnDemand | true | whether to avoid rendering component until tab is visible |
 | tabDragSpeed | 0.3 | CSS transition speed of drag outlines (in seconds) |
@@ -410,7 +351,8 @@ Inherited defaults will take their value from the associated global attributes (
 | enableRename | *inherited* | allow user to rename tabs by double clicking |
 | enableFloat | *inherited* | enable popout (in popout capable browser) |
 | floating | false | |
-| className | *inherited* | |
+| className | *inherited* | class applied to tab button |
+| contentClassName | *inherited* | class applied to tab content |
 | icon | *inherited* | |
 | enableRenderOnDemand | *inherited* | whether to avoid rendering component until tab is visible |
 | borderWidth | *inherited* | width when added to border, -1 will use border size |
@@ -437,6 +379,7 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | name | null | named tabsets will show a header bar above the tabs |
 | config | null | a place to hold json config used in your own code |
 | selected | 0 | index of selected/visible tab in tabset |
+| active | false | whether tabset is currently active; this attribute can only be used in the initial configuration, to change the active tabset you should use the `setActiveTabset` action on the model |
 | maximized | false | whether tabset is currently maximized to fill view |
 | enableClose | false | allow user to close tabset via a close button |
 | id | auto generated | |
@@ -453,8 +396,8 @@ Note: tabsets can be dynamically created as tabs are moved and deleted when all 
 | headerHeight | *inherited* | |
 | tabStripHeight | *inherited* | height in pixels of tab strip |
 | tabLocation | *inherited* | show tabs in location top or bottom |
-| minHeight | *inherited* | minimum width (in px) for this tabset |
-| minWidth | *inherited* | minimum height (in px) for this tabset |
+| minHeight | *inherited* | minimum height (in px) for this tabset |
+| minWidth | *inherited* | minimum width (in px) for this tabset |
 
 ## Border Attributes
 
@@ -478,8 +421,7 @@ Inherited defaults will take their value from the associated global attributes (
 | enableDrop | *inherited* | |
 | autoSelectTabWhenOpen | *inherited* | whether to select new/moved tabs in border when the border is already open |
 | autoSelectTabWhenClosed | *inherited* | whether to select new/moved tabs in border when the border is currently closed |
-| className | *inherited* | |
-
+| className | *inherited* | class applied to tab button |
 
 ## Model Actions
 
@@ -613,6 +555,7 @@ To build the npm distribution run 'yarn build', this will create the artifacts i
 | Name | Repository |
 | ------------- |:-------------|
 | rc-dock | https://github.com/ticlo/rc-dock | 
+| Dockview | https://dockview.dev/ | 
 | lumino | https://github.com/jupyterlab/lumino | 
 | golden-layout | https://github.com/golden-layout/golden-layout |
 | react-mosaic | https://github.com/nomcopter/react-mosaic |

@@ -37,6 +37,7 @@ export class TabNode extends Node implements IDraggable {
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
+        attributeDefinitions.addInherited("contentClassName", "tabContentClassName").setType(Attribute.STRING);
         attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
         attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute.BOOLEAN);
@@ -154,6 +155,10 @@ export class TabNode extends Node implements IDraggable {
 
     getClassName() {
         return this._getAttr("className") as string | undefined;
+    }
+    
+    getContentClassName() {
+        return this._getAttr("contentClassName") as string | undefined;
     }
 
     isEnableRenderOnDemand() {

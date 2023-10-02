@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { mount, unmount } from '@cypress/react';
+import { mount } from '@cypress/react';
 import { CLASSES } from '../src/Types';
 import { App, twoTabs, threeTabs, withBorders } from './App';
 import { AppEx, layoutEx2, layoutEx1 } from './AppEx';
@@ -946,7 +946,7 @@ function dragsplitter(from: string, upDown: boolean, distance: number) {
 }
 
 beforeEach(() => {
-    unmount();
+   // unmount();
 });
 
 const findAllTabSets = () => {

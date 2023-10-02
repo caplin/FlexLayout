@@ -3,7 +3,7 @@
         "outDir": "./lib/",
         "sourceMap": true,
         "noImplicitAny": true,
-        "module": "ES6",
+        "module": "CommonJS",
         "target": "ES6",
         "declaration": true,
         "declarationDir": "./declarations",

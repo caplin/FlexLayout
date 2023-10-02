@@ -60,7 +60,7 @@ export interface ILayoutProps {
         tabSetNode: TabSetNode | BorderNode,
         renderValues: ITabSetRenderValues, // change the values in this object as required
     ) => void;
-    onModelChange?: (model: Model) => void;
+    onModelChange?: (model: Model, action: Action) => void;
     onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
         dragText: string,
         json: any,
@@ -101,6 +101,9 @@ export interface ITabSetRenderValues {
     stickyButtons: React.ReactNode[];
     buttons: React.ReactNode[];
     headerButtons: React.ReactNode[];
+    // position to insert overflow button within [...stickyButtons, ...buttons]
+    // if left undefined position will be after the sticky buttons (if any)
+    overflowPosition: number | undefined; 
 }
 
 export interface ITabRenderValues {
@@ -267,8 +270,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     private icons: IIcons;
     /** @internal */
-    private firstRender: boolean;
-    /** @internal */
     private resizeObserver?: ResizeObserver;
 
     constructor(props: ILayoutProps) {
@@ -282,7 +283,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
         this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
         this.icons = { ...defaultIcons, ...props.icons };
-        this.firstRender = true;
 
         this.state = {
             rect: new Rect(0, 0, 0, 0),
@@ -319,10 +319,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @internal */
-    onModelChange = () => {
+    onModelChange = (action: Action) => {
         this.forceUpdate();
         if (this.props.onModelChange) {
-            this.props.onModelChange(this.props.model);
+            this.props.onModelChange(this.props.model, action);
         }
     };
 
@@ -458,8 +458,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     render() {
         // first render will be used to find the size (via selfRef)
-        if (this.firstRender) {
-            this.firstRender = false;
+        if (!this.selfRef.current) {
             return (
                 <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
                     {this.metricsElements()}
@@ -514,10 +513,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             const offset = this.edgeRectLength / 2;
             const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
             const radius = 50;
-            edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className}></div>)
-            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className}></div>)
+            edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}></div>);
+            edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}></div>);
+            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}></div>);
+            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}></div>);
         }
 
         // this.layoutTime = (Date.now() - this.start);
@@ -599,6 +598,15 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                         let path = borderPath + "/t" + tabCount++;
                         if (this.supportsPopout && child.isFloating()) {
                             const rect = this._getScreenRect(child);
+
+                            const tabBorderWidth = child._getAttr("borderWidth");
+                            const tabBorderHeight = child._getAttr("borderHeight");
+                            if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
+                                rect.width = tabBorderWidth;
+                            } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
+                                rect.height = tabBorderHeight;
+                            }
+
                             floatingWindows.push(
                                 <FloatingWindow
                                     key={child.getId()}
@@ -925,7 +933,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
         // add edge indicators
         if (this.props.model.getMaximizedTabset() === undefined) {
-            this.setState({ showEdges: true });
+            this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
         }
 
         if (this.dragNode !== undefined && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {

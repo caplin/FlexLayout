@@ -7,11 +7,15 @@ export function getRenderStateEx(
     layout: ILayoutCallbacks,
     node: TabNode,
     iconFactory?: IconFactory,
-    titleFactory?: TitleFactory
+    titleFactory?: TitleFactory,
+    iconAngle?: number
 ) {
     let leadingContent = iconFactory ? iconFactory(node) : undefined;
     let titleContent: React.ReactNode = node.getName();
     let name = node.getName();
+    if (iconAngle === undefined) {
+        iconAngle = 0;
+    }
 
     function isTitleObject(obj: any): obj is ITitleObject {
         return obj.titleContent !== undefined
@@ -33,7 +37,11 @@ export function getRenderStateEx(
     }
 
     if (leadingContent === undefined && node.getIcon() !== undefined) {
-        leadingContent = <img style={{ width: "1em", height: "1em" }} src={node.getIcon()} alt="leadingContent" />;
+        if (iconAngle !== 0) {
+             leadingContent = <img style={{ width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }} src={node.getIcon()} alt="leadingContent" />;
+        } else {
+            leadingContent = <img style={{ width: "1em", height: "1em" }} src={node.getIcon()} alt="leadingContent" />;  
+        }
     }
 
     let buttons: any[] = [];

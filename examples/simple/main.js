@@ -44,27 +44,22 @@ var json = {
     }
 };
 
-class Main extends React.Component {
+const model = FlexLayout.Model.fromJson(json);
 
-    constructor(props) {
-        super(props);
-        this.state = {model: FlexLayout.Model.fromJson(json)};
-    }
+function Main(props) {
 
-    factory = (node) => {
+    const factory = (node) => {
         var component = node.getComponent();
         if (component === "panel") {
             return <div className="tab_content">{node.getName()}</div>;
         }
     }
-
-    render() {
-        return (
-            <FlexLayout.Layout
-                model={this.state.model}
-                factory={this.factory}/>
-        );
-    }
+    
+    return (
+        <FlexLayout.Layout
+            model={model}
+            factory={factory}/>
+    );
 }
 
 ReactDOM.createRoot(document.getElementById("container")).render(<Main/>);

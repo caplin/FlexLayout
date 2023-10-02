@@ -3,7 +3,8 @@
    		"tabEnableFloat": true,
         "tabSetMinHeight":100,
         "tabSetMinWidth":100,
-        "borderMinSize":100
+        "borderMinSize":100,
+        "enableRotateBorderIcons":true
 	},
 	"layout": {
 		"type": "row",
