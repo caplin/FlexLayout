@@ -113,11 +113,10 @@ export const TabButton = (props: ITabButtonProps) => {
     };
 
     const onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        // console.log(event, event.keyCode);
-        if (event.keyCode === 27) {
+        if (event.code === 'Escape') {
             // esc
             layout.setEditingTab(undefined);
-        } else if (event.keyCode === 13) {
+        } else if (event.code === 'Enter') {
             // enter
             layout.setEditingTab(undefined);
             layout.doAction(Actions.renameTab(node.getId(), (event.target as HTMLInputElement).value));
