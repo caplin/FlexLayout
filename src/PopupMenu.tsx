@@ -18,7 +18,7 @@ export function showPopup(
     const classNameMapper = layout.getClassName;
     const currentDocument = triggerElement.ownerDocument;
     const triggerRect = triggerElement.getBoundingClientRect();
-    const layoutRect = layoutDiv.getBoundingClientRect();
+    const layoutRect = layoutDiv?.getBoundingClientRect() ?? new DOMRect(0, 0, 100, 100);
 
     const elm = currentDocument.createElement("div");
     elm.className = classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER);
@@ -36,12 +36,16 @@ export function showPopup(
     DragDrop.instance.addGlass(() => onHide());
     DragDrop.instance.setGlassCursorOverride("default");
 
-    layoutDiv.appendChild(elm);
+    if (layoutDiv) {
+        layoutDiv.appendChild(elm);
+    }
 
     const onHide = () => {
         layout.hidePortal();
         DragDrop.instance.hideGlass();
-        layoutDiv.removeChild(elm);
+        if (layoutDiv) {
+            layoutDiv.removeChild(elm);
+        }
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
@@ -50,7 +54,7 @@ export function showPopup(
         event.stopPropagation();
     };
 
-    const onDocMouseDown = (event: Event) => {
+    const onDocMouseDown = (_event: Event) => {
         onHide();
     };
 

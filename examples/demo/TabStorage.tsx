@@ -84,7 +84,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
     }, [storedTabs]);
 
     const insertionCallback = useCallback((dragging: TabNode | IJsonTabNode, _: any, __: any, y: number) => {
-        const absoluteY = y + tab.getRect().y + layout.getDomRect().top;
+        const absoluteY = y + tab.getRect().y + (layout.getDomRect()?.top ?? 0);
         const { insertionIndex } = calculateInsertion(absoluteY);
         const json = dragging instanceof TabNode ? dragging.toJson() as IJsonTabNode : dragging;
 
@@ -113,13 +113,13 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
         }
     }, [calculateInsertion, tab, layout]);
 
-    tab.getExtraData().tabStorage_onTabDrag = useCallback(((dragging, over, x, y, _, refresh) => {
+    tab.getExtraData().tabStorage_onTabDrag = useCallback(((_dragging, _over, x, y, _, refresh) => {
         if (contents && list) {
             const layoutDomRect = layout.getDomRect();
             const tabRect = tab.getRect();
 
-            const rootX = tabRect.x + layoutDomRect.left;
-            const rootY = tabRect.y + layoutDomRect.top;
+            const rootX = tabRect.x + (layoutDomRect?.left ?? 0);
+            const rootY = tabRect.y + (layoutDomRect?.top ?? 0);
             const absX = x + rootX;
             const absY = y + rootY;
 
@@ -172,7 +172,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
         </p>
         <div ref={setList} className="tab-storage-tabs">
             {storedTabs.length === 0 && <div ref={setEmptyElem} className="tab-storage-empty">Looks like there's nothing here! Try dragging a tab over this text.</div>}
-            {storedTabs.map((stored, i) => (
+            {storedTabs.map((stored, _i) => (
                 <div
                     ref={ref => ref ? refs.set(stored.id!, ref) : refs.delete(stored.id!)}
                     className="tab-storage-entry"
@@ -181,7 +181,7 @@ export function TabStorage({ tab, layout }: { tab: TabNode; layout: Layout; }) {
                         e.preventDefault();
                         layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
                     }}
-                    onTouchStart={e => {
+                    onTouchStart={_e => {
                         layout.addTabWithDragAndDrop(stored.name ?? 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
                     }}
                 >

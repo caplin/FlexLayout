@@ -31,13 +31,16 @@ export const useTabOverflow = (
         updateVisibleTabs();
     });
 
+    const instance = selfRef.current;
     React.useEffect(() => {
-        const instance = selfRef.current!;
-        instance.addEventListener('wheel', onWheel, { passive: false });
-        return () => {
-            instance.removeEventListener('wheel', onWheel);
+        if (!instance) {
+            return;
         }
-    }, []);
+        instance.addEventListener("wheel", onWheel, { passive: false });
+        return () => {
+            instance.removeEventListener("wheel", onWheel);
+        };
+    }, [instance]);
 
     // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
     const onWheel = (event: Event) => {
