@@ -47,7 +47,7 @@ export class DragDrop {
     /** @internal */
     private _active: boolean = false; // drag and drop is in progress, can be used on ios to prevent body scrolling (see demo)
     /** @internal */
-    private _document?: HTMLDocument;
+    private _document?: Document;
     /** @internal */
     private _rootElement?: HTMLElement | undefined;
     /** @internal */

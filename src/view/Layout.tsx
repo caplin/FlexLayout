@@ -166,7 +166,7 @@ export interface ILayoutCallbacks {
     getPopoutURL(): string;
     isSupportsPopout(): boolean;
     isRealtimeResize(): boolean;
-    getCurrentDocument(): HTMLDocument | undefined;
+    getCurrentDocument(): Document | undefined;
     getClassName(defaultClassName: string): string;
     doAction(action: Action): Node | undefined;
     getDomRect(): any;
@@ -260,7 +260,7 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     private fnNewNodeDropped?: (node?: Node, event?: Event) => void;
     /** @internal */
-    private currentDocument?: HTMLDocument;
+    private currentDocument?: Document;
     /** @internal */
     private currentWindow?: Window;
     /** @internal */
