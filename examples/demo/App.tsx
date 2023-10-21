@@ -128,18 +128,20 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     onAddActiveClick = (event: React.MouseEvent) => {
-        (this.layoutRef!.current!).addTabToActiveTabSet({
+        const addedTab = (this.layoutRef!.current!).addTabToActiveTabSet({
             component: "grid",
             icon: "images/article.svg",
             name: "Grid " + this.nextGridIndex++
         });
+        console.log("Added tab", addedTab);
     }
 
     onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
-        (this.layoutRef!.current!).addTabToTabSet(node.getId(), {
+        const addedTab = (this.layoutRef!.current!).addTabToTabSet(node.getId(), {
             component: "grid",
             name: "Grid " + this.nextGridIndex++
         });
+        console.log("Added tab", addedTab);
     }
 
     onAddIndirectClick = (event: React.MouseEvent) => {

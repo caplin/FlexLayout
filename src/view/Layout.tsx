@@ -705,23 +705,29 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * Adds a new tab to the given tabset
      * @param tabsetId the id of the tabset where the new tab will be added
      * @param json the json for the new tab node
+     * @returns the added tab node or undefined
      */
-    addTabToTabSet(tabsetId: string, json: IJsonTabNode) {
+    addTabToTabSet(tabsetId: string, json: IJsonTabNode) : TabNode | undefined {
         const tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
-            this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
+            const node = this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
+            return node as TabNode;
         }
+        return undefined;
     }
 
     /**
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
+     * @returns the added tab node or undefined
      */
-    addTabToActiveTabSet(json: IJsonTabNode) {
+    addTabToActiveTabSet(json: IJsonTabNode) : TabNode | undefined {
         const tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
-            this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
+            const node = this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
+            return node as TabNode;
         }
+        return undefined;
     }
 
     /**
