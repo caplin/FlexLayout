@@ -228,7 +228,7 @@ export class DragDrop {
 
     /** @internal */
     private _onKeyPress(event: KeyboardEvent) {
-        if (event.keyCode === 27) {
+        if (event.code === 'Escape') {
             // esc
             this._onDragCancel();
         }
