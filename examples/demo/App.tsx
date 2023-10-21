@@ -181,7 +181,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
             console.log(node, event);
             showPopup(
                 node instanceof TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(),
-                (this.layoutRef!.current!).getRootDiv(),
+                (this.layoutRef!.current!).getRootDiv()!,
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
                 (item: string | undefined) => {
