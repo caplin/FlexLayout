@@ -24,9 +24,28 @@ export const Splitter = (props: ISplitterProps) => {
     const outlineDiv = React.useRef<HTMLDivElement | undefined>(undefined);
     const parentNode = node.getParent() as RowNode | BorderNode;
 
-    const onMouseDown = (event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement>) => {
-        DragDrop.instance.setGlassCursorOverride(node.getOrientation() === Orientation.HORZ ? "ns-resize" : "ew-resize");
-        DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
+    const onMouseDown = (
+        event:
+            | Event
+            | React.MouseEvent<HTMLDivElement, MouseEvent>
+            | React.TouchEvent<HTMLDivElement>
+    ) => {
+        DragDrop.instance.setGlassCursorOverride(
+            node.getOrientation() === Orientation.HORZ
+                ? "ns-resize"
+                : "ew-resize"
+        );
+        DragDrop.instance.startDrag(
+            event,
+            onDragStart,
+            onDragMove,
+            onDragEnd,
+            onDragCancel,
+            undefined,
+            undefined,
+            layout.getCurrentDocument(),
+            layout.getRootDiv() ?? undefined
+        );
         pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument()!.createElement("div");
@@ -41,12 +60,16 @@ export const Splitter = (props: ISplitterProps) => {
         }
 
         r.positionElement(outlineDiv.current);
-        rootdiv.appendChild(outlineDiv.current);
+        if (rootdiv) {
+            rootdiv.appendChild(outlineDiv.current);
+        }
     };
 
-    const onDragCancel = (wasDragging: boolean) => {
+    const onDragCancel = (_wasDragging: boolean) => {
         const rootdiv = layout.getRootDiv();
-        rootdiv.removeChild(outlineDiv.current as Element);
+        if (rootdiv) {
+            rootdiv.removeChild(outlineDiv.current as Element);
+        }
     };
 
     const onDragStart = () => {
@@ -55,6 +78,10 @@ export const Splitter = (props: ISplitterProps) => {
 
     const onDragMove = (event: React.MouseEvent<Element, MouseEvent>) => {
         const clientRect = layout.getDomRect();
+        if (!clientRect) {
+            return;
+        }
+
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top,
@@ -98,7 +125,9 @@ export const Splitter = (props: ISplitterProps) => {
         updateLayout();
 
         const rootdiv = layout.getRootDiv();
-        rootdiv.removeChild(outlineDiv.current as HTMLDivElement);
+        if (rootdiv) {
+            rootdiv.removeChild(outlineDiv.current as HTMLDivElement);
+        }
     };
 
     const getBoundPosition = (p: number) => {

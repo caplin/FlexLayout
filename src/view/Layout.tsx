@@ -169,8 +169,8 @@ export interface ILayoutCallbacks {
     getCurrentDocument(): Document | undefined;
     getClassName(defaultClassName: string): string;
     doAction(action: Action): Node | undefined;
-    getDomRect(): any;
-    getRootDiv(): HTMLDivElement;
+    getDomRect(): DOMRect | undefined;
+    getRootDiv(): HTMLDivElement | null;
     dragStart(
         event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
         dragDivText: string | undefined,
@@ -350,7 +350,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         this.resizeObserver = new ResizeObserver(entries => {
             this.updateRect(entries[0].contentRect);
         });
-        this.resizeObserver.observe(this.selfRef.current!);
+        const selfRefCurr = this.selfRef.current;
+        if (selfRefCurr) {
+            this.resizeObserver.observe(selfRefCurr);
+        }
     }
 
     /** @internal */
@@ -367,7 +370,14 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     }
 
     /** @internal */
-    updateRect = (domRect: DOMRectReadOnly = this.getDomRect()) => {
+    updateRect = (domRect?: DOMRectReadOnly) => {
+        if (!domRect) {
+            domRect = this.getDomRect();
+        }
+        if (!domRect) {
+            // no dom rect available, return.
+            return;
+        }
         const rect = new Rect(0, 0, domRect.width, domRect.height);
         if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
             this.setState({ rect });
@@ -412,12 +422,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @internal */
     getDomRect() {
-        return this.selfRef.current!.getBoundingClientRect();
+        return this.selfRef.current?.getBoundingClientRect();
     }
 
     /** @internal */
     getRootDiv() {
-        return this.selfRef.current!;
+        return this.selfRef.current;
     }
 
     /** @internal */
@@ -442,7 +452,10 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
     /** @internal */
     componentWillUnmount() {
-        this.resizeObserver?.unobserve(this.selfRef.current!)
+        const selfRefCurr = this.selfRef.current;
+        if (selfRefCurr) {
+            this.resizeObserver?.unobserve(selfRefCurr);
+        }
     }
 
     /** @internal */
@@ -601,10 +614,12 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
 
                             const tabBorderWidth = child._getAttr("borderWidth");
                             const tabBorderHeight = child._getAttr("borderHeight");
-                            if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
-                                rect.width = tabBorderWidth;
-                            } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
-                                rect.height = tabBorderHeight;
+                            if (rect) {
+                                if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
+                                    rect.width = tabBorderWidth;
+                                } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
+                                    rect.height = tabBorderHeight;
+                                }
                             }
 
                             floatingWindows.push(
@@ -693,7 +708,11 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     _getScreenRect(node: TabNode) {
         const rect = node!.getRect()!.clone();
-        const bodyRect: DOMRect = this.selfRef.current!.getBoundingClientRect();
+        const bodyRect: DOMRect | undefined =
+            this.selfRef.current?.getBoundingClientRect();
+        if (!bodyRect) {
+            return null;
+        }
         const navHeight = Math.min(80, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
         const navWidth = Math.min(80, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
         rect.x = rect.x + bodyRect.x + this.currentWindow!.screenX + navWidth;
@@ -791,7 +810,9 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     onCancelAdd = () => {
         const rootdiv = this.selfRef.current;
-        rootdiv!.removeChild(this.dragDiv!);
+        if (rootdiv && this.dragDiv) {
+            rootdiv.removeChild(this.dragDiv);
+        }
         this.dragDiv = undefined;
         this.hidePortal();
         if (this.fnNewNodeDropped != null) {
@@ -813,15 +834,21 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     /** @internal */
     onCancelDrag = (wasDragging: boolean) => {
         if (wasDragging) {
-            const rootdiv = this.selfRef.current!;
+            const rootdiv = this.selfRef.current;
 
-            try {
-                rootdiv.removeChild(this.outlineDiv!);
-            } catch (e) { }
+            const outlineDiv = this.outlineDiv;
+            if (rootdiv && outlineDiv) {
+                try {
+                    rootdiv.removeChild(outlineDiv);
+                } catch (e) {}
+            }
 
-            try {
-                rootdiv.removeChild(this.dragDiv!);
-            } catch (e) { }
+            const dragDiv = this.dragDiv;
+            if (rootdiv && dragDiv) {
+                try {
+                    rootdiv.removeChild(dragDiv);
+                } catch (e) {}
+            }
 
             this.dragDiv = undefined;
             this.hidePortal();
@@ -861,11 +888,31 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         onDoubleClick?: (event: Event) => void
     ) => {
         if (!allowDrag) {
-            DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, this.selfRef.current!);
+            DragDrop.instance.startDrag(
+                event,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                onClick,
+                onDoubleClick,
+                this.currentDocument,
+                this.selfRef.current ?? undefined
+            );
         } else {
             this.dragNode = node;
             this.dragDivText = dragDivText;
-            DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument, this.selfRef.current!);
+            DragDrop.instance.startDrag(
+                event,
+                this.onDragStart,
+                this.onDragMove,
+                this.onDragEnd,
+                this.onCancelDrag,
+                onClick,
+                onDoubleClick,
+                this.currentDocument,
+                this.selfRef.current ?? undefined
+            );
         }
     };
 
@@ -894,18 +941,22 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
 
         // hide div until the render is complete
-        this.dragDiv!.style.visibility = "hidden";
         this.dragRectRendered = false;
-        this.showPortal(
-            <DragRectRenderWrapper
-                // wait for it to be rendered
-                onRendered={() => {
-                    this.dragRectRendered = true;
-                    onRendered?.();
-                }}>
-                {content}
-            </DragRectRenderWrapper>,
-            this.dragDiv!);
+        const dragDiv = this.dragDiv;
+        if (dragDiv) {
+            dragDiv.style.visibility = "hidden";
+            this.showPortal(
+                <DragRectRenderWrapper
+                    // wait for it to be rendered
+                    onRendered={() => {
+                        this.dragRectRendered = true;
+                        onRendered?.();
+                    }}>
+                    {content}
+                </DragRectRenderWrapper>,
+                dragDiv,
+            );
+        }
     };
 
     /** @internal */
@@ -923,11 +974,13 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     onDragStart = () => {
         this.dropInfo = undefined;
         this.customDrop = undefined;
-        const rootdiv = this.selfRef.current!;
+        const rootdiv = this.selfRef.current;
         this.outlineDiv = this.currentDocument!.createElement("div");
         this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
         this.outlineDiv.style.visibility = "hidden";
-        rootdiv.appendChild(this.outlineDiv);
+        if (rootdiv) {
+            rootdiv.appendChild(this.outlineDiv);
+        }
 
         if (this.dragDiv == null) {
             this.dragDiv = this.currentDocument!.createElement("div");
@@ -935,15 +988,17 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
             this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
             this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
 
-            rootdiv.appendChild(this.dragDiv);
+            if (rootdiv) {
+                rootdiv.appendChild(this.dragDiv);
+            }
         }
         // add edge indicators
         if (this.props.model.getMaximizedTabset() === undefined) {
             this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
         }
 
-        if (this.dragNode !== undefined && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {
-            this.dragNode.getTabRect()!.positionElement(this.outlineDiv);
+        if (this.dragNode && this.outlineDiv && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {
+            this.dragNode.getTabRect()?.positionElement(this.outlineDiv);
         }
         this.firstMove = true;
 
@@ -954,30 +1009,34 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
     onDragMove = (event: React.MouseEvent<Element>) => {
         if (this.firstMove === false) {
             const speed = this.props.model._getAttribute("tabDragSpeed") as number;
-            this.outlineDiv!.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
+            if (this.outlineDiv) {
+                this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
+            }
         }
         this.firstMove = false;
-        const clientRect = this.selfRef.current!.getBoundingClientRect();
+        const clientRect = this.selfRef.current?.getBoundingClientRect();
         const pos = {
-            x: event.clientX - clientRect.left,
-            y: event.clientY - clientRect.top,
+            x: event.clientX - (clientRect?.left ?? 0),
+            y: event.clientY - (clientRect?.top ?? 0),
         };
 
         this.checkForBorderToShow(pos.x, pos.y);
 
         // keep it between left & right
-        const dragRect = this.dragDiv!.getBoundingClientRect();
+        const dragRect = this.dragDiv?.getBoundingClientRect() ?? new DOMRect(0, 0, 100, 100);
         let newLeft = pos.x - dragRect.width / 2;
-        if (newLeft + dragRect.width > clientRect.width) {
-            newLeft = clientRect.width - dragRect.width;
+        if (newLeft + dragRect.width > (clientRect?.width ?? 0)) {
+            newLeft = (clientRect?.width ?? 0) - dragRect.width;
         }
         newLeft = Math.max(0, newLeft);
 
-        this.dragDiv!.style.left = newLeft + "px";
-        this.dragDiv!.style.top = pos.y + 5 + "px";
-        if (this.dragRectRendered && this.dragDiv!.style.visibility === "hidden") {
-            // make visible once the drag rect has been rendered
-            this.dragDiv!.style.visibility = "visible";
+        if (this.dragDiv) {
+            this.dragDiv.style.left = newLeft + "px";
+            this.dragDiv.style.top = pos.y + 5 + "px";
+            if (this.dragRectRendered && this.dragDiv.style.visibility === "hidden") {
+                // make visible once the drag rect has been rendered
+                this.dragDiv.style.visibility = "visible";
+            }
         }
 
         let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
@@ -986,18 +1045,26 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
                 this.handleCustomTabDrag(dropInfo, pos, event);
             } else {
                 this.dropInfo = dropInfo;
-                this.outlineDiv!.className = this.getClassName(dropInfo.className);
-                dropInfo.rect.positionElement(this.outlineDiv!);
-                this.outlineDiv!.style.visibility = "visible";
+                if (this.outlineDiv) {
+                    this.outlineDiv.className = this.getClassName(dropInfo.className);
+                    dropInfo.rect.positionElement(this.outlineDiv);
+                    this.outlineDiv.style.visibility = "visible";
+                }
             }
         }
     };
 
     /** @internal */
     onDragEnd = (event: Event) => {
-        const rootdiv = this.selfRef.current!;
-        rootdiv.removeChild(this.outlineDiv!);
-        rootdiv.removeChild(this.dragDiv!);
+        const rootdiv = this.selfRef.current;
+        if (rootdiv) {
+            if (this.outlineDiv) {
+                rootdiv.removeChild(this.outlineDiv);
+            }
+            if (this.dragDiv) {
+                rootdiv.removeChild(this.dragDiv);
+            }
+        }
         this.dragDiv = undefined;
         this.hidePortal();
 
@@ -1076,16 +1143,19 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
 
         this.dropInfo = dropInfo;
-        this.outlineDiv!.className = this.getClassName(this.customDrop ? CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
-
-        if (this.customDrop) {
-            this.customDrop.rect.positionElement(this.outlineDiv!);
-        } else {
-            dropInfo.rect.positionElement(this.outlineDiv!);
+        if (this.outlineDiv) {
+            this.outlineDiv.className = this.getClassName(this.customDrop ? CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
+            if (this.customDrop) {
+                this.customDrop.rect.positionElement(this.outlineDiv);
+            } else {
+                dropInfo.rect.positionElement(this.outlineDiv);
+            }
         }
 
         DragDrop.instance.setGlassCursorOverride(this.customDrop?.cursor);
-        this.outlineDiv!.style.visibility = "visible";
+        if (this.outlineDiv) {
+            this.outlineDiv.style.visibility = "visible";
+        }
 
         try {
             invalidated?.();

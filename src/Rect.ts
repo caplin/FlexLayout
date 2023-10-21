@@ -26,12 +26,8 @@ export class Rect {
         return new Rect(this.x, this.y, this.width, this.height);
     }
 
-    equals(rect: Rect) {
-        if (this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height) {
-            return true;
-        } else {
-            return false;
-        }
+    equals(rect: Rect | null | undefined) {
+        return this.x === rect?.x && this.y === rect?.y && this.width === rect?.width && this.height === rect?.height
     }
 
     getBottom() {

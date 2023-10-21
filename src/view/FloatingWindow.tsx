@@ -8,7 +8,7 @@ export interface IFloatingWindowProps {
     title: string;
     id: string;
     url: string;
-    rect: Rect;
+    rect: Rect | null;
     onCloseWindow: (id: string) => void;
     onSetWindow: (id: string, window: Window) => void;
 }
@@ -31,7 +31,7 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
             clearTimeout(timerId.current);
         }
         let isMounted = true;
-        const r = rect;
+        const r = rect || new Rect(0, 0, 100, 100);
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
@@ -122,7 +122,7 @@ function copyStyles(doc: Document, styleSheets: IStyleSheet[]): Promise<boolean[
             styleElement.href = styleSheet.href!;
             head.appendChild(styleElement);
             promises.push(
-                new Promise((resolve, reject) => {
+                new Promise((resolve) => {
                     styleElement.onload = () => resolve(true);
                 })
             );
