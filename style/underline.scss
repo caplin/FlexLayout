@@ -128,6 +128,12 @@ $font-family: Roboto, Arial, sans-serif !default;
     background-color:var(--color-2);
 }
 
+@mixin tab_button_stretch_mixin {
+}
+
+@mixin tab_button_stretch_hovered_mixin {
+}
+
 @mixin border_mixin {
 }
 

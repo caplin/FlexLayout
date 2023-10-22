@@ -208,6 +208,27 @@
             cursor: pointer;
             @include tab_button_mixin;
 
+            &_stretch {
+                background-color: transparent;
+                color:var(--color-tab-selected);
+                width: 100%;
+                padding: 3px 0em;
+                text-wrap: nowrap;
+                display: flex;
+                gap: 0.3em;
+                align-items: center;
+                box-sizing: border-box;
+                cursor: pointer;
+                @include tab_button_stretch_mixin;
+
+                @media (hover: hover) {
+                    &:hover {
+                        color:var(--color-tab-selected);
+                        @include tab_button_stretch_hovered_mixin;
+                    }
+                }
+            }
+
             &--selected {
                 background-color:var(--color-tab-selected-background);
                 color:var(--color-tab-selected);

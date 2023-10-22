@@ -112,6 +112,12 @@ $font-family: Roboto, Arial, sans-serif !default;
 @mixin tab_button_hovered_mixin {
 }
 
+@mixin tab_button_stretch_mixin {
+}
+
+@mixin tab_button_stretch_hovered_mixin {
+}
+
 @mixin close_button_hovered_mixin {
     background-color:var(--color-3);
 }

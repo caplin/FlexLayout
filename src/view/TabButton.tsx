@@ -135,14 +135,17 @@ export const TabButton = (props: ITabButtonProps) => {
     const cm = layout.getClassName;
     const parentNode = node.getParent() as TabSetNode;
 
-    let baseClassName = CLASSES.FLEXLAYOUT__TAB_BUTTON;
+    const isStretch = parentNode.isEnableSingleTabStretch() && parentNode.getChildren().length === 1;
+    let baseClassName = isStretch ? CLASSES.FLEXLAYOUT__TAB_BUTTON_STRETCH : CLASSES.FLEXLAYOUT__TAB_BUTTON;
     let classNames = cm(baseClassName);
     classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
 
-    if (selected) {
-        classNames += " " + cm(baseClassName + "--selected");
-    } else {
-        classNames += " " + cm(baseClassName + "--unselected");
+    if (!isStretch) {
+        if (selected) {
+            classNames += " " + cm(baseClassName + "--selected");
+        } else {
+            classNames += " " + cm(baseClassName + "--unselected");
+        }
     }
 
     if (node.getClassName() !== undefined) {
@@ -177,7 +180,7 @@ export const TabButton = (props: ITabButtonProps) => {
         );
     }
 
-    if (node.isEnableClose()) {
+    if (node.isEnableClose() && !isStretch) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         renderState.buttons.push(
             <div

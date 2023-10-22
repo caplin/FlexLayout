@@ -102,6 +102,11 @@ export const TabSet = (props: ITabSetProps) => {
         event.stopPropagation();
     };
 
+    const onCloseTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        layout.doAction(Actions.deleteTab(node.getChildren()[0].getId()));
+        event.stopPropagation();
+    };
+
     const onFloatTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (selectedTabNode !== undefined) {
             layout.doAction(Actions.floatTab(selectedTabNode.getId()));
@@ -167,12 +172,15 @@ export const TabSet = (props: ITabSetProps) => {
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
 
+    const isTabStretch = node.isEnableSingleTabStretch() && node.getChildren().length === 1;
+    const showClose = (isTabStretch && ((node.getChildren()[0] as TabNode).isEnableClose())) || node.isEnableClose();
+
     if (renderState.overflowPosition === undefined) {
         renderState.overflowPosition = stickyButtons.length;
     }
     
     if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
+        if (tabsTruncated || isTabStretch) {
             buttons = [...stickyButtons, ...buttons];
         } else {
             tabs.push(<div
@@ -253,8 +261,8 @@ export const TabSet = (props: ITabSetProps) => {
         );
     }
 
-    if (!node.isMaximized() && node.isEnableClose()) {
-        const title = layout.i18nName(I18nLabel.Close_Tabset);
+    if (!node.isMaximized() && showClose) {
+        const title = isTabStretch ? layout.i18nName(I18nLabel.Close_Tab) : layout.i18nName(I18nLabel.Close_Tabset);
         const btns = showHeader ? headerButtons : buttons;
         btns.push(
             <button
@@ -262,7 +270,7 @@ export const TabSet = (props: ITabSetProps) => {
                 data-layout-path={path + "/button/close"}
                 title={title}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
-                onClick={onClose}
+                onClick={isTabStretch ? onCloseTab : onClose}
                 onMouseDown={onInterceptMouseDown}
                 onTouchStart={onInterceptMouseDown}
             >
@@ -348,7 +356,7 @@ export const TabSet = (props: ITabSetProps) => {
             onTouchStart={onMouseDown}>
             <div ref={tabbarInnerRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
                 <div
-                    style={{ left: position }}
+                    style={{ left: position, width: (isTabStretch? "100%": "10000px")}}
                     className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation())}
                 >
                     {tabs}

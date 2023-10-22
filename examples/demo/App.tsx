@@ -393,10 +393,11 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
-        // renderValues.content = (<InnerComponent/>);
+        // renderValues.content = (<div>hello</div>);
         // renderValues.content += " *";
         // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
         // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+        // renderValues.buttons.push(<div style={{flexGrow:1}}></div>);
         // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
     }
 
@@ -486,6 +487,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                             <option value="default">Default</option>
                             <option value="newfeatures">New Features</option>
                             <option value="simple">Simple</option>
+                            <option value="mosaic">Mosaic Style</option>
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
                             <option value="headers">Headers</option>

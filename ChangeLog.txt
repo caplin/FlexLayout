@@ -1,3 +1,11 @@
+0.7.13
+New attribute on tabset: enableSingleTabStretch will stretch a single tab to take up
+all the remaining space and change the style to look like a header, combined with enableDrop
+this can be used to create a Mosaic style layout (headed panels without tabs), see the new
+Mosaic Style layout in the Demo.
+The layout methods addTabToTabSet and addTabToActiveTabSet now return the added TabNode.
+Fixed #352 - Layout.getDomRect returning null.
+
 0.7.12
 Action.setActiveTabset can now take undefined to unset the active tabset.
 Added Tab attribute contentClassName to add a class to the tab content.

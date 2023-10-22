@@ -213,6 +213,23 @@
   padding: 3px 0.5em;
   cursor: pointer;
 }
+.flexlayout__tab_button_stretch {
+  background-color: transparent;
+  color: var(--color-tab-selected);
+  width: 100%;
+  padding: 3px 0em;
+  text-wrap: nowrap;
+  display: flex;
+  gap: 0.3em;
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .flexlayout__tab_button_stretch:hover {
+    color: var(--color-tab-selected);
+  }
+}
 .flexlayout__tab_button--selected {
   background-color: var(--color-tab-selected-background);
   color: var(--color-tab-selected);
