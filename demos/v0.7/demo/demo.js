@@ -2138,7 +2138,7 @@ if (
   __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
 }
           var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-var Scheduler = __webpack_require__(/*! scheduler */ "./node_modules/scheduler/index.js");
+var Scheduler = __webpack_require__(/*! scheduler */ "./node_modules/react-dom/node_modules/scheduler/index.js");
 
 var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
 
@@ -32056,6 +32056,667 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js":
+/*!************************************************************************************!*\
+  !*** ./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js ***!
+  \************************************************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+/**
+ * @license React
+ * scheduler.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+
+
+if (true) {
+  (function() {
+
+          'use strict';
+
+/* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
+if (
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart ===
+    'function'
+) {
+  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
+}
+          var enableSchedulerDebugging = false;
+var enableProfiling = false;
+var frameYieldMs = 5;
+
+function push(heap, node) {
+  var index = heap.length;
+  heap.push(node);
+  siftUp(heap, node, index);
+}
+function peek(heap) {
+  return heap.length === 0 ? null : heap[0];
+}
+function pop(heap) {
+  if (heap.length === 0) {
+    return null;
+  }
+
+  var first = heap[0];
+  var last = heap.pop();
+
+  if (last !== first) {
+    heap[0] = last;
+    siftDown(heap, last, 0);
+  }
+
+  return first;
+}
+
+function siftUp(heap, node, i) {
+  var index = i;
+
+  while (index > 0) {
+    var parentIndex = index - 1 >>> 1;
+    var parent = heap[parentIndex];
+
+    if (compare(parent, node) > 0) {
+      // The parent is larger. Swap positions.
+      heap[parentIndex] = node;
+      heap[index] = parent;
+      index = parentIndex;
+    } else {
+      // The parent is smaller. Exit.
+      return;
+    }
+  }
+}
+
+function siftDown(heap, node, i) {
+  var index = i;
+  var length = heap.length;
+  var halfLength = length >>> 1;
+
+  while (index < halfLength) {
+    var leftIndex = (index + 1) * 2 - 1;
+    var left = heap[leftIndex];
+    var rightIndex = leftIndex + 1;
+    var right = heap[rightIndex]; // If the left or right node is smaller, swap with the smaller of those.
+
+    if (compare(left, node) < 0) {
+      if (rightIndex < length && compare(right, left) < 0) {
+        heap[index] = right;
+        heap[rightIndex] = node;
+        index = rightIndex;
+      } else {
+        heap[index] = left;
+        heap[leftIndex] = node;
+        index = leftIndex;
+      }
+    } else if (rightIndex < length && compare(right, node) < 0) {
+      heap[index] = right;
+      heap[rightIndex] = node;
+      index = rightIndex;
+    } else {
+      // Neither child is smaller. Exit.
+      return;
+    }
+  }
+}
+
+function compare(a, b) {
+  // Compare sort index first, then task id.
+  var diff = a.sortIndex - b.sortIndex;
+  return diff !== 0 ? diff : a.id - b.id;
+}
+
+// TODO: Use symbols?
+var ImmediatePriority = 1;
+var UserBlockingPriority = 2;
+var NormalPriority = 3;
+var LowPriority = 4;
+var IdlePriority = 5;
+
+function markTaskErrored(task, ms) {
+}
+
+/* eslint-disable no-var */
+
+var hasPerformanceNow = typeof performance === 'object' && typeof performance.now === 'function';
+
+if (hasPerformanceNow) {
+  var localPerformance = performance;
+
+  exports.unstable_now = function () {
+    return localPerformance.now();
+  };
+} else {
+  var localDate = Date;
+  var initialTime = localDate.now();
+
+  exports.unstable_now = function () {
+    return localDate.now() - initialTime;
+  };
+} // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
+// Math.pow(2, 30) - 1
+// 0b111111111111111111111111111111
+
+
+var maxSigned31BitInt = 1073741823; // Times out immediately
+
+var IMMEDIATE_PRIORITY_TIMEOUT = -1; // Eventually times out
+
+var USER_BLOCKING_PRIORITY_TIMEOUT = 250;
+var NORMAL_PRIORITY_TIMEOUT = 5000;
+var LOW_PRIORITY_TIMEOUT = 10000; // Never times out
+
+var IDLE_PRIORITY_TIMEOUT = maxSigned31BitInt; // Tasks are stored on a min heap
+
+var taskQueue = [];
+var timerQueue = []; // Incrementing id counter. Used to maintain insertion order.
+
+var taskIdCounter = 1; // Pausing the scheduler is useful for debugging.
+var currentTask = null;
+var currentPriorityLevel = NormalPriority; // This is set while performing work, to prevent re-entrance.
+
+var isPerformingWork = false;
+var isHostCallbackScheduled = false;
+var isHostTimeoutScheduled = false; // Capture local references to native APIs, in case a polyfill overrides them.
+
+var localSetTimeout = typeof setTimeout === 'function' ? setTimeout : null;
+var localClearTimeout = typeof clearTimeout === 'function' ? clearTimeout : null;
+var localSetImmediate = typeof setImmediate !== 'undefined' ? setImmediate : null; // IE and Node.js + jsdom
+
+var isInputPending = typeof navigator !== 'undefined' && navigator.scheduling !== undefined && navigator.scheduling.isInputPending !== undefined ? navigator.scheduling.isInputPending.bind(navigator.scheduling) : null;
+
+function advanceTimers(currentTime) {
+  // Check for tasks that are no longer delayed and add them to the queue.
+  var timer = peek(timerQueue);
+
+  while (timer !== null) {
+    if (timer.callback === null) {
+      // Timer was cancelled.
+      pop(timerQueue);
+    } else if (timer.startTime <= currentTime) {
+      // Timer fired. Transfer to the task queue.
+      pop(timerQueue);
+      timer.sortIndex = timer.expirationTime;
+      push(taskQueue, timer);
+    } else {
+      // Remaining timers are pending.
+      return;
+    }
+
+    timer = peek(timerQueue);
+  }
+}
+
+function handleTimeout(currentTime) {
+  isHostTimeoutScheduled = false;
+  advanceTimers(currentTime);
+
+  if (!isHostCallbackScheduled) {
+    if (peek(taskQueue) !== null) {
+      isHostCallbackScheduled = true;
+      requestHostCallback(flushWork);
+    } else {
+      var firstTimer = peek(timerQueue);
+
+      if (firstTimer !== null) {
+        requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+      }
+    }
+  }
+}
+
+function flushWork(hasTimeRemaining, initialTime) {
+
+
+  isHostCallbackScheduled = false;
+
+  if (isHostTimeoutScheduled) {
+    // We scheduled a timeout but it's no longer needed. Cancel it.
+    isHostTimeoutScheduled = false;
+    cancelHostTimeout();
+  }
+
+  isPerformingWork = true;
+  var previousPriorityLevel = currentPriorityLevel;
+
+  try {
+    if (enableProfiling) {
+      try {
+        return workLoop(hasTimeRemaining, initialTime);
+      } catch (error) {
+        if (currentTask !== null) {
+          var currentTime = exports.unstable_now();
+          markTaskErrored(currentTask, currentTime);
+          currentTask.isQueued = false;
+        }
+
+        throw error;
+      }
+    } else {
+      // No catch in prod code path.
+      return workLoop(hasTimeRemaining, initialTime);
+    }
+  } finally {
+    currentTask = null;
+    currentPriorityLevel = previousPriorityLevel;
+    isPerformingWork = false;
+  }
+}
+
+function workLoop(hasTimeRemaining, initialTime) {
+  var currentTime = initialTime;
+  advanceTimers(currentTime);
+  currentTask = peek(taskQueue);
+
+  while (currentTask !== null && !(enableSchedulerDebugging )) {
+    if (currentTask.expirationTime > currentTime && (!hasTimeRemaining || shouldYieldToHost())) {
+      // This currentTask hasn't expired, and we've reached the deadline.
+      break;
+    }
+
+    var callback = currentTask.callback;
+
+    if (typeof callback === 'function') {
+      currentTask.callback = null;
+      currentPriorityLevel = currentTask.priorityLevel;
+      var didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
+
+      var continuationCallback = callback(didUserCallbackTimeout);
+      currentTime = exports.unstable_now();
+
+      if (typeof continuationCallback === 'function') {
+        currentTask.callback = continuationCallback;
+      } else {
+
+        if (currentTask === peek(taskQueue)) {
+          pop(taskQueue);
+        }
+      }
+
+      advanceTimers(currentTime);
+    } else {
+      pop(taskQueue);
+    }
+
+    currentTask = peek(taskQueue);
+  } // Return whether there's additional work
+
+
+  if (currentTask !== null) {
+    return true;
+  } else {
+    var firstTimer = peek(timerQueue);
+
+    if (firstTimer !== null) {
+      requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+    }
+
+    return false;
+  }
+}
+
+function unstable_runWithPriority(priorityLevel, eventHandler) {
+  switch (priorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+    case LowPriority:
+    case IdlePriority:
+      break;
+
+    default:
+      priorityLevel = NormalPriority;
+  }
+
+  var previousPriorityLevel = currentPriorityLevel;
+  currentPriorityLevel = priorityLevel;
+
+  try {
+    return eventHandler();
+  } finally {
+    currentPriorityLevel = previousPriorityLevel;
+  }
+}
+
+function unstable_next(eventHandler) {
+  var priorityLevel;
+
+  switch (currentPriorityLevel) {
+    case ImmediatePriority:
+    case UserBlockingPriority:
+    case NormalPriority:
+      // Shift down to normal priority
+      priorityLevel = NormalPriority;
+      break;
+
+    default:
+      // Anything lower than normal priority should remain at the current level.
+      priorityLevel = currentPriorityLevel;
+      break;
+  }
+
+  var previousPriorityLevel = currentPriorityLevel;
+  currentPriorityLevel = priorityLevel;
+
+  try {
+    return eventHandler();
+  } finally {
+    currentPriorityLevel = previousPriorityLevel;
+  }
+}
+
+function unstable_wrapCallback(callback) {
+  var parentPriorityLevel = currentPriorityLevel;
+  return function () {
+    // This is a fork of runWithPriority, inlined for performance.
+    var previousPriorityLevel = currentPriorityLevel;
+    currentPriorityLevel = parentPriorityLevel;
+
+    try {
+      return callback.apply(this, arguments);
+    } finally {
+      currentPriorityLevel = previousPriorityLevel;
+    }
+  };
+}
+
+function unstable_scheduleCallback(priorityLevel, callback, options) {
+  var currentTime = exports.unstable_now();
+  var startTime;
+
+  if (typeof options === 'object' && options !== null) {
+    var delay = options.delay;
+
+    if (typeof delay === 'number' && delay > 0) {
+      startTime = currentTime + delay;
+    } else {
+      startTime = currentTime;
+    }
+  } else {
+    startTime = currentTime;
+  }
+
+  var timeout;
+
+  switch (priorityLevel) {
+    case ImmediatePriority:
+      timeout = IMMEDIATE_PRIORITY_TIMEOUT;
+      break;
+
+    case UserBlockingPriority:
+      timeout = USER_BLOCKING_PRIORITY_TIMEOUT;
+      break;
+
+    case IdlePriority:
+      timeout = IDLE_PRIORITY_TIMEOUT;
+      break;
+
+    case LowPriority:
+      timeout = LOW_PRIORITY_TIMEOUT;
+      break;
+
+    case NormalPriority:
+    default:
+      timeout = NORMAL_PRIORITY_TIMEOUT;
+      break;
+  }
+
+  var expirationTime = startTime + timeout;
+  var newTask = {
+    id: taskIdCounter++,
+    callback: callback,
+    priorityLevel: priorityLevel,
+    startTime: startTime,
+    expirationTime: expirationTime,
+    sortIndex: -1
+  };
+
+  if (startTime > currentTime) {
+    // This is a delayed task.
+    newTask.sortIndex = startTime;
+    push(timerQueue, newTask);
+
+    if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
+      // All tasks are delayed, and this is the task with the earliest delay.
+      if (isHostTimeoutScheduled) {
+        // Cancel an existing timeout.
+        cancelHostTimeout();
+      } else {
+        isHostTimeoutScheduled = true;
+      } // Schedule a timeout.
+
+
+      requestHostTimeout(handleTimeout, startTime - currentTime);
+    }
+  } else {
+    newTask.sortIndex = expirationTime;
+    push(taskQueue, newTask);
+    // wait until the next time we yield.
+
+
+    if (!isHostCallbackScheduled && !isPerformingWork) {
+      isHostCallbackScheduled = true;
+      requestHostCallback(flushWork);
+    }
+  }
+
+  return newTask;
+}
+
+function unstable_pauseExecution() {
+}
+
+function unstable_continueExecution() {
+
+  if (!isHostCallbackScheduled && !isPerformingWork) {
+    isHostCallbackScheduled = true;
+    requestHostCallback(flushWork);
+  }
+}
+
+function unstable_getFirstCallbackNode() {
+  return peek(taskQueue);
+}
+
+function unstable_cancelCallback(task) {
+  // remove from the queue because you can't remove arbitrary nodes from an
+  // array based heap, only the first one.)
+
+
+  task.callback = null;
+}
+
+function unstable_getCurrentPriorityLevel() {
+  return currentPriorityLevel;
+}
+
+var isMessageLoopRunning = false;
+var scheduledHostCallback = null;
+var taskTimeoutID = -1; // Scheduler periodically yields in case there is other work on the main
+// thread, like user events. By default, it yields multiple times per frame.
+// It does not attempt to align with frame boundaries, since most tasks don't
+// need to be frame aligned; for those that do, use requestAnimationFrame.
+
+var frameInterval = frameYieldMs;
+var startTime = -1;
+
+function shouldYieldToHost() {
+  var timeElapsed = exports.unstable_now() - startTime;
+
+  if (timeElapsed < frameInterval) {
+    // The main thread has only been blocked for a really short amount of time;
+    // smaller than a single frame. Don't yield yet.
+    return false;
+  } // The main thread has been blocked for a non-negligible amount of time. We
+
+
+  return true;
+}
+
+function requestPaint() {
+
+}
+
+function forceFrameRate(fps) {
+  if (fps < 0 || fps > 125) {
+    // Using console['error'] to evade Babel and ESLint
+    console['error']('forceFrameRate takes a positive int between 0 and 125, ' + 'forcing frame rates higher than 125 fps is not supported');
+    return;
+  }
+
+  if (fps > 0) {
+    frameInterval = Math.floor(1000 / fps);
+  } else {
+    // reset the framerate
+    frameInterval = frameYieldMs;
+  }
+}
+
+var performWorkUntilDeadline = function () {
+  if (scheduledHostCallback !== null) {
+    var currentTime = exports.unstable_now(); // Keep track of the start time so we can measure how long the main thread
+    // has been blocked.
+
+    startTime = currentTime;
+    var hasTimeRemaining = true; // If a scheduler task throws, exit the current browser task so the
+    // error can be observed.
+    //
+    // Intentionally not using a try-catch, since that makes some debugging
+    // techniques harder. Instead, if `scheduledHostCallback` errors, then
+    // `hasMoreWork` will remain true, and we'll continue the work loop.
+
+    var hasMoreWork = true;
+
+    try {
+      hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
+    } finally {
+      if (hasMoreWork) {
+        // If there's more work, schedule the next message event at the end
+        // of the preceding one.
+        schedulePerformWorkUntilDeadline();
+      } else {
+        isMessageLoopRunning = false;
+        scheduledHostCallback = null;
+      }
+    }
+  } else {
+    isMessageLoopRunning = false;
+  } // Yielding to the browser will give it a chance to paint, so we can
+};
+
+var schedulePerformWorkUntilDeadline;
+
+if (typeof localSetImmediate === 'function') {
+  // Node.js and old IE.
+  // There's a few reasons for why we prefer setImmediate.
+  //
+  // Unlike MessageChannel, it doesn't prevent a Node.js process from exiting.
+  // (Even though this is a DOM fork of the Scheduler, you could get here
+  // with a mix of Node.js 15+, which has a MessageChannel, and jsdom.)
+  // https://github.com/facebook/react/issues/20756
+  //
+  // But also, it runs earlier which is the semantic we want.
+  // If other browsers ever implement it, it's better to use it.
+  // Although both of these would be inferior to native scheduling.
+  schedulePerformWorkUntilDeadline = function () {
+    localSetImmediate(performWorkUntilDeadline);
+  };
+} else if (typeof MessageChannel !== 'undefined') {
+  // DOM and Worker environments.
+  // We prefer MessageChannel because of the 4ms setTimeout clamping.
+  var channel = new MessageChannel();
+  var port = channel.port2;
+  channel.port1.onmessage = performWorkUntilDeadline;
+
+  schedulePerformWorkUntilDeadline = function () {
+    port.postMessage(null);
+  };
+} else {
+  // We should only fallback here in non-browser environments.
+  schedulePerformWorkUntilDeadline = function () {
+    localSetTimeout(performWorkUntilDeadline, 0);
+  };
+}
+
+function requestHostCallback(callback) {
+  scheduledHostCallback = callback;
+
+  if (!isMessageLoopRunning) {
+    isMessageLoopRunning = true;
+    schedulePerformWorkUntilDeadline();
+  }
+}
+
+function requestHostTimeout(callback, ms) {
+  taskTimeoutID = localSetTimeout(function () {
+    callback(exports.unstable_now());
+  }, ms);
+}
+
+function cancelHostTimeout() {
+  localClearTimeout(taskTimeoutID);
+  taskTimeoutID = -1;
+}
+
+var unstable_requestPaint = requestPaint;
+var unstable_Profiling =  null;
+
+exports.unstable_IdlePriority = IdlePriority;
+exports.unstable_ImmediatePriority = ImmediatePriority;
+exports.unstable_LowPriority = LowPriority;
+exports.unstable_NormalPriority = NormalPriority;
+exports.unstable_Profiling = unstable_Profiling;
+exports.unstable_UserBlockingPriority = UserBlockingPriority;
+exports.unstable_cancelCallback = unstable_cancelCallback;
+exports.unstable_continueExecution = unstable_continueExecution;
+exports.unstable_forceFrameRate = forceFrameRate;
+exports.unstable_getCurrentPriorityLevel = unstable_getCurrentPriorityLevel;
+exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
+exports.unstable_next = unstable_next;
+exports.unstable_pauseExecution = unstable_pauseExecution;
+exports.unstable_requestPaint = unstable_requestPaint;
+exports.unstable_runWithPriority = unstable_runWithPriority;
+exports.unstable_scheduleCallback = unstable_scheduleCallback;
+exports.unstable_shouldYield = shouldYieldToHost;
+exports.unstable_wrapCallback = unstable_wrapCallback;
+          /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
+if (
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
+  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop ===
+    'function'
+) {
+  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
+}
+        
+  })();
+}
+
+
+/***/ }),
+
+/***/ "./node_modules/react-dom/node_modules/scheduler/index.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/react-dom/node_modules/scheduler/index.js ***!
+  \****************************************************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+if (false) {} else {
+  module.exports = __webpack_require__(/*! ./cjs/scheduler.development.js */ "./node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js");
+}
+
+
+/***/ }),
+
 /***/ "./node_modules/react/cjs/react.development.js":
 /*!*****************************************************!*\
   !*** ./node_modules/react/cjs/react.development.js ***!
@@ -34823,667 +35484,6 @@ if (false) {} else {
 
 /***/ }),
 
-/***/ "./node_modules/scheduler/cjs/scheduler.development.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/scheduler/cjs/scheduler.development.js ***!
-  \*************************************************************/
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-/**
- * @license React
- * scheduler.development.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-
-
-if (true) {
-  (function() {
-
-          'use strict';
-
-/* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
-if (
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart ===
-    'function'
-) {
-  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStart(new Error());
-}
-          var enableSchedulerDebugging = false;
-var enableProfiling = false;
-var frameYieldMs = 5;
-
-function push(heap, node) {
-  var index = heap.length;
-  heap.push(node);
-  siftUp(heap, node, index);
-}
-function peek(heap) {
-  return heap.length === 0 ? null : heap[0];
-}
-function pop(heap) {
-  if (heap.length === 0) {
-    return null;
-  }
-
-  var first = heap[0];
-  var last = heap.pop();
-
-  if (last !== first) {
-    heap[0] = last;
-    siftDown(heap, last, 0);
-  }
-
-  return first;
-}
-
-function siftUp(heap, node, i) {
-  var index = i;
-
-  while (index > 0) {
-    var parentIndex = index - 1 >>> 1;
-    var parent = heap[parentIndex];
-
-    if (compare(parent, node) > 0) {
-      // The parent is larger. Swap positions.
-      heap[parentIndex] = node;
-      heap[index] = parent;
-      index = parentIndex;
-    } else {
-      // The parent is smaller. Exit.
-      return;
-    }
-  }
-}
-
-function siftDown(heap, node, i) {
-  var index = i;
-  var length = heap.length;
-  var halfLength = length >>> 1;
-
-  while (index < halfLength) {
-    var leftIndex = (index + 1) * 2 - 1;
-    var left = heap[leftIndex];
-    var rightIndex = leftIndex + 1;
-    var right = heap[rightIndex]; // If the left or right node is smaller, swap with the smaller of those.
-
-    if (compare(left, node) < 0) {
-      if (rightIndex < length && compare(right, left) < 0) {
-        heap[index] = right;
-        heap[rightIndex] = node;
-        index = rightIndex;
-      } else {
-        heap[index] = left;
-        heap[leftIndex] = node;
-        index = leftIndex;
-      }
-    } else if (rightIndex < length && compare(right, node) < 0) {
-      heap[index] = right;
-      heap[rightIndex] = node;
-      index = rightIndex;
-    } else {
-      // Neither child is smaller. Exit.
-      return;
-    }
-  }
-}
-
-function compare(a, b) {
-  // Compare sort index first, then task id.
-  var diff = a.sortIndex - b.sortIndex;
-  return diff !== 0 ? diff : a.id - b.id;
-}
-
-// TODO: Use symbols?
-var ImmediatePriority = 1;
-var UserBlockingPriority = 2;
-var NormalPriority = 3;
-var LowPriority = 4;
-var IdlePriority = 5;
-
-function markTaskErrored(task, ms) {
-}
-
-/* eslint-disable no-var */
-
-var hasPerformanceNow = typeof performance === 'object' && typeof performance.now === 'function';
-
-if (hasPerformanceNow) {
-  var localPerformance = performance;
-
-  exports.unstable_now = function () {
-    return localPerformance.now();
-  };
-} else {
-  var localDate = Date;
-  var initialTime = localDate.now();
-
-  exports.unstable_now = function () {
-    return localDate.now() - initialTime;
-  };
-} // Max 31 bit integer. The max integer size in V8 for 32-bit systems.
-// Math.pow(2, 30) - 1
-// 0b111111111111111111111111111111
-
-
-var maxSigned31BitInt = 1073741823; // Times out immediately
-
-var IMMEDIATE_PRIORITY_TIMEOUT = -1; // Eventually times out
-
-var USER_BLOCKING_PRIORITY_TIMEOUT = 250;
-var NORMAL_PRIORITY_TIMEOUT = 5000;
-var LOW_PRIORITY_TIMEOUT = 10000; // Never times out
-
-var IDLE_PRIORITY_TIMEOUT = maxSigned31BitInt; // Tasks are stored on a min heap
-
-var taskQueue = [];
-var timerQueue = []; // Incrementing id counter. Used to maintain insertion order.
-
-var taskIdCounter = 1; // Pausing the scheduler is useful for debugging.
-var currentTask = null;
-var currentPriorityLevel = NormalPriority; // This is set while performing work, to prevent re-entrance.
-
-var isPerformingWork = false;
-var isHostCallbackScheduled = false;
-var isHostTimeoutScheduled = false; // Capture local references to native APIs, in case a polyfill overrides them.
-
-var localSetTimeout = typeof setTimeout === 'function' ? setTimeout : null;
-var localClearTimeout = typeof clearTimeout === 'function' ? clearTimeout : null;
-var localSetImmediate = typeof setImmediate !== 'undefined' ? setImmediate : null; // IE and Node.js + jsdom
-
-var isInputPending = typeof navigator !== 'undefined' && navigator.scheduling !== undefined && navigator.scheduling.isInputPending !== undefined ? navigator.scheduling.isInputPending.bind(navigator.scheduling) : null;
-
-function advanceTimers(currentTime) {
-  // Check for tasks that are no longer delayed and add them to the queue.
-  var timer = peek(timerQueue);
-
-  while (timer !== null) {
-    if (timer.callback === null) {
-      // Timer was cancelled.
-      pop(timerQueue);
-    } else if (timer.startTime <= currentTime) {
-      // Timer fired. Transfer to the task queue.
-      pop(timerQueue);
-      timer.sortIndex = timer.expirationTime;
-      push(taskQueue, timer);
-    } else {
-      // Remaining timers are pending.
-      return;
-    }
-
-    timer = peek(timerQueue);
-  }
-}
-
-function handleTimeout(currentTime) {
-  isHostTimeoutScheduled = false;
-  advanceTimers(currentTime);
-
-  if (!isHostCallbackScheduled) {
-    if (peek(taskQueue) !== null) {
-      isHostCallbackScheduled = true;
-      requestHostCallback(flushWork);
-    } else {
-      var firstTimer = peek(timerQueue);
-
-      if (firstTimer !== null) {
-        requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-      }
-    }
-  }
-}
-
-function flushWork(hasTimeRemaining, initialTime) {
-
-
-  isHostCallbackScheduled = false;
-
-  if (isHostTimeoutScheduled) {
-    // We scheduled a timeout but it's no longer needed. Cancel it.
-    isHostTimeoutScheduled = false;
-    cancelHostTimeout();
-  }
-
-  isPerformingWork = true;
-  var previousPriorityLevel = currentPriorityLevel;
-
-  try {
-    if (enableProfiling) {
-      try {
-        return workLoop(hasTimeRemaining, initialTime);
-      } catch (error) {
-        if (currentTask !== null) {
-          var currentTime = exports.unstable_now();
-          markTaskErrored(currentTask, currentTime);
-          currentTask.isQueued = false;
-        }
-
-        throw error;
-      }
-    } else {
-      // No catch in prod code path.
-      return workLoop(hasTimeRemaining, initialTime);
-    }
-  } finally {
-    currentTask = null;
-    currentPriorityLevel = previousPriorityLevel;
-    isPerformingWork = false;
-  }
-}
-
-function workLoop(hasTimeRemaining, initialTime) {
-  var currentTime = initialTime;
-  advanceTimers(currentTime);
-  currentTask = peek(taskQueue);
-
-  while (currentTask !== null && !(enableSchedulerDebugging )) {
-    if (currentTask.expirationTime > currentTime && (!hasTimeRemaining || shouldYieldToHost())) {
-      // This currentTask hasn't expired, and we've reached the deadline.
-      break;
-    }
-
-    var callback = currentTask.callback;
-
-    if (typeof callback === 'function') {
-      currentTask.callback = null;
-      currentPriorityLevel = currentTask.priorityLevel;
-      var didUserCallbackTimeout = currentTask.expirationTime <= currentTime;
-
-      var continuationCallback = callback(didUserCallbackTimeout);
-      currentTime = exports.unstable_now();
-
-      if (typeof continuationCallback === 'function') {
-        currentTask.callback = continuationCallback;
-      } else {
-
-        if (currentTask === peek(taskQueue)) {
-          pop(taskQueue);
-        }
-      }
-
-      advanceTimers(currentTime);
-    } else {
-      pop(taskQueue);
-    }
-
-    currentTask = peek(taskQueue);
-  } // Return whether there's additional work
-
-
-  if (currentTask !== null) {
-    return true;
-  } else {
-    var firstTimer = peek(timerQueue);
-
-    if (firstTimer !== null) {
-      requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-    }
-
-    return false;
-  }
-}
-
-function unstable_runWithPriority(priorityLevel, eventHandler) {
-  switch (priorityLevel) {
-    case ImmediatePriority:
-    case UserBlockingPriority:
-    case NormalPriority:
-    case LowPriority:
-    case IdlePriority:
-      break;
-
-    default:
-      priorityLevel = NormalPriority;
-  }
-
-  var previousPriorityLevel = currentPriorityLevel;
-  currentPriorityLevel = priorityLevel;
-
-  try {
-    return eventHandler();
-  } finally {
-    currentPriorityLevel = previousPriorityLevel;
-  }
-}
-
-function unstable_next(eventHandler) {
-  var priorityLevel;
-
-  switch (currentPriorityLevel) {
-    case ImmediatePriority:
-    case UserBlockingPriority:
-    case NormalPriority:
-      // Shift down to normal priority
-      priorityLevel = NormalPriority;
-      break;
-
-    default:
-      // Anything lower than normal priority should remain at the current level.
-      priorityLevel = currentPriorityLevel;
-      break;
-  }
-
-  var previousPriorityLevel = currentPriorityLevel;
-  currentPriorityLevel = priorityLevel;
-
-  try {
-    return eventHandler();
-  } finally {
-    currentPriorityLevel = previousPriorityLevel;
-  }
-}
-
-function unstable_wrapCallback(callback) {
-  var parentPriorityLevel = currentPriorityLevel;
-  return function () {
-    // This is a fork of runWithPriority, inlined for performance.
-    var previousPriorityLevel = currentPriorityLevel;
-    currentPriorityLevel = parentPriorityLevel;
-
-    try {
-      return callback.apply(this, arguments);
-    } finally {
-      currentPriorityLevel = previousPriorityLevel;
-    }
-  };
-}
-
-function unstable_scheduleCallback(priorityLevel, callback, options) {
-  var currentTime = exports.unstable_now();
-  var startTime;
-
-  if (typeof options === 'object' && options !== null) {
-    var delay = options.delay;
-
-    if (typeof delay === 'number' && delay > 0) {
-      startTime = currentTime + delay;
-    } else {
-      startTime = currentTime;
-    }
-  } else {
-    startTime = currentTime;
-  }
-
-  var timeout;
-
-  switch (priorityLevel) {
-    case ImmediatePriority:
-      timeout = IMMEDIATE_PRIORITY_TIMEOUT;
-      break;
-
-    case UserBlockingPriority:
-      timeout = USER_BLOCKING_PRIORITY_TIMEOUT;
-      break;
-
-    case IdlePriority:
-      timeout = IDLE_PRIORITY_TIMEOUT;
-      break;
-
-    case LowPriority:
-      timeout = LOW_PRIORITY_TIMEOUT;
-      break;
-
-    case NormalPriority:
-    default:
-      timeout = NORMAL_PRIORITY_TIMEOUT;
-      break;
-  }
-
-  var expirationTime = startTime + timeout;
-  var newTask = {
-    id: taskIdCounter++,
-    callback: callback,
-    priorityLevel: priorityLevel,
-    startTime: startTime,
-    expirationTime: expirationTime,
-    sortIndex: -1
-  };
-
-  if (startTime > currentTime) {
-    // This is a delayed task.
-    newTask.sortIndex = startTime;
-    push(timerQueue, newTask);
-
-    if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
-      // All tasks are delayed, and this is the task with the earliest delay.
-      if (isHostTimeoutScheduled) {
-        // Cancel an existing timeout.
-        cancelHostTimeout();
-      } else {
-        isHostTimeoutScheduled = true;
-      } // Schedule a timeout.
-
-
-      requestHostTimeout(handleTimeout, startTime - currentTime);
-    }
-  } else {
-    newTask.sortIndex = expirationTime;
-    push(taskQueue, newTask);
-    // wait until the next time we yield.
-
-
-    if (!isHostCallbackScheduled && !isPerformingWork) {
-      isHostCallbackScheduled = true;
-      requestHostCallback(flushWork);
-    }
-  }
-
-  return newTask;
-}
-
-function unstable_pauseExecution() {
-}
-
-function unstable_continueExecution() {
-
-  if (!isHostCallbackScheduled && !isPerformingWork) {
-    isHostCallbackScheduled = true;
-    requestHostCallback(flushWork);
-  }
-}
-
-function unstable_getFirstCallbackNode() {
-  return peek(taskQueue);
-}
-
-function unstable_cancelCallback(task) {
-  // remove from the queue because you can't remove arbitrary nodes from an
-  // array based heap, only the first one.)
-
-
-  task.callback = null;
-}
-
-function unstable_getCurrentPriorityLevel() {
-  return currentPriorityLevel;
-}
-
-var isMessageLoopRunning = false;
-var scheduledHostCallback = null;
-var taskTimeoutID = -1; // Scheduler periodically yields in case there is other work on the main
-// thread, like user events. By default, it yields multiple times per frame.
-// It does not attempt to align with frame boundaries, since most tasks don't
-// need to be frame aligned; for those that do, use requestAnimationFrame.
-
-var frameInterval = frameYieldMs;
-var startTime = -1;
-
-function shouldYieldToHost() {
-  var timeElapsed = exports.unstable_now() - startTime;
-
-  if (timeElapsed < frameInterval) {
-    // The main thread has only been blocked for a really short amount of time;
-    // smaller than a single frame. Don't yield yet.
-    return false;
-  } // The main thread has been blocked for a non-negligible amount of time. We
-
-
-  return true;
-}
-
-function requestPaint() {
-
-}
-
-function forceFrameRate(fps) {
-  if (fps < 0 || fps > 125) {
-    // Using console['error'] to evade Babel and ESLint
-    console['error']('forceFrameRate takes a positive int between 0 and 125, ' + 'forcing frame rates higher than 125 fps is not supported');
-    return;
-  }
-
-  if (fps > 0) {
-    frameInterval = Math.floor(1000 / fps);
-  } else {
-    // reset the framerate
-    frameInterval = frameYieldMs;
-  }
-}
-
-var performWorkUntilDeadline = function () {
-  if (scheduledHostCallback !== null) {
-    var currentTime = exports.unstable_now(); // Keep track of the start time so we can measure how long the main thread
-    // has been blocked.
-
-    startTime = currentTime;
-    var hasTimeRemaining = true; // If a scheduler task throws, exit the current browser task so the
-    // error can be observed.
-    //
-    // Intentionally not using a try-catch, since that makes some debugging
-    // techniques harder. Instead, if `scheduledHostCallback` errors, then
-    // `hasMoreWork` will remain true, and we'll continue the work loop.
-
-    var hasMoreWork = true;
-
-    try {
-      hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
-    } finally {
-      if (hasMoreWork) {
-        // If there's more work, schedule the next message event at the end
-        // of the preceding one.
-        schedulePerformWorkUntilDeadline();
-      } else {
-        isMessageLoopRunning = false;
-        scheduledHostCallback = null;
-      }
-    }
-  } else {
-    isMessageLoopRunning = false;
-  } // Yielding to the browser will give it a chance to paint, so we can
-};
-
-var schedulePerformWorkUntilDeadline;
-
-if (typeof localSetImmediate === 'function') {
-  // Node.js and old IE.
-  // There's a few reasons for why we prefer setImmediate.
-  //
-  // Unlike MessageChannel, it doesn't prevent a Node.js process from exiting.
-  // (Even though this is a DOM fork of the Scheduler, you could get here
-  // with a mix of Node.js 15+, which has a MessageChannel, and jsdom.)
-  // https://github.com/facebook/react/issues/20756
-  //
-  // But also, it runs earlier which is the semantic we want.
-  // If other browsers ever implement it, it's better to use it.
-  // Although both of these would be inferior to native scheduling.
-  schedulePerformWorkUntilDeadline = function () {
-    localSetImmediate(performWorkUntilDeadline);
-  };
-} else if (typeof MessageChannel !== 'undefined') {
-  // DOM and Worker environments.
-  // We prefer MessageChannel because of the 4ms setTimeout clamping.
-  var channel = new MessageChannel();
-  var port = channel.port2;
-  channel.port1.onmessage = performWorkUntilDeadline;
-
-  schedulePerformWorkUntilDeadline = function () {
-    port.postMessage(null);
-  };
-} else {
-  // We should only fallback here in non-browser environments.
-  schedulePerformWorkUntilDeadline = function () {
-    localSetTimeout(performWorkUntilDeadline, 0);
-  };
-}
-
-function requestHostCallback(callback) {
-  scheduledHostCallback = callback;
-
-  if (!isMessageLoopRunning) {
-    isMessageLoopRunning = true;
-    schedulePerformWorkUntilDeadline();
-  }
-}
-
-function requestHostTimeout(callback, ms) {
-  taskTimeoutID = localSetTimeout(function () {
-    callback(exports.unstable_now());
-  }, ms);
-}
-
-function cancelHostTimeout() {
-  localClearTimeout(taskTimeoutID);
-  taskTimeoutID = -1;
-}
-
-var unstable_requestPaint = requestPaint;
-var unstable_Profiling =  null;
-
-exports.unstable_IdlePriority = IdlePriority;
-exports.unstable_ImmediatePriority = ImmediatePriority;
-exports.unstable_LowPriority = LowPriority;
-exports.unstable_NormalPriority = NormalPriority;
-exports.unstable_Profiling = unstable_Profiling;
-exports.unstable_UserBlockingPriority = UserBlockingPriority;
-exports.unstable_cancelCallback = unstable_cancelCallback;
-exports.unstable_continueExecution = unstable_continueExecution;
-exports.unstable_forceFrameRate = forceFrameRate;
-exports.unstable_getCurrentPriorityLevel = unstable_getCurrentPriorityLevel;
-exports.unstable_getFirstCallbackNode = unstable_getFirstCallbackNode;
-exports.unstable_next = unstable_next;
-exports.unstable_pauseExecution = unstable_pauseExecution;
-exports.unstable_requestPaint = unstable_requestPaint;
-exports.unstable_runWithPriority = unstable_runWithPriority;
-exports.unstable_scheduleCallback = unstable_scheduleCallback;
-exports.unstable_shouldYield = shouldYieldToHost;
-exports.unstable_wrapCallback = unstable_wrapCallback;
-          /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
-if (
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ !== 'undefined' &&
-  typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop ===
-    'function'
-) {
-  __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(new Error());
-}
-        
-  })();
-}
-
-
-/***/ }),
-
-/***/ "./node_modules/scheduler/index.js":
-/*!*****************************************!*\
-  !*** ./node_modules/scheduler/index.js ***!
-  \*****************************************/
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-"use strict";
-
-
-if (false) {} else {
-  module.exports = __webpack_require__(/*! ./cjs/scheduler.development.js */ "./node_modules/scheduler/cjs/scheduler.development.js");
-}
-
-
-/***/ }),
-
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -36026,7 +36026,8 @@ function TabStorage({ tab, layout }) {
         };
     }, [storedTabs]);
     const insertionCallback = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)((dragging, _, __, y) => {
-        const absoluteY = y + tab.getRect().y + layout.getDomRect().top;
+        var _a, _b;
+        const absoluteY = y + tab.getRect().y + ((_b = (_a = layout.getDomRect()) === null || _a === void 0 ? void 0 : _a.top) !== null && _b !== void 0 ? _b : 0);
         const { insertionIndex } = calculateInsertion(absoluteY);
         const json = dragging instanceof _src_index__WEBPACK_IMPORTED_MODULE_1__.TabNode ? dragging.toJson() : dragging;
         if (json.id === undefined) {
@@ -36049,12 +36050,13 @@ function TabStorage({ tab, layout }) {
             tab.getModel().doAction(_src_index__WEBPACK_IMPORTED_MODULE_1__.Actions.deleteTab(dragging.getId()));
         }
     }, [calculateInsertion, tab, layout]);
-    tab.getExtraData().tabStorage_onTabDrag = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(((dragging, over, x, y, _, refresh) => {
+    tab.getExtraData().tabStorage_onTabDrag = (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(((_dragging, _over, x, y, _, refresh) => {
+        var _a, _b;
         if (contents && list) {
             const layoutDomRect = layout.getDomRect();
             const tabRect = tab.getRect();
-            const rootX = tabRect.x + layoutDomRect.left;
-            const rootY = tabRect.y + layoutDomRect.top;
+            const rootX = tabRect.x + ((_a = layoutDomRect === null || layoutDomRect === void 0 ? void 0 : layoutDomRect.left) !== null && _a !== void 0 ? _a : 0);
+            const rootY = tabRect.y + ((_b = layoutDomRect === null || layoutDomRect === void 0 ? void 0 : layoutDomRect.top) !== null && _b !== void 0 ? _b : 0);
             const absX = x + rootX;
             const absY = y + rootY;
             const listBounds = list.getBoundingClientRect();
@@ -36100,13 +36102,13 @@ function TabStorage({ tab, layout }) {
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("p", null, "This component demonstrates the custom drag and drop features of FlexLayout, by allowing you to store tabs in a list. You can drag tabs into the list, reorder the list, and drag tabs out of the list, all using the layout's built-in drag system!"),
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: setList, className: "tab-storage-tabs" },
             storedTabs.length === 0 && react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: setEmptyElem, className: "tab-storage-empty" }, "Looks like there's nothing here! Try dragging a tab over this text."),
-            storedTabs.map((stored, i) => {
+            storedTabs.map((stored, _i) => {
                 var _a;
                 return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: ref => ref ? refs.set(stored.id, ref) : refs.delete(stored.id), className: "tab-storage-entry", key: stored.id, onMouseDown: e => {
                         var _a;
                         e.preventDefault();
                         layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
-                    }, onTouchStart: e => {
+                    }, onTouchStart: _e => {
                         var _a;
                         layout.addTabWithDragAndDrop((_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed', stored, (node) => node && setStoredTabs(tabs => tabs.filter(tab => tab !== stored)));
                     } }, (_a = stored.name) !== null && _a !== void 0 ? _a : 'Unnamed'));
@@ -36647,7 +36649,7 @@ class DragDrop {
     }
     /** @internal */
     _onKeyPress(event) {
-        if (event.keyCode === 27) {
+        if (event.code === 'Escape') {
             // esc
             this._onDragCancel();
         }
@@ -36907,11 +36909,12 @@ __webpack_require__.r(__webpack_exports__);
 
 /** @internal */
 function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFactory) {
+    var _a;
     const layoutDiv = layout.getRootDiv();
     const classNameMapper = layout.getClassName;
     const currentDocument = triggerElement.ownerDocument;
     const triggerRect = triggerElement.getBoundingClientRect();
-    const layoutRect = layoutDiv.getBoundingClientRect();
+    const layoutRect = (_a = layoutDiv === null || layoutDiv === void 0 ? void 0 : layoutDiv.getBoundingClientRect()) !== null && _a !== void 0 ? _a : new DOMRect(0, 0, 100, 100);
     const elm = currentDocument.createElement("div");
     elm.className = classNameMapper(_Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER);
     if (triggerRect.left < layoutRect.left + layoutRect.width / 2) {
@@ -36928,18 +36931,22 @@ function showPopup(triggerElement, items, onSelect, layout, iconFactory, titleFa
     }
     _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.addGlass(() => onHide());
     _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.setGlassCursorOverride("default");
-    layoutDiv.appendChild(elm);
+    if (layoutDiv) {
+        layoutDiv.appendChild(elm);
+    }
     const onHide = () => {
         layout.hidePortal();
         _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.hideGlass();
-        layoutDiv.removeChild(elm);
+        if (layoutDiv) {
+            layoutDiv.removeChild(elm);
+        }
         elm.removeEventListener("mousedown", onElementMouseDown);
         currentDocument.removeEventListener("mousedown", onDocMouseDown);
     };
     const onElementMouseDown = (event) => {
         event.stopPropagation();
     };
-    const onDocMouseDown = (event) => {
+    const onDocMouseDown = (_event) => {
         onHide();
     };
     elm.addEventListener("mousedown", onElementMouseDown);
@@ -36994,12 +37001,7 @@ class Rect {
         return new Rect(this.x, this.y, this.width, this.height);
     }
     equals(rect) {
-        if (this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return this.x === (rect === null || rect === void 0 ? void 0 : rect.x) && this.y === (rect === null || rect === void 0 ? void 0 : rect.y) && this.width === (rect === null || rect === void 0 ? void 0 : rect.width) && this.height === (rect === null || rect === void 0 ? void 0 : rect.height);
     }
     getBottom() {
         return this.y + this.height;
@@ -37123,6 +37125,7 @@ var CLASSES;
     CLASSES["FLEXLAYOUT__TAB_BORDER"] = "flexlayout__tab_border";
     CLASSES["FLEXLAYOUT__TAB_BORDER_"] = "flexlayout__tab_border_";
     CLASSES["FLEXLAYOUT__TAB_BUTTON"] = "flexlayout__tab_button";
+    CLASSES["FLEXLAYOUT__TAB_BUTTON_STRETCH"] = "flexlayout__tab_button_stretch";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_CONTENT"] = "flexlayout__tab_button_content";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_LEADING"] = "flexlayout__tab_button_leading";
     CLASSES["FLEXLAYOUT__TAB_BUTTON_OVERFLOW"] = "flexlayout__tab_button_overflow";
@@ -38120,6 +38123,7 @@ class Model {
         attributeDefinitions.add("tabSetEnableDivide", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableMaximize", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableClose", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableSingleTabStretch", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetAutoSelectTab", true).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetClassNameTabStrip", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("tabSetClassNameHeader", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
@@ -39671,6 +39675,7 @@ class TabSetNode extends _Node__WEBPACK_IMPORTED_MODULE_8__.Node {
         attributeDefinitions.addInherited("enableDivide", "tabSetEnableDivide");
         attributeDefinitions.addInherited("enableMaximize", "tabSetEnableMaximize");
         attributeDefinitions.addInherited("enableClose", "tabSetEnableClose");
+        attributeDefinitions.addInherited("enableSingleTabStretch", "tabSetEnableSingleTabStretch");
         attributeDefinitions.addInherited("classNameTabStrip", "tabSetClassNameTabStrip");
         attributeDefinitions.addInherited("classNameHeader", "tabSetClassNameHeader");
         attributeDefinitions.addInherited("enableTabStrip", "tabSetEnableTabStrip");
@@ -39766,6 +39771,9 @@ class TabSetNode extends _Node__WEBPACK_IMPORTED_MODULE_8__.Node {
     }
     isEnableClose() {
         return this._getAttr("enableClose");
+    }
+    isEnableSingleTabStretch() {
+        return this._getAttr("enableSingleTabStretch");
     }
     canMaximize() {
         if (this.isEnableMaximize()) {
@@ -40253,22 +40261,24 @@ const BorderButton = (props) => {
         }
     });
     const updateRect = () => {
+        var _a;
         // record position of tab in node
         const layoutRect = layout.getDomRect();
-        const r = selfRef.current.getBoundingClientRect();
-        node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        const r = (_a = selfRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+        if (r && layoutRect) {
+            node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        }
     };
     const onTextBoxMouseDown = (event) => {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     };
     const onTextBoxKeyPress = (event) => {
-        // console.log(event, event.keyCode);
-        if (event.keyCode === 27) {
+        if (event.code === 'Escape') {
             // esc
             layout.setEditingTab(undefined);
         }
-        else if (event.keyCode === 13) {
+        else if (event.code === 'Enter') {
             // enter
             layout.setEditingTab(undefined);
             layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.renameTab(node.getId(), event.target.value));
@@ -40518,7 +40528,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+/* harmony import */ var _Rect__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Rect */ "./src/Rect.ts");
+/* harmony import */ var _Types__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Types */ "./src/Types.ts");
+
 
 
 
@@ -40533,7 +40545,7 @@ const FloatingWindow = (props) => {
             clearTimeout(timerId.current);
         }
         let isMounted = true;
-        const r = rect;
+        const r = rect || new _Rect__WEBPACK_IMPORTED_MODULE_2__.Rect(0, 0, 100, 100);
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
@@ -40574,7 +40586,7 @@ const FloatingWindow = (props) => {
                     const popoutDocument = popoutWindow.current.document;
                     popoutDocument.title = title;
                     const popoutContent = popoutDocument.createElement("div");
-                    popoutContent.className = _Types__WEBPACK_IMPORTED_MODULE_2__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
+                    popoutContent.className = _Types__WEBPACK_IMPORTED_MODULE_3__.CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT;
                     popoutDocument.body.appendChild(popoutContent);
                     copyStyles(popoutDocument, styles).then(() => {
                         setContent(popoutContent);
@@ -40620,7 +40632,7 @@ function copyStyles(doc, styleSheets) {
             styleElement.rel = "stylesheet";
             styleElement.href = styleSheet.href;
             head.appendChild(styleElement);
-            promises.push(new Promise((resolve, reject) => {
+            promises.push(new Promise((resolve) => {
                 styleElement.onload = () => resolve(true);
             }));
         }
@@ -40823,7 +40835,14 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             }
         };
         /** @internal */
-        this.updateRect = (domRect = this.getDomRect()) => {
+        this.updateRect = (domRect) => {
+            if (!domRect) {
+                domRect = this.getDomRect();
+            }
+            if (!domRect) {
+                // no dom rect available, return.
+                return;
+            }
             const rect = new _Rect__WEBPACK_IMPORTED_MODULE_9__.Rect(0, 0, domRect.width, domRect.height);
             if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
                 this.setState({ rect });
@@ -40877,7 +40896,9 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         this.onCancelAdd = () => {
             var _a, _b;
             const rootdiv = this.selfRef.current;
-            rootdiv.removeChild(this.dragDiv);
+            if (rootdiv && this.dragDiv) {
+                rootdiv.removeChild(this.dragDiv);
+            }
             this.dragDiv = undefined;
             this.hidePortal();
             if (this.fnNewNodeDropped != null) {
@@ -40899,14 +40920,20 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             var _a, _b;
             if (wasDragging) {
                 const rootdiv = this.selfRef.current;
-                try {
-                    rootdiv.removeChild(this.outlineDiv);
+                const outlineDiv = this.outlineDiv;
+                if (rootdiv && outlineDiv) {
+                    try {
+                        rootdiv.removeChild(outlineDiv);
+                    }
+                    catch (e) { }
                 }
-                catch (e) { }
-                try {
-                    rootdiv.removeChild(this.dragDiv);
+                const dragDiv = this.dragDiv;
+                if (rootdiv && dragDiv) {
+                    try {
+                        rootdiv.removeChild(dragDiv);
+                    }
+                    catch (e) { }
                 }
-                catch (e) { }
                 this.dragDiv = undefined;
                 this.hidePortal();
                 this.setState({ showEdges: false });
@@ -40933,13 +40960,14 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         };
         /** @internal */
         this.dragStart = (event, dragDivText, node, allowDrag, onClick, onDoubleClick) => {
+            var _a, _b;
             if (!allowDrag) {
-                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, this.selfRef.current);
+                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, undefined, undefined, undefined, undefined, onClick, onDoubleClick, this.currentDocument, (_a = this.selfRef.current) !== null && _a !== void 0 ? _a : undefined);
             }
             else {
                 this.dragNode = node;
                 this.dragDivText = dragDivText;
-                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument, this.selfRef.current);
+                _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.startDrag(event, this.onDragStart, this.onDragMove, this.onDragEnd, this.onCancelDrag, onClick, onDoubleClick, this.currentDocument, (_b = this.selfRef.current) !== null && _b !== void 0 ? _b : undefined);
             }
         };
         /** @internal */
@@ -40960,16 +40988,19 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
                 }
             }
             // hide div until the render is complete
-            this.dragDiv.style.visibility = "hidden";
             this.dragRectRendered = false;
-            this.showPortal(react__WEBPACK_IMPORTED_MODULE_0__.createElement(DragRectRenderWrapper
-            // wait for it to be rendered
-            , { 
+            const dragDiv = this.dragDiv;
+            if (dragDiv) {
+                dragDiv.style.visibility = "hidden";
+                this.showPortal(react__WEBPACK_IMPORTED_MODULE_0__.createElement(DragRectRenderWrapper
                 // wait for it to be rendered
-                onRendered: () => {
-                    this.dragRectRendered = true;
-                    onRendered === null || onRendered === void 0 ? void 0 : onRendered();
-                } }, content), this.dragDiv);
+                , { 
+                    // wait for it to be rendered
+                    onRendered: () => {
+                        this.dragRectRendered = true;
+                        onRendered === null || onRendered === void 0 ? void 0 : onRendered();
+                    } }, content), dragDiv);
+            }
         };
         /** @internal */
         this.showPortal = (control, element) => {
@@ -40982,55 +41013,65 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         };
         /** @internal */
         this.onDragStart = () => {
+            var _a;
             this.dropInfo = undefined;
             this.customDrop = undefined;
             const rootdiv = this.selfRef.current;
             this.outlineDiv = this.currentDocument.createElement("div");
             this.outlineDiv.className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__OUTLINE_RECT);
             this.outlineDiv.style.visibility = "hidden";
-            rootdiv.appendChild(this.outlineDiv);
+            if (rootdiv) {
+                rootdiv.appendChild(this.outlineDiv);
+            }
             if (this.dragDiv == null) {
                 this.dragDiv = this.currentDocument.createElement("div");
                 this.dragDiv.className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__DRAG_RECT);
                 this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
                 this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
-                rootdiv.appendChild(this.dragDiv);
+                if (rootdiv) {
+                    rootdiv.appendChild(this.dragDiv);
+                }
             }
             // add edge indicators
             if (this.props.model.getMaximizedTabset() === undefined) {
                 this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
             }
-            if (this.dragNode !== undefined && this.dragNode instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode && this.dragNode.getTabRect() !== undefined) {
-                this.dragNode.getTabRect().positionElement(this.outlineDiv);
+            if (this.dragNode && this.outlineDiv && this.dragNode instanceof _model_TabNode__WEBPACK_IMPORTED_MODULE_7__.TabNode && this.dragNode.getTabRect() !== undefined) {
+                (_a = this.dragNode.getTabRect()) === null || _a === void 0 ? void 0 : _a.positionElement(this.outlineDiv);
             }
             this.firstMove = true;
             return true;
         };
         /** @internal */
         this.onDragMove = (event) => {
+            var _a, _b, _c, _d, _e, _f, _g;
             if (this.firstMove === false) {
                 const speed = this.props.model._getAttribute("tabDragSpeed");
-                this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
+                if (this.outlineDiv) {
+                    this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
+                }
             }
             this.firstMove = false;
-            const clientRect = this.selfRef.current.getBoundingClientRect();
+            const clientRect = (_a = this.selfRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
             const pos = {
-                x: event.clientX - clientRect.left,
-                y: event.clientY - clientRect.top,
+                x: event.clientX - ((_b = clientRect === null || clientRect === void 0 ? void 0 : clientRect.left) !== null && _b !== void 0 ? _b : 0),
+                y: event.clientY - ((_c = clientRect === null || clientRect === void 0 ? void 0 : clientRect.top) !== null && _c !== void 0 ? _c : 0),
             };
             this.checkForBorderToShow(pos.x, pos.y);
             // keep it between left & right
-            const dragRect = this.dragDiv.getBoundingClientRect();
+            const dragRect = (_e = (_d = this.dragDiv) === null || _d === void 0 ? void 0 : _d.getBoundingClientRect()) !== null && _e !== void 0 ? _e : new DOMRect(0, 0, 100, 100);
             let newLeft = pos.x - dragRect.width / 2;
-            if (newLeft + dragRect.width > clientRect.width) {
-                newLeft = clientRect.width - dragRect.width;
+            if (newLeft + dragRect.width > ((_f = clientRect === null || clientRect === void 0 ? void 0 : clientRect.width) !== null && _f !== void 0 ? _f : 0)) {
+                newLeft = ((_g = clientRect === null || clientRect === void 0 ? void 0 : clientRect.width) !== null && _g !== void 0 ? _g : 0) - dragRect.width;
             }
             newLeft = Math.max(0, newLeft);
-            this.dragDiv.style.left = newLeft + "px";
-            this.dragDiv.style.top = pos.y + 5 + "px";
-            if (this.dragRectRendered && this.dragDiv.style.visibility === "hidden") {
-                // make visible once the drag rect has been rendered
-                this.dragDiv.style.visibility = "visible";
+            if (this.dragDiv) {
+                this.dragDiv.style.left = newLeft + "px";
+                this.dragDiv.style.top = pos.y + 5 + "px";
+                if (this.dragRectRendered && this.dragDiv.style.visibility === "hidden") {
+                    // make visible once the drag rect has been rendered
+                    this.dragDiv.style.visibility = "visible";
+                }
             }
             let dropInfo = this.props.model._findDropTargetNode(this.dragNode, pos.x, pos.y);
             if (dropInfo) {
@@ -41039,17 +41080,25 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
                 }
                 else {
                     this.dropInfo = dropInfo;
-                    this.outlineDiv.className = this.getClassName(dropInfo.className);
-                    dropInfo.rect.positionElement(this.outlineDiv);
-                    this.outlineDiv.style.visibility = "visible";
+                    if (this.outlineDiv) {
+                        this.outlineDiv.className = this.getClassName(dropInfo.className);
+                        dropInfo.rect.positionElement(this.outlineDiv);
+                        this.outlineDiv.style.visibility = "visible";
+                    }
                 }
             }
         };
         /** @internal */
         this.onDragEnd = (event) => {
             const rootdiv = this.selfRef.current;
-            rootdiv.removeChild(this.outlineDiv);
-            rootdiv.removeChild(this.dragDiv);
+            if (rootdiv) {
+                if (this.outlineDiv) {
+                    rootdiv.removeChild(this.outlineDiv);
+                }
+                if (this.dragDiv) {
+                    rootdiv.removeChild(this.dragDiv);
+                }
+            }
             this.dragDiv = undefined;
             this.hidePortal();
             this.setState({ showEdges: false });
@@ -41146,7 +41195,10 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
         this.resizeObserver = new ResizeObserver(entries => {
             this.updateRect(entries[0].contentRect);
         });
-        this.resizeObserver.observe(this.selfRef.current);
+        const selfRefCurr = this.selfRef.current;
+        if (selfRefCurr) {
+            this.resizeObserver.observe(selfRefCurr);
+        }
     }
     /** @internal */
     componentDidUpdate() {
@@ -41166,7 +41218,8 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     }
     /** @internal */
     getDomRect() {
-        return this.selfRef.current.getBoundingClientRect();
+        var _a;
+        return (_a = this.selfRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
     }
     /** @internal */
     getRootDiv() {
@@ -41193,7 +41246,10 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     /** @internal */
     componentWillUnmount() {
         var _a;
-        (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(this.selfRef.current);
+        const selfRefCurr = this.selfRef.current;
+        if (selfRefCurr) {
+            (_a = this.resizeObserver) === null || _a === void 0 ? void 0 : _a.unobserve(selfRefCurr);
+        }
     }
     /** @internal */
     setEditingTab(tabNode) {
@@ -41296,11 +41352,13 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
                             const rect = this._getScreenRect(child);
                             const tabBorderWidth = child._getAttr("borderWidth");
                             const tabBorderHeight = child._getAttr("borderHeight");
-                            if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_18__.Orientation.HORZ) {
-                                rect.width = tabBorderWidth;
-                            }
-                            else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_18__.Orientation.VERT) {
-                                rect.height = tabBorderHeight;
+                            if (rect) {
+                                if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_18__.Orientation.HORZ) {
+                                    rect.width = tabBorderWidth;
+                                }
+                                else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_18__.Orientation.VERT) {
+                                    rect.height = tabBorderHeight;
+                                }
                             }
                             floatingWindows.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindow__WEBPACK_IMPORTED_MODULE_15__.FloatingWindow, { key: child.getId(), url: this.popoutURL, rect: rect, title: child.getName(), id: child.getId(), onSetWindow: this.onSetWindow, onCloseWindow: this.onCloseWindow },
                                 react__WEBPACK_IMPORTED_MODULE_0__.createElement(_FloatingWindowTab__WEBPACK_IMPORTED_MODULE_16__.FloatingWindowTab, { layout: this, node: child, factory: this.props.factory })));
@@ -41357,8 +41415,12 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
     }
     /** @internal */
     _getScreenRect(node) {
+        var _a;
         const rect = node.getRect().clone();
-        const bodyRect = this.selfRef.current.getBoundingClientRect();
+        const bodyRect = (_a = this.selfRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+        if (!bodyRect) {
+            return null;
+        }
         const navHeight = Math.min(80, this.currentWindow.outerHeight - this.currentWindow.innerHeight);
         const navWidth = Math.min(80, this.currentWindow.outerWidth - this.currentWindow.innerWidth);
         rect.x = rect.x + bodyRect.x + this.currentWindow.screenX + navWidth;
@@ -41369,22 +41431,28 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
      * Adds a new tab to the given tabset
      * @param tabsetId the id of the tabset where the new tab will be added
      * @param json the json for the new tab node
+     * @returns the added tab node or undefined
      */
     addTabToTabSet(tabsetId, json) {
         const tabsetNode = this.props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
-            this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetId, _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
+            const node = this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetId, _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
+            return node;
         }
+        return undefined;
     }
     /**
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
+     * @returns the added tab node or undefined
      */
     addTabToActiveTabSet(json) {
         const tabsetNode = this.props.model.getActiveTabset();
         if (tabsetNode !== undefined) {
-            this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetNode.getId(), _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
+            const node = this.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_4__.Actions.addNode(json, tabsetNode.getId(), _DockLocation__WEBPACK_IMPORTED_MODULE_2__.DockLocation.CENTER, -1));
+            return node;
         }
+        return undefined;
     }
     /**
      * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
@@ -41475,15 +41543,19 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             }
         }
         this.dropInfo = dropInfo;
-        this.outlineDiv.className = this.getClassName(this.customDrop ? _Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
-        if (this.customDrop) {
-            this.customDrop.rect.positionElement(this.outlineDiv);
-        }
-        else {
-            dropInfo.rect.positionElement(this.outlineDiv);
+        if (this.outlineDiv) {
+            this.outlineDiv.className = this.getClassName(this.customDrop ? _Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
+            if (this.customDrop) {
+                this.customDrop.rect.positionElement(this.outlineDiv);
+            }
+            else {
+                dropInfo.rect.positionElement(this.outlineDiv);
+            }
         }
         _DragDrop__WEBPACK_IMPORTED_MODULE_3__.DragDrop.instance.setGlassCursorOverride((_c = this.customDrop) === null || _c === void 0 ? void 0 : _c.cursor);
-        this.outlineDiv.style.visibility = "visible";
+        if (this.outlineDiv) {
+            this.outlineDiv.style.visibility = "visible";
+        }
         try {
             invalidated === null || invalidated === void 0 ? void 0 : invalidated();
         }
@@ -41632,8 +41704,11 @@ const Splitter = (props) => {
     const outlineDiv = react__WEBPACK_IMPORTED_MODULE_0__.useRef(undefined);
     const parentNode = node.getParent();
     const onMouseDown = (event) => {
-        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.setGlassCursorOverride(node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ ? "ns-resize" : "ew-resize");
-        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), layout.getRootDiv());
+        var _a;
+        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.setGlassCursorOverride(node.getOrientation() === _Orientation__WEBPACK_IMPORTED_MODULE_4__.Orientation.HORZ
+            ? "ns-resize"
+            : "ew-resize");
+        _DragDrop__WEBPACK_IMPORTED_MODULE_1__.DragDrop.instance.startDrag(event, onDragStart, onDragMove, onDragEnd, onDragCancel, undefined, undefined, layout.getCurrentDocument(), (_a = layout.getRootDiv()) !== null && _a !== void 0 ? _a : undefined);
         pBounds.current = parentNode._getSplitterBounds(node, true);
         const rootdiv = layout.getRootDiv();
         outlineDiv.current = layout.getCurrentDocument().createElement("div");
@@ -41648,17 +41723,24 @@ const Splitter = (props) => {
             r.height = 2;
         }
         r.positionElement(outlineDiv.current);
-        rootdiv.appendChild(outlineDiv.current);
+        if (rootdiv) {
+            rootdiv.appendChild(outlineDiv.current);
+        }
     };
-    const onDragCancel = (wasDragging) => {
+    const onDragCancel = (_wasDragging) => {
         const rootdiv = layout.getRootDiv();
-        rootdiv.removeChild(outlineDiv.current);
+        if (rootdiv) {
+            rootdiv.removeChild(outlineDiv.current);
+        }
     };
     const onDragStart = () => {
         return true;
     };
     const onDragMove = (event) => {
         const clientRect = layout.getDomRect();
+        if (!clientRect) {
+            return;
+        }
         const pos = {
             x: event.clientX - clientRect.left,
             y: event.clientY - clientRect.top,
@@ -41699,7 +41781,9 @@ const Splitter = (props) => {
     const onDragEnd = () => {
         updateLayout();
         const rootdiv = layout.getRootDiv();
-        rootdiv.removeChild(outlineDiv.current);
+        if (rootdiv) {
+            rootdiv.removeChild(outlineDiv.current);
+        }
     };
     const getBoundPosition = (p) => {
         const bounds = pBounds.current;
@@ -41929,22 +42013,24 @@ const TabButton = (props) => {
         }
     });
     const updateRect = () => {
+        var _a;
         // record position of tab in node
         const layoutRect = layout.getDomRect();
-        const r = selfRef.current.getBoundingClientRect();
-        node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        const r = (_a = selfRef.current) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+        if (r && layoutRect) {
+            node._setTabRect(new _Rect__WEBPACK_IMPORTED_MODULE_3__.Rect(r.left - layoutRect.left, r.top - layoutRect.top, r.width, r.height));
+        }
     };
     const onTextBoxMouseDown = (event) => {
         // console.log("onTextBoxMouseDown");
         event.stopPropagation();
     };
     const onTextBoxKeyPress = (event) => {
-        // console.log(event, event.keyCode);
-        if (event.keyCode === 27) {
+        if (event.code === 'Escape') {
             // esc
             layout.setEditingTab(undefined);
         }
-        else if (event.keyCode === 13) {
+        else if (event.code === 'Enter') {
             // enter
             layout.setEditingTab(undefined);
             layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.renameTab(node.getId(), event.target.value));
@@ -41952,14 +42038,17 @@ const TabButton = (props) => {
     };
     const cm = layout.getClassName;
     const parentNode = node.getParent();
-    let baseClassName = _Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON;
+    const isStretch = parentNode.isEnableSingleTabStretch() && parentNode.getChildren().length === 1;
+    let baseClassName = isStretch ? _Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_STRETCH : _Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON;
     let classNames = cm(baseClassName);
     classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
-    if (selected) {
-        classNames += " " + cm(baseClassName + "--selected");
-    }
-    else {
-        classNames += " " + cm(baseClassName + "--unselected");
+    if (!isStretch) {
+        if (selected) {
+            classNames += " " + cm(baseClassName + "--selected");
+        }
+        else {
+            classNames += " " + cm(baseClassName + "--unselected");
+        }
     }
     if (node.getClassName() !== undefined) {
         classNames += " " + node.getClassName();
@@ -41970,7 +42059,7 @@ const TabButton = (props) => {
     if (layout.getEditingTab() === node) {
         content = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("input", { ref: contentRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX), "data-layout-path": path + "/textbox", type: "text", autoFocus: true, defaultValue: node.getName(), onKeyDown: onTextBoxKeyPress, onMouseDown: onTextBoxMouseDown, onTouchStart: onTextBoxMouseDown }));
     }
-    if (node.isEnableClose()) {
+    if (node.isEnableClose() && !isStretch) {
         const closeTitle = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tab);
         renderState.buttons.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "close", "data-layout-path": path + "/button/close", title: closeTitle, className: cm(_Types__WEBPACK_IMPORTED_MODULE_5__.CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING), onMouseDown: onCloseMouseDown, onClick: onClose, onTouchStart: onCloseMouseDown }, (typeof icons.close === "function") ? icons.close(node) : icons.close));
     }
@@ -42139,13 +42228,16 @@ const useTabOverflow = (node, orientation, toolbarRef, stickyButtonsRef) => {
     react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect(() => {
         updateVisibleTabs();
     });
+    const instance = selfRef.current;
     react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-        const instance = selfRef.current;
-        instance.addEventListener('wheel', onWheel, { passive: false });
+        if (!instance) {
+            return;
+        }
+        instance.addEventListener("wheel", onWheel, { passive: false });
         return () => {
-            instance.removeEventListener('wheel', onWheel);
+            instance.removeEventListener("wheel", onWheel);
         };
-    }, []);
+    }, [instance]);
     // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
     const onWheel = (event) => {
         event.preventDefault();
@@ -42359,6 +42451,10 @@ const TabSet = (props) => {
         layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.deleteTabset(node.getId()));
         event.stopPropagation();
     };
+    const onCloseTab = (event) => {
+        layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.deleteTab(node.getChildren()[0].getId()));
+        event.stopPropagation();
+    };
     const onFloatTab = (event) => {
         if (selectedTabNode !== undefined) {
             layout.doAction(_model_Actions__WEBPACK_IMPORTED_MODULE_2__.Actions.floatTab(selectedTabNode.getId()));
@@ -42403,11 +42499,13 @@ const TabSet = (props) => {
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
     headerButtons = renderState.headerButtons;
+    const isTabStretch = node.isEnableSingleTabStretch() && node.getChildren().length === 1;
+    const showClose = (isTabStretch && (node.getChildren()[0].isEnableClose())) || node.isEnableClose();
     if (renderState.overflowPosition === undefined) {
         renderState.overflowPosition = stickyButtons.length;
     }
     if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
+        if (tabsTruncated || isTabStretch) {
             buttons = [...stickyButtons, ...buttons];
         }
         else {
@@ -42439,10 +42537,10 @@ const TabSet = (props) => {
             (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
             (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize));
     }
-    if (!node.isMaximized() && node.isEnableClose()) {
-        const title = layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tabset);
+    if (!node.isMaximized() && showClose) {
+        const title = isTabStretch ? layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tab) : layout.i18nName(_I18nLabel__WEBPACK_IMPORTED_MODULE_1__.I18nLabel.Close_Tabset);
         const btns = showHeader ? headerButtons : buttons;
-        btns.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
+        btns.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("button", { key: "close", "data-layout-path": path + "/button/close", title: title, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE), onClick: isTabStretch ? onCloseTab : onClose, onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown }, (typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset));
     }
     const toolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, buttons));
     let header;
@@ -42477,7 +42575,7 @@ const TabSet = (props) => {
     const tabStripStyle = { height: node.getTabStripHeight() + "px" };
     tabStrip = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { className: tabStripClasses, style: tabStripStyle, "data-layout-path": path + "/tabstrip", onMouseDown: onMouseDown, onContextMenu: onContextMenu, onClick: onAuxMouseClick, onAuxClick: onAuxMouseClick, onTouchStart: onMouseDown },
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: tabbarInnerRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) },
-            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { left: position }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
+            react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { left: position, width: (isTabStretch ? "100%" : "10000px") }, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation()) }, tabs)),
         toolbar));
     style = layout.styleFont(style);
     var placeHolder = undefined;
@@ -42769,17 +42867,19 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             // this.setState({ adding: true });
         };
         this.onAddActiveClick = (event) => {
-            (this.layoutRef.current).addTabToActiveTabSet({
+            const addedTab = (this.layoutRef.current).addTabToActiveTabSet({
                 component: "grid",
                 icon: "images/article.svg",
                 name: "Grid " + this.nextGridIndex++
             });
+            console.log("Added tab", addedTab);
         };
         this.onAddFromTabSetButton = (node) => {
-            (this.layoutRef.current).addTabToTabSet(node.getId(), {
+            const addedTab = (this.layoutRef.current).addTabToTabSet(node.getId(), {
                 component: "grid",
                 name: "Grid " + this.nextGridIndex++
             });
+            console.log("Added tab", addedTab);
         };
         this.onAddIndirectClick = (event) => {
             (this.layoutRef.current).addTabWithDragAndDropIndirect("Add grid\n(Drag to location)", {
@@ -42993,10 +43093,11 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             this.setState({ fontSize: target.value });
         };
         this.onRenderTab = (node, renderValues) => {
-            // renderValues.content = (<InnerComponent/>);
+            // renderValues.content = (<div>hello</div>);
             // renderValues.content += " *";
             // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
             // renderValues.name = "tab " + node.getId(); // name used in overflow menu
+            // renderValues.buttons.push(<div style={{flexGrow:1}}></div>);
             // renderValues.buttons.push(<img style={{width:"1em", height:"1em"}} src="images/folder.svg"/>);
         };
         this.onRenderTabSet = (node, renderValues) => {
@@ -43071,6 +43172,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "default" }, "Default"),
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "newfeatures" }, "New Features"),
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "simple" }, "Simple"),
+                            react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "mosaic" }, "Mosaic Style"),
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "sub" }, "SubLayout"),
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "complex" }, "Complex"),
                             react__WEBPACK_IMPORTED_MODULE_0__.createElement("option", { value: "headers" }, "Headers")),
