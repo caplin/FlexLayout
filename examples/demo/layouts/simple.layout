@@ -1,5 +1,7 @@
 {
-	"global": {},
+	"global": {
+		"tabSetEnableSingleTabStretch": true
+	},
 	"borders": [],
 	"layout": {
 		"type": "row",
