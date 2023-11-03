@@ -81,7 +81,8 @@ export const TabButton = (props: ITabButtonProps) => {
         return false;
     };
 
-    const onClose = (event: React.MouseEvent<HTMLDivElement>) => {
+    const onClose = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
         if (isClosable()) {
             layout.doAction(Actions.deleteTab(node.getId()));
         } else {
@@ -89,7 +90,11 @@ export const TabButton = (props: ITabButtonProps) => {
         }
     };
 
-    const onCloseMouseDown = (event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    const onCloseMouseDown = (event: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+    };
+
+    const onCloseKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
         event.stopPropagation();
     };
 
@@ -183,16 +188,17 @@ export const TabButton = (props: ITabButtonProps) => {
     if (node.isEnableClose() && !isStretch) {
         const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
         renderState.buttons.push(
-            <div
+            <button
                 key="close"
                 data-layout-path={path + "/button/close"}
                 title={closeTitle}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
                 onMouseDown={onCloseMouseDown}
                 onClick={onClose}
-                onTouchStart={onCloseMouseDown}>
+                onTouchStart={onCloseMouseDown}
+                onKeyDown={onCloseKeyDown}>
                 {(typeof icons.close === "function") ? icons.close(node) : icons.close}
-            </div>
+            </button>
         );
     }
 
