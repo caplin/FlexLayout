@@ -126,6 +126,7 @@ export interface ITabAttributes {
 	component?: string;
 	config?: any;
 	contentClassName?: string; //  - inherited from global tabContentClassName
+	tabsetClassName?: string; // default undefined
 	enableClose?: boolean; // default: true - inherited from global tabEnableClose
 	enableDrag?: boolean; // default: true - inherited from global tabEnableDrag
 	enableFloat?: boolean; // default: false - inherited from global tabEnableFloat

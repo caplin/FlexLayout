@@ -354,6 +354,7 @@ Inherited defaults will take their value from the associated global attributes (
 | floating | false | |
 | className | *inherited* | class applied to tab button |
 | contentClassName | *inherited* | class applied to tab content |
+| tabsetClassName | undefined | class applied to parent tabset when tab is selected |
 | icon | *inherited* | |
 | enableRenderOnDemand | *inherited* | whether to avoid rendering component until tab is visible |
 | borderWidth | *inherited* | width when added to border, -1 will use border size |

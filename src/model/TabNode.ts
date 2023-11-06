@@ -31,6 +31,7 @@ export class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabsetClassName", undefined).setType(Attribute.STRING);
 
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
         attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
@@ -159,6 +160,10 @@ export class TabNode extends Node implements IDraggable {
     
     getContentClassName() {
         return this._getAttr("contentClassName") as string | undefined;
+    }
+
+    getTabSetClassName() {
+        return this._getAttr("tabsetClassName") as string | undefined;
     }
 
     isEnableRenderOnDemand() {

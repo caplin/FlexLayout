@@ -1,3 +1,7 @@
+0.7.14
+Added attribute tabsetClassName to tab nodes, this will add the classname to the parent
+tabset when the tab is selected. Updated mosaic layout in demo to use this to color headers.  
+
 0.7.13
 New attribute on tabset: enableSingleTabStretch will stretch a single tab to take up
 all the remaining space and change the style to look like a header, combined with enableDrop
