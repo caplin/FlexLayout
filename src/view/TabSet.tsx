@@ -307,9 +307,8 @@ export const TabSet = (props: ITabSetProps) => {
         tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
     }
 
-    const selectedTab = node.getSelectedNode();
-    if (selectedTab !== undefined) {
-        const tabNode = selectedTab as TabNode; 
+    if (isTabStretch) {
+        const tabNode = node.getChildren()[0] as TabNode; 
         if (tabNode.getTabSetClassName() !== undefined) {
             tabStripClasses += " " + tabNode.getTabSetClassName();
         }
