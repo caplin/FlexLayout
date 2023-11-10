@@ -123,3 +123,11 @@ li {
 ul {
     margin-right: 1em;
 }
+
+.greenClass {
+    background-color: #eeffee;
+}
+
+.blueClass {
+    background-color: #eeeeff;
+}

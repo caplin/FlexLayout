@@ -39442,6 +39442,7 @@ class TabNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
         attributeDefinitions.add("component", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.add("config", undefined).setType("any");
         attributeDefinitions.add("floating", false).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
+        attributeDefinitions.add("tabsetClassName", undefined).setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.STRING);
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
         attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
         attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(_Attribute__WEBPACK_IMPORTED_MODULE_0__.Attribute.BOOLEAN);
@@ -39538,6 +39539,9 @@ class TabNode extends _Node__WEBPACK_IMPORTED_MODULE_2__.Node {
     }
     getContentClassName() {
         return this._getAttr("contentClassName");
+    }
+    getTabSetClassName() {
+        return this._getAttr("tabsetClassName");
     }
     isEnableRenderOnDemand() {
         return this._getAttr("enableRenderOnDemand");
@@ -42555,6 +42559,12 @@ const TabSet = (props) => {
     }
     if (node.isMaximized() && !showHeader) {
         tabStripClasses += " " + cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
+    }
+    if (isTabStretch) {
+        const tabNode = node.getChildren()[0];
+        if (tabNode.getTabSetClassName() !== undefined) {
+            tabStripClasses += " " + tabNode.getTabSetClassName();
+        }
     }
     if (showHeader) {
         const headerToolbar = (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "toolbar", ref: toolbarRef, className: cm(_Types__WEBPACK_IMPORTED_MODULE_7__.CLASSES.FLEXLAYOUT__TAB_TOOLBAR), onMouseDown: onInterceptMouseDown, onTouchStart: onInterceptMouseDown, onDragStart: (e) => { e.preventDefault(); } }, headerButtons));

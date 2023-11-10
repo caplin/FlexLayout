@@ -17,6 +17,7 @@
 					{
 						"type": "tab",
 						"id": "3",
+						"tabsetClassName": "greenClass",
 						"name": "Layout JSON",
 						"component": "json"
 					}
@@ -45,6 +46,7 @@
 					{
 						"type": "tab",
 						"name": "One",
+						"tabsetClassName": "blueClass",
 						"component": "grid"
 					}
 				]
