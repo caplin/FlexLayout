@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.7.13",
+    "version": "0.7.14",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -10,13 +10,18 @@
         "dock",
         "popout",
         "tabs",
-        "drag-and-drop",
         "tabset",
         "splitter",
         "drag",
         "drop",
         "reactjs",
-        "react-dom"
+        "flexlayout",
+        "flex layout",
+        "layout manager",
+        "drag and drop",
+        "split view",
+        "docking library",
+        "docking layout"
     ],
     "scripts": {
         "start": "webpack serve",
