@@ -23,6 +23,13 @@ export const OverflowIcon = () => {
     );
 }
 
+export const EdgeIcon = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" style={{display:"block",  width:10, height:10}} preserveAspectRatio="none" viewBox="0 0 100 100"><path  fill="var(--color-edge-icon)" stroke="var(--color-edge-icon)" 
+            d="M10 30 L90 30 l-40 40 Z" /></svg>
+    );
+}
+
 export const PopoutIcon = () => {
     return (
         // <svg xmlns="http://www.w3.org/2000/svg"  style={style}  viewBox="0 0 24 24" fill="var(--color-icon)"><path d="M0 0h24v24H0z" fill="none"/><path stroke="var(--color-icon)" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>

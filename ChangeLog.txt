@@ -1,3 +1,6 @@
+0.7.15
+Added arrow icon to edge indicators
+
 0.7.14
 Added attribute tabsetClassName to tab nodes, this will add the classname to the parent
 tabset when there is a single stretched tab. Updated mosaic layout in demo to use this to color headers.  
