@@ -40700,6 +40700,7 @@ const FloatingWindowTab = (props) => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "CloseIcon": () => (/* binding */ CloseIcon),
+/* harmony export */   "EdgeIcon": () => (/* binding */ EdgeIcon),
 /* harmony export */   "MaximizeIcon": () => (/* binding */ MaximizeIcon),
 /* harmony export */   "OverflowIcon": () => (/* binding */ OverflowIcon),
 /* harmony export */   "PopoutIcon": () => (/* binding */ PopoutIcon),
@@ -40723,6 +40724,10 @@ const OverflowIcon = () => {
     return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: style, viewBox: "0 0 24 24", fill: "var(--color-icon)" },
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { d: "M0 0h24v24H0z", fill: "none" }),
         react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { stroke: "var(--color-icon)", d: "M7 10l5 5 5-5z" })));
+};
+const EdgeIcon = () => {
+    return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("svg", { xmlns: "http://www.w3.org/2000/svg", style: { display: "block", width: 10, height: 10 }, preserveAspectRatio: "none", viewBox: "0 0 100 100" },
+        react__WEBPACK_IMPORTED_MODULE_0__.createElement("path", { fill: "var(--color-edge-icon)", stroke: "var(--color-edge-icon)", d: "M10 30 L90 30 l-40 40 Z" })));
 };
 const PopoutIcon = () => {
     return (
@@ -40804,6 +40809,7 @@ const defaultIcons = {
     maximize: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.MaximizeIcon, null),
     restore: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.RestoreIcon, null),
     more: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.OverflowIcon, null),
+    edgeArrow: react__WEBPACK_IMPORTED_MODULE_0__.createElement(_Icons__WEBPACK_IMPORTED_MODULE_19__.EdgeIcon, null)
 };
 // Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
 // not work on any version if IE or the original Edge browser
@@ -41302,6 +41308,7 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             }
         }
         const edges = [];
+        const arrowIcon = this.icons.edgeArrow;
         if (this.state.showEdges) {
             const r = this.centerRect;
             const length = this.edgeRectLength;
@@ -41309,10 +41316,14 @@ class Layout extends react__WEBPACK_IMPORTED_MODULE_0__.Component {
             const offset = this.edgeRectLength / 2;
             const className = this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT);
             const radius = 50;
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_TOP) }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT) }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM) }));
-            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT) }));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "North", style: { top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_TOP) },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { transform: "rotate(180deg)" } }, arrowIcon)));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "West", style: { top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT) },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { transform: "rotate(90deg)" } }, arrowIcon)));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "South", style: { top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM) },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", null, arrowIcon)));
+            edges.push(react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { key: "East", style: { top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }, className: className + " " + this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT) },
+                react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { style: { transform: "rotate(-90deg)" } }, arrowIcon)));
         }
         // this.layoutTime = (Date.now() - this.start);
         return (react__WEBPACK_IMPORTED_MODULE_0__.createElement("div", { ref: this.selfRef, className: this.getClassName(_Types__WEBPACK_IMPORTED_MODULE_10__.CLASSES.FLEXLAYOUT__LAYOUT), onDragEnter: this.props.onExternalDrag ? this.onDragEnter : undefined },

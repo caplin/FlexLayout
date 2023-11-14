@@ -45,7 +45,8 @@
   --color-popup-unselected-background: white;
   --color-popup-selected: var(--color-text);
   --color-popup-selected-background: var(--color-3);
-  --color-edge-marker: gray;
+  --color-edge-marker: #aaa;
+  --color-edge-icon: #555;
   --color-underline: rgb(65, 105, 225);
   --color-underline-hover: #aaa;
   --underline_height: 3px;
@@ -99,9 +100,11 @@
 .flexlayout__edge_rect {
   position: absolute;
   z-index: 1000;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   background-color: var(--color-edge-marker);
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .flexlayout__drag_rect {
   position: absolute;
