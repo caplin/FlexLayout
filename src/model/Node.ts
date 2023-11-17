@@ -52,6 +52,10 @@ export abstract class Node {
         return id as string;
     }
 
+    getAttributes() {
+        return this._attributes;
+    }
+
     getModel() {
         return this._model;
     }
