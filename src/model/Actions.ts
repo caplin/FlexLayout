@@ -19,6 +19,7 @@ export class Actions {
     static UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
     static FLOAT_TAB = "FlexLayout_FloatTab";
     static UNFLOAT_TAB = "FlexLayout_UnFloatTab";
+    static DESELECT_TABSET = "FlexLayout_DeselectTabset";
 
     /**
      * Adds a tab node to the given tabset node
@@ -164,5 +165,12 @@ export class Actions {
 
     static unFloatTab(nodeId: string): Action {
         return new Action(Actions.UNFLOAT_TAB, { node: nodeId });
+    }
+
+    /**
+     * Deselect the active tab set, setting the active tabset to undefined
+     */
+    static deselectTabset(): Action {
+        return new Action(Actions.DESELECT_TABSET, {})
     }
 }

@@ -423,6 +423,10 @@ export class Model {
                 node._updateAttrs(action.data.json);
                 break;
             }
+            case Actions.DESELECT_TABSET: {
+                this._activeTabSet = undefined;
+                break;
+            }
             default:
                 break;
         }
