@@ -498,7 +498,7 @@ This would add a new grid component to the tabset with id "NAVIGATION" (where th
 
 ## Tab Node Events
 
-You can handle events on nodes by adding a listener, this would typically be done 
+You can handle events on nodes by adding a listener with `setEventListener` or `addEventListener`. This would typically be done 
 in the components constructor() method.
 
 Example:

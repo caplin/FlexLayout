@@ -504,17 +504,32 @@ describe("Tree", function () {
         });
 
         it("close tab", () => {
-            let closed = false;
-            tab("/ts0/t0").setEventListener("close", () => { closed = true; })
+            let closed1 = false;
+            let closed2 = false;
+            let closed3 = false;
+            let closed4 = false;
+            tab("/ts0/t0").addEventListener("close", () => { closed1 = true; });
+            tab("/ts0/t0").setEventListener("close", () => { closed2 = true; });
+            tab("/ts0/t0").addEventListener("close", () => { closed3 = true; });
+            const close4Callback = () => { closed4 = true; }
+            tab("/ts0/t0").addEventListener("close", close4Callback);
+            tab("/ts0/t0").removeEventListener("close", close4Callback);
             doAction(Actions.deleteTab(tab("/ts0/t0").getId()));
-            expect(closed).equals(true);
+            expect(closed1).equals(false);
+            expect(closed2).equals(true);
+            expect(closed3).equals(true);
+            expect(closed4).equals(false);
         });
 
         it("save tab", () => {
-            let saved = false;
-            tab("/ts0/t0").setEventListener("save", () => { saved = true; })
+            let saved1 = false;
+            let saved2 = false;
+            tab("/ts0/t0").addEventListener("save", () => { saved1 = true; });
+            tab("/ts0/t0").removeEventListener("save");
+            tab("/ts0/t0").addEventListener("save", () => { saved2 = true; });
             model.toJson();
-            expect(saved).equals(true);
+            expect(saved1).equals(false);
+            expect(saved2).equals(true);
         });
 
         it("visibility tab", () => {

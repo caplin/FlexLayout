@@ -23,7 +23,7 @@ export abstract class Node {
     /** @internal */
     protected _visible: boolean;
     /** @internal */
-    protected _listeners: Record<string, (params: any) => void>;
+    protected _listeners: Record<string, ((params: any) => void)[]>;
     /** @internal */
     protected _dirty: boolean = false;
     /** @internal */
@@ -83,14 +83,46 @@ export abstract class Node {
             return Orientation.flip(this._parent.getOrientation());
         }
     }
-
-    // event can be: resize, visibility, maximize (on tabset), close
+    
+    /**
+     * Removes existing event listeners and replaces them with the given listener
+     * @param event valid events: resize, visibility, maximize (on tabset), close
+     * @param callback
+     */
     setEventListener(event: string, callback: (params: any) => void) {
-        this._listeners[event] = callback;
+        this._listeners[event] = [callback];
     }
 
-    removeEventListener(event: string) {
-        delete this._listeners[event];
+    /**
+     * Adds the given listener alongside existing listeners
+     * @param event valid events: resize, visibility, maximize (on tabset), close
+     * @param callback
+     */
+    addEventListener(event: string, callback: (params: any) => void) {
+        if (this._listeners[event] !== undefined) {
+            this._listeners[event].push(callback);
+        } else {
+            this._listeners[event] = [callback];
+        }
+    }
+
+    /**
+     * If callback is provided, it is removed from the event.
+     * If no callback is provided, all callbacks are removed from the event.
+     * @param event valid events: resize, visibility, maximize (on tabset), close
+     * @param callback the specific callback to remove
+     */
+    removeEventListener(event: string, callback?: (params: any) => void) {
+        if (callback) {
+            if (this._listeners[event] !== undefined) {
+                const index = this._listeners[event].indexOf(callback);
+                if (index !== -1) {
+                    this._listeners[event].splice(index, 1);
+                }
+            }
+        } else {
+            this._listeners[event] = [];
+        }
     }
 
     abstract toJson(): IJsonRowNode | IJsonBorderNode | IJsonTabSetNode | IJsonTabNode | undefined;
@@ -104,7 +136,9 @@ export abstract class Node {
     _fireEvent(event: string, params: any) {
         // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this._listeners[event] !== undefined) {
-            this._listeners[event](params);
+            for(const callback of this._listeners[event]) {
+                callback(params);
+            }
         }
     }
 
