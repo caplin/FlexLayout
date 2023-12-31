@@ -1,6 +1,6 @@
 {
-    "name": "flexlayout-react",
-    "version": "0.7.15",
+    "name": "flexlayout-react-omran",
+    "version": "0.7.17",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -25,7 +25,7 @@
     ],
     "scripts": {
         "start": "webpack serve",
-        "build": "npm run css && npm run test && npm run doc && npm run build:demo && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
+        "build": " npm run build:demo && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
         "build:commonjs": "tsc -p tsconfig2.json",
         "build:umd": "webpack --mode=development --config webpack_build.config.js",
         "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
@@ -48,6 +48,7 @@
         "extends": "react-app"
     },
     "devDependencies": {
+        "@chakra-ui/react": "^2.8.2",
         "@cypress/react": "^7.0.3",
         "@cypress/webpack-dev-server": "^3.4.1",
         "@types/node": "^18.15.13",
@@ -72,5 +73,9 @@
         "webpack-cli": "^5.0.1",
         "webpack-dev-server": "^4.8.1"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@emotion/react": "^11.11.3",
+        "@emotion/styled": "^11.11.0",
+        "framer-motion": "^10.16.16"
+    }
 }

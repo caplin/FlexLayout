@@ -25,7 +25,27 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
     const popoutWindow = React.useRef<Window | null>(null);
     const timerId = React.useRef<any>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
+    const styles = Array.from(window.document.styleSheets).reduce((result, styleSheet) => {
+        let rules: CSSRuleList | undefined = undefined;
+        try {
+            rules = styleSheet.cssRules;
+        } catch (e) {
+            // styleSheet.cssRules can throw security exception
+        }
 
+        try {
+            return [
+                ...result,
+                {
+                    href: styleSheet.href,
+                    type: styleSheet.type,
+                    rules: rules ? Array.from(rules).map(rule => rule.cssText) : null,
+                }
+            ];
+        } catch (e) {
+            return result;
+        }
+    }, [] as IStyleSheet[]);
     React.useLayoutEffect(() => {
         if (timerId.current) {
             clearTimeout(timerId.current);
@@ -35,38 +55,55 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
         // Make a local copy of the styles from the current window which will be passed into
         // the floating window. window.document.styleSheets is mutable and we can't guarantee
         // the styles will exist when 'popoutWindow.load' is called below.
-        const styles = Array.from(window.document.styleSheets).reduce((result, styleSheet) => {
-            let rules: CSSRuleList | undefined = undefined;
-            try {
-                rules = styleSheet.cssRules;
-            } catch (e) {
-                // styleSheet.cssRules can throw security exception
-            }
+       
+        // let test = false;
 
-            try {
-                return [
-                    ...result,
-                    {
-                        href: styleSheet.href,
-                        type: styleSheet.type,
-                        rules: rules ? Array.from(rules).map(rule => rule.cssText) : null,
-                    }
-                ];
-            } catch (e) {
-                return result;
-            }
-        }, [] as IStyleSheet[]);
-        popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
+        let left, top, width, height;
+        let X, Y, W, H;
+
+        const storedPosition = localStorage.getItem(`popoutWindowPosition_${id}`);
+        const storedPositionObj = storedPosition ? JSON.parse(storedPosition) : null;
+
+        if (storedPositionObj) {
+            X = storedPositionObj.x;
+            Y = storedPositionObj.y;
+            W = storedPositionObj.width;
+            H = storedPositionObj.height;
+        } else {
+            X = r.x;
+            Y = r.y;
+            W = r.width;
+            H = r.height;
+        }
+
+        popoutWindow.current = window.open(url, id, `left=${X},top=${Y},width=${W},height=${H}`);
+
+        // if(test){
+        //     popoutWindow.current = window.open(url, id, `left=${r.x},top=${r.y},width=${r.width},height=${r.height}`);
+        // } else {
+        //     popoutWindow.current = window.open(url, id, `left=${X},top=${Y},width=${W},height=${H}`);
+        // }
+       
+       
         if (popoutWindow.current !== null) {
             onSetWindow(id, popoutWindow.current);
 
-            // listen for parent unloading to remove all popouts
             window.addEventListener("beforeunload", () => {
                 if (popoutWindow.current) {
+                    // test = true;
+                    left = popoutWindow.current.screenX;
+                    top = popoutWindow.current.screenY;
+                    width = popoutWindow.current.innerWidth;
+                    height = popoutWindow.current.innerHeight;
+
+                    // Store the window position in localStorage
+                    localStorage.setItem(`popoutWindowPosition_${id}`, JSON.stringify({ x: left, y: top, width, height }));
+
                     popoutWindow.current.close();
                     popoutWindow.current = null;
                 }
             });
+
 
             popoutWindow.current.addEventListener("load", () => {
                 if (isMounted) {
@@ -95,13 +132,47 @@ export const FloatingWindow = (props: React.PropsWithChildren<IFloatingWindowPro
             // delay so refresh will close window
             timerId.current = setTimeout(() => {
                 if (popoutWindow.current) {
-                    popoutWindow.current.close();
-                    popoutWindow.current = null;
+                    // popoutWindow.current.close();
+                    // popoutWindow.current = null;
                 }
             }, 0);
         };
     }, []);
+    React.useEffect(() => {
+        copyStyles(popoutWindow.current!.document, styles).then(() => {
+        });
+        const handleMutations = (mutationsList: any) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    // Copy the new styles to the floating window
+                    copyStyles(popoutWindow.current!.document, [{
+                        href: null,
+                        type: 'text/css',
+                        rules: [mutation.addedNodes[0].textContent], // Assuming the added node is a style element
+                    }]);
+                }
+            }
+        };
 
+        const observer = new MutationObserver(handleMutations);
+        const observerConfig = {
+            childList: true,
+            subtree: true,
+        };
+
+        observer.observe(document.head, observerConfig);
+
+        return () => {
+            observer.disconnect(); // Disconnect the observer when the component unmounts
+
+            if (popoutWindow.current) {
+                popoutWindow.current.removeEventListener("beforeunload", () => {
+                    onCloseWindow(id);
+                });
+            }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } ,[]); 
     if (content !== undefined) {
         return createPortal(children, content!);
     } else {
