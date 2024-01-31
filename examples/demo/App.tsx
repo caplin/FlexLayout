@@ -38,7 +38,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     }
 
     componentDidMount() {
-        this.loadLayout("default", false);
+        this.loadLayout("sub", false);
         document.body.addEventListener("touchmove", this.preventIOSScrollingWhenDragging, { passive: false });
 
         // use to generate json typescript interfaces 
@@ -256,7 +256,21 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         if (tabStorageImpl) {
             return tabStorageImpl(dragging, over, x, y, location, refresh)
         }
-        return undefined
+
+        if(over.getExtraData().model) { // If dropping into nested flexLayout, add if there.
+            var model:Model = over.getExtraData().model;
+            const callback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => {
+                const json = dragging instanceof TabNode ? dragging.toJson() : dragging;
+                if(dragging instanceof TabNode) {
+                    this.state.model?.doAction(Actions.deleteTab(dragging.getId()));
+                }
+                // TODO - detect tab that we are hovering over, highlight and add to that only.
+                // Currently user has to move it in, then move it around.
+                model.doAction(Actions.addNode(json, model.getFirstTabSet().getId(), DockLocation.CENTER, -1));
+            };
+            return { x: 0, y: 0, width: 55, height: 55, callback: callback, cursor: 'copy' };
+        }   
+        return undefined;
     };
 
     onShowLayoutClick = (event: React.MouseEvent) => {
@@ -301,7 +315,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
             return <SimpleTable fields={fields} onClick={this.onTableClick.bind(this, node)} data={node.getExtraData().data} />;
         }
         else if (component === "sub") {
-            var model = node.getExtraData().model;
+            var model:Model = node.getExtraData().model;
             if (model == null) {
                 node.getExtraData().model = Model.fromJson(node.getConfig().model);
                 model = node.getExtraData().model;
@@ -313,7 +327,14 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                 );
             }
 
-            return <Layout model={model} factory={this.factory} />;
+            // TODO - Using mouse click but really I want to override the child drag to be the adult drag.
+            return <Layout model={model} factory={this.factory} onAuxMouseClick={(tn, e)=> {
+                if(tn instanceof TabNode || tn instanceof TabSetNode) {
+                    model.doAction(Actions.deleteTab(tn.getId()));
+                    this.layoutRef!.current!.addTabWithDragAndDrop(tn.getName(),  tn.toJson());
+                    e.stopPropagation(); // else event bubbles to parent tabset
+                }
+            }} />;
         }
         else if (component === "text") {
             try {
@@ -446,7 +467,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                 onRenderFloatingTabPlaceholder={this.state.layoutFile === "newfeatures" ? this.onRenderFloatingTabPlaceholder : undefined}
                 onExternalDrag={this.onExternalDrag}
                 realtimeResize={this.state.realtimeResize}
-                onTabDrag={this.state.layoutFile === "newfeatures" ? this.onTabDrag : undefined}
+                onTabDrag={this.state.layoutFile === "newfeatures" || this.state.layoutFile === "sub" ? this.onTabDrag : undefined}
                 onContextMenu={this.state.layoutFile === "newfeatures" ? this.onContextMenu : undefined}
                 onAuxMouseClick={this.state.layoutFile === "newfeatures" ? this.onAuxMouseClick : undefined}
                 // icons={{
