@@ -6,14 +6,64 @@
     position: absolute;
 }
 
+@mixin flexFix {
+    display: flex;
+    flex-basis: 0px;
+    min-width: 0;
+    min-height: 0;
+}
+
 .flexlayout {
     &__layout {
         @include absoluteFill;
-        overflow: hidden;
+        display:flex;
+
+        &_overlay {
+            @include absoluteFill;
+            z-index: 1000;
+        }
+
+        &_tab_stamps {
+            position:absolute; 
+            top:-10000px; // offscreen
+            z-index:100;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+        }
+
+        &_moveables {
+            visibility: hidden;
+            position:absolute; 
+            width: 100px; // size is needed to tabs have something to draw into
+            height: 100px;
+            top:-20000px; // offscreen
+        }
+
+        &_main {
+            @include flexFix;
+            flex-grow:1;
+            position:relative;
+        }
+    }
+
+    &__layout_border_container {
+        @include flexFix;
+        flex-grow:1;
+    }
+
+    &__layout_border_container_inner {
+        @include flexFix;
+        flex-grow: 1;
     }
 
     &__splitter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background-color: var(--color-splitter);
+        touch-action: none;
+        z-index: 10;
         @include splitter_mixin;
 
         @media (hover: hover) {
@@ -25,15 +75,33 @@
             }
         }
         &_border {
-            z-index: 10;
             @include splitter_border_mixin;
         }
         &_drag {
+            position:absolute;
+            display:flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
             background-color: var(--color-splitter-drag);
             @include splitter_drag_mixin;
         }
+        &_handle {
+            background-color:#ccc; 
+            border-radius:3px;
+
+            &_horz {
+                width: 3px; 
+                height:30px;
+            }
+            &_vert {
+                width: 30px; 
+                height:3px;
+            }
+        }
+
         &_extra {
+            touch-action: none;
             background-color: transparent;
         }
     }
@@ -68,37 +136,47 @@
     }
 
     &__drag_rect {
-        position: absolute;
-        cursor: move;
         color: var(--color-drag-rect);
         background-color: var(--color-drag-rect-background);
         border: 2px solid var(--color-drag-rect-border);
-        // box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3);
         border-radius: 5px;
-        z-index: 1000;
         box-sizing: border-box;
-        opacity: 0.9;
-        text-align: center;
+        // text-align: center;
 
         display: flex;
         justify-content: center;
         flex-direction: column;
         overflow: hidden;
-        padding: 0.3em 1em;
+        padding: 0.3em .8em;
         word-wrap: break-word;
         font-size: var(--font-size);
         font-family: var(--font-family);
     }
 
-    &__tabset {
-        display: flex;
-        flex-direction: column;
+    &__row {
+        @include flexFix;
+        position: relative;
+        box-sizing: border-box;
         overflow: hidden;
+    }
+
+    &__tabset {
+        display:flex;
+        flex-direction: column;
+        position: relative;
         background-color: var(--color-tabset-background);
         box-sizing: border-box;
-        font-size: var(--font-size);
         font-family: var(--font-family);
+        overflow: hidden;
+        flex-grow:1;
         @include tabset_mixin;
+
+        &_container {
+            @include flexFix;
+            flex-direction: column;
+            overflow: hidden;
+            flex-grow:1;
+        }
 
         &_tab_divider {
             width: 4px;
@@ -106,10 +184,10 @@
         }
 
         &_content {
-            display: flex;
+            @include flexFix;
             flex-grow: 1;
-            align-items: center;
-            justify-content: center;
+            box-sizing: border-box;
+            position: relative;
         }
 
         &_header {
@@ -121,6 +199,7 @@
             border-bottom: 1px solid var(--color-tabset-divider-line);
             color: var(--color-tabset-header);
             background-color: var(--color-tabset-header-background);
+            font-size: var(--font-size);
             @include tabset_header_mixin;
 
             &_content {
@@ -135,14 +214,17 @@
                 background-color: var(--color-tabset-background);
                 overflow: hidden;
                 display: flex;
+                font-size: var(--font-size);
                 @include tabset_tabbar_mixin;
             }
 
             &_outer_top {
+                padding:0px 2px 0px 2px;
                 border-bottom: 1px solid var(--color-tabset-divider-line);
             }
 
             &_outer_bottom {
+                padding: 0px 2px 0px 2px;
                 border-top: 1px solid var(--color-tabset-divider-line);
             }
 
@@ -155,15 +237,13 @@
                 overflow: hidden;
 
                 &_tab_container {
+                    position: relative;
                     display: flex;
                     padding-left: 4px;
                     padding-right: 4px;
                     box-sizing: border-box;
-                    position: absolute;
-                    top: 0;
-                    bottom: 0;
-                    width: 10000px;
-
+                    white-space: nowrap;
+                  
                     &_top {
                         border-top: 2px solid transparent; // if you change this, update the _sizer above
                     }
@@ -194,11 +274,30 @@
     }
 
     &__tab {
-        overflow: auto;
-        position: absolute;
+        overflow: hidden;
         box-sizing: border-box;
-        background-color: var(--color-background);
+        background-color: var(--color-tab-content);
         color: var(--color-text);
+        position: relative;
+
+        &_moveable {
+            position:relative;
+            height:100%; 
+            min-width:1px;
+            min-height:1px;
+            overflow:auto;
+            box-sizing: border-box;
+        }
+
+        &_overlay {
+            z-index: 20;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #0000003d;
+        }
 
         &_button {
             display: flex;
@@ -264,6 +363,7 @@
 
             &_content {
                 display: flex;
+                text-wrap: nowrap;
             }
 
             &_textbox {
@@ -319,6 +419,15 @@
             gap: .3em;
             padding-left: .5em;
             padding-right: .3em;
+
+            &_icon {
+                border: none;
+                outline: none;
+                font-size: inherit;
+                margin: 0px;
+                background-color: transparent;
+                padding: 1px;
+            }
 
             &_button {
                 border: none;
@@ -394,6 +503,12 @@
         background-color: var(--color-border-background);
         @include border_mixin;
 
+        &_tab_contents {
+            box-sizing: border-box;
+            overflow:hidden;
+            background-color: var(--color-border-tab-content);
+        }
+
         &_top {
             border-bottom: 1px solid var(--color-border-divider-line);
             align-items: center;
@@ -430,8 +545,6 @@
                 padding-right: 2px;
                 box-sizing: border-box;
                 position: absolute;
-                top: 0;
-                bottom: 0;
                 width: 10000px;
 
                 &_right {
@@ -606,15 +719,6 @@
         &_content {
             @include absoluteFill;
         }
-
-        &_tab {
-            overflow: auto;
-            @include absoluteFill;
-
-            box-sizing: border-box;
-            background-color: var(--color-background);
-            color: var(--color-text);
-        }
     }
 
     &__error_boundary_container {
@@ -646,6 +750,8 @@
     }
 
     &__border_sizer {
+        position:absolute;
+        top:-30000px; // offscreen
         padding-top: 6px;
         padding-bottom: 5px;
         font-size: var(--font-size);

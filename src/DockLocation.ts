@@ -2,7 +2,7 @@ import { Orientation } from "./Orientation";
 import { Rect } from "./Rect";
 
 export class DockLocation {
-    static values: Record<string, DockLocation> = {};
+    static values = new Map<string, DockLocation>();
     static TOP = new DockLocation("top", Orientation.VERT, 0);
     static BOTTOM = new DockLocation("bottom", Orientation.VERT, 1);
     static LEFT = new DockLocation("left", Orientation.HORZ, 0);
@@ -11,7 +11,7 @@ export class DockLocation {
 
     /** @internal */
     static getByName(name: string): DockLocation {
-        return DockLocation.values[name];
+        return DockLocation.values.get(name)!;
     }
 
     /** @internal */
@@ -51,26 +51,26 @@ export class DockLocation {
     }
 
     /** @internal */
-    _name: string;
+    name: string;
     /** @internal */
-    _orientation: Orientation;
+    orientation: Orientation;
     /** @internal */
-    _indexPlus: number;
+    indexPlus: number;
 
     /** @internal */
-    constructor(name: string, orientation: Orientation, indexPlus: number) {
-        this._name = name;
-        this._orientation = orientation;
-        this._indexPlus = indexPlus;
-        DockLocation.values[this._name] = this;
+    constructor(_name: string, _orientation: Orientation, _indexPlus: number) {
+        this.name = _name;
+        this.orientation = _orientation;
+        this.indexPlus = _indexPlus;
+        DockLocation.values.set(this.name, this);
     }
 
     getName() {
-        return this._name;
+        return this.name;
     }
 
     getOrientation() {
-        return this._orientation;
+        return this.orientation;
     }
 
     /** @internal */
@@ -128,6 +128,6 @@ export class DockLocation {
     }
 
     toString() {
-        return "(DockLocation: name=" + this._name + ", orientation=" + this._orientation + ")";
+        return "(DockLocation: name=" + this.name + ", orientation=" + this.orientation + ")";
     }
 }

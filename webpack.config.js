@@ -1,3 +1,5 @@
+
+const path = require('path');
 module.exports = {
     mode: "development",
     entry: {
@@ -16,6 +18,9 @@ module.exports = {
 
     devServer: {
         static: "./",
+        client: {
+            overlay: false,
+        },
     },
 
     devtool: "source-map",
@@ -29,8 +34,15 @@ module.exports = {
             { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
             {
                 test: /\.css$/i,
-                use: [ "style-loader", "css-loader"],
-              },
+                use: ["style-loader", "css-loader"],
+            },
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/i,
+                type: 'asset/resource',  // This handles font files
+                generator: {
+                    filename: 'fonts/[name][hash][ext]',  // Place fonts in a "fonts" folder inside the output directory
+                },
+            },
         ],
     },
 };

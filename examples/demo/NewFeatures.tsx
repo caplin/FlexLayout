@@ -8,12 +8,8 @@ export function NewFeatures() {
             <small>Hover over this tab button</small>
         </li>
         <li>
-            Action to close tabset:<br/>
-            <small>See added x button in this tabset</small>
-        </li>
-        <li>
-            Intercept drag drop to allow dropping tabs into custom areas:<br/>
-            <small>See Tab Storage tab</small>
+            Action to close tab set:<br/>
+            <small>See added x button in this tab set</small>
         </li>
         <li>
             Allow narrow splitters with extended hit test areas:<br/>
@@ -32,12 +28,12 @@ export function NewFeatures() {
             <small>Try moving all tabs from any of the borders</small>
         </li>
         <li>
-            New onRenderFloatingTabPlaceholder prop:<br/>
-            <small>Popout one of the tabs to see the custom rendered placeholder</small>
+            New onContextMenu prop:<br/>
+            <small>All tabs and tab sets in this layout have a custom context menu</small>
         </li>
         <li>
-            New onContextMenu prop:<br/>
-            <small>All tabs and tabsets in this layout have a custom context menu</small>
+            New tab set attribute: tabSetEnableTabWrap<br/>
+            <small>All tab sets in this layout will wrap their tabs onto multiple lines when needed</small>
         </li>
     </ul>
     );

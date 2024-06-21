@@ -1,3 +1,26 @@
+0.8.0
+New:
+  * Wrap tabs option
+  * improved popouts, no longer keep placeholder tab
+  * drag from overflow menu
+  * improved splitter resizing
+  * now uses html drag and drop to allow cross window dragging
+  * rendering now uses flexbox rather than absolute positions, this should make
+    styling easier
+  * rounded theme
+  * updated dependencies
+
+Breaking Changes:
+  * addTabWithDragAndDrop signature has changed, must now be called from a drag start handler
+  * moveTabWithDragAndDrop signature has changed, must now be called from a drag start handler
+  * removed addTabWithDragAndDropIndirect 
+  * removed onTabDrag (custom internal drag)
+  * removed font prop, use css variables --font-size and --font-family instead
+  * removed titleFactory, iconFactory props, use onRenderTab instead
+  * removed tabset header option
+  * removed attributes: for insets, tabset header, row/tabset width and height, legacymenu, ...
+  * several css changes ref use of flexbox
+
 0.7.15
 Added arrow icon to edge indicators
 

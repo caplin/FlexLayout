@@ -51,3 +51,9 @@ export const RestoreIcon = () => {
         <svg xmlns="http://www.w3.org/2000/svg" style={style} viewBox="0 0 24 24" fill="var(--color-icon)"><path d="M0 0h24v24H0z" fill="none" /><path stroke="var(--color-icon)" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" /></svg>
     );
 }
+
+export const AsterickIcon = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" style={style} height="24px" viewBox="0 -960 960 960" width="24px" ><path fill="var(--color-icon)" stroke="var(--color-icon)" d="M440-120v-264L254-197l-57-57 187-186H120v-80h264L197-706l57-57 186 187v-264h80v264l186-187 57 57-187 186h264v80H576l187 186-57 57-186-187v264h-80Z"/></svg>
+    );
+}

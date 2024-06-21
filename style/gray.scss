@@ -44,9 +44,11 @@ $font_family: Roboto, Arial, sans-serif !default;
         --color-tabset-header-background: var(--color-1);
         --color-tabset-header: var(--color-text);
 
+        --color-border-tab-content: var(--color-background);
         --color-border-background: var(--color-1);
         --color-border-divider-line: var(--color-3);
 
+        --color-tab-content: var(--color-background);
         --color-tab-selected: var(--color-text);
         --color-tab-selected-background: var(--color-3);
         --color-tab-unselected: gray;

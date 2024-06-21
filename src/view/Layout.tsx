@@ -1,742 +1,104 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { DockLocation } from "../DockLocation";
-import { DragDrop } from "../DragDrop";
 import { DropInfo } from "../DropInfo";
 import { I18nLabel } from "../I18nLabel";
+import { Orientation } from "../Orientation";
+import { Rect } from "../Rect";
+import { CLASSES } from "../Types";
 import { Action } from "../model/Action";
 import { Actions } from "../model/Actions";
 import { BorderNode } from "../model/BorderNode";
-import { BorderSet } from "../model/BorderSet";
 import { IDraggable } from "../model/IDraggable";
-import { Model, ILayoutMetrics } from "../model/Model";
+import { IJsonTabNode } from "../model/IJsonModel";
+import { Model } from "../model/Model";
 import { Node } from "../model/Node";
-import { RowNode } from "../model/RowNode";
-import { SplitterNode } from "../model/SplitterNode";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
-import { Rect } from "../Rect";
-import { CLASSES } from "../Types";
+import { BorderTab } from "./BorderTab";
 import { BorderTabSet } from "./BorderTabSet";
-import { Splitter } from "./Splitter";
+import { DragContainer } from "./DragContainer";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { PopoutWindow } from "./PopoutWindow";
+import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { Overlay } from "./Overlay";
+import { Row } from "./Row";
 import { Tab } from "./Tab";
-import { TabSet } from "./TabSet";
-import { FloatingWindow } from "./FloatingWindow";
-import { FloatingWindowTab } from "./FloatingWindowTab";
-import { TabFloating } from "./TabFloating";
-import { IJsonTabNode } from "../model/IJsonModel";
-import { Orientation } from "../Orientation";
-import { CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { copyInlineStyles, enablePointerOnIFrames, isDesktop, isSafari } from "./Utils";
+import { LayoutWindow } from "../model/LayoutWindow";
 import { TabButtonStamp } from "./TabButtonStamp";
-
-export type CustomDragCallback = (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation) => void;
-export type DragRectRenderCallback = (content: React.ReactElement | undefined, node?: Node, json?: IJsonTabNode) => React.ReactElement | undefined;
-export type FloatingTabPlaceholderRenderCallback = (dockPopout: () => void, showPopout: () => void) => React.ReactElement | undefined;
-export type NodeMouseEvent = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
-export type ShowOverflowMenuCallback = (
-    node: TabSetNode | BorderNode,
-    mouseEvent: React.MouseEvent<HTMLElement, MouseEvent>,
-    items: { index: number; node: TabNode }[],
-    onSelect: (item: { index: number; node: TabNode }) => void,
-) => void;
-export type TabSetPlaceHolderCallback = (node: TabSetNode) => React.ReactNode;
-export type IconFactory = (node: TabNode) => React.ReactNode;
-export type TitleFactory = (node: TabNode) => ITitleObject | React.ReactNode;
+import { SizeTracker } from "./SizeTracker";
 
 export interface ILayoutProps {
+    /** the model for this layout */
     model: Model;
+    /** factory function for creating the tab components */
     factory: (node: TabNode) => React.ReactNode;
-    font?: IFontValues;
-    fontFamily?: string;
-    iconFactory?: IconFactory;
-    titleFactory?: TitleFactory;
+    /** object mapping keys among close, maximize, restore, more, popout to React nodes to use in place of the default icons, can alternatively return functions for creating the React nodes */
     icons?: IIcons;
+    /** function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning undefined from the function will halt the action, otherwise return the action to continue */
     onAction?: (action: Action) => Action | undefined;
+    /** function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized */
     onRenderTab?: (
         node: TabNode,
         renderValues: ITabRenderValues, // change the values in this object as required
     ) => void;
+    /** function called when rendering a tabset, allows header and buttons to be customized */
     onRenderTabSet?: (
         tabSetNode: TabSetNode | BorderNode,
         renderValues: ITabSetRenderValues, // change the values in this object as required
     ) => void;
+    /** function called when model has changed */
     onModelChange?: (model: Model, action: Action) => void;
-    onExternalDrag?: (event: React.DragEvent<HTMLDivElement>) => undefined | {
-        dragText: string,
+    /** function called when an external object (not a tab) gets dragged onto the layout, with a single dragenter argument. Should return either undefined to reject the drag/drop or an object with keys dragText, jsonDrop, to create a tab via drag (similar to a call to addTabToTabSet). Function onDropis passed the added tabNodeand thedrop DragEvent`, unless the drag was canceled. */
+    onExternalDrag?: (event: React.DragEvent<HTMLElement>) => undefined | {
         json: any,
-        onDrop?: (node?: Node, event?: Event) => void
+        onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void
     };
+    /** function called with default css class name, return value is class name that will be used. Mainly for use with css modules. */
     classNameMapper?: (defaultClassName: string) => string;
+    /** function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values */
     i18nMapper?: (id: I18nLabel, param?: string) => string | undefined;
+    /** if left undefined will do simple check based on userAgent */
     supportsPopout?: boolean | undefined;
+    /** URL of popout window relative to origin, defaults to popout.html */
     popoutURL?: string | undefined;
+    /** boolean value, defaults to false, resize tabs as splitters are dragged. Warning: this can cause resizing to become choppy when tabs are slow to draw */
     realtimeResize?: boolean | undefined;
-    onTabDrag?: (dragging: TabNode | IJsonTabNode, over: TabNode, x: number, y: number, location: DockLocation, refresh: () => void) => undefined | {
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        callback: CustomDragCallback,
-        // Called once when `callback` is not going to be called anymore (user canceled the drag, moved mouse and you returned a different callback, etc)
-        invalidated?: () => void,
-        cursor?: string | undefined
-    };
+    /** callback for rendering the drag rectangles */
     onRenderDragRect?: DragRectRenderCallback;
-    onRenderFloatingTabPlaceholder?: FloatingTabPlaceholderRenderCallback;
+    /** callback for handling context actions on tabs and tabsets */
     onContextMenu?: NodeMouseEvent;
+    /** callback for handling mouse clicks on tabs and tabsets with alt, meta, shift keys, also handles center mouse clicks */
     onAuxMouseClick?: NodeMouseEvent;
+    /** callback for handling the display of the tab overflow menu */
     onShowOverflowMenu?: ShowOverflowMenuCallback;
+    /** callback for rendering a placeholder when a tabset is empty */
     onTabSetPlaceHolder?: TabSetPlaceHolderCallback;
+    /** Name given to popout windows, defaults to 'Popout Window' */
+    popoutWindowName?: string;
 }
-export interface IFontValues {
-    size?: string;
-    family?: string;
-    style?: string;
-    weight?: string;
-}
-
-export interface ITabSetRenderValues {
-    headerContent?: React.ReactNode;
-    centerContent?: React.ReactNode;
-    stickyButtons: React.ReactNode[];
-    buttons: React.ReactNode[];
-    headerButtons: React.ReactNode[];
-    // position to insert overflow button within [...stickyButtons, ...buttons]
-    // if left undefined position will be after the sticky buttons (if any)
-    overflowPosition: number | undefined; 
-}
-
-export interface ITabRenderValues {
-    leading: React.ReactNode;
-    content: React.ReactNode;
-    name: string;
-    buttons: React.ReactNode[];
-}
-
-export interface ITitleObject {
-    titleContent: React.ReactNode;
-    name: string;
-}
-
-export interface ILayoutState {
-    rect: Rect;
-    calculatedHeaderBarSize: number;
-    calculatedTabBarSize: number;
-    calculatedBorderBarSize: number;
-    editingTab?: TabNode;
-    showHiddenBorder: DockLocation;
-    portal?: React.ReactPortal;
-    showEdges?: boolean;
-}
-
-export interface IIcons {
-    close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    restore?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
-    edgeArrow?: React.ReactNode ;
-}
-
-const defaultIcons = {
-    close: <CloseIcon />,
-    closeTabset: <CloseIcon />,
-    popout: <PopoutIcon />,
-    maximize: <MaximizeIcon />,
-    restore: <RestoreIcon />,
-    more: <OverflowIcon />,
-    edgeArrow: <EdgeIcon />
-};
-
-export interface ICustomDropDestination {
-    rect: Rect;
-    callback: CustomDragCallback;
-    invalidated: (() => void) | undefined;
-    dragging: TabNode | IJsonTabNode;
-    over: TabNode;
-    x: number;
-    y: number;
-    location: DockLocation;
-    cursor: string | undefined;
-}
-
-/** @internal */
-export interface ILayoutCallbacks {
-    i18nName(id: I18nLabel, param?: string): string;
-    maximize(tabsetNode: TabSetNode): void;
-    getPopoutURL(): string;
-    isSupportsPopout(): boolean;
-    isRealtimeResize(): boolean;
-    getCurrentDocument(): Document | undefined;
-    getClassName(defaultClassName: string): string;
-    doAction(action: Action): Node | undefined;
-    getDomRect(): DOMRect | undefined;
-    getRootDiv(): HTMLDivElement | null;
-    dragStart(
-        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
-        dragDivText: string | undefined,
-        node: Node & IDraggable,
-        allowDrag: boolean,
-        onClick?: (event: Event) => void,
-        onDoubleClick?: (event: Event) => void
-    ): void;
-    customizeTab(
-        tabNode: TabNode,
-        renderValues: ITabRenderValues,
-    ): void;
-    customizeTabSet(
-        tabSetNode: TabSetNode | BorderNode,
-        renderValues: ITabSetRenderValues,
-    ): void;
-    styleFont: (style: Record<string, string>) => Record<string, string>;
-    setEditingTab(tabNode?: TabNode): void;
-    getEditingTab(): TabNode | undefined;
-    getOnRenderFloatingTabPlaceholder(): FloatingTabPlaceholderRenderCallback | undefined;
-    showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
-    auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>): void;
-    showPortal: (portal: React.ReactNode, portalDiv: HTMLDivElement) => void;
-    hidePortal: () => void;
-    getShowOverflowMenu(): ShowOverflowMenuCallback | undefined;
-    getTabSetPlaceHolderCallback(): TabSetPlaceHolderCallback | undefined;
-}
-
-// Popout windows work in latest browsers based on webkit (Chrome, Opera, Safari, latest Edge) and Firefox. They do
-// not work on any version if IE or the original Edge browser
-// Assume any recent desktop browser not IE or original Edge will work
-/** @internal */
-// @ts-ignore
-const isIEorEdge = typeof window !== "undefined" && (window.document.documentMode || /Edge\//.test(window.navigator.userAgent));
-/** @internal */
-const isDesktop = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-/** @internal */
-const defaultSupportsPopout: boolean = isDesktop && !isIEorEdge;
 
 /**
  * A React component that hosts a multi-tabbed layout
  */
-export class Layout extends React.Component<ILayoutProps, ILayoutState> {
+export class Layout extends React.Component<ILayoutProps> {
+    /** @internal */
+    private selfRef: React.RefObject<LayoutInternal>;
+    /** @internal */
+    private revision: number; // so LayoutInternal knows this is a parent render (used for optimization)
 
     /** @internal */
-    private selfRef: React.RefObject<HTMLDivElement>;
-    /** @internal */
-    private findHeaderBarSizeRef: React.RefObject<HTMLDivElement>;
-    /** @internal */
-    private findTabBarSizeRef: React.RefObject<HTMLDivElement>;
-    /** @internal */
-    private findBorderBarSizeRef: React.RefObject<HTMLDivElement>;
-    /** @internal */
-    private previousModel?: Model;
-    /** @internal */
-    private centerRect?: Rect;
-
-    /** @internal */
-    // private start: number = 0;
-    /** @internal */
-    // private layoutTime: number = 0;
-
-    /** @internal */
-    private tabIds: string[];
-    /** @internal */
-    private newTabJson: IJsonTabNode | undefined;
-    /** @internal */
-    private firstMove: boolean = false;
-    /** @internal */
-    private dragNode?: Node & IDraggable;
-    /** @internal */
-    private dragDiv?: HTMLDivElement;
-    /** @internal */
-    private dragRectRendered: boolean = true;
-    /** @internal */
-    private dragDivText: string | undefined = undefined;
-    /** @internal */
-    private dropInfo: DropInfo | undefined;
-    /** @internal */
-    private customDrop: ICustomDropDestination | undefined;
-    /** @internal */
-    private outlineDiv?: HTMLDivElement;
-    /** @internal */
-    private edgeRectLength = 100;
-    /** @internal */
-    private edgeRectWidth = 10;
-    /** @internal */
-    private fnNewNodeDropped?: (node?: Node, event?: Event) => void;
-    /** @internal */
-    private currentDocument?: Document;
-    /** @internal */
-    private currentWindow?: Window;
-    /** @internal */
-    private supportsPopout: boolean;
-    /** @internal */
-    private popoutURL: string;
-    /** @internal */
-    private icons: IIcons;
-    /** @internal */
-    private resizeObserver?: ResizeObserver;
-
     constructor(props: ILayoutProps) {
         super(props);
-        this.props.model._setChangeListener(this.onModelChange);
-        this.tabIds = [];
-        this.selfRef = React.createRef<HTMLDivElement>();
-        this.findHeaderBarSizeRef = React.createRef<HTMLDivElement>();
-        this.findTabBarSizeRef = React.createRef<HTMLDivElement>();
-        this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
-        this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
-        this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
-        this.icons = { ...defaultIcons, ...props.icons };
-
-        this.state = {
-            rect: new Rect(0, 0, 0, 0),
-            calculatedHeaderBarSize: 25,
-            calculatedTabBarSize: 26,
-            calculatedBorderBarSize: 30,
-            editingTab: undefined,
-            showHiddenBorder: DockLocation.CENTER,
-            showEdges: false,
-        };
-
-        this.onDragEnter = this.onDragEnter.bind(this);
+        this.selfRef = React.createRef<LayoutInternal>();
+        this.revision = 0;
     }
 
-    /** @internal */
-    styleFont(style: Record<string, string>): Record<string, string> {
-        if (this.props.font) {
-            if (this.selfRef.current) {
-                if (this.props.font.size) {
-                    this.selfRef.current.style.setProperty("--font-size", this.props.font.size);
-                }
-                if (this.props.font.family) {
-                    this.selfRef.current.style.setProperty("--font-family", this.props.font.family);
-                }
-            }
-            if (this.props.font.style) {
-                style.fontStyle = this.props.font.style;
-            }
-            if (this.props.font.weight) {
-                style.fontWeight = this.props.font.weight;
-            }
-        }
-        return style;
-    }
-
-    /** @internal */
-    onModelChange = (action: Action) => {
-        this.forceUpdate();
-        if (this.props.onModelChange) {
-            this.props.onModelChange(this.props.model, action);
-        }
-    };
-
-    /** @internal */
-    doAction(action: Action): Node | undefined {
-        if (this.props.onAction !== undefined) {
-            const outcome = this.props.onAction(action);
-            if (outcome !== undefined) {
-                return this.props.model.doAction(outcome);
-            }
-            return undefined;
-        } else {
-            return this.props.model.doAction(action);
-        }
-    }
-
-    /** @internal */
-    componentDidMount() {
-        this.updateRect();
-        this.updateLayoutMetrics();
-
-        // need to re-render if size changes
-        this.currentDocument = (this.selfRef.current as HTMLDivElement).ownerDocument;
-        this.currentWindow = this.currentDocument.defaultView!;
-        this.resizeObserver = new ResizeObserver(entries => {
-            this.updateRect(entries[0].contentRect);
-        });
-        const selfRefCurr = this.selfRef.current;
-        if (selfRefCurr) {
-            this.resizeObserver.observe(selfRefCurr);
-        }
-    }
-
-    /** @internal */
-    componentDidUpdate() {
-        this.updateLayoutMetrics();
-        if (this.props.model !== this.previousModel) {
-            if (this.previousModel !== undefined) {
-                this.previousModel._setChangeListener(undefined); // stop listening to old model
-            }
-            this.props.model._setChangeListener(this.onModelChange);
-            this.previousModel = this.props.model;
-        }
-        // console.log("Layout time: " + this.layoutTime + "ms Render time: " + (Date.now() - this.start) + "ms");
-    }
-
-    /** @internal */
-    updateRect = (domRect?: DOMRectReadOnly) => {
-        if (!domRect) {
-            domRect = this.getDomRect();
-        }
-        if (!domRect) {
-            // no dom rect available, return.
-            return;
-        }
-        const rect = new Rect(0, 0, domRect.width, domRect.height);
-        if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
-            this.setState({ rect });
-        }
-    };
-
-    /** @internal */
-    updateLayoutMetrics = () => {
-        if (this.findHeaderBarSizeRef.current) {
-            const headerBarSize = this.findHeaderBarSizeRef.current.getBoundingClientRect().height;
-            if (headerBarSize !== this.state.calculatedHeaderBarSize) {
-                this.setState({ calculatedHeaderBarSize: headerBarSize });
-            }
-        }
-        if (this.findTabBarSizeRef.current) {
-            const tabBarSize = this.findTabBarSizeRef.current.getBoundingClientRect().height;
-            if (tabBarSize !== this.state.calculatedTabBarSize) {
-                this.setState({ calculatedTabBarSize: tabBarSize });
-            }
-        }
-        if (this.findBorderBarSizeRef.current) {
-            const borderBarSize = this.findBorderBarSizeRef.current.getBoundingClientRect().height;
-            if (borderBarSize !== this.state.calculatedBorderBarSize) {
-                this.setState({ calculatedBorderBarSize: borderBarSize });
-            }
-        }
-    };
-
-    /** @internal */
-    getClassName = (defaultClassName: string) => {
-        if (this.props.classNameMapper === undefined) {
-            return defaultClassName;
-        } else {
-            return this.props.classNameMapper(defaultClassName);
-        }
-    };
-
-    /** @internal */
-    getCurrentDocument() {
-        return this.currentDocument;
-    }
-
-    /** @internal */
-    getDomRect() {
-        return this.selfRef.current?.getBoundingClientRect();
-    }
-
-    /** @internal */
-    getRootDiv() {
-        return this.selfRef.current;
-    }
-
-    /** @internal */
-    isSupportsPopout() {
-        return this.supportsPopout;
-    }
-
-    /** @internal */
-    isRealtimeResize() {
-        return this.props.realtimeResize ?? false;
-    }
-
-    /** @internal */
-    onTabDrag(...args: Parameters<Required<ILayoutProps>['onTabDrag']>) {
-        return this.props.onTabDrag?.(...args);
-    }
-
-    /** @internal */
-    getPopoutURL() {
-        return this.popoutURL;
-    }
-
-    /** @internal */
-    componentWillUnmount() {
-        const selfRefCurr = this.selfRef.current;
-        if (selfRefCurr) {
-            this.resizeObserver?.unobserve(selfRefCurr);
-        }
-    }
-
-    /** @internal */
-    setEditingTab(tabNode?: TabNode) {
-        this.setState({ editingTab: tabNode });
-    }
-
-    /** @internal */
-    getEditingTab() {
-        return this.state.editingTab;
-    }
-
-    /** @internal */
-    render() {
-        // first render will be used to find the size (via selfRef)
-        if (!this.selfRef.current) {
-            return (
-                <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
-                    {this.metricsElements()}
-                </div>
-            );
-        }
-
-        this.props.model._setPointerFine(window && window.matchMedia && window.matchMedia("(pointer: fine)").matches);
-        // this.start = Date.now();
-        const borderComponents: React.ReactNode[] = [];
-        const tabSetComponents: React.ReactNode[] = [];
-        const floatingWindows: React.ReactNode[] = [];
-        const tabComponents: Record<string, React.ReactNode> = {};
-        const splitterComponents: React.ReactNode[] = [];
-
-        const metrics: ILayoutMetrics = {
-            headerBarSize: this.state.calculatedHeaderBarSize,
-            tabBarSize: this.state.calculatedTabBarSize,
-            borderBarSize: this.state.calculatedBorderBarSize
-        };
-        this.props.model._setShowHiddenBorder(this.state.showHiddenBorder);
-
-        this.centerRect = this.props.model._layout(this.state.rect, metrics);
-
-        this.renderBorder(this.props.model.getBorderSet(), borderComponents, tabComponents, floatingWindows, splitterComponents);
-        this.renderChildren("", this.props.model.getRoot(), tabSetComponents, tabComponents, floatingWindows, splitterComponents);
-
-        const nextTopIds: string[] = [];
-        const nextTopIdsMap: Record<string, string> = {};
-
-        // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
-        for (const t of this.tabIds) {
-            if (tabComponents[t]) {
-                nextTopIds.push(t);
-                nextTopIdsMap[t] = t;
-            }
-        }
-        this.tabIds = nextTopIds;
-
-        // Add tabs that have been added to the DOM
-        for (const t of Object.keys(tabComponents)) {
-            if (!nextTopIdsMap[t]) {
-                this.tabIds.push(t);
-            }
-        }
-
-        const edges: React.ReactNode[] = [];
-        const arrowIcon = this.icons.edgeArrow;
-        if (this.state.showEdges) {
-            const r = this.centerRect;
-            const length = this.edgeRectLength;
-            const width = this.edgeRectWidth;
-            const offset = this.edgeRectLength / 2;
-            const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            const radius = 50;
-            edges.push(<div key="North" style={{ top: r.y, left: r.x + r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}>
-                <div style={{transform: "rotate(180deg)"}}>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="West" style={{ top: r.y + r.height / 2 - offset, left: r.x, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}>
-                <div style={{transform: "rotate(90deg)"}}>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="South" style={{ top: r.y + r.height - width, left: r.x + r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}>
-                <div>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="East" style={{ top: r.y + r.height / 2 - offset, left: r.x + r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}>
-                <div style={{transform: "rotate(-90deg)"}}>
-                    {arrowIcon}
-                </div>
-            </div>);
-        }
-
-        // this.layoutTime = (Date.now() - this.start);
-
-        return (
-            <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)} onDragEnter={this.props.onExternalDrag ? this.onDragEnter : undefined}>
-                {tabSetComponents}
-                {this.tabIds.map((t) => {
-                    return tabComponents[t];
-                })}
-                {borderComponents}
-                {splitterComponents}
-                {edges}
-                {floatingWindows}
-                {this.metricsElements()}
-                {this.state.portal}
-            </div>
-        );
-    }
-
-    /** @internal */
-    metricsElements() {
-        // used to measure the tab and border tab sizes
-        const fontStyle = this.styleFont({ visibility: "hidden" });
-        return (
-            <React.Fragment>
-                <div key="findHeaderBarSize" ref={this.findHeaderBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__TABSET_HEADER_SIZER)}>
-                    FindHeaderBarSize
-                </div>
-                <div key="findTabBarSize" ref={this.findTabBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__TABSET_SIZER)}>
-                    FindTabBarSize
-                </div>
-                <div key="findBorderBarSize" ref={this.findBorderBarSizeRef} style={fontStyle} className={this.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
-                    FindBorderBarSize
-                </div>
-            </React.Fragment>
-        );
-    }
-
-    /** @internal */
-    onCloseWindow = (id: string) => {
-        this.doAction(Actions.unFloatTab(id));
-        try {
-            (this.props.model.getNodeById(id) as TabNode)._setWindow(undefined);
-        } catch (e) {
-            // catch incase it was a model change
-        }
-    };
-
-    /** @internal */
-    onSetWindow = (id: string, window: Window) => {
-        (this.props.model.getNodeById(id) as TabNode)._setWindow(window);
-    };
-
-    /** @internal */
-    renderBorder(borderSet: BorderSet, borderComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
-        for (const border of borderSet.getBorders()) {
-            const borderPath = `/border/${border.getLocation().getName()}`;
-            if (border.isShowing()) {
-                borderComponents.push(
-                    <BorderTabSet
-                        key={`border_${border.getLocation().getName()}`}
-                        path={borderPath}
-                        border={border}
-                        layout={this}
-                        iconFactory={this.props.iconFactory}
-                        titleFactory={this.props.titleFactory}
-                        icons={this.icons}
-                    />
-                );
-                const drawChildren = border._getDrawChildren();
-                let i = 0;
-                let tabCount = 0;
-                for (const child of drawChildren) {
-                    if (child instanceof SplitterNode) {
-                        let path = borderPath + "/s";
-                        splitterComponents.push(<Splitter key={child.getId()} layout={this} node={child} path={path} />);
-                    } else if (child instanceof TabNode) {
-                        let path = borderPath + "/t" + tabCount++;
-                        if (this.supportsPopout && child.isFloating()) {
-                            const rect = this._getScreenRect(child);
-
-                            const tabBorderWidth = child._getAttr("borderWidth");
-                            const tabBorderHeight = child._getAttr("borderHeight");
-                            if (rect) {
-                                if (tabBorderWidth !== -1 && border.getLocation().getOrientation() === Orientation.HORZ) {
-                                    rect.width = tabBorderWidth;
-                                } else if (tabBorderHeight !== -1 && border.getLocation().getOrientation() === Orientation.VERT) {
-                                    rect.height = tabBorderHeight;
-                                }
-                            }
-
-                            floatingWindows.push(
-                                <FloatingWindow
-                                    key={child.getId()}
-                                    url={this.popoutURL}
-                                    rect={rect}
-                                    title={child.getName()}
-                                    id={child.getId()}
-                                    onSetWindow={this.onSetWindow}
-                                    onCloseWindow={this.onCloseWindow}
-                                >
-                                    <FloatingWindowTab layout={this} node={child} factory={this.props.factory} />
-                                </FloatingWindow>
-                            );
-                            tabComponents[child.getId()] = <TabFloating key={child.getId()}
-                                layout={this}
-                                path={path}
-                                node={child}
-                                selected={i === border.getSelected()
-                                } />;
-                        } else {
-                            tabComponents[child.getId()] = <Tab key={child.getId()}
-                                layout={this}
-                                path={path}
-                                node={child}
-                                selected={i === border.getSelected()}
-                                factory={this.props.factory} />;
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
-    }
-
-    /** @internal */
-    renderChildren(path: string, node: RowNode | TabSetNode, tabSetComponents: React.ReactNode[], tabComponents: Record<string, React.ReactNode>, floatingWindows: React.ReactNode[], splitterComponents: React.ReactNode[]) {
-        const drawChildren = node._getDrawChildren();
-        let splitterCount = 0;
-        let tabCount = 0;
-        let rowCount = 0;
-
-        for (const child of drawChildren!) {
-            if (child instanceof SplitterNode) {
-                const newPath = path + "/s" + (splitterCount++);
-                splitterComponents.push(<Splitter key={child.getId()} layout={this} path={newPath} node={child} />);
-            } else if (child instanceof TabSetNode) {
-                const newPath = path + "/ts" + (rowCount++);
-                tabSetComponents.push(<TabSet key={child.getId()} layout={this} path={newPath} node={child} iconFactory={this.props.iconFactory} titleFactory={this.props.titleFactory} icons={this.icons} />);
-                this.renderChildren(newPath, child, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
-            } else if (child instanceof TabNode) {
-                const newPath = path + "/t" + (tabCount++);
-                const selectedTab = child.getParent()!.getChildren()[(child.getParent() as TabSetNode).getSelected()];
-                if (selectedTab === undefined) {
-                    // this should not happen!
-                    console.warn("undefined selectedTab should not happen");
-                }
-                if (this.supportsPopout && child.isFloating()) {
-                    const rect = this._getScreenRect(child);
-                    floatingWindows.push(
-                        <FloatingWindow
-                            key={child.getId()}
-                            url={this.popoutURL}
-                            rect={rect}
-                            title={child.getName()}
-                            id={child.getId()}
-                            onSetWindow={this.onSetWindow}
-                            onCloseWindow={this.onCloseWindow}
-                        >
-                            <FloatingWindowTab layout={this} node={child} factory={this.props.factory} />
-                        </FloatingWindow>
-                    );
-                    tabComponents[child.getId()] = <TabFloating key={child.getId()} layout={this} path={newPath} node={child} selected={child === selectedTab} />;
-                } else {
-                    tabComponents[child.getId()] = <Tab key={child.getId()} layout={this} path={newPath} node={child} selected={child === selectedTab} factory={this.props.factory} />;
-                }
-            } else {
-                // is row
-                const newPath = path + ((child.getOrientation() === Orientation.HORZ) ? "/r" : "/c") + (rowCount++);
-                this.renderChildren(newPath, child as RowNode, tabSetComponents, tabComponents, floatingWindows, splitterComponents);
-            }
-        }
-    }
-
-    /** @internal */
-    _getScreenRect(node: TabNode) {
-        const rect = node!.getRect()!.clone();
-        const bodyRect: DOMRect | undefined =
-            this.selfRef.current?.getBoundingClientRect();
-        if (!bodyRect) {
-            return null;
-        }
-        const navHeight = Math.min(80, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
-        const navWidth = Math.min(80, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
-        rect.x = rect.x + bodyRect.x + this.currentWindow!.screenX + navWidth;
-        rect.y = rect.y + bodyRect.y + this.currentWindow!.screenY + navHeight;
-        return rect;
+    /** re-render the layout */
+    redraw() {
+        this.selfRef.current!.redraw("parent " + this.revision);
     }
 
     /**
@@ -745,13 +107,30 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @returns the added tab node or undefined
      */
-    addTabToTabSet(tabsetId: string, json: IJsonTabNode) : TabNode | undefined {
-        const tabsetNode = this.props.model.getNodeById(tabsetId);
-        if (tabsetNode !== undefined) {
-            const node = this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
-            return node as TabNode;
-        }
-        return undefined;
+    addTabToTabSet(tabsetId: string, json: IJsonTabNode): TabNode | undefined {
+        return this.selfRef.current!.addTabToTabSet(tabsetId, json);
+    }
+
+    /**
+     * Adds a new tab by dragging an item to the drop location, must be called from within an HTML
+     * drag start handler. You can use the setDragComponent() method to set the drag image before calling this 
+     * method.
+     * @param event the drag start event
+     * @param json the json for the new tab node
+     * @param onDrop a callback to call when the drag is complete
+     */
+    addTabWithDragAndDrop(event: DragEvent, json: IJsonTabNode, onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void) {
+        this.selfRef.current!.addTabWithDragAndDrop(event, json, onDrop);
+    }
+
+    /**
+     * Move a tab/tabset using drag and drop, must be called from within an HTML
+     * drag start handler
+     * @param event the drag start event
+     * @param node the tab or tabset to drag
+     */
+    moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)) {
+        this.selfRef.current!.moveTabWithDragAndDrop(event, node);
     }
 
     /**
@@ -759,452 +138,508 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
      * @param json the json for the new tab node
      * @returns the added tab node or undefined
      */
-    addTabToActiveTabSet(json: IJsonTabNode) : TabNode | undefined {
-        const tabsetNode = this.props.model.getActiveTabset();
-        if (tabsetNode !== undefined) {
-            const node = this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
-            return node as TabNode;
+    addTabToActiveTabSet(json: IJsonTabNode): TabNode | undefined {
+        return this.selfRef.current!.addTabToActiveTabSet(json);
+    }
+
+    /**
+     * Sets the drag image from a react component for a drag event
+     * @param event the drag event
+     * @param component the react component to be used for the drag image
+     * @param x the x position of the drag cursor on the image
+     * @param y the x position of the drag cursor on the image
+     */
+    setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number) {
+        this.selfRef.current!.setDragComponent(event, component, x, y);
+    }
+
+    /** Get the root div element of the layout */
+    getRootDiv() {
+        return this.selfRef.current!.getRootDiv();
+    }
+
+    /** @internal */
+    render() {
+        return (<LayoutInternal ref={this.selfRef} {...this.props} renderRevision={this.revision++} />)
+    }
+}
+
+/** @internal */
+interface ILayoutInternalProps extends ILayoutProps {
+    renderRevision: number;
+
+    // used only for popout windows:
+    windowId?: string;
+    mainLayout?: LayoutInternal;
+}
+
+/** @internal */
+interface ILayoutInternalState {
+    rect: Rect;
+    editingTab?: TabNode;
+    portal?: React.ReactPortal;
+    showEdges: boolean;
+    showOverlay: boolean;
+    calculatedBorderBarSize: number;
+    layoutRevision: number;
+    forceRevision: number;
+    showHiddenBorder: DockLocation;
+}
+
+/** @internal */
+export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayoutInternalState> {
+    public static dragState: DragState | undefined = undefined;
+
+    private selfRef: React.RefObject<HTMLDivElement>;
+    private moveablesRef: React.RefObject<HTMLDivElement>;
+    private findBorderBarSizeRef: React.RefObject<HTMLDivElement>;
+    private mainRef: React.RefObject<HTMLDivElement>;
+    private previousModel?: Model;
+    private orderedIds: string[];
+    private moveableElementMap = new Map<string, HTMLElement>();
+    private dropInfo: DropInfo | undefined;
+    private outlineDiv?: HTMLElement;
+    private currentDocument?: Document;
+    private currentWindow?: Window;
+    private supportsPopout: boolean;
+    private popoutURL: string;
+    private icons: IIcons;
+    private resizeObserver?: ResizeObserver;
+
+    private dragEnterCount: number = 0;
+    private dragging: boolean = false;
+    private windowId: string;
+    private layoutWindow: LayoutWindow;
+    private mainLayout: LayoutInternal;
+    private isMainWindow: boolean;
+    private isDraggingOverWindow: boolean;
+    private styleObserver: MutationObserver | undefined;
+    private popoutWindowName: string;
+    // private renderCount: any;
+
+    constructor(props: ILayoutInternalProps) {
+        super(props);
+
+        this.orderedIds = [];
+        this.selfRef = React.createRef<HTMLDivElement>();
+        this.moveablesRef = React.createRef<HTMLDivElement>();
+        this.mainRef = React.createRef<HTMLDivElement>();
+        this.findBorderBarSizeRef = React.createRef<HTMLDivElement>();
+
+        this.supportsPopout = props.supportsPopout !== undefined ? props.supportsPopout : defaultSupportsPopout;
+        this.popoutURL = props.popoutURL ? props.popoutURL : "popout.html";
+        this.icons = { ...defaultIcons, ...props.icons };
+        this.windowId = props.windowId ? props.windowId : Model.MAIN_WINDOW_ID;
+        this.mainLayout = this.props.mainLayout ? this.props.mainLayout : this;
+        this.isDraggingOverWindow = false;
+        this.layoutWindow = this.props.model.getwindowsMap().get(this.windowId)!;
+        this.layoutWindow.layout = this;
+        this.popoutWindowName = this.props.popoutWindowName || "Popout Window";
+        // this.renderCount = 0;
+
+        this.state = {
+            rect: Rect.empty(),
+            editingTab: undefined,
+            showEdges: false,
+            showOverlay: false,
+            calculatedBorderBarSize: 29,
+            layoutRevision: 0,
+            forceRevision: 0,
+            showHiddenBorder: DockLocation.CENTER
+        };
+
+        this.isMainWindow = this.windowId === Model.MAIN_WINDOW_ID;
+    }
+
+    componentDidMount() {
+        this.updateRect();
+
+        this.currentDocument = (this.selfRef.current as HTMLElement).ownerDocument;
+        this.currentWindow = this.currentDocument.defaultView!;
+
+        this.layoutWindow.window = this.currentWindow;
+        this.layoutWindow.toScreenRectFunction = (r) => this.getScreenRect(r);
+
+        this.resizeObserver = new ResizeObserver(entries => {
+            requestAnimationFrame(() => {
+                this.updateRect();
+            });
+        });
+        if (this.selfRef.current) {
+            this.resizeObserver.observe(this.selfRef.current);
         }
-        return undefined;
+
+        if (this.isMainWindow) {
+            this.props.model.addChangeListener(this.onModelChange);
+            this.updateLayoutMetrics();
+        } else {
+            // since resizeObserver doesn't always work as expected when observing element in another document
+            this.currentWindow.addEventListener("resize", () => {
+                this.updateRect();
+            });
+
+            const sourceElement = this.props.mainLayout!.getRootDiv()!;
+            const targetElement = this.selfRef.current!;
+
+            copyInlineStyles(sourceElement, targetElement);
+
+            this.styleObserver = new MutationObserver(() => {
+                const changed = copyInlineStyles(sourceElement, targetElement);
+                if (changed) {
+                    this.redraw("mutation observer");
+                }
+            });
+
+            // Observe changes to the source element's style attribute
+            this.styleObserver.observe(sourceElement, { attributeFilter: ['style'] });
+        }
+
+        // allow tabs to overlay when hidden
+        document.addEventListener('visibilitychange', () => {
+            for (const [_, layoutWindow] of this.props.model.getwindowsMap()) {
+                const layout = layoutWindow.layout;
+                if (layout) {
+                    this.redraw("visibility change");
+                }
+            }
+        });
     }
 
-    /**
-     * Adds a new tab by dragging a labeled panel to the drop location, dragging starts immediatelly
-     * @param dragText the text to show on the drag panel
-     * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
-     */
-    addTabWithDragAndDrop(dragText: string | undefined, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
-        this.fnNewNodeDropped = onDrop;
-        this.newTabJson = json;
-        this.dragStart(undefined, dragText, TabNode._fromJson(json, this.props.model, false), true, undefined, undefined);
+    componentDidUpdate() {
+        this.currentDocument = (this.selfRef.current as HTMLElement).ownerDocument;
+        this.currentWindow = this.currentDocument.defaultView!;
+        if (this.isMainWindow) {
+            if (this.props.model !== this.previousModel) {
+                if (this.previousModel !== undefined) {
+                    this.previousModel.removeChangeListener(this.onModelChange); // stop listening to old model
+                }
+                this.props.model.getwindowsMap().get(this.windowId)!.layout = this;
+                this.props.model.addChangeListener(this.onModelChange);
+                this.layoutWindow = this.props.model.getwindowsMap().get(this.windowId)!;
+                this.layoutWindow.layout = this;
+                this.layoutWindow.toScreenRectFunction = (r) => this.getScreenRect(r);
+                this.previousModel = this.props.model;
+                this.tidyMoveablesMap();
+            }
+
+            this.updateLayoutMetrics();
+        }
     }
 
-    /**
-     * Move a tab/tabset using drag and drop
-     * @param node the tab or tabset to drag
-     * @param dragText the text to show on the drag panel
-     */
-    moveTabWithDragAndDrop(node: (TabNode | TabSetNode), dragText?: string) {
-        this.dragStart(undefined, dragText, node, true, undefined, undefined);
+    componentWillUnmount() {
+        if (this.selfRef.current) {
+            this.resizeObserver?.unobserve(this.selfRef.current);
+        }
+        this.styleObserver?.disconnect();
     }
 
-    /**
-     * Adds a new tab by dragging a labeled panel to the drop location, dragging starts when you
-     * mouse down on the panel
-     *
-     * @param dragText the text to show on the drag panel
-     * @param json the json for the new tab node
-     * @param onDrop a callback to call when the drag is complete (node and event will be undefined if the drag was cancelled)
-     */
-    addTabWithDragAndDropIndirect(dragText: string | undefined, json: IJsonTabNode, onDrop?: (node?: Node, event?: Event) => void) {
-        this.fnNewNodeDropped = onDrop;
-        this.newTabJson = json;
+    render() {
+        // console.log("render", this.windowId, this.state.revision, this.renderCount++);
+        // first render will be used to find the size (via selfRef)
+        if (!this.selfRef.current) {
+            return (
+                <div ref={this.selfRef} className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
+                    <div ref={this.moveablesRef} key="__moveables__" className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES)}></div>
+                    {this.renderMetricsElements()}
+                </div>
+            );
+        }
 
-        DragDrop.instance.addGlass(this.onCancelAdd);
+        const model = this.props.model;
+        model.getRoot(this.windowId).calcMinMaxSize();
+        model.getRoot(this.windowId).setPaths("");
+        model.getBorderSet().setPaths();
 
-        this.dragDivText = dragText;
-        this.dragDiv = this.currentDocument!.createElement("div");
-        this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
-        this.dragDiv.addEventListener("mousedown", this.onDragDivMouseDown);
-        this.dragDiv.addEventListener("touchstart", this.onDragDivMouseDown, { passive: false });
+        const inner = this.renderLayout();
+        const outer = this.renderBorders(inner);
 
-        this.dragRectRender(this.dragDivText, undefined, this.newTabJson, () => {
-            if (this.dragDiv) {
-                // now it's been rendered into the dom it can be centered
-                this.dragDiv.style.visibility = "visible";
-                const domRect = this.dragDiv.getBoundingClientRect();
-                const r = new Rect(0, 0, domRect?.width, domRect?.height);
-                r.centerInRect(this.state.rect);
-                this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
-                this.dragDiv.style.left = r.x + "px";
-                this.dragDiv.style.top = r.y + "px";
+        const tabs = this.renderTabs();
+        const reorderedTabs = this.reorderComponents(tabs, this.orderedIds);
+
+        let floatingWindows = null;
+        let tabMoveables = null;
+        let tabStamps = null;
+        let metricElements = null;
+
+        if (this.isMainWindow) {
+            floatingWindows = this.renderWindows();
+            metricElements = this.renderMetricsElements();
+            tabMoveables = this.renderTabMoveables();
+            tabStamps = <div key="__tabStamps__" className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
+                {this.renderTabStamps()}
+            </div>;
+        }
+
+        return (
+            <div
+                ref={this.selfRef}
+                className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}
+                onDragEnter={this.onDragEnterRaw}
+                onDragLeave={this.onDragLeaveRaw}
+                onDragOver={this.onDragOver}
+                onDrop={this.onDrop}
+            >
+                <div ref={this.moveablesRef} key="__moveables__" className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES)}></div>
+                {metricElements}
+                <Overlay key="__overlay__" layout={this} show={this.state.showOverlay} />
+                {outer}
+                {reorderedTabs}
+                {tabMoveables}
+                {tabStamps}
+                {this.state.portal}
+                {floatingWindows}
+            </div>
+        );
+    }
+
+    renderBorders(
+        inner: React.ReactNode
+    ) {
+        const classMain = this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MAIN);
+        const borders = this.props.model.getBorderSet().getBorderMap()
+        if (this.isMainWindow && borders.size > 0) {
+            inner = (
+                <div className={classMain} ref={this.mainRef}>
+                    {inner}
+                </div>);
+            const borderSetComponents = new Map<DockLocation, React.ReactNode>();
+            const borderSetContentComponents = new Map<DockLocation, React.ReactNode>();
+            for (const [_, location] of DockLocation.values) {
+                const border = borders.get(location);
+                const showBorder = border && (
+                    !border.isAutoHide() ||
+                    (border.isAutoHide() && (border.getChildren().length > 0 || this.state.showHiddenBorder === location)));
+                if (showBorder) {
+                    borderSetComponents.set(location, <BorderTabSet layout={this} border={border} size={this.state.calculatedBorderBarSize} />);
+                    borderSetContentComponents.set(location, <BorderTab layout={this} border={border} show={border.getSelected() !== -1} />);
+                }
+            }
+
+            const classBorderOuter = this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_BORDER_CONTAINER);
+            const classBorderInner = this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_BORDER_CONTAINER_INNER);
+
+            if (this.props.model.getBorderSet().getLayoutHorizontal()) {
+                const innerWithBorderTabs = (
+                    <div className={classBorderInner} style={{ flexDirection: "column" }}>
+                        {borderSetContentComponents.get(DockLocation.TOP)}
+                        <div className={classBorderInner} style={{ flexDirection: "row" }}>
+                            {borderSetContentComponents.get(DockLocation.LEFT)}
+                            {inner}
+                            {borderSetContentComponents.get(DockLocation.RIGHT)}
+                        </div>
+                        {borderSetContentComponents.get(DockLocation.BOTTOM)}
+                    </div>
+                );
+                return (
+                    <div className={classBorderOuter} style={{ flexDirection: "column" }}>
+                        {borderSetComponents.get(DockLocation.TOP)}
+                        <div className={classBorderInner} style={{ flexDirection: "row" }}>
+                            {borderSetComponents.get(DockLocation.LEFT)}
+                            {innerWithBorderTabs}
+                            {borderSetComponents.get(DockLocation.RIGHT)}
+                        </div>
+                        {borderSetComponents.get(DockLocation.BOTTOM)}
+                    </div>
+                );
+            } else {
+                const innerWithBorderTabs = (
+                    <div className={classBorderInner} style={{ flexDirection: "row" }}>
+                        {borderSetContentComponents.get(DockLocation.LEFT)}
+                        <div className={classBorderInner} style={{ flexDirection: "column" }}>
+                            {borderSetContentComponents.get(DockLocation.TOP)}
+                            {inner}
+                            {borderSetContentComponents.get(DockLocation.BOTTOM)}
+                        </div>
+                        {borderSetContentComponents.get(DockLocation.RIGHT)}
+                    </div>
+                );
+
+                return (
+                    <div className={classBorderOuter} style={{ flexDirection: "row" }}>
+                        {borderSetComponents.get(DockLocation.LEFT)}
+                        <div className={classBorderInner} style={{ flexDirection: "column" }}>
+                            {borderSetComponents.get(DockLocation.TOP)}
+                            {innerWithBorderTabs}
+                            {borderSetComponents.get(DockLocation.BOTTOM)}
+                        </div>
+                        {borderSetComponents.get(DockLocation.RIGHT)}
+                    </div>
+                );
+            }
+
+        } else { // no borders
+            return (
+                <div className={classMain} ref={this.mainRef} style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: 0, display: "flex" }}>
+                    {inner}
+                </div>
+            );
+        }
+    }
+
+    renderLayout() {
+        return (
+            <>
+                <Row key="__row__" layout={this} node={this.props.model.getRoot(this.windowId)} />
+                {this.renderEdgeIndicators()}
+            </>
+        );
+    }
+
+    renderEdgeIndicators() {
+        const edges: React.ReactNode[] = [];
+        const arrowIcon = this.icons.edgeArrow;
+        if (this.state.showEdges) {
+            const r = this.props.model.getRoot(this.windowId).getRect();
+            const length = edgeRectLength;
+            const width = edgeRectWidth;
+            const offset = edgeRectLength / 2;
+            const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
+            const radius = 50;
+            edges.push(<div key="North" style={{ top: 0, left: r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}>
+                <div style={{ transform: "rotate(180deg)" }}>
+                    {arrowIcon}
+                </div>
+            </div>);
+            edges.push(<div key="West" style={{ top: r.height / 2 - offset, left: 0, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}>
+                <div style={{ transform: "rotate(90deg)" }}>
+                    {arrowIcon}
+                </div>
+            </div>);
+            edges.push(<div key="South" style={{ top: r.height - width, left: r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}>
+                <div>
+                    {arrowIcon}
+                </div>
+            </div>);
+            edges.push(<div key="East" style={{ top: r.height / 2 - offset, left: r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}>
+                <div style={{ transform: "rotate(-90deg)" }}>
+                    {arrowIcon}
+                </div>
+            </div>);
+        }
+
+        return edges;
+    }
+
+    renderWindows() {
+        const floatingWindows: React.ReactNode[] = [];
+        if (this.supportsPopout) {
+            const windows = this.props.model.getwindowsMap();
+            let i = 1;
+            for (const [windowId, layoutWindow] of windows) {
+
+                if (windowId !== Model.MAIN_WINDOW_ID) {
+                    floatingWindows.push(
+                        <PopoutWindow
+                            key={windowId}
+                            layout={this}
+                            title={this.popoutWindowName + " " + i}
+                            layoutWindow={layoutWindow}
+                            url={this.popoutURL + "?id=" + windowId}
+                            onSetWindow={this.onSetWindow}
+                            onCloseWindow={this.onCloseWindow}
+                        >
+                            <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                        </PopoutWindow>
+                    );
+                    i++;
+                }
+            }
+        }
+        return floatingWindows;
+    }
+
+    renderTabMoveables() {
+        const tabMoveables: React.ReactNode[] = [];
+
+        this.props.model.visitNodes((node) => {
+            if (node instanceof TabNode) {
+                const child = node as TabNode;
+                const element = this.getMoveableElement(child.getId());
+                child.setMoveableElement(element);
+                const selected = child.isSelected();
+                const rect = (child.getParent() as BorderNode | TabSetNode).getContentRect();
+
+                // only render first time if size >0
+                const renderTab = child.isRendered() ||
+                    ((selected || !child.isEnableRenderOnDemand()) && (rect.width > 0 && rect.height > 0));
+
+                if (renderTab) {
+                    //  console.log("rendertab", child.getName(), this.props.renderRevision);
+                    const key = child.getId() + (child.isEnableWindowReMount() ? child.getWindowId() : "");
+                    tabMoveables.push(createPortal(
+                        <SizeTracker rect={rect} selected={child.isSelected()} forceRevision={this.state.forceRevision} tabsRevision={this.props.renderRevision} key={key}>
+                            <ErrorBoundary message={this.i18nName(I18nLabel.Error_rendering_component)}>
+                                {this.props.factory(child)}
+                            </ErrorBoundary>
+                        </SizeTracker>
+                        , element, key));
+
+                    child.setRendered(renderTab);
+                }
             }
         });
 
-        const rootdiv = this.selfRef.current;
-        rootdiv!.appendChild(this.dragDiv);
+        return tabMoveables;
     }
 
-    /** @internal */
-    onCancelAdd = () => {
-        const rootdiv = this.selfRef.current;
-        if (rootdiv && this.dragDiv) {
-            rootdiv.removeChild(this.dragDiv);
-        }
-        this.dragDiv = undefined;
-        this.hidePortal();
-        if (this.fnNewNodeDropped != null) {
-            this.fnNewNodeDropped();
-            this.fnNewNodeDropped = undefined;
-        }
+    renderTabStamps() {
+        const tabStamps: React.ReactNode[] = [];
 
-        try {
-            this.customDrop?.invalidated?.()
-        } catch (e) {
-            console.error(e)
-        }
+        this.props.model.visitNodes((node) => {
+            if (node instanceof TabNode) {
+                const child = node as TabNode;
 
-        DragDrop.instance.hideGlass();
-        this.newTabJson = undefined;
-        this.customDrop = undefined;
-    };
-
-    /** @internal */
-    onCancelDrag = (wasDragging: boolean) => {
-        if (wasDragging) {
-            const rootdiv = this.selfRef.current;
-
-            const outlineDiv = this.outlineDiv;
-            if (rootdiv && outlineDiv) {
-                try {
-                    rootdiv.removeChild(outlineDiv);
-                } catch (e) {}
+                // what the tab should look like when dragged (since images need to have been loaded before drag image can be taken)
+                tabStamps.push(<DragContainer key={child.getId()} layout={this} node={child} />)
             }
+        });
 
-            const dragDiv = this.dragDiv;
-            if (rootdiv && dragDiv) {
-                try {
-                    rootdiv.removeChild(dragDiv);
-                } catch (e) {}
-            }
-
-            this.dragDiv = undefined;
-            this.hidePortal();
-            this.setState({ showEdges: false });
-            if (this.fnNewNodeDropped != null) {
-                this.fnNewNodeDropped();
-                this.fnNewNodeDropped = undefined;
-            }
-
-            try {
-                this.customDrop?.invalidated?.()
-            } catch (e) {
-                console.error(e)
-            }
-
-            DragDrop.instance.hideGlass();
-            this.newTabJson = undefined;
-            this.customDrop = undefined;
-        }
-        this.setState({ showHiddenBorder: DockLocation.CENTER });
-
-    };
-
-    /** @internal */
-    onDragDivMouseDown = (event: Event) => {
-        event.preventDefault();
-        this.dragStart(event, this.dragDivText, TabNode._fromJson(this.newTabJson, this.props.model, false), true, undefined, undefined);
-    };
-
-    /** @internal */
-    dragStart = (
-        event: Event | React.MouseEvent<HTMLDivElement, MouseEvent> | React.TouchEvent<HTMLDivElement> | React.DragEvent<HTMLDivElement> | undefined,
-        dragDivText: string | undefined,
-        node: Node & IDraggable,
-        allowDrag: boolean,
-        onClick?: (event: Event) => void,
-        onDoubleClick?: (event: Event) => void
-    ) => {
-        if (!allowDrag) {
-            DragDrop.instance.startDrag(
-                event,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                onClick,
-                onDoubleClick,
-                this.currentDocument,
-                this.selfRef.current ?? undefined
-            );
-        } else {
-            this.dragNode = node;
-            this.dragDivText = dragDivText;
-            DragDrop.instance.startDrag(
-                event,
-                this.onDragStart,
-                this.onDragMove,
-                this.onDragEnd,
-                this.onCancelDrag,
-                onClick,
-                onDoubleClick,
-                this.currentDocument,
-                this.selfRef.current ?? undefined
-            );
-        }
-    };
-
-    /** @internal */
-    dragRectRender = (text: String | undefined, node?: Node, json?: IJsonTabNode, onRendered?: () => void) => {
-        let content: React.ReactElement | undefined;
-
-        if (text !== undefined) {
-            content = <div style={{ whiteSpace: "pre" }}>{text.replace("<br>", "\n")}</div>;
-        } else {
-            if (node && node instanceof TabNode) {
-                content = (<TabButtonStamp
-                    node={node}
-                    layout={this}
-                    iconFactory={this.props.iconFactory}
-                    titleFactory={this.props.titleFactory}
-                />);
-            }
-        }
-
-        if (this.props.onRenderDragRect !== undefined) {
-            const customContent = this.props.onRenderDragRect(content, node, json);
-            if (customContent !== undefined) {
-                content = customContent;
-            }
-        }
-
-        // hide div until the render is complete
-        this.dragRectRendered = false;
-        const dragDiv = this.dragDiv;
-        if (dragDiv) {
-            dragDiv.style.visibility = "hidden";
-            this.showPortal(
-                <DragRectRenderWrapper
-                    // wait for it to be rendered
-                    onRendered={() => {
-                        this.dragRectRendered = true;
-                        onRendered?.();
-                    }}>
-                    {content}
-                </DragRectRenderWrapper>,
-                dragDiv,
-            );
-        }
-    };
-
-    /** @internal */
-    showPortal = (control: React.ReactNode, element: HTMLElement) => {
-        const portal = createPortal(control, element) as React.ReactPortal;
-        this.setState({ portal });
-    };
-
-    /** @internal */
-    hidePortal = () => {
-        this.setState({ portal: undefined });
-    };
-
-    /** @internal */
-    onDragStart = () => {
-        this.dropInfo = undefined;
-        this.customDrop = undefined;
-        const rootdiv = this.selfRef.current;
-        this.outlineDiv = this.currentDocument!.createElement("div");
-        this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
-        this.outlineDiv.style.visibility = "hidden";
-        if (rootdiv) {
-            rootdiv.appendChild(this.outlineDiv);
-        }
-
-        if (this.dragDiv == null) {
-            this.dragDiv = this.currentDocument!.createElement("div");
-            this.dragDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT);
-            this.dragDiv.setAttribute("data-layout-path", "/drag-rectangle");
-            this.dragRectRender(this.dragDivText, this.dragNode, this.newTabJson);
-
-            if (rootdiv) {
-                rootdiv.appendChild(this.dragDiv);
-            }
-        }
-        // add edge indicators
-        if (this.props.model.getMaximizedTabset() === undefined) {
-            this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
-        }
-
-        if (this.dragNode && this.outlineDiv && this.dragNode instanceof TabNode && this.dragNode.getTabRect() !== undefined) {
-            this.dragNode.getTabRect()?.positionElement(this.outlineDiv);
-        }
-        this.firstMove = true;
-
-        return true;
-    };
-
-    /** @internal */
-    onDragMove = (event: React.MouseEvent<Element>) => {
-        if (this.firstMove === false) {
-            const speed = this.props.model._getAttribute("tabDragSpeed") as number;
-            if (this.outlineDiv) {
-                this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
-            }
-        }
-        this.firstMove = false;
-        const clientRect = this.selfRef.current?.getBoundingClientRect();
-        const pos = {
-            x: event.clientX - (clientRect?.left ?? 0),
-            y: event.clientY - (clientRect?.top ?? 0),
-        };
-
-        this.checkForBorderToShow(pos.x, pos.y);
-
-        // keep it between left & right
-        const dragRect = this.dragDiv?.getBoundingClientRect() ?? new DOMRect(0, 0, 100, 100);
-        let newLeft = pos.x - dragRect.width / 2;
-        if (newLeft + dragRect.width > (clientRect?.width ?? 0)) {
-            newLeft = (clientRect?.width ?? 0) - dragRect.width;
-        }
-        newLeft = Math.max(0, newLeft);
-
-        if (this.dragDiv) {
-            this.dragDiv.style.left = newLeft + "px";
-            this.dragDiv.style.top = pos.y + 5 + "px";
-            if (this.dragRectRendered && this.dragDiv.style.visibility === "hidden") {
-                // make visible once the drag rect has been rendered
-                this.dragDiv.style.visibility = "visible";
-            }
-        }
-
-        let dropInfo = this.props.model._findDropTargetNode(this.dragNode!, pos.x, pos.y);
-        if (dropInfo) {
-            if (this.props.onTabDrag) {
-                this.handleCustomTabDrag(dropInfo, pos, event);
-            } else {
-                this.dropInfo = dropInfo;
-                if (this.outlineDiv) {
-                    this.outlineDiv.className = this.getClassName(dropInfo.className);
-                    dropInfo.rect.positionElement(this.outlineDiv);
-                    this.outlineDiv.style.visibility = "visible";
-                }
-            }
-        }
-    };
-
-    /** @internal */
-    onDragEnd = (event: Event) => {
-        const rootdiv = this.selfRef.current;
-        if (rootdiv) {
-            if (this.outlineDiv) {
-                rootdiv.removeChild(this.outlineDiv);
-            }
-            if (this.dragDiv) {
-                rootdiv.removeChild(this.dragDiv);
-            }
-        }
-        this.dragDiv = undefined;
-        this.hidePortal();
-
-        this.setState({ showEdges: false });
-        DragDrop.instance.hideGlass();
-
-        if (this.dropInfo) {
-            if (this.customDrop) {
-                this.newTabJson = undefined;
-
-                try {
-                    const { callback, dragging, over, x, y, location } = this.customDrop;
-                    callback(dragging, over, x, y, location);
-                    if (this.fnNewNodeDropped != null) {
-                        this.fnNewNodeDropped();
-                        this.fnNewNodeDropped = undefined;
-                    }
-                } catch (e) {
-                    console.error(e)
-                }
-            } else if (this.newTabJson !== undefined) {
-                const newNode = this.doAction(Actions.addNode(this.newTabJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
-
-                if (this.fnNewNodeDropped != null) {
-                    this.fnNewNodeDropped(newNode, event);
-                    this.fnNewNodeDropped = undefined;
-                }
-                this.newTabJson = undefined;
-            } else if (this.dragNode !== undefined) {
-                this.doAction(Actions.moveNode(this.dragNode.getId(), this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
-            }
-        }
-        this.setState({ showHiddenBorder: DockLocation.CENTER });
-    };
-
-    /** @internal */
-    private handleCustomTabDrag(dropInfo: DropInfo, pos: { x: number; y: number; }, event: React.MouseEvent<Element, MouseEvent>) {
-        let invalidated = this.customDrop?.invalidated;
-        const currentCallback = this.customDrop?.callback;
-        this.customDrop = undefined;
-
-        const dragging = this.newTabJson || (this.dragNode instanceof TabNode ? this.dragNode : undefined);
-        if (dragging && (dropInfo.node instanceof TabSetNode || dropInfo.node instanceof BorderNode) && dropInfo.index === -1) {
-            const selected = dropInfo.node.getSelectedNode() as TabNode | undefined;
-            const tabRect = selected?.getRect();
-
-            if (selected && tabRect?.contains(pos.x, pos.y)) {
-                let customDrop: ICustomDropDestination | undefined = undefined;
-
-                try {
-                    const dest = this.onTabDrag(dragging, selected, pos.x - tabRect.x, pos.y - tabRect.y, dropInfo.location, () => this.onDragMove(event));
-
-                    if (dest) {
-                        customDrop = {
-                            rect: new Rect(dest.x + tabRect.x, dest.y + tabRect.y, dest.width, dest.height),
-                            callback: dest.callback,
-                            invalidated: dest.invalidated,
-                            dragging: dragging,
-                            over: selected,
-                            x: pos.x - tabRect.x,
-                            y: pos.y - tabRect.y,
-                            location: dropInfo.location,
-                            cursor: dest.cursor
-                        };
-                    }
-                } catch (e) {
-                    console.error(e);
-                }
-
-                if (customDrop?.callback === currentCallback) {
-                    invalidated = undefined;
-                }
-
-                this.customDrop = customDrop;
-            }
-        }
-
-        this.dropInfo = dropInfo;
-        if (this.outlineDiv) {
-            this.outlineDiv.className = this.getClassName(this.customDrop ? CLASSES.FLEXLAYOUT__OUTLINE_RECT : dropInfo.className);
-            if (this.customDrop) {
-                this.customDrop.rect.positionElement(this.outlineDiv);
-            } else {
-                dropInfo.rect.positionElement(this.outlineDiv);
-            }
-        }
-
-        DragDrop.instance.setGlassCursorOverride(this.customDrop?.cursor);
-        if (this.outlineDiv) {
-            this.outlineDiv.style.visibility = "visible";
-        }
-
-        try {
-            invalidated?.();
-        } catch (e) {
-            console.error(e);
-        }
+        return tabStamps;
     }
 
-    /** @internal */
-    onDragEnter(event: React.DragEvent<HTMLDivElement>) {
-        // DragDrop keeps track of number of dragenters minus the number of
-        // dragleaves. Only start a new drag if there isn't one already.
-        if (DragDrop.instance.isDragging())
-            return;
-        const drag = this.props.onExternalDrag!(event);
-        if (drag) {
-            // Mimic addTabWithDragAndDrop, but pass in DragEvent
-            this.fnNewNodeDropped = drag.onDrop;
-            this.newTabJson = drag.json;
-            this.dragStart(event, drag.dragText, TabNode._fromJson(drag.json, this.props.model, false), true, undefined, undefined);
-        }
+    renderTabs() {
+        const tabs = new Map<string, React.ReactNode>();
+        this.props.model.visitWindowNodes(this.windowId, (node) => {
+            if (node instanceof TabNode) {
+                const child = node as TabNode;
+                const selected = child.isSelected();
+                const path = child.getPath();
+
+                const renderTab = child.isRendered() || selected || !child.isEnableRenderOnDemand();
+
+                if (renderTab) {
+                    // const rect = (child.getParent() as BorderNode | TabSetNode).getContentRect();
+                    // const key = child.getId();
+
+                    tabs.set(child.getId(), (
+                        // <SizeTracker rect={rect} forceRevision={this.state.forceRevision} key={key}>
+                        <Tab
+                            key={child.getId()}
+                            layout={this}
+                            path={path}
+                            node={child}
+                            selected={selected} />
+                        // </SizeTracker>
+                    ));
+                }
+            }
+        });
+        return tabs;
     }
 
+    renderMetricsElements() {
+        return (
+            <div key="findBorderBarSize" ref={this.findBorderBarSizeRef} className={this.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
+                FindBorderBarSize
+            </div>
+        );
+    }
 
-    /** @internal */
     checkForBorderToShow(x: number, y: number) {
-        const r = this.props.model._getOuterInnerRects().outer;
+        const r = this.getBoundingClientRect(this.mainRef.current!);
         const c = r.getCenter();
-        const margin = this.edgeRectWidth;
-        const offset = this.edgeRectLength / 2;
+        const margin = edgeRectWidth;
+        const offset = edgeRectLength / 2;
 
         let overEdge = false;
         if (this.props.model.isEnableEdgeDock() && this.state.showHiddenBorder === DockLocation.CENTER) {
@@ -1232,12 +667,246 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
     }
 
-    /** @internal */
-    maximize(tabsetNode: TabSetNode) {
-        this.doAction(Actions.maximizeToggle(tabsetNode.getId()));
+    updateLayoutMetrics = () => {
+        if (this.findBorderBarSizeRef.current) {
+            const borderBarSize = this.findBorderBarSizeRef.current.getBoundingClientRect().height;
+            if (borderBarSize !== this.state.calculatedBorderBarSize) {
+                this.setState({ calculatedBorderBarSize: borderBarSize });
+            }
+        }
+    };
+
+    tidyMoveablesMap() {
+        // console.log("tidyMoveablesMap");
+        const tabs = new Map<string, TabNode>();
+        this.props.model.visitNodes((node, _) => {
+            if (node instanceof TabNode) {
+                tabs.set(node.getId(), node);
+            }
+        });
+
+        for (const [nodeId, element] of this.moveableElementMap) {
+            if (!tabs.has(nodeId)) {
+                // console.log("delete", nodeId);
+                element.remove(); // remove from dom
+                this.moveableElementMap.delete(nodeId); // remove map entry 
+            }
+        }
     }
 
-    /** @internal */
+    reorderComponents(components: Map<string, React.ReactNode>, ids: string[]) {
+        const nextIds: string[] = [];
+        const nextIdsSet = new Set<string>();
+
+        let reordered: React.ReactNode[] = [];
+        // Keep any previous tabs in the same DOM order as before, removing any that have been deleted
+        for (const id of ids) {
+            if (components.get(id)) {
+                nextIds.push(id);
+                nextIdsSet.add(id);
+            }
+        }
+        ids.splice(0, ids.length, ...nextIds);
+
+        // Add tabs that have been added to the DOM
+        for (const [id, _] of components) {
+            if (!nextIdsSet.has(id)) {
+                ids.push(id);
+            }
+        }
+
+        reordered = ids.map((id) => {
+            return components.get(id);
+        });
+
+        return reordered;
+    }
+
+    onModelChange = (action: Action) => {
+        this.redrawInternal("model change");
+        if (this.props.onModelChange) {
+            this.props.onModelChange(this.props.model, action);
+        }
+    };
+
+    redraw(type?: string) {
+        // console.log("redraw", this.windowId, type);
+        this.mainLayout.setState((state, props) => { return { forceRevision: state.forceRevision + 1 } });
+    }
+
+    redrawInternal(type: string) {
+        // console.log("redrawInternal", this.windowId, type);
+        this.mainLayout.setState((state, props) => { return { layoutRevision: state.layoutRevision + 1 } });
+    }
+
+    doAction(action: Action): Node | undefined {
+        if (this.props.onAction !== undefined) {
+            const outcome = this.props.onAction(action);
+            if (outcome !== undefined) {
+                return this.props.model.doAction(outcome);
+            }
+            return undefined;
+        } else {
+            return this.props.model.doAction(action);
+        }
+    }
+
+    updateRect = () => {
+        const rect = this.getDomRect()
+        if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+            // console.log("updateRect", rect.floor());
+            this.setState({ rect });
+            if (this.windowId !== Model.MAIN_WINDOW_ID) {
+                this.redrawInternal("rect updated");
+            }
+        }
+    };
+
+    getBoundingClientRect(div: HTMLElement): Rect {
+        const layoutRect = this.getDomRect();
+        if (layoutRect) {
+            return Rect.getBoundingClientRect(div).relativeTo(layoutRect);
+        }
+        return Rect.empty();
+    }
+
+    getMoveableContainer() {
+        return this.moveablesRef.current;
+    }
+
+    getMoveableElement(id: string) {
+        let moveableElement = this.moveableElementMap.get(id);
+        if (moveableElement === undefined) {
+            moveableElement = document.createElement("div");
+            this.moveablesRef.current!.appendChild(moveableElement);
+            moveableElement.className = CLASSES.FLEXLAYOUT__TAB_MOVEABLE;
+            this.moveableElementMap.set(id, moveableElement);
+        }
+        return moveableElement;
+    }
+
+    getMainLayout() {
+        return this.mainLayout;
+    }
+
+    getClassName = (defaultClassName: string) => {
+        if (this.props.classNameMapper === undefined) {
+            return defaultClassName;
+        } else {
+            return this.props.classNameMapper(defaultClassName);
+        }
+    };
+
+    getCurrentDocument() {
+        return this.currentDocument;
+    }
+
+    getDomRect() {
+        if (this.selfRef.current) {
+            return Rect.fromDomRect(this.selfRef.current.getBoundingClientRect());
+        } else {
+            return Rect.empty();
+        }
+    }
+
+    getWindowId() {
+        return this.windowId;
+    }
+
+    getRootDiv() {
+        return this.selfRef.current;
+    }
+
+    getMainElement() {
+        return this.mainRef.current;
+    }
+
+    getFactory() {
+        return this.props.factory;
+    }
+
+    isSupportsPopout() {
+        return this.supportsPopout;
+    }
+
+    isRealtimeResize() {
+        return this.props.realtimeResize ?? false;
+    }
+
+    getPopoutURL() {
+        return this.popoutURL;
+    }
+
+    setEditingTab(tabNode?: TabNode) {
+        this.setState({ editingTab: tabNode });
+    }
+
+    getEditingTab() {
+        return this.state.editingTab;
+    }
+
+    getModel() {
+        return this.props.model;
+    }
+
+    onCloseWindow = (windowLayout: LayoutWindow) => {
+        this.doAction(Actions.closeWindow(windowLayout.windowId));
+    };
+
+    onSetWindow = (windowLayout: LayoutWindow, window: Window) => {
+    };
+
+    getScreenRect(inRect: Rect) {
+        const rect = inRect.clone();
+        const layoutRect = this.getDomRect();
+        // Note: outerHeight can be less than innerHeight when window is zoomed, so cannot use
+        // const navHeight = Math.min(65, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
+        // const navWidth = Math.min(65, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
+        const navHeight = 60;
+        const navWidth = 2;
+        // console.log(rect.y, this.currentWindow!.screenX,layoutRect.y);
+        rect.x = this.currentWindow!.screenX + this.currentWindow!.scrollX + navWidth / 2 + layoutRect.x + rect.x;
+        rect.y = this.currentWindow!.screenY + this.currentWindow!.scrollY + (navHeight - navWidth / 2) + layoutRect.y + rect.y;
+        rect.height += navHeight;
+        rect.width += navWidth;
+        return rect;
+    }
+
+    addTabToTabSet(tabsetId: string, json: IJsonTabNode): TabNode | undefined {
+        const tabsetNode = this.props.model.getNodeById(tabsetId);
+        if (tabsetNode !== undefined) {
+            const node = this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
+            return node as TabNode;
+        }
+        return undefined;
+    }
+
+    addTabToActiveTabSet(json: IJsonTabNode): TabNode | undefined {
+        const tabsetNode = this.props.model.getActiveTabset(this.windowId);
+        if (tabsetNode !== undefined) {
+            const node = this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
+            return node as TabNode;
+        }
+        return undefined;
+    }
+
+    showControlInPortal = (control: React.ReactNode, element: HTMLElement) => {
+        const portal = createPortal(control, element) as React.ReactPortal;
+        this.setState({ portal });
+    };
+
+    hideControlInPortal = () => {
+        this.setState({ portal: undefined });
+    };
+
+    getIcons = () => {
+        return this.icons;
+    };
+
+    maximize(tabsetNode: TabSetNode) {
+        this.doAction(Actions.maximizeToggle(tabsetNode.getId(), this.getWindowId()));
+    }
+
     customizeTab(
         tabNode: TabNode,
         renderValues: ITabRenderValues,
@@ -1247,7 +916,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
     }
 
-    /** @internal */
     customizeTabSet(
         tabSetNode: TabSetNode | BorderNode,
         renderValues: ITabSetRenderValues,
@@ -1257,7 +925,6 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         }
     }
 
-    /** @internal */
     i18nName(id: I18nLabel, param?: string) {
         let message;
         if (this.props.i18nMapper) {
@@ -1269,51 +936,389 @@ export class Layout extends React.Component<ILayoutProps, ILayoutState> {
         return message;
     }
 
-    /** @internal */
-    getOnRenderFloatingTabPlaceholder() {
-        return this.props.onRenderFloatingTabPlaceholder;
-    }
-
-    /** @internal */
     getShowOverflowMenu() {
         return this.props.onShowOverflowMenu;
     }
 
-    /** @internal */
     getTabSetPlaceHolderCallback() {
         return this.props.onTabSetPlaceHolder;
     }
-    /** @internal */
+
     showContextMenu(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
         if (this.props.onContextMenu) {
             this.props.onContextMenu(node, event);
         }
     }
 
-    /** @internal */
     auxMouseClick(node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) {
         if (this.props.onAuxMouseClick) {
             this.props.onAuxMouseClick(node, event);
         }
     }
+
+    public showOverlay(show: boolean) {
+        this.setState({ showOverlay: show });
+        enablePointerOnIFrames(!show, this.currentDocument!);
+    }
+
+
+
+    // *************************** Start Drag Drop *************************************
+
+    addTabWithDragAndDrop(event: DragEvent, json: IJsonTabNode, onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void) {
+        const tempNode = TabNode.fromJson(json, this.props.model, false);
+        LayoutInternal.dragState = new DragState(this.mainLayout, DragSource.Add, tempNode, json, onDrop);
+    }
+
+    moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)) {
+        this.setDragNode(event, node);
+    }
+
+    public setDragNode = (event: DragEvent, node: Node & IDraggable) => {
+        LayoutInternal.dragState = new DragState(this.mainLayout, DragSource.Internal, node, undefined, undefined);
+        // Note: can only set (very) limited types on android! so cannot set json
+        // Note: must set text/plain for android to allow drag, 
+        //  so just set a simple message indicating its a flexlayout drag (this is not used anywhere else)
+        event.dataTransfer!.setData('text/plain', "--flexlayout--");
+        event.dataTransfer!.effectAllowed = "copyMove";
+        event.dataTransfer!.dropEffect = "move";
+
+        this.dragEnterCount = 0;
+
+        if (node instanceof TabSetNode) {
+            let rendered = false;
+            let content = this.i18nName(I18nLabel.Move_Tabset);
+            if (node.getChildren().length > 0) {
+                content = this.i18nName(I18nLabel.Move_Tabs).replace("?", String(node.getChildren().length));
+            }
+            if (this.props.onRenderDragRect) {
+                const dragComponent = this.props.onRenderDragRect(content, node, undefined);
+                if (dragComponent) {
+                    this.setDragComponent(event, dragComponent, 10, 10);
+                    rendered = true;
+                }
+            }
+            if (!rendered) {
+                this.setDragComponent(event, content, 10, 10);
+            }
+        } else {
+            const element = event.target as HTMLElement;
+            const rect = element.getBoundingClientRect();
+            const offsetX = event.clientX - rect.left;
+            const offsetY = event.clientY - rect.top;
+            const parentNode = node?.getParent();
+            const isInVerticalBorder = parentNode instanceof BorderNode && (parentNode as BorderNode).getOrientation() === Orientation.HORZ;
+            const x = isInVerticalBorder ? 10 : offsetX;
+            const y = isInVerticalBorder ? 10 : offsetY;
+
+            let rendered = false;
+            if (this.props.onRenderDragRect) {
+                const content = <TabButtonStamp key={node.getId()} layout={this} node={node as TabNode} />;
+                const dragComponent = this.props.onRenderDragRect(content, node, undefined);
+                if (dragComponent) {
+                    this.setDragComponent(event, dragComponent, x, y);
+                    rendered = true;
+                }
+            }
+            if (!rendered) {
+                if (isSafari()) { // safari doesnt render the offscreen tabstamps
+                    this.setDragComponent(event, <TabButtonStamp node={node as TabNode} layout={this}/>, x,y);
+                } else {
+                    event.dataTransfer!.setDragImage((node as TabNode).getTabStamp()!, x, y);
+                }
+            }
+        }
+    };
+
+
+
+    public setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number) {
+        let dragElement: JSX.Element = (
+            <div style={{ position: "unset" }}
+                className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT) + " " + this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT)}>
+                {component}
+            </div>
+        );
+
+        const tempDiv = this.currentDocument!.createElement('div');
+        tempDiv.setAttribute("data-layout-path", "/drag-rectangle");
+        tempDiv.style.position = "absolute";
+        tempDiv.style.left = "-10000px";
+        tempDiv.style.top = "-10000px";
+        this.currentDocument!.body.appendChild(tempDiv);
+        createRoot(tempDiv).render(dragElement);
+
+        event.dataTransfer!.setDragImage(tempDiv, x, y);
+        setTimeout(() => {
+            this.currentDocument!.body.removeChild(tempDiv!);
+        }, 0);
+    }
+
+    setDraggingOverWindow(overWindow: boolean) {
+        // console.log("setDraggingOverWindow", overWindow);
+        if (this.isDraggingOverWindow !== overWindow) {
+            if (this.outlineDiv) {
+                this.outlineDiv!.style.visibility = overWindow ? "hidden" : "visible";
+            }
+
+            if (overWindow) {
+                this.setState({ showEdges: false });
+            } else {
+                // add edge indicators
+                if (this.props.model.getMaximizedTabset(this.windowId) === undefined) {
+                    this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
+                }
+            }
+
+            this.isDraggingOverWindow = overWindow;
+        }
+    }
+
+    onDragEnterRaw = (event: React.DragEvent<HTMLElement>) => {
+        this.dragEnterCount++;
+        if (this.dragEnterCount === 1) {
+            this.onDragEnter(event);
+        }
+    }
+
+    onDragLeaveRaw = (event: React.DragEvent<HTMLElement>) => {
+        this.dragEnterCount--;
+        if (this.dragEnterCount === 0) {
+            this.onDragLeave(event);
+        }
+    }
+
+    clearDragMain() {
+        // console.log("clear drag main");
+        LayoutInternal.dragState = undefined;
+        if (this.windowId === Model.MAIN_WINDOW_ID) {
+            this.isDraggingOverWindow = false;
+        }
+        for (const [, layoutWindow] of this.props.model.getwindowsMap()) {
+            // console.log(layoutWindow);
+            layoutWindow.layout!.clearDragLocal();
+        }
+    }
+
+    clearDragLocal() {
+        // console.log("clear drag local", this.windowId);
+        this.setState({ showEdges: false });
+        this.showOverlay(false);
+        this.dragEnterCount = 0;
+        this.dragging = false;
+        if (this.outlineDiv) {
+            this.selfRef.current!.removeChild(this.outlineDiv);
+            this.outlineDiv = undefined;
+        }
+    }
+
+    onDragEnter = (event: React.DragEvent<HTMLElement>) => {
+        // console.log("onDragEnter", this.windowId, this.dragEnterCount);
+
+        if (!LayoutInternal.dragState && this.props.onExternalDrag) { // not internal dragging
+            const externalDrag = this.props.onExternalDrag!(event);
+            if (externalDrag) {
+                const tempNode = TabNode.fromJson(externalDrag.json, this.props.model, false);
+                LayoutInternal.dragState = new DragState(this.mainLayout, DragSource.External, tempNode, externalDrag.json, externalDrag.onDrop);
+            }
+        }
+
+        if (LayoutInternal.dragState) {
+            if (this.windowId !== Model.MAIN_WINDOW_ID && LayoutInternal.dragState.mainLayout === this.mainLayout) {
+                LayoutInternal.dragState.mainLayout.setDraggingOverWindow(true);
+            }
+
+            if (LayoutInternal.dragState.mainLayout !== this.mainLayout) {
+                return; // drag not by this layout or its popouts
+            }
+
+            event.preventDefault();
+
+            this.dropInfo = undefined;
+            const rootdiv = this.selfRef.current;
+            this.outlineDiv = this.currentDocument!.createElement("div");
+            this.outlineDiv.className = this.getClassName(CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            this.outlineDiv.style.visibility = "hidden";
+            const speed = this.props.model.getAttribute("tabDragSpeed") as number;
+            this.outlineDiv.style.transition = `top ${speed}s, left ${speed}s, width ${speed}s, height ${speed}s`;
+
+            rootdiv!.appendChild(this.outlineDiv);
+
+            this.dragging = true;
+            this.showOverlay(true);
+            // add edge indicators
+            if (!this.isDraggingOverWindow && this.props.model.getMaximizedTabset(this.windowId) === undefined) {
+                this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
+            }
+
+            const clientRect = this.selfRef.current?.getBoundingClientRect()!;
+            const r = new Rect(
+                event.clientX - (clientRect.left),
+                event.clientY - (clientRect.top),
+                1, 1
+            );
+            r.positionElement(this.outlineDiv);
+        }
+    }
+
+    onDragOver = (event: React.DragEvent<HTMLElement>) => {
+        if (this.dragging && !this.isDraggingOverWindow) {
+            // console.log("onDragOver");
+
+            event.preventDefault();
+            const clientRect = this.selfRef.current?.getBoundingClientRect();
+            const pos = {
+                x: event.clientX - (clientRect?.left ?? 0),
+                y: event.clientY - (clientRect?.top ?? 0),
+            };
+
+            this.checkForBorderToShow(pos.x, pos.y);
+
+            let dropInfo = this.props.model.findDropTargetNode(this.windowId, LayoutInternal.dragState!.dragNode!, pos.x, pos.y);
+            if (dropInfo) {
+                this.dropInfo = dropInfo;
+                if (this.outlineDiv) {
+                    this.outlineDiv.className = this.getClassName(dropInfo.className);
+                    dropInfo.rect.positionElement(this.outlineDiv);
+                    this.outlineDiv.style.visibility = "visible";
+                }
+            }
+        }
+    }
+
+    onDragLeave = (event: React.DragEvent<HTMLElement>) => {
+        // console.log("onDragLeave", this.windowId, this.dragging);
+        if (this.dragging) {
+            if (this.windowId !== Model.MAIN_WINDOW_ID) {
+                LayoutInternal.dragState!.mainLayout.setDraggingOverWindow(false);
+            }
+
+            this.clearDragLocal();
+        }
+    }
+
+    onDrop = (event: React.DragEvent<HTMLElement>) => {
+        // console.log("ondrop", this.windowId, this.dragging, Layout.dragState);
+
+        if (this.dragging) {
+            event.preventDefault();
+
+            const dragState = LayoutInternal.dragState!;
+            if (this.dropInfo) {
+                if (dragState.dragJson !== undefined) {
+                    const newNode = this.doAction(Actions.addNode(dragState.dragJson, this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
+
+                    if (dragState.fnNewNodeDropped !== undefined) {
+                        dragState.fnNewNodeDropped(newNode, event);
+                    }
+                } else if (dragState.dragNode !== undefined) {
+                    this.doAction(Actions.moveNode(dragState.dragNode.getId(), this.dropInfo.node.getId(), this.dropInfo.location, this.dropInfo.index));
+                }
+            }
+
+            this.mainLayout.clearDragMain();
+        }
+        this.dragEnterCount = 0; // must set to zero here ref sublayouts
+    }
+
+    // *************************** End Drag Drop *************************************
 }
 
-// wrapper round the drag rect renderer that can call
-// a method once the rendering is written to the dom
+export type DragRectRenderCallback = (
+    content: React.ReactNode | undefined,
+    node?: Node,
+    json?: IJsonTabNode
+) => React.ReactNode | undefined;
 
-/** @internal */
-interface IDragRectRenderWrapper {
-    onRendered?: () => void;
-    children: React.ReactNode;
+export type NodeMouseEvent = (
+    node: TabNode | TabSetNode | BorderNode,
+    event: React.MouseEvent<HTMLElement, MouseEvent>
+) => void;
+
+export type ShowOverflowMenuCallback = (
+    node: TabSetNode | BorderNode,
+    mouseEvent: React.MouseEvent<HTMLElement, MouseEvent>,
+    items: { index: number; node: TabNode }[],
+    onSelect: (item: { index: number; node: TabNode }) => void,
+) => void;
+
+export type TabSetPlaceHolderCallback = (node: TabSetNode) => React.ReactNode;
+
+export interface ITabSetRenderValues {
+    /** components that will be added after the tabs */
+    stickyButtons: React.ReactNode[];
+    /** components that will be added at the end of the tabset */
+    buttons: React.ReactNode[];
+    /** position to insert overflow button within [...stickyButtons, ...buttons]
+     * if left undefined position will be after the sticky buttons (if any) 
+     */
+    overflowPosition: number | undefined;
+}
+
+export interface ITabRenderValues {
+    /** the icon or other leading component */
+    leading: React.ReactNode;
+    /** the main tab text/component */
+    content: React.ReactNode;
+    /** a set of react components to add to the tab after the content */
+    buttons: React.ReactNode[];
+}
+
+export interface IIcons {
+    close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    restore?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
+    edgeArrow?: React.ReactNode;
+    activeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+}
+
+const defaultIcons = {
+    close: <CloseIcon />,
+    closeTabset: <CloseIcon />,
+    popout: <PopoutIcon />,
+    maximize: <MaximizeIcon />,
+    restore: <RestoreIcon />,
+    more: <OverflowIcon />,
+    edgeArrow: <EdgeIcon />,
+    activeTabset: <AsterickIcon />
+};
+
+enum DragSource {
+    Internal = "internal",
+    External = "external",
+    Add = "add"
 }
 
 /** @internal */
-const DragRectRenderWrapper = (props: IDragRectRenderWrapper) => {
-    React.useEffect(() => {
-        props.onRendered?.();
-    }, [props]);
+const defaultSupportsPopout: boolean = isDesktop();
 
-    return (<React.Fragment>
-        {props.children}
-    </React.Fragment>)
+/** @internal */
+const edgeRectLength = 100;
+/** @internal */
+const edgeRectWidth = 10;
+
+// global layout drag state
+class DragState {
+    public readonly mainLayout: LayoutInternal;
+    public readonly dragSource: DragSource;
+    public readonly dragNode: Node & IDraggable | undefined;
+    public readonly dragJson: IJsonTabNode | undefined;
+    public readonly fnNewNodeDropped: ((node?: Node, event?: React.DragEvent<HTMLElement>) => void) | undefined;
+
+    public constructor(
+        mainLayout: LayoutInternal,
+        dragSource: DragSource,
+        dragNode: Node & IDraggable | undefined,
+        dragJson: IJsonTabNode | undefined,
+        fnNewNodeDropped: ((node?: Node, event?: React.DragEvent<HTMLElement>) => void) | undefined
+    ) {
+        this.mainLayout = mainLayout;
+        this.dragSource = dragSource;
+        this.dragNode = dragNode;
+        this.dragJson = dragJson;
+        this.fnNewNodeDropped = fnNewNodeDropped;
+    }
 }

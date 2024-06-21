@@ -9,12 +9,12 @@ import { Orientation } from "../Orientation";
 export const useTabOverflow = (
     node: TabSetNode | BorderNode,
     orientation: Orientation,
-    toolbarRef: React.MutableRefObject<HTMLDivElement | null>,
-    stickyButtonsRef: React.MutableRefObject<HTMLDivElement | null>
+    toolbarRef: React.MutableRefObject<HTMLElement | null>,
+    stickyButtonsRef: React.MutableRefObject<HTMLElement | null>
 ) => {
     const firstRender = React.useRef<boolean>(true);
     const tabsTruncated = React.useRef<boolean>(false);
-    const lastRect = React.useRef<Rect>(new Rect(0, 0, 0, 0));
+    const lastRect = React.useRef<Rect>(Rect.empty());
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const [position, setPosition] = React.useState<number>(0);
@@ -28,10 +28,13 @@ export const useTabOverflow = (
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
     React.useLayoutEffect(() => {
-        updateVisibleTabs();
+        const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
+        if (nodeRect.width > 0 && nodeRect.height > 0) {
+            updateVisibleTabs();
+        }
     });
 
-    const instance = selfRef.current;
+    const instance = toolbarRef.current;
     React.useEffect(() => {
         if (!instance) {
             return;
@@ -109,10 +112,12 @@ export const useTabOverflow = (
                     // when selected tab is larger than available space then align left
                     if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect)) {
                         shiftPos = getNear(nodeRect) - selectedStart;
+                        // console.log("shiftPos1", shiftPos, getNear(nodeRect), selectedStart);
                     } else {
                         if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
                             if (selectedStart < getNear(nodeRect)) {
                                 shiftPos = getNear(nodeRect) - selectedStart;
+                                // console.log("shiftPos2", shiftPos, getNear(nodeRect), selectedStart);
                             }
                             // use second if statement to prevent tab moving back then forwards if not enough space for single tab
                             if (selectedEnd + shiftPos > endPos) {
@@ -124,6 +129,7 @@ export const useTabOverflow = (
 
                 const extraSpace = Math.max(0, endPos - (getFar(lastChild.getTabRect()!) + tabMargin + shiftPos));
                 const newPosition = Math.min(0, position + shiftPos + extraSpace);
+                // console.log("newPosition", newPosition, position, shiftPos, extraSpace);
 
                 // find hidden tabs
                 const diff = newPosition - position;
@@ -135,12 +141,11 @@ export const useTabOverflow = (
                     }
                 }
 
-                if (hidden.length > 0) {
-                    tabsTruncated.current = true;
-                }
+                tabsTruncated.current = hidden.length > 0;
 
                 firstRender.current = false; // need to do a second render
                 setHiddenTabs(hidden);
+                // console.log(newPosition);
                 setPosition(newPosition);
             }
         } else {
@@ -148,7 +153,7 @@ export const useTabOverflow = (
         }
     };
 
-    const onMouseWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
         let delta = 0;
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
             delta = -event.deltaX;

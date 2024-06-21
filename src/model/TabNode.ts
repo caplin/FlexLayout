@@ -4,7 +4,7 @@ import { Rect } from "../Rect";
 import { BorderNode } from "./BorderNode";
 import { IDraggable } from "./IDraggable";
 import { IJsonTabNode } from "./IJsonModel";
-import { Model, ILayoutMetrics } from "./Model";
+import { Model } from "./Model";
 import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
 
@@ -12,99 +12,71 @@ export class TabNode extends Node implements IDraggable {
     static readonly TYPE = "tab";
 
     /** @internal */
-    static _fromJson(json: any, model: Model, addToModel: boolean = true) {
+    static fromJson(json: any, model: Model, addToModel: boolean = true) {
         const newLayoutNode = new TabNode(model, json, addToModel);
         return newLayoutNode;
     }
-    /** @internal */
-    private static _attributeDefinitions: AttributeDefinitions = TabNode._createAttributeDefinitions();
 
     /** @internal */
-    private static _createAttributeDefinitions(): AttributeDefinitions {
-        const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute.STRING);
-        attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
-
-        attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING);
-        attributeDefinitions.add("altName", undefined).setType(Attribute.STRING);
-        attributeDefinitions.add("helpText", undefined).setType(Attribute.STRING);
-        attributeDefinitions.add("component", undefined).setType(Attribute.STRING);
-        attributeDefinitions.add("config", undefined).setType("any");
-        attributeDefinitions.add("floating", false).setType(Attribute.BOOLEAN);
-        attributeDefinitions.add("tabsetClassName", undefined).setType(Attribute.STRING);
-
-        attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType");
-        attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING);
-        attributeDefinitions.addInherited("contentClassName", "tabContentClassName").setType(Attribute.STRING);
-        attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING);
-        attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("enableFloat", "tabEnableFloat").setType(Attribute.BOOLEAN);
-        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(Attribute.NUMBER);
-        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(Attribute.NUMBER);
-        return attributeDefinitions;
-    }
-
+    private tabRect: Rect = Rect.empty();
     /** @internal */
-    private _tabRect?: Rect;
+    private moveableElement: HTMLElement | null;
     /** @internal */
-    private _renderedName?: string;
+    private tabStamp: HTMLElement | null;
     /** @internal */
-    private _extra: Record<string, any>;
+    private renderedName?: string;
     /** @internal */
-    private _window?: Window;
+    private extra: Record<string, any>;
+    /** @internal */
+    private visible: boolean;
+    /** @internal */
+    private rendered: boolean;
+    /** @internal */
+    private scrollTop?: number;
+    /** @internal */
+    private scrollLeft?: number;
 
     /** @internal */
     constructor(model: Model, json: any, addToModel: boolean = true) {
         super(model);
 
-        this._extra = {}; // extra data added to node not saved in json
+        this.extra = {}; // extra data added to node not saved in json
+        this.moveableElement = null;
+        this.tabStamp = null;
+        this.rendered = false;
+        this.visible = false;
 
-        TabNode._attributeDefinitions.fromJson(json, this._attributes);
+        TabNode.attributeDefinitions.fromJson(json, this.attributes);
         if (addToModel === true) {
-            model._addNode(this);
+            model.addNode(this);
         }
-    }
-
-    getWindow() {
-        return this._window;
-    }
-
-    getTabRect() {
-        return this._tabRect;
-    }
-
-    /** @internal */
-    _setTabRect(rect: Rect) {
-        this._tabRect = rect;
-    }
-
-    /** @internal */
-    _setRenderedName(name: string) {
-        this._renderedName = name;
-    }
-
-    /** @internal */
-    _getNameForOverflowMenu() {
-        const altName = this._getAttr("altName") as string;
-        if (altName !== undefined) {
-            return altName;
-        }
-        return this._renderedName;
     }
 
     getName() {
-        return this._getAttr("name") as string;
+        return this.getAttr("name") as string;
     }
 
     getHelpText() {
-        return this._getAttr("helpText") as string | undefined;
+        return this.getAttr("helpText") as string | undefined;
     }
 
     getComponent() {
-        return this._getAttr("component") as string | undefined;
+        return this.getAttr("component") as string | undefined;
+    }
+
+    getWindowId() {
+        if (this.parent instanceof TabSetNode) {
+            return this.parent.getWindowId();
+        }
+        return Model.MAIN_WINDOW_ID;
+    }
+
+    getWindow() : Window | undefined {
+        const layoutWindow = this.model.getwindowsMap().get(this.getWindowId());
+        if (layoutWindow) {
+            return layoutWindow.window;
+        }
+        return undefined;
     }
 
     /**
@@ -115,7 +87,7 @@ export class TabNode extends Node implements IDraggable {
      *   FlexLayout.Actions.updateNodeAttributes(node.getId(), {config:myConfigObject}));
      */
     getConfig() {
-        return this._attributes.config;
+        return this.attributes.config;
     }
 
     /**
@@ -123,114 +95,326 @@ export class TabNode extends Node implements IDraggable {
      * NOT be saved in the json.
      */
     getExtraData() {
-        return this._extra;
+        return this.extra;
     }
 
-    isFloating() {
-        return this._getAttr("floating") as boolean;
+    isPoppedOut() {
+        return this.getWindowId() !== Model.MAIN_WINDOW_ID;
+    }
+
+    isSelected() {
+        return (this.getParent() as TabSetNode | BorderNode).getSelectedNode() === this;
     }
 
     getIcon() {
-        return this._getAttr("icon") as string | undefined;
+        return this.getAttr("icon") as string | undefined;
     }
 
     isEnableClose() {
-        return this._getAttr("enableClose") as boolean;
+        return this.getAttr("enableClose") as boolean;
     }
 
     getCloseType() {
-        return this._getAttr("closeType") as number;
+        return this.getAttr("closeType") as number;
     }
 
-    isEnableFloat() {
-        return this._getAttr("enableFloat") as boolean;
+    isEnablePopout() {
+        return this.getAttr("enablePopout") as boolean;
+    }
+
+    isEnablePopoutIcon() {
+        return this.getAttr("enablePopoutIcon") as boolean;
+    }
+
+    isEnablePopoutOverlay() {
+        return this.getAttr("enablePopoutOverlay") as boolean;
     }
 
     isEnableDrag() {
-        return this._getAttr("enableDrag") as boolean;
+        return this.getAttr("enableDrag") as boolean;
     }
 
     isEnableRename() {
-        return this._getAttr("enableRename") as boolean;
+        return this.getAttr("enableRename") as boolean;
+    }
+
+    isEnableWindowReMount() {
+        return this.getAttr("enableWindowReMount") as boolean;
     }
 
     getClassName() {
-        return this._getAttr("className") as string | undefined;
+        return this.getAttr("className") as string | undefined;
     }
-    
+
     getContentClassName() {
-        return this._getAttr("contentClassName") as string | undefined;
+        return this.getAttr("contentClassName") as string | undefined;
     }
 
     getTabSetClassName() {
-        return this._getAttr("tabsetClassName") as string | undefined;
+        return this.getAttr("tabsetClassName") as string | undefined;
     }
 
     isEnableRenderOnDemand() {
-        return this._getAttr("enableRenderOnDemand") as boolean;
+        return this.getAttr("enableRenderOnDemand") as boolean;
     }
 
-    /** @internal */
-    _setName(name: string) {
-        this._attributes.name = name;
-        if (this._window && this._window.document) {
-            this._window.document.title = name;
-        }
+    getMinWidth() {
+        return this.getAttr("minWidth") as number;
     }
 
-    /** @internal */
-    _setFloating(float: boolean) {
-        this._attributes.floating = float;
+    getMinHeight() {
+        return this.getAttr("minHeight") as number;
     }
 
-    /** @internal */
-    _layout(rect: Rect, metrics: ILayoutMetrics) {
-        if (!rect.equals(this._rect)) {
-            this._fireEvent("resize", { rect });
-        }
-        this._rect = rect;
+    getMaxWidth() {
+        return this.getAttr("maxWidth") as number;
     }
 
-    /** @internal */
-    _delete() {
-        (this._parent as TabSetNode | BorderNode)._remove(this);
-        this._fireEvent("close", {});
+    getMaxHeight() {
+        return this.getAttr("maxHeight") as number;
     }
 
     toJson(): IJsonTabNode {
         const json = {};
-        TabNode._attributeDefinitions.toJson(json, this._attributes);
+        TabNode.attributeDefinitions.toJson(json, this.attributes);
         return json;
     }
 
     /** @internal */
-    _updateAttrs(json: any) {
-        TabNode._attributeDefinitions.update(json, this._attributes);
+    saveScrollPosition() {
+        if (this.moveableElement) {
+            this.scrollLeft = this.moveableElement.scrollLeft;
+            this.scrollTop = this.moveableElement.scrollTop;
+            // console.log("save", this.getName(), this.scrollTop);
+        }
     }
 
     /** @internal */
-    _getAttributeDefinitions() {
-        return TabNode._attributeDefinitions;
+    restoreScrollPosition() {
+        if (this.scrollTop) {
+            requestAnimationFrame(() => {
+                if (this.moveableElement) {
+                    if (this.scrollTop) {
+                        // console.log("restore", this.getName(), this.scrollTop);
+                        this.moveableElement.scrollTop = this.scrollTop;
+                        this.moveableElement.scrollLeft = this.scrollLeft!;
+                    }
+                }
+            });
+        }
     }
 
     /** @internal */
-    _setWindow(window: Window | undefined) {
-        this._window = window;
+    setRect(rect: Rect) {
+        if (!rect.equals(this.rect)) {
+            this.fireEvent("resize", {rect});
+            this.rect = rect;
+        }
     }
 
     /** @internal */
-    _setBorderWidth(width: number) {
-        this._attributes.borderWidth = width;
+    setVisible(visible: boolean) {
+        if (visible !== this.visible) {
+            this.fireEvent("visibility", { visible });
+            this.visible = visible;
+        }
     }
 
     /** @internal */
-    _setBorderHeight(height: number) {
-        this._attributes.borderHeight = height;
+    getScrollTop() {
+        return this.scrollTop;
+    }
+
+    /** @internal */
+    setScrollTop(scrollTop: number | undefined) {
+        this.scrollTop = scrollTop;
+    }
+    /** @internal */
+    getScrollLeft() {
+        return this.scrollLeft;
+    }
+
+    /** @internal */
+    setScrollLeft(scrollLeft: number | undefined) {
+        this.scrollLeft = scrollLeft;
+    }
+    /** @internal */
+    isRendered() {
+        return this.rendered;
+    }
+
+    /** @internal */
+    setRendered(rendered: boolean) {
+        this.rendered = rendered;
+    }
+
+    /** @internal */
+    getTabRect() {
+        return this.tabRect;
+    }
+
+    /** @internal */
+    setTabRect(rect: Rect) {
+        this.tabRect = rect;
+    }
+
+    /** @internal */
+    getTabStamp() {
+        return this.tabStamp;
+    }
+
+    /** @internal */
+    setTabStamp(stamp: HTMLElement | null) {
+        this.tabStamp = stamp;
+    }
+
+    /** @internal */
+    getMoveableElement() {
+        return this.moveableElement;
+    }
+
+    /** @internal */
+    setMoveableElement(element: HTMLElement | null) {
+        this.moveableElement = element;
+    }
+
+    /** @internal */
+    setRenderedName(name: string) {
+        this.renderedName = name;
+    }
+
+    /** @internal */
+    getNameForOverflowMenu() {
+        const altName = this.getAttr("altName") as string;
+        if (altName !== undefined) {
+            return altName;
+        }
+        return this.renderedName;
+    }
+
+    /** @internal */
+    setName(name: string) {
+        this.attributes.name = name;
+    }
+
+    /** @internal */
+    delete() {
+        (this.parent as TabSetNode | BorderNode).remove(this);
+        this.fireEvent("close", {});
+    }
+
+    /** @internal */
+    updateAttrs(json: any) {
+        TabNode.attributeDefinitions.update(json, this.attributes);
+    }
+
+    /** @internal */
+    getAttributeDefinitions() {
+        return TabNode.attributeDefinitions;
+    }
+
+    /** @internal */
+    setBorderWidth(width: number) {
+        this.attributes.borderWidth = width;
+    }
+
+    /** @internal */
+    setBorderHeight(height: number) {
+        this.attributes.borderHeight = height;
     }
 
     /** @internal */
     static getAttributeDefinitions() {
-        return TabNode._attributeDefinitions;
+        return TabNode.attributeDefinitions;
     }
 
+    /** @internal */
+    private static attributeDefinitions: AttributeDefinitions = TabNode.createAttributeDefinitions();
+
+    /** @internal */
+    private static createAttributeDefinitions(): AttributeDefinitions {
+        const attributeDefinitions = new AttributeDefinitions();
+        attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(
+            `the unique id of the tab, if left undefined a uuid will be assigned`
+        );
+
+        attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING).setDescription(
+            `name of tab to be displayed in the tab button`
+        );
+        attributeDefinitions.add("altName", undefined).setType(Attribute.STRING).setDescription(
+            `if there is no name specifed then this value will be used in the overflow menu`
+        );
+        attributeDefinitions.add("helpText", undefined).setType(Attribute.STRING).setDescription(
+            `An optional help text for the tab to be displayed upon tab hover.`
+        );
+        attributeDefinitions.add("component", undefined).setType(Attribute.STRING).setDescription(
+            `string identifying which component to run (for factory)`
+        );
+        attributeDefinitions.add("config", undefined).setType("any").setDescription(
+            `a place to hold json config for the hosted component`
+        );
+        attributeDefinitions.add("tabsetClassName", undefined).setType(Attribute.STRING).setDescription(
+            `class applied to parent tabset when this is the only tab and it is stretched to fill the tabset`
+        );
+        attributeDefinitions.add("enableWindowReMount", false).setType(Attribute.BOOLEAN).setDescription(
+            `if enabled the tab will re-mount when popped out/in`
+        );
+
+        attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN).setDescription(
+            `allow user to close tab via close button`
+        );
+        attributeDefinitions.addInherited("closeType", "tabCloseType").setType("ICloseType").setDescription(
+            `see values in ICloseType`
+        );
+        attributeDefinitions.addInherited("enableDrag", "tabEnableDrag").setType(Attribute.BOOLEAN).setDescription(
+            `allow user to drag tab to new location`
+        );
+        attributeDefinitions.addInherited("enableRename", "tabEnableRename").setType(Attribute.BOOLEAN).setDescription(
+            `allow user to rename tabs by double clicking`
+        );
+        attributeDefinitions.addInherited("className", "tabClassName").setType(Attribute.STRING).setDescription(
+            `class applied to tab button`
+        );
+        attributeDefinitions.addInherited("contentClassName", "tabContentClassName").setType(Attribute.STRING).setDescription(
+            `class applied to tab content`
+        );
+        attributeDefinitions.addInherited("icon", "tabIcon").setType(Attribute.STRING).setDescription(
+            `the tab icon`
+        );
+        attributeDefinitions.addInherited("enableRenderOnDemand", "tabEnableRenderOnDemand").setType(Attribute.BOOLEAN).setDescription(
+            `whether to avoid rendering component until tab is visible`
+        );
+        attributeDefinitions.addInherited("enablePopout", "tabEnablePopout").setType(Attribute.BOOLEAN).setAlias("enableFloat").setDescription(
+            `enable popout (in popout capable browser)`
+        );
+        attributeDefinitions.addInherited("enablePopoutIcon", "tabEnablePopoutIcon").setType(Attribute.BOOLEAN).setDescription(
+            `whether to show the popout icon in the tabset header if this tab enables popouts`
+        );
+        attributeDefinitions.addInherited("enablePopoutOverlay", "tabEnablePopoutOverlay").setType(Attribute.BOOLEAN).setDescription(
+            `if this tab will not work correctly in a popout window when the main window is backgrounded (inactive)
+            then enabling this option will gray out this tab`
+        );
+
+        attributeDefinitions.addInherited("borderWidth", "tabBorderWidth").setType(Attribute.NUMBER).setDescription(
+            `width when added to border, -1 will use border size`
+        );
+        attributeDefinitions.addInherited("borderHeight", "tabBorderHeight").setType(Attribute.NUMBER).setDescription(
+            `height when added to border, -1 will use border size`
+        );
+        attributeDefinitions.addInherited("minWidth", "tabMinWidth").setType(Attribute.NUMBER).setDescription(
+            `the min width of this tab`
+        );
+        attributeDefinitions.addInherited("minHeight", "tabMinHeight").setType(Attribute.NUMBER).setDescription(
+            `the min height of this tab`
+        );
+        attributeDefinitions.addInherited("maxWidth", "tabMaxWidth").setType(Attribute.NUMBER).setDescription(
+            `the max width of this tab`
+        );
+        attributeDefinitions.addInherited("maxHeight", "tabMaxHeight").setType(Attribute.NUMBER).setDescription(
+            `the max height of this tab`
+        );
+
+        return attributeDefinitions;
+    }
 }

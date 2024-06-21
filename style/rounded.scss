@@ -1,0 +1,194 @@
+$color_text: black !default;
+$color_background: #f2f6fb !default;
+$color_base: #f2f6fb !default;
+$color_1: scale_color($color_base, $lightness: -3%) !default;
+$color_2: scale_color($color_1, $lightness: -3%) !default;
+$color_3: scale_color($color_2, $lightness: -3%) !default;
+$color_4: scale_color($color_3, $lightness: -3%) !default;
+$color_5: scale_color($color_4, $lightness: -3%) !default;
+$color_6: scale_color($color_5, $lightness: -3%) !default;
+$color_drag1: rgb(95, 134, 196) !default;
+$color_drag2: rgb(119, 166, 119) !default;
+$color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+$color_drag2_background: rgba(119, 166, 119, 0.075) !default;
+
+$font-size: medium !default;
+$font-family: Roboto, Arial, sans-serif !default;
+
+.flexlayout {
+    &__layout {
+        
+        --color-text: #{$color_text};
+        --color-background: transparent;
+        --color-base: #{$color_base};
+        --color-1: #{$color_1};
+        --color-2: #{$color_2};
+        --color-3: #{$color_3};
+        --color-4: #{$color_4};
+        --color-5: #{$color_5};
+        --color-6: #{$color_6};
+        --color-drag1: #{$color_drag1};
+        --color-drag2: #{$color_drag1};
+        --color-drag1-background: #{$color_drag1_background};
+        --color-drag2-background: #{$color_drag1_background};
+
+        --font-size: #{$font_size};
+        --font-family: #{$font_family};
+
+        --color-overflow: #999db2;
+        --color-icon: #999db2;
+
+        --color-tabset-background: white;
+        --color-tabset-background-selected: white;
+        --color-tabset-background-maximized: var(--color-2);
+        --color-tabset-divider-line: white;
+
+        --color-tabset-header-background: var(--color-background);
+        --color-tabset-header: var(--color-text);
+
+        --color-border-tab-content: white;
+        --color-border-background: var(--color-background);
+        --color-border-divider-line: var(--color-background);
+
+        --color-tab-content: white;
+        --color-tab-selected: var(--color-text);
+        --color-tab-selected-background: var(--color-2);
+        --color-tab-unselected: gray;
+        --color-tab-unselected-background: transparent;
+        --color-tab-textbox: var(--color-text);
+        --color-tab-textbox-background: var(--color-3);
+
+        --color-border-tab-selected: var(--color-text);
+        --color-border-tab-selected-background: var(--color-2);
+        --color-border-tab-unselected: gray;
+        --color-border-tab-unselected-background: var(--color-2);
+
+        --color-splitter: #{$color_background};
+        --color-splitter-hover: var(--color-4);
+        --color-splitter-drag: var(--color-4);
+
+        --color-drag-rect-border: #ccc;
+        --color-drag-rect-background: var(--color-5);
+        --color-drag-rect: var(--color-text);
+
+        --color-popup-border: var(--color-6);
+        --color-popup-unselected: var(--color-text);
+        --color-popup-unselected-background: #{$color_background};
+        --color-popup-selected: var(--color-text);
+        --color-popup-selected-background: var(--color-3);
+
+        --color-edge-marker: #a6bbdf;
+        --color-edge-icon: #555;
+    }
+}
+
+@mixin tabset_mixin {
+    border-radius:10px;
+}
+
+@mixin tabset_tabbar_mixin {
+}
+
+@mixin tabset_header_mixin {
+}
+
+@mixin tabset_selected_mixin {
+}
+
+@mixin tabset_maximized_mixin {
+}
+
+@mixin tab_top_mixin {
+}
+
+@mixin tab_bottom_mixin {
+}
+
+@mixin tab_button_mixin {
+    border-radius: 10px;
+    padding: 2px 0.6em;
+}
+
+@mixin tab_button_selected_mixin {
+}
+
+@mixin tab_button_unselected_mixin {
+    color: gray;
+}
+
+@mixin tab_button_hovered_mixin {
+}
+
+@mixin tab_button_stretch_mixin {
+}
+
+@mixin tab_button_stretch_hovered_mixin {
+}
+
+@mixin close_button_hovered_mixin {
+    background-color:var(--color-3);
+}
+
+@mixin toolbar_button_hovered_mixin {
+    background-color:var(--color-2);
+}
+
+@mixin border_mixin {
+}
+
+@mixin border_button_mixin {
+    border-radius: 10px;
+    padding: 2px 0.7em;
+}
+
+@mixin border_button_selected_mixin {
+}
+
+@mixin border_button_unselected_mixin {
+}
+
+@mixin border_button_hovered_mixin {
+}
+
+@mixin splitter_mixin {
+}
+
+@mixin splitter_hover_mixin {
+}
+
+@mixin splitter_drag_mixin {
+}
+
+@mixin splitter_border_mixin {
+}
+
+@mixin tabset_tab_divider_mixin {
+}
+
+@mixin border_tab_divider_mixin {
+}
+
+@import "_base";
+
+.flexlayout__tabset_content {
+    padding: 1px 5px 5px 5px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.flexlayout__tab_border {
+    border-radius: 10px;
+    padding:3px;
+}
+
+.flexlayout__tabset_tabbar_outer_top {
+    border-bottom:unset;
+}
+
+.flexlayout__border_tab_contents {
+    background-color: white;
+}
+
+.flexlayout__border_tab_contents {
+    border-radius: 10px;
+}

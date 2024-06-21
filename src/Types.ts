@@ -2,6 +2,7 @@ export enum CLASSES {
     FLEXLAYOUT__BORDER = "flexlayout__border",
     FLEXLAYOUT__BORDER_ = "flexlayout__border_",
 
+    FLEXLAYOUT__BORDER_TAB_CONTENTS = "flexlayout__border_tab_contents",
     FLEXLAYOUT__BORDER_BUTTON = "flexlayout__border_button",
     FLEXLAYOUT__BORDER_BUTTON_ = "flexlayout__border_button_",
     FLEXLAYOUT__BORDER_BUTTON_CONTENT = "flexlayout__border_button_content",
@@ -40,6 +41,12 @@ export enum CLASSES {
     FLEXLAYOUT__FLOATING_WINDOW_TAB = "flexlayout__floating_window_tab",
 
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
+    FLEXLAYOUT__LAYOUT_MOVEABLES = "flexlayout__layout_moveables",
+    FLEXLAYOUT__LAYOUT_OVERLAY = "flexlayout__layout_overlay",
+    FLEXLAYOUT__LAYOUT_TAB_STAMPS = "flexlayout__layout_tab_stamps",
+    FLEXLAYOUT__LAYOUT_MAIN = "flexlayout__layout_main",
+    FLEXLAYOUT__LAYOUT_BORDER_CONTAINER = "flexlayout__layout_border_container",
+    FLEXLAYOUT__LAYOUT_BORDER_CONTAINER_INNER = "flexlayout__layout_border_container_inner",
 
     FLEXLAYOUT__OUTLINE_RECT = "flexlayout__outline_rect",
     FLEXLAYOUT__OUTLINE_RECT_EDGE = "flexlayout__outline_rect_edge",
@@ -49,10 +56,18 @@ export enum CLASSES {
     FLEXLAYOUT__SPLITTER_ = "flexlayout__splitter_",
     FLEXLAYOUT__SPLITTER_BORDER = "flexlayout__splitter_border",
     FLEXLAYOUT__SPLITTER_DRAG = "flexlayout__splitter_drag",
+    FLEXLAYOUT__SPLITTER_HANDLE = "flexlayout__splitter_handle",
+    FLEXLAYOUT__SPLITTER_HANDLE_HORZ = "flexlayout__splitter_handle_horz",
+    FLEXLAYOUT__SPLITTER_HANDLE_VERT = "flexlayout__splitter_handle_vert",
 
+    FLEXLAYOUT__ROW = "flexlayout__row",
     FLEXLAYOUT__TAB = "flexlayout__tab",
+    FLEXLAYOUT__TAB_POSITION = "flexlayout__tab_position",
+    FLEXLAYOUT__TAB_MOVEABLE = "flexlayout__tab_moveable",
+    FLEXLAYOUT__TAB_OVERLAY = "flexlayout__tab_overlay",
 
     FLEXLAYOUT__TABSET = "flexlayout__tabset",
+    FLEXLAYOUT__TABSET_CONTAINER = "flexlayout__tabset_container",
     FLEXLAYOUT__TABSET_HEADER = "flexlayout__tabset_header",
     FLEXLAYOUT__TABSET_HEADER_SIZER = "flexlayout__tabset_header_sizer",
     FLEXLAYOUT__TABSET_HEADER_CONTENT = "flexlayout__tabset_header_content",
@@ -87,6 +102,7 @@ export enum CLASSES {
 
     FLEXLAYOUT__TAB_TOOLBAR = "flexlayout__tab_toolbar",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON = "flexlayout__tab_toolbar_button",
+    FLEXLAYOUT__TAB_TOOLBAR_ICON = "flexlayout__tab_toolbar_icon",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ = "flexlayout__tab_toolbar_button-",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT = "flexlayout__tab_toolbar_button-float",
     FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER = "flexlayout__tab_toolbar_sticky_buttons_container",

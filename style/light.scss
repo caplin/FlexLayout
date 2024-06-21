@@ -45,9 +45,11 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-tabset-header-background: var(--color-background);
         --color-tabset-header: var(--color-text);
 
+        --color-border-tab-content: var(--color-background);
         --color-border-background: var(--color-background);
         --color-border-divider-line: var(--color-4);
 
+        --color-tab-content: var(--color-background);
         --color-tab-selected: var(--color-text);
         --color-tab-selected-background: var(--color-4);
         --color-tab-unselected: gray;
@@ -64,8 +66,8 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-splitter-hover: var(--color-4);
         --color-splitter-drag: var(--color-4);
 
-        --color-drag-rect-border: var(--color-6);
-        --color-drag-rect-background: var(--color-4);
+        --color-drag-rect-border: #ccc;
+        --color-drag-rect-background: var(--color-5);
         --color-drag-rect: var(--color-text);
 
         --color-popup-border: var(--color-6);

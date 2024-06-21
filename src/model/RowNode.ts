@@ -4,287 +4,236 @@ import { AttributeDefinitions } from "../AttributeDefinitions";
 import { DockLocation } from "../DockLocation";
 import { DropInfo } from "../DropInfo";
 import { Orientation } from "../Orientation";
-import { Rect } from "../Rect";
 import { CLASSES } from "../Types";
 import { BorderNode } from "./BorderNode";
 import { IDraggable } from "./IDraggable";
 import { IDropTarget } from "./IDropTarget";
 import { IJsonRowNode } from "./IJsonModel";
-import { Model, ILayoutMetrics } from "./Model";
+import { DefaultMax, DefaultMin, Model } from "./Model";
 import { Node } from "./Node";
-import { SplitterNode } from "./SplitterNode";
 import { TabSetNode } from "./TabSetNode";
+import { canDockToWindow } from "../view/Utils";
+import { LayoutWindow } from "./LayoutWindow";
 
 export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
 
     /** @internal */
-    static _fromJson(json: any, model: Model) {
-        const newLayoutNode = new RowNode(model, json);
+    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow) {
+        const newLayoutNode = new RowNode(model, layoutWindow.windowId, json);
 
         if (json.children != null) {
             for (const jsonChild of json.children) {
                 if (jsonChild.type === TabSetNode.TYPE) {
-                    const child = TabSetNode._fromJson(jsonChild, model);
-                    newLayoutNode._addChild(child);
+                    const child = TabSetNode.fromJson(jsonChild, model, layoutWindow);
+                    newLayoutNode.addChild(child);
                 } else {
-                    const child = RowNode._fromJson(jsonChild, model);
-                    newLayoutNode._addChild(child);
+                    const child = RowNode.fromJson(jsonChild, model, layoutWindow);
+                    newLayoutNode.addChild(child);
                 }
             }
         }
 
         return newLayoutNode;
     }
-    /** @internal */
-    private static _attributeDefinitions: AttributeDefinitions = RowNode._createAttributeDefinitions();
 
     /** @internal */
-    private static _createAttributeDefinitions(): AttributeDefinitions {
-        const attributeDefinitions = new AttributeDefinitions();
-        attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
-        attributeDefinitions.add("id", undefined).setType(Attribute.STRING);
-
-        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER);
-        attributeDefinitions.add("width", undefined).setType(Attribute.NUMBER);
-        attributeDefinitions.add("height", undefined).setType(Attribute.NUMBER);
-
-        return attributeDefinitions;
-    }
-    /** @internal */
-    private _drawChildren: (TabSetNode | RowNode | SplitterNode)[];
-    /** @internal */
-    private _minHeight: number;
-    /** @internal */
-    private _minWidth: number;
+    private static attributeDefinitions: AttributeDefinitions = RowNode.createAttributeDefinitions();
 
     /** @internal */
-    constructor(model: Model, json: any) {
+    private windowId: string;
+    /** @internal */
+    private minHeight: number;
+    /** @internal */
+    private minWidth: number;
+    /** @internal */
+    private maxHeight: number;
+    /** @internal */
+    private maxWidth: number;
+
+    /** @internal */
+    constructor(model: Model, windowId: string, json: any) {
         super(model);
 
-        this._dirty = true;
-        this._drawChildren = [];
-        this._minHeight = 0;
-        this._minWidth = 0;
-        RowNode._attributeDefinitions.fromJson(json, this._attributes);
-        model._addNode(this);
+        this.windowId = windowId;
+        this.minHeight = DefaultMin;
+        this.minWidth = DefaultMin;
+        this.maxHeight = DefaultMax;
+        this.maxWidth = DefaultMax;
+        RowNode.attributeDefinitions.fromJson(json, this.attributes);
+        this.normalizeWeights();
+        model.addNode(this);
     }
 
     getWeight() {
-        return this._attributes.weight as number;
+        return this.attributes.weight as number;
     }
 
-    getWidth() {
-        return this._getAttr("width") as number | undefined;
-    }
+    toJson(): IJsonRowNode {
+        const json: any = {};
+        RowNode.attributeDefinitions.toJson(json, this.attributes);
 
-    getHeight() {
-        return this._getAttr("height") as number | undefined;
+        json.children = [];
+        for (const child of this.children) {
+            json.children.push(child.toJson());
+        }
+
+        return json;
     }
 
     /** @internal */
-    _setWeight(weight: number) {
-        this._attributes.weight = weight;
+    getWindowId() {
+        return this.windowId;
+    }
+
+    setWindowId(windowId: string) {
+        this.windowId = windowId;
     }
 
     /** @internal */
-    _layout(rect: Rect, metrics: ILayoutMetrics) {
-        super._layout(rect, metrics);
+    setWeight(weight: number) {
+        this.attributes.weight = weight;
+    }
 
-        const pixelSize = this._rect._getSize(this.getOrientation());
+    /** @internal */
+    getSplitterBounds(index: number) {
+        const h = this.getOrientation() === Orientation.HORZ;
+        const c = this.getChildren();
+        const ss = this.model.getSplitterSize();
+        const fr = c[0].getRect();
+        const lr = c[c.length - 1].getRect();
+        let p = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
+        const q = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
 
-        let totalWeight = 0;
-        let fixedPixels = 0;
-        let prefPixels = 0;
-        let totalPrefWeight = 0;
-        const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
+        for (let i = 0; i < index; i++) {
+            const n = c[i] as TabSetNode | RowNode;
+            p[0] += h ? n.getMinWidth() : n.getMinHeight();
+            q[0] += h ? n.getMaxWidth() : n.getMaxHeight();
+            if (i > 0) {
+                p[0] += ss;
+                q[0] += ss;
+            }
+        }
 
-        for (const child of drawChildren) {
-            const prefSize = child._getPrefSize(this.getOrientation());
-            if (child._isFixed()) {
-                if (prefSize !== undefined) {
-                    fixedPixels += prefSize;
-                }
+        for (let i = c.length - 1; i >= index; i--) {
+            const n = c[i] as TabSetNode | RowNode;
+            p[1] -= (h ? n.getMinWidth() : n.getMinHeight()) + ss;
+            q[1] -= (h ? n.getMaxWidth() : n.getMaxHeight()) + ss;
+        }
+
+        p = [Math.max(q[1], p[0]), Math.min(q[0], p[1])];
+
+        return p;
+    }
+
+    /** @internal */
+    getSplitterInitials(index: number) {
+        const h = this.getOrientation() === Orientation.HORZ;
+        const c = this.getChildren();
+        const ss = this.model.getSplitterSize();
+        const initialSizes = [];
+
+        let sum = 0;
+
+        for (let i = 0; i < c.length; i++) {
+            const n = c[i] as TabSetNode | RowNode;
+            const r = n.getRect();
+            const s = h ? r.width : r.height;
+            initialSizes.push(s);
+            sum += s;
+        }
+
+        const startRect = c[index].getRect()
+        const startPosition = (h ? startRect.x : startRect.y) - ss;
+
+        return { initialSizes, sum, startPosition };
+    }
+
+    /** @internal */
+    calculateSplit(index: number, splitterPos: number, initialSizes: number[], sum: number, startPosition: number) {
+        const h = this.getOrientation() === Orientation.HORZ;
+        const c = this.getChildren();
+        const sn = c[index] as TabSetNode | RowNode;
+        const smax = h ? sn.getMaxWidth() : sn.getMaxHeight();
+
+        const sizes = [...initialSizes];
+
+        if (splitterPos < startPosition) { // moved left
+            let shift = startPosition - splitterPos;
+            let altShift = 0;
+            if (sizes[index] + shift > smax) {
+                altShift = sizes[index] + shift - smax;
+                sizes[index] = smax;
             } else {
-                if (prefSize === undefined) {
-                    totalWeight += child.getWeight();
-                } else {
-                    prefPixels += prefSize;
-                    totalPrefWeight += child.getWeight();
-                }
-            }
-        }
-
-        let resizePreferred = false;
-        let availablePixels = pixelSize - fixedPixels - prefPixels;
-        if (availablePixels < 0) {
-            availablePixels = pixelSize - fixedPixels;
-            resizePreferred = true;
-            totalWeight += totalPrefWeight;
-        }
-        // assign actual pixel sizes
-        let totalSizeGiven = 0;
-        let variableSize = 0;
-        for (const child of drawChildren) {
-            const prefSize = child._getPrefSize(this.getOrientation());
-            if (child._isFixed()) {
-                if (prefSize !== undefined) {
-                    child._setTempSize(prefSize);
-                }
-            } else {
-                if (prefSize == null || resizePreferred) {
-                    if (totalWeight === 0) {
-                        child._setTempSize(0);
-                    } else {
-                        const minSize = child.getMinSize(this.getOrientation());
-                        const size = Math.floor(availablePixels * (child.getWeight() / totalWeight));
-                        child._setTempSize(Math.max(minSize, size));
-                    }
-                    variableSize += child._getTempSize();
-                } else {
-                    child._setTempSize(prefSize);
-                }
+                sizes[index] += shift;
             }
 
-            totalSizeGiven += child._getTempSize();
-        }
-
-        // adjust sizes to exactly fit
-        if (variableSize > 0) {
-            while (totalSizeGiven < pixelSize) {
-                for (const child of drawChildren) {
-                    if (!(child instanceof SplitterNode)) {
-                        const prefSize = child._getPrefSize(this.getOrientation());
-                        if (!child._isFixed() && (prefSize === undefined || resizePreferred) && totalSizeGiven < pixelSize) {
-                            child._setTempSize(child._getTempSize() + 1);
-                            totalSizeGiven++;
-                        }
-                    }
-                }
-            }
-
-            // decrease size using nodes not at there minimum
-            while (totalSizeGiven > pixelSize) {
-                let changed = false;
-                for (const child of drawChildren) {
-                    if (!(child instanceof SplitterNode)) {
-                        const minSize = child.getMinSize(this.getOrientation());
-                        const size = child._getTempSize();
-                        if (size > minSize && totalSizeGiven > pixelSize) {
-                            child._setTempSize(child._getTempSize() - 1);
-                            totalSizeGiven--;
-                            changed = true;
-                        }
-                    }
-                }
-                if (!changed) {
-                    // all children are at min values
+            for (let i = index - 1; i >= 0; i--) {
+                const n = c[i] as TabSetNode | RowNode;
+                const m = h ? n.getMinWidth() : n.getMinHeight();
+                if (sizes[i] - shift > m) {
+                    sizes[i] -= shift;
                     break;
+                } else {
+                    shift -= sizes[i] - m;
+                    sizes[i] = m;
                 }
             }
 
-            // if still too big then simply reduce all nodes until fits
-            while (totalSizeGiven > pixelSize) {
-                let changed = false;
-                for (const child of drawChildren) {
-                    if (!(child instanceof SplitterNode)) {
-                        const size = child._getTempSize();
-                        if (size > 0 && totalSizeGiven > pixelSize) {
-                            child._setTempSize(child._getTempSize() - 1);
-                            totalSizeGiven--;
-                            changed = true;
-                        }
-                    }
-                }
-                if (!changed) {
-                    // all children are at 0 values
+            for (let i = index+1; i < c.length; i++) {
+                const n = c[i] as TabSetNode | RowNode;
+                const m = h ? n.getMaxWidth() : n.getMaxHeight();
+                if (sizes[i] + altShift < m) {
+                    sizes[i] += altShift;
                     break;
+                } else {
+                    altShift -= m - sizes[i];
+                    sizes[i] = m;
                 }
             }
-        }
 
-        // layout children
-        let p = 0;
-        for (const child of drawChildren) {
-            if (this.getOrientation() === Orientation.HORZ) {
-                child._layout(new Rect(this._rect.x + p, this._rect.y, child._getTempSize(), this._rect.height), metrics);
-            } else {
-                child._layout(new Rect(this._rect.x, this._rect.y + p, this._rect.width, child._getTempSize()), metrics);
-            }
-            p += child._getTempSize();
-        }
 
-        return true;
-    }
-
-    /** @internal */
-    _getSplitterBounds(splitterNode: SplitterNode, useMinSize: boolean = false) {
-        const pBounds = [0, 0];
-        const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
-        const p = drawChildren.indexOf(splitterNode);
-        const node1 = drawChildren[p - 1];
-        const node2 = drawChildren[p + 1];
-        if (this.getOrientation() === Orientation.HORZ) {
-            const minSize1 = useMinSize ? node1.getMinWidth() : 0;
-            const minSize2 = useMinSize ? node2.getMinWidth() : 0;
-            pBounds[0] = node1.getRect().x + minSize1;
-            pBounds[1] = node2.getRect().getRight() - splitterNode.getWidth() - minSize2;
         } else {
-            const minSize1 = useMinSize ? node1.getMinHeight() : 0;
-            const minSize2 = useMinSize ? node2.getMinHeight() : 0;
-            pBounds[0] = node1.getRect().y + minSize1;
-            pBounds[1] = node2.getRect().getBottom() - splitterNode.getHeight() - minSize2;
-        }
-        return pBounds;
-    }
-
-    /** @internal */
-    _calculateSplit(splitter: SplitterNode, splitterPos: number) {
-        let rtn;
-        const drawChildren = this._getDrawChildren() as (RowNode | TabSetNode | SplitterNode)[];
-        const p = drawChildren.indexOf(splitter);
-        const pBounds = this._getSplitterBounds(splitter);
-
-        const weightedLength = drawChildren[p - 1].getWeight() + drawChildren[p + 1].getWeight();
-
-        const pixelWidth1 = Math.max(0, splitterPos - pBounds[0]);
-        const pixelWidth2 = Math.max(0, pBounds[1] - splitterPos);
-
-        if (pixelWidth1 + pixelWidth2 > 0) {
-            const weight1 = (pixelWidth1 * weightedLength) / (pixelWidth1 + pixelWidth2);
-            const weight2 = (pixelWidth2 * weightedLength) / (pixelWidth1 + pixelWidth2);
-
-            rtn = {
-                node1Id: drawChildren[p - 1].getId(),
-                weight1,
-                pixelWidth1,
-                node2Id: drawChildren[p + 1].getId(),
-                weight2,
-                pixelWidth2,
-            };
-        }
-
-        return rtn;
-    }
-
-    /** @internal */
-    _getDrawChildren(): Node[] | undefined {
-        if (this._dirty) {
-            this._drawChildren = [];
-
-            for (let i = 0; i < this._children.length; i++) {
-                const child = this._children[i] as RowNode | TabSetNode;
-                if (i !== 0) {
-                    const newSplitter = new SplitterNode(this._model);
-                    newSplitter._setParent(this);
-                    this._drawChildren.push(newSplitter);
-                }
-                this._drawChildren.push(child);
+            let shift = splitterPos - startPosition;
+            let altShift = 0;
+            if (sizes[index-1] + shift > smax) {
+                altShift = sizes[index-1] + shift - smax;
+                sizes[index-1] = smax;
+            } else {
+                sizes[index-1] += shift;
             }
-            this._dirty = false;
+
+            for (let i = index; i < c.length; i++) {
+                const n = c[i] as TabSetNode | RowNode;
+                const m = h ? n.getMinWidth() : n.getMinHeight();
+                if (sizes[i] - shift > m) {
+                    sizes[i] -= shift;
+                    break;
+                } else {
+                    shift -= sizes[i] - m;
+                    sizes[i] = m;
+                }
+            }
+
+            for (let i = index - 1; i >= 0; i--) {
+                const n = c[i] as TabSetNode | RowNode;
+                const m = h ? n.getMaxWidth() : n.getMaxHeight();
+                if (sizes[i] + altShift < m) {
+                    sizes[i] += altShift;
+                    break;
+                } else {
+                    altShift -= m - sizes[i];
+                    sizes[i] = m;
+                }
+            }
         }
 
-        return this._drawChildren;
+        // 0.1 is to prevent weight ever going to zero
+        const weights = sizes.map(s => Math.max(0.1, s) * 100 / sum);
+
+        // console.log(splitterPos, startPosition, "sizes", sizes);
+        // console.log("weights",weights);
+        return weights;
     }
 
     /** @internal */
@@ -298,56 +247,81 @@ export class RowNode extends Node implements IDropTarget {
 
     /** @internal */
     getMinWidth() {
-        return this._minWidth;
+        return this.minWidth;
     }
 
     /** @internal */
     getMinHeight() {
-        return this._minHeight;
+        return this.minHeight;
     }
 
     /** @internal */
-    calcMinSize() {
-        this._minHeight = 0;
-        this._minWidth = 0;
+    getMaxSize(orientation: Orientation) {
+        if (orientation === Orientation.HORZ) {
+            return this.getMaxWidth();
+        } else {
+            return this.getMaxHeight();
+        }
+    }
+
+    /** @internal */
+    getMaxWidth() {
+        return this.maxWidth;
+    }
+
+    /** @internal */
+    getMaxHeight() {
+        return this.maxHeight;
+    }
+
+    /** @internal */
+    calcMinMaxSize() {
+        this.minHeight = DefaultMin;
+        this.minWidth = DefaultMin;
+        this.maxHeight = DefaultMax;
+        this.maxWidth = DefaultMax;
         let first = true;
-        for (const child of this._children) {
+        for (const child of this.children) {
             const c = child as RowNode | TabSetNode;
-            if (c instanceof RowNode) {
-                c.calcMinSize();
-            }
+            c.calcMinMaxSize();
             if (this.getOrientation() === Orientation.VERT) {
-                this._minHeight += c.getMinHeight();
+                this.minHeight += c.getMinHeight();
+                this.maxHeight += c.getMaxHeight();
                 if (!first) {
-                    this._minHeight += this._model.getSplitterSize();
+                    this.minHeight += this.model.getSplitterSize();
+                    this.maxHeight += this.model.getSplitterSize();
                 }
-                this._minWidth = Math.max(this._minWidth, c.getMinWidth());
+                this.minWidth = Math.max(this.minWidth, c.getMinWidth());
+                this.maxWidth = Math.min(this.maxWidth, c.getMaxWidth());
             } else {
-                this._minWidth += c.getMinWidth();
+                this.minWidth += c.getMinWidth();
+                this.maxWidth += c.getMaxWidth();
                 if (!first) {
-                    this._minWidth += this._model.getSplitterSize();
+                    this.minWidth += this.model.getSplitterSize();
+                    this.maxWidth += this.model.getSplitterSize();
                 }
-                this._minHeight = Math.max(this._minHeight, c.getMinHeight());
+                this.minHeight = Math.max(this.minHeight, c.getMinHeight());
+                this.maxHeight = Math.min(this.maxHeight, c.getMaxHeight());
             }
             first = false;
         }
     }
 
     /** @internal */
-    _tidy() {
+    tidy() {
         let i = 0;
-        while (i < this._children.length) {
-            const child = this._children[i];
+        while (i < this.children.length) {
+            const child = this.children[i];
             if (child instanceof RowNode) {
-                child._tidy();
+                child.tidy();
 
                 const childChildren = child.getChildren();
                 if (childChildren.length === 0) {
-                    this._removeChild(child);
+                    this.removeChild(child);
                 } else if (childChildren.length === 1) {
                     // hoist child/children up to this level
                     const subchild = childChildren[0];
-                    this._removeChild(child);
+                    this.removeChild(child);
                     if (subchild instanceof RowNode) {
                         let subChildrenTotal = 0;
                         const subChildChildren = subchild.getChildren();
@@ -357,21 +331,21 @@ export class RowNode extends Node implements IDropTarget {
                         }
                         for (let j = 0; j < subChildChildren.length; j++) {
                             const subsubChild = subChildChildren[j] as RowNode | TabSetNode;
-                            subsubChild._setWeight((child.getWeight() * subsubChild.getWeight()) / subChildrenTotal);
-                            this._addChild(subsubChild, i + j);
+                            subsubChild.setWeight((child.getWeight() * subsubChild.getWeight()) / subChildrenTotal);
+                            this.addChild(subsubChild, i + j);
                         }
                     } else {
-                        subchild._setWeight(child.getWeight());
-                        this._addChild(subchild, i);
+                        subchild.setWeight(child.getWeight());
+                        this.addChild(subchild, i);
                     }
                 } else {
                     i++;
                 }
             } else if (child instanceof TabSetNode && child.getChildren().length === 0) {
                 if (child.isEnableDeleteWhenEmpty()) {
-                    this._removeChild(child);
-                    if (child === this._model.getMaximizedTabset()) {
-                        this._model._setMaximizedTabset(undefined);
+                    this.removeChild(child);
+                    if (child === this.model.getMaximizedTabset(this.windowId)) {
+                        this.model.setMaximizedTabset(undefined, this.windowId);
                     }
                 } else {
                     i++;
@@ -382,55 +356,58 @@ export class RowNode extends Node implements IDropTarget {
         }
 
         // add tabset into empty root
-        if (this === this._model.getRoot() && this._children.length === 0) {
-            const callback = this._model._getOnCreateTabSet();
+        if (this === this.model.getRoot(this.windowId) && this.children.length === 0) {
+            const callback = this.model.getOnCreateTabSet();
             let attrs = callback ? callback() : {};
             attrs = { ...attrs, selected: -1 };
-            const child = new TabSetNode(this._model, attrs);
-            this._model._setActiveTabset(child);
-            this._addChild(child);
+            const child = new TabSetNode(this.model, attrs);
+            this.model.setActiveTabset(child, this.windowId);
+            this.addChild(child);
         }
 
     }
 
     /** @internal */
     canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
-        const yy = y - this._rect.y;
-        const xx = x - this._rect.x;
-        const w = this._rect.width;
-        const h = this._rect.height;
+        const yy = y - this.rect.y;
+        const xx = x - this.rect.x;
+        const w = this.rect.width;
+        const h = this.rect.height;
         const margin = 10; // height of edge rect
         const half = 50; // half width of edge rect
         let dropInfo;
 
-        if (this._model.isEnableEdgeDock() && this._parent === undefined) {
-            // _root row
-            if (x < this._rect.x + margin && yy > h / 2 - half && yy < h / 2 + half) {
+        if (this.getWindowId() !== Model.MAIN_WINDOW_ID && !canDockToWindow(dragNode)) {
+            return undefined;
+        }
+
+        if (this.model.isEnableEdgeDock() && this.parent === undefined) {
+            if (x < this.rect.x + margin && yy > h / 2 - half && yy < h / 2 + half) {
                 const dockLocation = DockLocation.LEFT;
-                const outlineRect = dockLocation.getDockRect(this._rect);
+                const outlineRect = dockLocation.getDockRect(this.rect);
                 outlineRect.width = outlineRect.width / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
-            } else if (x > this._rect.getRight() - margin && yy > h / 2 - half && yy < h / 2 + half) {
+            } else if (x > this.rect.getRight() - margin && yy > h / 2 - half && yy < h / 2 + half) {
                 const dockLocation = DockLocation.RIGHT;
-                const outlineRect = dockLocation.getDockRect(this._rect);
+                const outlineRect = dockLocation.getDockRect(this.rect);
                 outlineRect.width = outlineRect.width / 2;
                 outlineRect.x += outlineRect.width;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
-            } else if (y < this._rect.y + margin && xx > w / 2 - half && xx < w / 2 + half) {
+            } else if (y < this.rect.y + margin && xx > w / 2 - half && xx < w / 2 + half) {
                 const dockLocation = DockLocation.TOP;
-                const outlineRect = dockLocation.getDockRect(this._rect);
+                const outlineRect = dockLocation.getDockRect(this.rect);
                 outlineRect.height = outlineRect.height / 2;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
-            } else if (y > this._rect.getBottom() - margin && xx > w / 2 - half && xx < w / 2 + half) {
+            } else if (y > this.rect.getBottom() - margin && xx > w / 2 - half && xx < w / 2 + half) {
                 const dockLocation = DockLocation.BOTTOM;
-                const outlineRect = dockLocation.getDockRect(this._rect);
+                const outlineRect = dockLocation.getDockRect(this.rect);
                 outlineRect.height = outlineRect.height / 2;
                 outlineRect.y += outlineRect.height;
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT_EDGE);
             }
 
             if (dropInfo !== undefined) {
-                if (!dragNode._canDockInto(dragNode, dropInfo)) {
+                if (!dragNode.canDockInto(dragNode, dropInfo)) {
                     return undefined;
                 }
             }
@@ -440,32 +417,38 @@ export class RowNode extends Node implements IDropTarget {
     }
 
     /** @internal */
-    drop(dragNode: Node & IDraggable, location: DockLocation, index: number): void {
+    drop(dragNode: Node, location: DockLocation, index: number): void {
         const dockLocation = location;
 
         const parent = dragNode.getParent();
 
         if (parent) {
-            parent._removeChild(dragNode);
+            parent.removeChild(dragNode);
         }
 
-        if (parent !== undefined && parent!.getType() === TabSetNode.TYPE) {
-            parent._setSelected(0);
+        if (parent !== undefined && parent! instanceof TabSetNode) {
+            parent.setSelected(0);
         }
 
-        if (parent !== undefined && parent!.getType() === BorderNode.TYPE) {
-            parent._setSelected(-1);
+        if (parent !== undefined && parent! instanceof BorderNode) {
+            parent.setSelected(-1);
         }
 
-        let tabSet: TabSetNode | undefined;
-        if (dragNode instanceof TabSetNode) {
-            tabSet = dragNode;
+        let node: TabSetNode | RowNode | undefined;
+        if (dragNode instanceof TabSetNode || dragNode instanceof RowNode) {
+            node = dragNode;
+            // need to turn round if same orientation unless docking oposite direction
+            if (node instanceof RowNode && node.getOrientation() === this.getOrientation() &&
+                (location.getOrientation() === this.getOrientation() || location === DockLocation.CENTER)) {
+                node = new RowNode(this.model, this.windowId, {});
+                node.addChild(dragNode);
+            }
         } else {
-            const callback = this._model._getOnCreateTabSet();
-            tabSet = new TabSetNode(this._model, callback ? callback(dragNode as TabNode) : {});
-            tabSet._addChild(dragNode);
+            const callback = this.model.getOnCreateTabSet();
+            node = new TabSetNode(this.model, callback ? callback(dragNode as TabNode) : {});
+            node.addChild(dragNode);
         }
-        let size = this._children.reduce((sum, child) => {
+        let size = this.children.reduce((sum, child) => {
             return sum + (child as RowNode | TabSetNode).getWeight();
         }, 0);
 
@@ -473,83 +456,104 @@ export class RowNode extends Node implements IDropTarget {
             size = 100;
         }
 
-        tabSet._setWeight(size / 3);
+        node.setWeight(size / 3);
 
-        const horz = !this._model.isRootOrientationVertical();
-
-        if (horz && dockLocation === DockLocation.LEFT || !horz && dockLocation === DockLocation.TOP) {
-            this._addChild(tabSet, 0);
+        const horz = !this.model.isRootOrientationVertical();
+        if (dockLocation === DockLocation.CENTER) {
+            if (index === -1) {
+                this.addChild(node, this.children.length);
+            } else {
+                this.addChild(node, index);
+            }
+        } else if (horz && dockLocation === DockLocation.LEFT || !horz && dockLocation === DockLocation.TOP) {
+            this.addChild(node, 0);
         } else if (horz && dockLocation === DockLocation.RIGHT || !horz && dockLocation === DockLocation.BOTTOM) {
-            this._addChild(tabSet);
+            this.addChild(node);
         } else if (horz && dockLocation === DockLocation.TOP || !horz && dockLocation === DockLocation.LEFT) {
-            const vrow = new RowNode(this._model, {});
-            const hrow = new RowNode(this._model, {});
-            hrow._setWeight(75);
-            tabSet._setWeight(25);
-            for (const child of this._children) {
-                hrow._addChild(child);
+            const vrow = new RowNode(this.model, this.windowId, {});
+            const hrow = new RowNode(this.model, this.windowId, {});
+            hrow.setWeight(75);
+            node.setWeight(25);
+            for (const child of this.children) {
+                hrow.addChild(child);
             }
-            this._removeAll();
-            vrow._addChild(tabSet);
-            vrow._addChild(hrow);
-            this._addChild(vrow);
+            this.removeAll();
+            vrow.addChild(node);
+            vrow.addChild(hrow);
+            this.addChild(vrow);
         } else if (horz && dockLocation === DockLocation.BOTTOM || !horz && dockLocation === DockLocation.RIGHT) {
-            const vrow = new RowNode(this._model, {});
-            const hrow = new RowNode(this._model, {});
-            hrow._setWeight(75);
-            tabSet._setWeight(25);
-            for (const child of this._children) {
-                hrow._addChild(child);
+            const vrow = new RowNode(this.model, this.windowId, {});
+            const hrow = new RowNode(this.model, this.windowId, {});
+            hrow.setWeight(75);
+            node.setWeight(25);
+            for (const child of this.children) {
+                hrow.addChild(child);
             }
-            this._removeAll();
-            vrow._addChild(hrow);
-            vrow._addChild(tabSet);
-            this._addChild(vrow);
+            this.removeAll();
+            vrow.addChild(hrow);
+            vrow.addChild(node);
+            this.addChild(vrow);
         }
 
-        this._model._setActiveTabset(tabSet);
-
-        this._model._tidy();
-    }
-
-    toJson(): IJsonRowNode {
-        const json: any = {};
-        RowNode._attributeDefinitions.toJson(json, this._attributes);
-
-        json.children = [];
-        for (const child of this._children) {
-            json.children.push(child.toJson());
+        if (node instanceof TabSetNode) {
+            this.model.setActiveTabset(node, this.windowId);
         }
 
-        return json;
+        this.model.tidy();
     }
 
+
+
+    /** @internal */
     isEnableDrop() {
         return true;
     }
 
     /** @internal */
-    _getPrefSize(orientation: Orientation) {
-        let prefSize = this.getWidth();
-        if (orientation === Orientation.VERT) {
-            prefSize = this.getHeight();
-        }
-        return prefSize;
+    getAttributeDefinitions() {
+        return RowNode.attributeDefinitions;
     }
 
     /** @internal */
-    _getAttributeDefinitions() {
-        return RowNode._attributeDefinitions;
-    }
-
-    /** @internal */
-    _updateAttrs(json: any) {
-        RowNode._attributeDefinitions.update(json, this._attributes);
+    updateAttrs(json: any) {
+        RowNode.attributeDefinitions.update(json, this.attributes);
     }
 
     /** @internal */
     static getAttributeDefinitions() {
-        return RowNode._attributeDefinitions;
+        return RowNode.attributeDefinitions;
     }
 
+
+    // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
+    normalizeWeights() {
+        let sum = 0;
+        for (const n of this.children) {
+            const node = (n as TabSetNode | RowNode);
+            sum += node.getWeight();
+        }
+
+        if (sum === 0) {
+            sum = 1;
+        }
+
+        for (const n of this.children) {
+            const node = (n as TabSetNode | RowNode);
+            node.setWeight(Math.max(0.001, 100 * node.getWeight() / sum));
+        }
+    }
+
+    /** @internal */
+    private static createAttributeDefinitions(): AttributeDefinitions {
+        const attributeDefinitions = new AttributeDefinitions();
+        attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(
+            `the unique id of the row, if left undefined a uuid will be assigned`
+        );
+        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(
+            `relative weight for sizing of this row in parent row`
+        );
+
+        return attributeDefinitions;
+    }
 }

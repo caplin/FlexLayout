@@ -45,9 +45,11 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-tabset-header-background: var(--color-1);
         --color-tabset-header: var(--color-text);
 
+        --color-border-tab-content: var(--color-background);
         --color-border-background: var(--color-1);
         --color-border-divider-line: var(--color-4);
 
+        --color-tab-content: var(--color-background);
         --color-tab-selected: var(--color-text);
         --color-tab-selected-background: var(--color-4);
         --color-tab-unselected: gray;
@@ -70,7 +72,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-popup-border: var(--color-6);
         --color-popup-unselected: var(--color-text);
-        --color-popup-unselected-background: #{$color_background};
+        --color-popup-unselected-background: var(--color-background);
         --color-popup-selected: var(--color-text);
         --color-popup-selected-background: var(--color-4);
 

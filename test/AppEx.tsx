@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BorderNode, IJsonModel, ITabRenderValues, ITabSetRenderValues, Layout, Model, TabNode, TabSetNode } from '../src';
+import { BorderNode, IJsonModel, ITabRenderValues, ITabSetRenderValues, Layout, Model, TabNode, TabSetNode } from "../src";
 import './style/app.css';
 import './style/light.css';
 
@@ -9,7 +9,7 @@ export function AppEx(props) {
     const selfRef = React.useRef<Layout | null>(null);
     const nextGridIndex = React.useRef<number>(0);
 
-    const onAddDragMouseDown = (event: React.MouseEvent | React.TouchEvent<HTMLButtonElement>) => {
+    const onAddDragPointerDown = (event: React.PointerEvent) => {
         event.stopPropagation();
         event.preventDefault();
         (selfRef.current as Layout).addTabWithDragAndDrop("Add text\n(Drag to location)", {
@@ -78,23 +78,6 @@ export function AppEx(props) {
         }
     }
 
-    const titleFactory = (node: TabNode) => {
-        if (node.getId() === "titleFactory") {
-            return {
-                titleContent: <>[titleFactory]</>,
-                name: "the name for custom tab"
-            };
-        }
-        return;
-    }
-
-    const iconFactory = (node: TabNode) => {
-        if (node.getId() === "iconFactory") {
-            return <>[iconFactory]</>
-        }
-        return;
-    }
-
     const factory = (node: TabNode) => {
         var component = node.getComponent();
         if (component === "text") {
@@ -108,8 +91,8 @@ export function AppEx(props) {
                 <button
                     style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                     data-id="add-drag"
-                    onMouseDown={onAddDragMouseDown}
-                    onTouchStart={onAddDragMouseDown}>Add Drag</button>
+                    onPointerDown={onAddDragPointerDown}
+                    >Add Drag</button>
                 <button data-id="add-active" onClick={onAddActiveClick}>Add Active</button>
                 <button data-id="add-indirect" onClick={onAddIndirectClick}>Add Indirect</button>
                 <button data-id="add-byId" onClick={onAddbyIdClick}>Add by Id #1</button>
@@ -122,8 +105,6 @@ export function AppEx(props) {
 
                     onRenderTab={onRenderTab}
                     onRenderTabSet={onRenderTabSet}
-                    titleFactory={titleFactory}
-                    iconFactory={iconFactory}
                 />
             </div>
         </div>
@@ -195,7 +176,7 @@ export const layoutEx1: IJsonModel = {
                 children: [
                     {
                         type: "tab",
-                        id: "titleFactory",
+                        id: "345",
                         name: "One",
                         component: "text",
                     }
@@ -222,7 +203,7 @@ export const layoutEx1: IJsonModel = {
                 children: [
                     {
                         type: "tab",
-                        id: "iconFactory",
+                        id: "123",
                         name: "Three",
                         component: "text",
                     }

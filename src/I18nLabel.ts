@@ -1,14 +1,12 @@
 export enum I18nLabel {
     Close_Tab = "Close",
-    Close_Tabset = "Close tabset",
-    Move_Tab = "Move: ", // no longer used
-    Move_Tabset = "Move tabset",
-    Maximize = "Maximize tabset",
-    Restore = "Restore tabset",
-    Float_Tab = "Show selected tab in floating window",
+    Close_Tabset = "Close tab set",
+    Active_Tabset = "Active tab set",
+    Move_Tabset = "Move tab set",
+    Move_Tabs = "Move tabs(?)",
+    Maximize = "Maximize tab set",
+    Restore = "Restore tab set",
+    Popout_Tab = "Popout selected tab",
     Overflow_Menu_Tooltip = "Hidden tabs",
-    Floating_Window_Message = "This panel is shown in a floating window",
-    Floating_Window_Show_Window = "Show window",
-    Floating_Window_Dock_Window = "Dock window",
     Error_rendering_component = "Error rendering component",
 }

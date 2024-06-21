@@ -1,11 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import { DragDrop } from "../../src/index";
 
 /** @hidden @internal */
 export function showPopup(
     title: string,
-    layoutDiv: HTMLDivElement,
+    layoutDiv: HTMLElement,
     x: number, y: number,
     items: string[],
     onSelect: (item: string | undefined) => void,
@@ -28,29 +27,26 @@ export function showPopup(
         elm.style.bottom = layoutRect.bottom - y + "px";
     }
 
-    DragDrop.instance.addGlass(() => onHide(undefined));
-    DragDrop.instance.setGlassCursorOverride("default");
     layoutDiv.appendChild(elm);
 
     const onHide = (item: string | undefined) => {
-        DragDrop.instance.hideGlass();
         onSelect(item);
         layoutDiv.removeChild(elm);
         root.unmount();
-        elm.removeEventListener("mousedown", onElementMouseDown);
-        currentDocument.removeEventListener("mousedown", onDocMouseDown);
+        elm.removeEventListener("pointerdown", onElementPointerDown);
+        currentDocument.removeEventListener("pointerdown", onDocPointerDown);
     };
 
-    const onElementMouseDown = (event: Event) => {
+    const onElementPointerDown = (event: Event) => {
         event.stopPropagation();
     };
 
-    const onDocMouseDown = (event: Event) => {
+    const onDocPointerDown = (event: Event) => {
         onHide(undefined);
     };
 
-    elm.addEventListener("mousedown", onElementMouseDown);
-    currentDocument.addEventListener("mousedown", onDocMouseDown);
+    elm.addEventListener("pointerdown", onElementPointerDown);
+    currentDocument.addEventListener("pointerdown", onDocPointerDown);
 
     const root = ReactDOM.createRoot(elm);
     root.render(<PopupMenu
@@ -72,7 +68,7 @@ interface IPopupMenuProps {
 const PopupMenu = (props: IPopupMenuProps) => {
     const { title, items, onHide } = props;
 
-    const onItemClick = (item: string, event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const onItemClick = (item: string, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         onHide(item);
         event.stopPropagation();
     };

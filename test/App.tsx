@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Layout, Model, TabNode, IJsonModel } from '../src';
+import { Layout, Model, TabNode, IJsonModel } from "../src";
 import './style/light.css';
 import './style/app.css';
 
@@ -52,8 +52,7 @@ export function App(props) {
                 <button
                     style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                     data-id="add-drag"
-                    onMouseDown={onAddDragMouseDown}
-                    onTouchStart={onAddDragMouseDown}>Add Drag</button>
+                    onPointerDown={onAddDragMouseDown}/>
                 <button data-id="add-active" onClick={onAddActiveClick}>Add Active</button>
                 <button data-id="add-indirect" onClick={onAddIndirectClick}>Add Indirect</button>
                 <button data-id="add-byId" onClick={onAddbyIdClick}>Add by Id #1</button>

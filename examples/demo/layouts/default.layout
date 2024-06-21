@@ -1,105 +1,151 @@
 {
 	"global": {
-   		"tabEnableFloat": true,
-        "tabSetMinHeight":100,
-        "tabSetMinWidth":100,
-        "borderMinSize":100,
-        "enableRotateBorderIcons":true
+		"splitterEnableHandle": true,
+		"tabEnablePopout": true,
+		"tabSetEnableActiveIcon": true,
+		"tabSetMinWidth": 130,
+		"tabSetMinHeight": 100,
+		"borderMinSize": 100
 	},
+	"borders": [
+		{
+			"type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"name": "Output",
+					"component": "grid",
+					"enableClose": false,
+					"icon": "images/bar_chart.svg"
+				},
+				{
+					"type": "tab",
+					"name": "Terminal",
+					"component": "grid",
+					"enableClose": false,
+					"icon": "images/terminal.svg"
+				},
+				{
+					"type": "tab",
+					"id": "#7bac972e-fd5f-4582-a511-4feede448394",
+					"name": "Layout JSON",
+					"component": "json"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"name": "Navigation",
+					"altName": "The Navigation Tab",
+					"component": "grid",
+					"enableClose": false,
+					"icon": "images/folder.svg"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"name": "Options",
+					"component": "grid",
+					"enableClose": false,
+					"icon": "images/settings.svg"
+				}
+			]
+		}
+	],
 	"layout": {
 		"type": "row",
 		"children": [
 			{
 				"type": "tabset",
-				"weight": 12.5,
-				"active": true,
+				"weight": 33,
 				"children": [
 					{
 						"type": "tab",
-						"name": "One",
-						"component": "grid"
-					},
-					{
-						"type": "tab",
-						"name": "Two",
-						"component": "grid"
+						"name": "OpenLayers Map",
+						"component": "map",
+						"enablePopoutOverlay": true
 					}
 				]
 			},
 			{
-				"type": "tabset",
-				"weight": 25,
+				"type": "row",
+				"weight": 33,
 				"children": [
 					{
-						"type": "tab",
-						"name": "Three",
-						"component": "grid"
+						"type": "tabset",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"name": "ChartJS",
+								"component": "chart",
+								"enableWindowReMount": true,
+								"enablePopoutOverlay": true
+							}
+						]
 					},
 					{
-						"type": "tab",
-						"name": "Wikipedia",
-						"component": "multitype",
-						"config": {
-                            "type":"url",
-							"data": "https://en.wikipedia.org/wiki/Main_Page"
-						}
+						"type": "tabset",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"name": "AGGrid",
+								"component": "aggrid"
+							}
+						]
+					}
+				]
+			},
+			{
+				"type": "row",
+				"weight": 33,
+				"children": [
+					{
+						"type": "tabset",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"name": "Wikipedia",
+								"component": "multitype",
+								"config": {
+									"type": "url",
+									"data": "https://en.wikipedia.org/wiki/Main_Page"
+								}
+							},
+							{
+								"type": "tab",
+								"name": "MUI",
+								"component": "mui"
+							}
+						]
+					},
+					{
+						"type": "tabset",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"name": "MUI Grid",
+								"component": "muigrid"
+							}
+						],
+						"active": true
 					}
 				]
 			}
 		]
 	},
-	"borders": [
-		{
-		    "type": "border",
-			"location": "bottom",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Output",
-					"component": "grid",
-                    "icon":"images/bar_chart.svg"
-				},
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Terminal",
-					"component": "grid",
-                    "icon":"images/terminal.svg"
-				},
-                {
-                    "type": "tab",
-                    "name": "Layout JSON",
-                    "component": "json"
-                }
-			]
-		},
-		 {
-		    "type": "border",
-		 	"location": "left",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Navigation",
-                    "altName": "The Navigation Tab",
-					"component": "grid",
-                    "icon":"images/folder.svg"
-				}
-			]
-		},
-		{
-		    "type": "border",
-		 	"location": "right",
-			"children": [
-				{
-					"type": "tab",
-					"enableClose":false,
-					"name": "Options",
-					"component": "grid",
-                    "icon":"images/settings.svg"
-				}
-			]
-		}
-	]
+	"popouts": {}
 }

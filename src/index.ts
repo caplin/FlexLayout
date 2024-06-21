@@ -11,12 +11,11 @@ export * from './model/IJsonModel';
 export * from './model/Model';
 export * from './model/Node';
 export * from './model/RowNode';
-export * from './model/SplitterNode';
 export * from './model/TabNode';
 export * from './model/TabSetNode';
+export * from './model/LayoutWindow';
 
 export * from './DockLocation';
-export * from './DragDrop';
 export * from './DropInfo';
 export * from './I18nLabel';
 export * from './Orientation';

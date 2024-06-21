@@ -5,12 +5,11 @@ bundles/
 dist/
 lib/
 out/
-todo.txt
+fonts/
+@private/
 .DS_Store
 typedoc/
 style/dark.css.map
 style/gray.css.map
 style/light.css.map
-cypress/videos/
-cypress/screenshots/
 test/style/light.css.map
