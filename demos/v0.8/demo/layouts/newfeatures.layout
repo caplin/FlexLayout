@@ -1,0 +1,124 @@
+{
+	"global": {
+		"borderEnableAutoHide": true,
+		"borderMinSize": 100,
+		"splitterExtra": 7,
+		"splitterSize": 3,
+		"tabEnablePopout": true,
+		"tabSetEnableClose": true,
+		"tabSetEnableTabWrap": true,
+		"tabSetMinHeight": 100,
+		"tabSetMinWidth": 100
+	},
+	"borders": [
+		{
+			"type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"component": "grid",
+					"enableClose": false,
+					"id": "#6eebf157-b04f-42a8-acd6-18ab2eb286ff",
+					"name": "Output",
+					"type": "tab"
+				},
+				{
+					"component": "grid",
+					"enableClose": false,
+					"id": "#984349f2-0807-4689-b702-656bf1cb9515",
+					"name": "Terminal",
+					"type": "tab"
+				},
+				{
+					"component": "json",
+					"id": "#c2117846-46a3-4c93-a32c-992a351b1301",
+					"name": "Layout JSON",
+					"type": "tab"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "left",
+			"children": [
+				{
+					"component": "grid",
+					"enableClose": false,
+					"id": "#0a7988f1-0cfb-4420-a2a3-8aa8af12684f",
+					"name": "Navigation",
+					"type": "tab"
+				},
+				{
+					"borderHeight": 500,
+					"borderWidth": 500,
+					"component": "grid",
+					"enableClose": false,
+					"id": "#ab2da468-e13f-4925-b15a-388c00186737",
+					"name": "With border sizes",
+					"type": "tab"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "right",
+			"children": [
+				{
+					"component": "grid",
+					"enableClose": false,
+					"id": "#c2a459f2-314a-4da6-a18d-8a00d8957a3d",
+					"name": "Options",
+					"type": "tab"
+				}
+			]
+		}
+	],
+	"layout": {
+		"id": "#baeaf63a-7e31-4f5b-836c-6aec43cb228a",
+		"type": "row",
+		"children": [
+			{
+				"id": "#8b1bc920-89fb-4fe7-bad3-9cf70d693118",
+				"type": "tabset",
+				"weight": 12.5,
+				"children": [
+					{
+						"component": "newfeatures",
+						"helpText": "this tab has helpText defined",
+						"id": "#8fcab2f4-23f8-49d7-ae82-f87a9c261200",
+						"name": "New",
+						"type": "tab"
+					},
+					{
+						"component": "grid",
+						"id": "#a97509a3-8139-4980-9a45-7ca2418edfd8",
+						"name": "Two",
+						"type": "tab"
+					}
+				]
+			},
+			{
+				"id": "#79caf830-d0fb-4f02-a579-e3bbe21b6525",
+				"type": "tabset",
+				"weight": 25,
+				"children": [
+					{
+						"borderWidth": 500,
+						"component": "grid",
+						"id": "#9d820148-547a-431d-9793-be67ad973b86",
+						"name": "Five",
+						"type": "tab"
+					},
+					{
+						"component": "simpleform",
+						"id": "#65210db1-663f-4f98-95cc-1c39953ed2d1",
+						"name": "Form",
+						"type": "tab"
+					}
+				],
+				"active": true
+			}
+		]
+	},
+	"popouts": {}
+}

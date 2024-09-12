@@ -1,0 +1,87 @@
+html,body
+{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow:hidden;
+    font-size: medium;
+    font-family: Roboto, Arial, sans-serif; 
+}
+
+.toolbar_control {
+    border-radius: 5px;
+    border: 1px solid lightgray
+}
+
+.drag-from {
+    border-radius: 5px;
+    background-color: lightgray;
+    color: black;
+}
+
+#container  {
+    left:10px;
+    top:10px;
+    right:10px;
+    bottom:10px;
+    position:absolute;
+    display:flex;
+    overflow:hidden;
+    background-color: white;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px;}
+::-webkit-scrollbar-button {  background-color: #ddd; }
+::-webkit-scrollbar-track {  background-color: #efefef;}
+::-webkit-scrollbar-track-piece { background-color: #eee;}
+::-webkit-scrollbar-thumb { height: 50px; background-color: #ccc; border-radius: 3px;}
+::-webkit-scrollbar-corner { background-color: #fff;}
+::-webkit-resizer { background-color: #999;}
+
+.app
+{
+    display:flex;
+    flex-direction: column;
+    flex-grow:1;
+}
+
+.toolbar
+{
+    margin:2px;
+    display: flex;
+    align-items:center;
+}
+
+.contents
+{
+    display:flex;
+    flex-grow:1;
+    position:relative;
+    border:1px solid #ddd;
+}
+
+/* simple_bundled table styling*/
+.simple_table {
+    background-color: white;
+    color: #333;
+    border-collapse: collapse;
+}
+
+.simple_table th {
+    background-color: #e0e0e0;
+    border-right: 1px solid #ddd;
+    padding:4px;
+    border-bottom-color: transparent;
+    text-align: left;
+    width:100px;
+    min-width: 100px;
+}
+
+.simple_table td {
+    border-right: 1px solid #ddd;
+    border-bottom-color: transparent;
+    padding:4px;
+}
+.simple_table tr:nth-child(even) {background: #f0f0f0}
+.simple_table tr:nth-child(odd) {background: white}
+

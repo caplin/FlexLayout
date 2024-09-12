@@ -1,0 +1,40 @@
+{
+	"global": {
+		"tabSetEnableSingleTabStretch": true
+	},
+	"borders": [],
+	"layout": {
+		"type": "row",
+		"id": "1",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "2",
+				"weight": 0.2,
+				"children": [
+					{
+						"type": "tab",
+						"id": "3",
+						"name": "Layout JSON",
+						"component": "json"
+					}
+				],
+				"active": true
+			},
+			{
+				"type": "tabset",
+				"id": "4",
+				"weight": 0.2,
+				"children": [
+					{
+						"type": "tab",
+						"id": "5",
+						"name": "Grid 1",
+						"component": "grid",
+						"icon": "images/article.svg"
+					}
+				]
+			}
+		]
+	}
+}

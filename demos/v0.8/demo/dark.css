@@ -1,0 +1,89 @@
+html,body
+{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow:hidden;
+    font-size: medium;
+    font-family: Roboto, Arial, sans-serif;
+    background-color:black;
+}
+
+.toolbar_control {
+    color:lightgray;
+    background-color:black;
+    border-radius: 5px;
+    border: 1px solid #444;
+}
+
+.drag-from {
+    border-radius: 5px;
+    background-color: #666;
+    color: white;
+}
+
+#container  {
+    left:10px;
+    top:10px;
+    right:10px;
+    bottom:10px;
+    position:absolute;
+    display:flex;
+    overflow:hidden;
+    background-color:black;
+}
+::-webkit-scrollbar { width: 8px; height: 8px;}
+::-webkit-scrollbar-button {  background-color: #222; }
+::-webkit-scrollbar-track {  background-color: #444;}
+::-webkit-scrollbar-track-piece { background-color: #333;}
+::-webkit-scrollbar-thumb { height: 50px; background-color: #666; border-radius: 3px;}
+::-webkit-scrollbar-corner { background-color: #333;}
+::-webkit-resizer { background-color: #666;}
+
+.app
+{
+    display:flex;
+    flex-direction: column;
+    flex-grow:1;
+}
+
+.toolbar
+{
+    margin:2px;
+    display: flex;
+    align-items:center;
+}
+
+.contents
+{
+    display:flex;
+    flex-grow:1;
+    position:relative;
+    border:1px solid gray;
+}
+
+/* simple_bundled table styling*/
+.simple_table {
+    background-color: #222;
+    color: gray;
+    border-collapse: collapse;
+}
+.simple_table th {
+    color: #ddd;
+    background-color: #282828;
+    border-right: 1px solid #333;
+    padding:4px;
+    border-bottom-color: transparent;
+    text-align: left;
+    width:100px;
+    min-width: 100px;
+}
+
+.simple_table td {
+    border-right: 1px solid #333;
+    border-bottom: 1px solid #333;
+    padding:4px;
+}
+.simple_table tr:nth-child(even) {background: #242424}
+.simple_table tr:nth-child(odd) {background: #222}
+
