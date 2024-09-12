@@ -9,11 +9,12 @@ body {
 }
 
 .toolbar_control {
-    border-radius: 3px;
+    border-radius: 5px;
     border: 1px solid lightgray;
 }
 
 .drag-from {
+    border-radius: 5px;
     background-color: lightgray;
     color: black;
 }
@@ -67,11 +68,8 @@ body {
 }
 
 .contents {
+    display:flex;
     flex-grow: 1;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
     position: relative;
     border: 1px solid #ddd;
 }
@@ -103,41 +101,5 @@ body {
 }
 .simple_table tr:nth-child(odd) {
     background: white;
-}
-
-.tab-storage {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding-left: 1em;
-    padding-right: 1em;
-    padding-bottom: 1em;
-    overflow: auto;
-}
-
-.tab-storage > .tab-storage-tabs > .tab-storage-entry {
-    padding: 1em;
-    background-color: #ddd;
-    border-radius: 0.5em;
-    margin-bottom: 1em;
-}
-
-.tab-storage > .tab-storage-tabs > .tab-storage-entry:last-child {
-    margin-bottom: 0;
-}
-
-small {
-    color: gray;
-}
-
-li {
-    color: #444;
-    margin-bottom: 1em;
-}
-
-ul {
-    margin-right: 1em;
 }
 
