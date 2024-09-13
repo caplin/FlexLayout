@@ -248,6 +248,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
             this.calculatedMaxWidth = Math.min(this.calculatedMaxWidth, c.getMaxWidth());
             this.calculatedMaxHeight = Math.min(this.calculatedMaxHeight, c.getMaxHeight());
         }
+
+        this.calculatedMinHeight += this.tabStripRect.height;
+        this.calculatedMaxHeight += this.tabStripRect.height;
     }
 
     /** @internal */

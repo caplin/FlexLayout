@@ -339,27 +339,35 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         var target = event.target as HTMLSelectElement;
 
         let flexlayout_stylesheet: any = window.document.getElementById("flexlayout-stylesheet");
+        let page_stylesheet = window.document.getElementById("page-stylesheet");
         let index = flexlayout_stylesheet.href.lastIndexOf("/");
         let newAddress = flexlayout_stylesheet.href.substr(0, index);
-        document.head.removeChild(flexlayout_stylesheet);
 
-        flexlayout_stylesheet = document.createElement("link");
-        flexlayout_stylesheet.setAttribute("id", "flexlayout-stylesheet");
-        flexlayout_stylesheet.setAttribute("rel", "stylesheet");
-        flexlayout_stylesheet.setAttribute("href", newAddress + "/" + target.value + ".css");
-        document.head.appendChild(flexlayout_stylesheet);
+        let s1 = document.createElement("link");
+        s1.setAttribute("id", "flexlayout-stylesheet");
+        s1.setAttribute("rel", "stylesheet");
+        s1.setAttribute("href", newAddress + "/" + target.value + ".css");
 
-        let page_stylesheet = window.document.getElementById("page-stylesheet");
-        document.head.removeChild(page_stylesheet!);
+        let s2 = document.createElement("link");
+        s2.setAttribute("id", "page-stylesheet");
+        s2.setAttribute("rel", "stylesheet");
+        s2.setAttribute("href", target.value + ".css");
 
-        page_stylesheet!.setAttribute("id", "page-stylesheet");
-        page_stylesheet!.setAttribute("rel", "stylesheet");
-        page_stylesheet!.setAttribute("href", target.value + ".css");
-        document.head.appendChild(page_stylesheet!);
+        const promises: Promise<boolean>[] = [];
+        promises.push(new Promise((resolve) => {
+            s1.onload = () => resolve(true);
+        }));
+        promises.push(new Promise((resolve) => {
+            s2.onload = () => resolve(true);
+        }));
+        document.head.appendChild(s1);
+        document.head.appendChild(s2);
 
-        setTimeout(() => {
+        Promise.all(promises).then(() => {
+            document.head.removeChild(flexlayout_stylesheet);
+            document.head.removeChild(page_stylesheet!);
             this.forceUpdate();
-        }, 300);
+        });
     }
 
     onFontSizeChange = (event: React.FormEvent) => {

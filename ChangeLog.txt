@@ -1,3 +1,8 @@
+0.8.1
+Fixed enableDrag on tab and tabset nodes.
+Fixed calc for min/max tabset height from min/max tab height.
+Modified style sheet code in demo to reduce flash.
+
 0.8.0
 New:
   * Wrap tabs option

@@ -73,8 +73,12 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
         if (!layout.getEditingTab()) {
-            event.stopPropagation();
-            layout.setDragNode(event.nativeEvent, node as TabSetNode);
+            if (node.isEnableDrag()) {
+                event.stopPropagation();
+                layout.setDragNode(event.nativeEvent, node as TabSetNode);
+            } else {
+                event.preventDefault();
+            }
         } else {
             event.preventDefault();
         }

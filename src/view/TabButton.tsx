@@ -31,8 +31,12 @@ export const TabButton = (props: ITabButtonProps) => {
     });
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
-        event.stopPropagation(); // prevent starting a tabset drag as well
-        layout.setDragNode(event.nativeEvent, node as TabNode);
+        if (node.isEnableDrag()) {
+            event.stopPropagation(); // prevent starting a tabset drag as well
+            layout.setDragNode(event.nativeEvent, node as TabNode);
+        } else {
+            event.preventDefault();
+        }
     };
 
     const onDragEnd = (event: React.DragEvent<HTMLElement>) => {

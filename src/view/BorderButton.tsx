@@ -24,8 +24,12 @@ export const BorderButton = (props: IBorderButtonProps) => {
     const contentRef = React.useRef<HTMLInputElement | null>(null);
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
-        event.stopPropagation();
-        layout.setDragNode(event.nativeEvent, node as TabNode);
+        if (node.isEnableDrag()) {
+            event.stopPropagation();
+            layout.setDragNode(event.nativeEvent, node as TabNode);
+        } else {
+            event.preventDefault();
+        }
     };
 
     const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
