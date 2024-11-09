@@ -1,57 +1,93 @@
+.dark .flexlayout__layout {
+  --color-1: #09090b;
+  --color-2: #18181b;
+  --color-3: #27272a;
+  --color-4: #3f3f46;
+  --color-5: #52525b;
+  --color-6: #71717a;
+  --color-text: #fafafa;
+  --color-background: #09090b;
+  --color-drag1: #fafafa;
+  --color-drag2: #fafafa;
+}
+
 .flexlayout__layout {
-  --color-text: black;
-  --color-background: white;
-  --color-base: white;
   --color-1: #fafafa;
-  --color-2: whitesmoke;
-  --color-3: #eeeeee;
-  --color-4: #e6e6e6;
-  --color-5: #e0e0e0;
-  --color-6: #d9d9d9;
-  --color-drag1: rgb(95, 134, 196);
-  --color-drag2: rgb(119, 166, 119);
-  --color-drag1-background: rgba(95, 134, 196, 0.1);
-  --color-drag2-background: rgba(119, 166, 119, 0.075);
+  --color-2: #f4f4f5;
+  --color-3: #e4e4e7;
+  --color-4: #d4d4d8;
+  --color-5: #a1a1aa;
+  --color-6: #71717a;
+  --color-text: #09090b;
+  --color-background: white;
+  --color-drag1: #09090b;
+  --color-drag2: #09090b;
+  --color-drag1-background: transparent;
+  --color-drag2-background: transparent;
   --font-size: medium;
-  --font-family: Roboto, Arial, sans-serif;
-  --color-overflow: gray;
-  --color-icon: gray;
+  --font-family: Arial, sans-serif;
+  --color-overflow: var(--color-6);
+  --color-icon: var(--color-6);
   --color-tabset-background: var(--color-background);
-  --color-tabset-background-selected: var(--color-1);
-  --color-tabset-background-maximized: var(--color-6);
-  --color-tabset-divider-line: var(--color-3);
+  --color-tabset-background-selected: var(--color-background);
+  --color-tabset-background-maximized: var(--color-background);
+  --color-tabset-divider-line: var(--color-4);
   --color-tabset-header-background: var(--color-background);
   --color-tabset-header: var(--color-text);
   --color-border-tab-content: var(--color-background);
   --color-border-background: var(--color-background);
-  --color-border-divider-line: var(--color-3);
+  --color-border-divider-line: var(--color-background);
   --color-tab-content: var(--color-background);
   --color-tab-selected: var(--color-text);
-  --color-tab-selected-background: transparent;
-  --color-tab-unselected: gray;
+  --color-tab-selected-background: var(--color-3);
+  --color-tab-unselected: var(--color-6);
   --color-tab-unselected-background: transparent;
   --color-tab-textbox: var(--color-text);
   --color-tab-textbox-background: var(--color-3);
   --color-border-tab-selected: var(--color-text);
-  --color-border-tab-selected-background: transparent;
-  --color-border-tab-unselected: gray;
+  --color-border-tab-selected-background: var(--color-3);
+  --color-border-tab-unselected: var(--color-6);
   --color-border-tab-unselected-background: transparent;
-  --color-splitter: var(--color-1);
-  --color-splitter-hover: var(--color-4);
-  --color-splitter-drag: var(--color-4);
-  --color-drag-rect-border: var(--color-6);
-  --color-drag-rect-background: var(--color-4);
+  --color-splitter: var(--color-2);
+  --color-splitter-hover: var(--color-background);
+  --color-splitter-drag: var(--color-5);
+  --color-drag-rect-border: var(--color-3);
+  --color-drag-rect-background: var(--color-background);
   --color-drag-rect: var(--color-text);
-  --color-popup-border: var(--color-6);
+  --color-popup-border: var(--color-3);
   --color-popup-unselected: var(--color-text);
-  --color-popup-unselected-background: white;
+  --color-popup-unselected-background: var(--color-background);
   --color-popup-selected: var(--color-text);
-  --color-popup-selected-background: var(--color-3);
-  --color-edge-marker: #aaa;
-  --color-edge-icon: #555;
-  --color-underline: rgb(65, 105, 225);
-  --color-underline-hover: #aaa;
-  --underline_height: 3px;
+  --color-popup-selected-background: var(--color-4);
+  --color-edge-marker: var(--color-3);
+  --color-edge-icon: var(--color-text);
+  background-color: var(--color-background);
+  line-height: normal;
+}
+.flexlayout__border_sizer {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+.flexlayout__popup_menu_item {
+  border-radius: 4px !important;
+}
+.flexlayout__popup_menu_item:hover {
+  background-color: var(--color-3) !important;
+}
+.flexlayout__popup_menu_container {
+  box-shadow: none !important;
+  padding: 4px !important;
+  border-radius: 6px !important;
+}
+.flexlayout__drag_rect {
+  border-width: 1px !important;
+}
+.flexlayout__outline_rect {
+  border-width: 1px !important;
+}
+.flexlayout__tab_border {
+  border: 1px solid var(--color-3);
+  border-radius: 6px;
 }
 
 .flexlayout__layout {
@@ -114,12 +150,20 @@
   background-color: var(--color-splitter);
   touch-action: none;
   z-index: 10;
+  background-color: var(--color-background);
+}
+.flexlayout__splitter_handle {
+  background-color: var(--color-3) !important;
 }
 @media (hover: hover) {
   .flexlayout__splitter:hover {
     background-color: var(--color-splitter-hover);
     transition: background-color ease-in 0.1s;
     transition-delay: 0.05s;
+    background-color: transparent;
+  }
+  .flexlayout__splitter:hover .flexlayout__splitter_handle {
+    background-color: var(--color-4) !important;
   }
 }
 .flexlayout__splitter_drag {
@@ -129,6 +173,10 @@
   justify-content: center;
   z-index: 1000;
   background-color: var(--color-splitter-drag);
+  background-color: transparent;
+}
+.flexlayout__splitter_drag .flexlayout__splitter_handle {
+  background-color: var(--color-4) !important;
 }
 .flexlayout__splitter_handle {
   background-color: #ccc;
@@ -206,6 +254,20 @@
   overflow: hidden;
   flex-grow: 1;
 }
+.flexlayout__tabset_content {
+  color: var(--color-text);
+}
+.flexlayout__tabset_container {
+  border: 1px solid var(--color-3);
+  border-radius: 6px;
+}
+.flexlayout__tabset_tabbar_inner_tab_container {
+  padding: 0 4px 0 4px !important;
+}
+.flexlayout__tabset_tabbar_inner_tab_container_top {
+  border-bottom: 4px solid transparent;
+  border-top-width: 4px !important;
+}
 .flexlayout__tabset_container {
   display: flex;
   flex-basis: 0px;
@@ -217,9 +279,7 @@
 }
 .flexlayout__tabset_tab_divider {
   width: 4px;
-  width: 1px;
-  margin: 4px 6px 4px 6px;
-  border-left: 1px solid #ddd;
+  width: 4px;
 }
 .flexlayout__tabset_content {
   display: flex;
@@ -249,6 +309,9 @@
   overflow: hidden;
   display: flex;
   font-size: var(--font-size);
+  border-color: var(--color-3) !important;
+  padding: 0 !important;
+  border-radius: 6px;
 }
 .flexlayout__tabset_tabbar_outer_top {
   padding: 0px 2px 0px 2px;
@@ -323,7 +386,8 @@
   box-sizing: border-box;
   padding: 3px 0.5em;
   cursor: pointer;
-  padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
+  border-radius: 4px !important;
+  padding: 2px 0.6em;
 }
 .flexlayout__tab_button_stretch {
   background-color: transparent;
@@ -345,20 +409,24 @@
 .flexlayout__tab_button--selected {
   background-color: var(--color-tab-selected-background);
   color: var(--color-tab-selected);
-  border-bottom: var(--underline_height) solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
     background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
-    border-bottom: var(--underline_height) solid var(--color-underline-hover);
   }
 }
 .flexlayout__tab_button--unselected {
   background-color: var(--color-tab-unselected-background);
   color: var(--color-tab-unselected);
-  color: gray;
-  border-bottom: var(--underline_height) solid transparent;
+}
+.flexlayout__tab_button_top {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.flexlayout__tab_button_bottom {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 .flexlayout__tab_button_leading {
   display: flex;
@@ -386,7 +454,7 @@
   border-radius: 4px;
 }
 .flexlayout__tab_button_trailing:hover {
-  background-color: var(--color-3);
+  background-color: var(--color-2);
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
@@ -430,7 +498,7 @@
 }
 @media (hover: hover) {
   .flexlayout__tab_toolbar_button:hover {
-    background-color: var(--color-2);
+    background-color: var(--color-3);
   }
 }
 .flexlayout__tab_toolbar_sticky_buttons_container {
@@ -471,6 +539,31 @@
   font-family: var(--font-family);
   color: var(--color-border);
   background-color: var(--color-border-background);
+  background-color: var(--color-background);
+}
+.flexlayout__border_inner {
+  border-radius: 6px;
+  border: 1px solid var(--color-3);
+  background-color: var(--color-background);
+}
+.flexlayout__border_inner_tab_container {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+.flexlayout__border_top {
+  border-bottom-width: 8px !important;
+}
+.flexlayout__border_bottom {
+  border-top-width: 8px !important;
+}
+.flexlayout__border_left {
+  border-right-width: 8px !important;
+}
+.flexlayout__border_right {
+  border-left-width: 8px !important;
+}
+.flexlayout__border_tab_contents {
+  background-color: transparent;
 }
 .flexlayout__border_tab_contents {
   box-sizing: border-box;
@@ -522,9 +615,6 @@
 }
 .flexlayout__border_tab_divider {
   width: 4px;
-  width: 1px;
-  margin: 4px 6px 4px 6px;
-  border-left: 1px solid #ddd;
 }
 .flexlayout__border_button {
   display: flex;
@@ -535,24 +625,23 @@
   margin: 2px 0px;
   box-sizing: border-box;
   white-space: nowrap;
-  padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
+  border-radius: 4px;
+  padding: 2.6px 10px;
+  margin: 4px 0 !important;
 }
 .flexlayout__border_button--selected {
   background-color: var(--color-border-tab-selected-background);
   color: var(--color-border-tab-selected);
-  border-bottom: var(--underline_height) solid var(--color-underline);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover {
     background-color: var(--color-border-tab-selected-background);
     color: var(--color-border-tab-selected);
-    border-bottom: var(--underline_height) solid var(--color-underline-hover);
   }
 }
 .flexlayout__border_button--unselected {
   background-color: var(--color-border-tab-unselected-background);
   color: var(--color-border-tab-unselected);
-  border-bottom: var(--underline_height) solid transparent;
 }
 .flexlayout__border_button_leading {
   display: flex;
@@ -566,7 +655,7 @@
   visibility: hidden;
 }
 .flexlayout__border_button_trailing:hover {
-  background-color: var(--color-3);
+  background-color: var(--color-2);
 }
 @media (hover: hover) {
   .flexlayout__border_button:hover .flexlayout__border_button_trailing {
@@ -600,7 +689,7 @@
 }
 @media (hover: hover) {
   .flexlayout__border_toolbar_button:hover {
-    background-color: var(--color-2);
+    background-color: var(--color-3);
   }
 }
 .flexlayout__border_toolbar_button_overflow {
@@ -681,8 +770,4 @@
   padding-bottom: 5px;
   font-size: var(--font-size);
   font-family: var(--font-family);
-}
-
-.flexlayout__tab_button_textbox {
-  border: none;
 }

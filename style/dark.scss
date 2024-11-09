@@ -80,17 +80,14 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-edge-icon: #eee;
     }
 }
-@mixin tabset_mixin {
-}
 
-@mixin tabset_tabbar_mixin {
-}
+@mixin tabset_mixin {}
 
-@mixin tabset_header_mixin {
-}
+@mixin tabset_tabbar_mixin {}
 
-@mixin tabset_selected_mixin {
-}
+@mixin tabset_header_mixin {}
+
+@mixin tabset_selected_mixin {}
 
 @mixin tabset_header_mixin {
     box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
@@ -116,33 +113,26 @@ $font-family: Roboto, Arial, sans-serif !default;
     border-bottom-right-radius: 3px;
 }
 
-@mixin tab_button_mixin {
-}
+@mixin tab_button_mixin {}
 
-@mixin tab_button_selected_mixin {
-}
+@mixin tab_button_selected_mixin {}
 
-@mixin tab_button_unselected_mixin {
-}
+@mixin tab_button_unselected_mixin {}
 
-@mixin tab_button_hovered_mixin {
-}
+@mixin tab_button_hovered_mixin {}
 
-@mixin tab_button_stretch_mixin {
-}
+@mixin tab_button_stretch_mixin {}
 
-@mixin tab_button_stretch_hovered_mixin {
-}
+@mixin tab_button_stretch_hovered_mixin {}
 
-@mixin border_mixin {
-}
+@mixin border_mixin {}
 
 @mixin close_button_hovered_mixin {
-    background-color:var(--color-6);
+    background-color: var(--color-6);
 }
 
 @mixin toolbar_button_hovered_mixin {
-    background-color:var(--color-4);
+    background-color: var(--color-4);
 }
 
 @mixin border_button_mixin {
@@ -150,33 +140,26 @@ $font-family: Roboto, Arial, sans-serif !default;
     border-radius: 3px;
 }
 
-@mixin border_button_selected_mixin {
-}
+@mixin border_button_selected_mixin {}
 
-@mixin border_button_unselected_mixin {
-}
+@mixin border_button_unselected_mixin {}
 
 @mixin border_button_hovered_mixin {
     background-color: var(--color-4);
 }
 
-@mixin splitter_mixin {
-}
+@mixin splitter_mixin {}
 
-@mixin splitter_hover_mixin {
-}
+@mixin splitter_hover_mixin {}
 
 @mixin splitter_drag_mixin {
     border-radius: 5px;
 }
 
-@mixin splitter_border_mixin {
-}
+@mixin splitter_border_mixin {}
 
-@mixin tabset_tab_divider_mixin {
-}
+@mixin tabset_tab_divider_mixin {}
 
-@mixin border_tab_divider_mixin {
-}
+@mixin border_tab_divider_mixin {}
 
 @import "_base";

@@ -1,0 +1,278 @@
+$zinc-50: #fafafa;
+$zinc-100: #f4f4f5;
+$zinc-200: #e4e4e7;
+$zinc-300: #d4d4d8;
+$zinc-400: #a1a1aa;
+$zinc-500: #71717a;
+$zinc-600: #52525b;
+$zinc-700: #3f3f46;
+$zinc-800: #27272a;
+$zinc-900: #18181b;
+$zinc-950: #09090b;
+
+.dark .flexlayout__layout {
+    --color-1: #{$zinc-950};
+    --color-2: #{$zinc-900};
+    --color-3: #{$zinc-800};
+    --color-4: #{$zinc-700};
+    --color-5: #{$zinc-600};
+    --color-6: #{$zinc-500};
+    --color-text: #{$zinc-50};
+    --color-background: #{$zinc-950};
+    --color-drag1: #{$zinc-50};
+    --color-drag2: #{$zinc-50};
+}
+
+.flexlayout {
+    &__layout {
+        --color-1: #{$zinc-50};
+        --color-2: #{$zinc-100};
+        --color-3: #{$zinc-200};
+        --color-4: #{$zinc-300};
+        --color-5: #{$zinc-400};
+        --color-6: #{$zinc-500};
+        --color-text: #{$zinc-950};
+        --color-background: white;
+        --color-drag1: #{$zinc-950};
+        --color-drag2: #{$zinc-950};
+
+        --color-drag1-background: transparent;
+        --color-drag2-background: transparent;
+
+        --font-size: medium;
+        --font-family: Arial, sans-serif;
+
+        --color-overflow: var(--color-6);
+        --color-icon: var(--color-6);
+
+        --color-tabset-background: var(--color-background);
+        --color-tabset-background-selected: var(--color-background);
+        --color-tabset-background-maximized: var(--color-background);
+        --color-tabset-divider-line: var(--color-4);
+
+        --color-tabset-header-background: var(--color-background);
+        --color-tabset-header: var(--color-text);
+
+        --color-border-tab-content: var(--color-background);
+        --color-border-background: var(--color-background);
+        --color-border-divider-line: var(--color-background);
+
+        --color-tab-content: var(--color-background);
+        --color-tab-selected: var(--color-text);
+        --color-tab-selected-background: var(--color-3);
+        --color-tab-unselected: var(--color-6);
+        --color-tab-unselected-background: transparent;
+        --color-tab-textbox: var(--color-text);
+        --color-tab-textbox-background: var(--color-3);
+
+        --color-border-tab-selected: var(--color-text);
+        --color-border-tab-selected-background: var(--color-3);
+        --color-border-tab-unselected: var(--color-6);
+        --color-border-tab-unselected-background: transparent;
+
+        --color-splitter: var(--color-2);
+        --color-splitter-hover: var(--color-background);
+        --color-splitter-drag: var(--color-5);
+
+        --color-drag-rect-border: var(--color-3);
+        --color-drag-rect-background: var(--color-background);
+        --color-drag-rect: var(--color-text);
+
+        --color-popup-border: var(--color-3);
+        --color-popup-unselected: var(--color-text);
+        --color-popup-unselected-background: var(--color-background);
+        --color-popup-selected: var(--color-text);
+        --color-popup-selected-background: var(--color-4);
+
+        --color-edge-marker: var(--color-3);
+        --color-edge-icon: var(--color-text);
+        background-color: var(--color-background);
+        line-height: normal;
+    }
+
+    &__border_sizer {
+
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+
+    &__popup_menu {
+
+        &_item {
+            border-radius: 4px !important;
+        }
+
+        &_item:hover {
+            background-color: var(--color-3) !important;
+        }
+
+        &_container {
+            box-shadow: none !important;
+            padding: 4px !important;
+            border-radius: 6px !important;
+        }
+    }
+
+    &__drag_rect {
+        border-width: 1px !important;
+    }
+
+    &__outline_rect {
+        border-width: 1px !important;
+    }
+
+    &__tab_border {
+        border: 1px solid var(--color-3);
+        border-radius: 6px;
+    }
+}
+
+@mixin tabset_mixin {
+    &_content {
+        color: var(--color-text);
+    }
+
+    &_container {
+        border: 1px solid var(--color-3);
+        border-radius: 6px;
+    }
+
+    &_tabbar_inner_tab_container {
+        padding: 0 4px 0 4px !important;
+    }
+
+    &_tabbar_inner_tab_container_top {
+        border-bottom: 4px solid transparent;
+        border-top-width: 4px !important;
+    }
+}
+
+@mixin tabset_tabbar_mixin {
+    border-color: var(--color-3) !important;
+    padding: 0 !important;
+    border-radius: 6px;
+}
+
+@mixin tabset_header_mixin {}
+
+@mixin tabset_selected_mixin {}
+
+@mixin tabset_header_mixin {}
+
+@mixin tabset_selected_mixin {}
+
+@mixin tabset_maximized_mixin {}
+
+@mixin tab_top_mixin {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+@mixin tab_bottom_mixin {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+@mixin tab_button_mixin {
+    border-radius: 4px !important;
+    padding: 2px 0.6em;
+}
+
+@mixin tab_button_selected_mixin {}
+
+@mixin tab_button_unselected_mixin {}
+
+@mixin tab_button_hovered_mixin {}
+
+@mixin tab_button_stretch_mixin {}
+
+@mixin tab_button_stretch_hovered_mixin {}
+
+@mixin border_mixin {
+    background-color: var(--color-background);
+
+    &_inner {
+        border-radius: 6px;
+        border: 1px solid var(--color-3);
+        background-color: var(--color-background);
+
+        &_tab_container {
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+        }
+    }
+
+    &_top {
+        border-bottom-width: 8px !important;
+    }
+
+    &_bottom {
+        border-top-width: 8px !important;
+    }
+
+    &_left {
+        border-right-width: 8px !important;
+    }
+
+    &_right {
+        border-left-width: 8px !important;
+    }
+
+    &_tab_contents {
+        background-color: transparent;
+    }
+}
+
+@mixin close_button_hovered_mixin {
+    background-color: var(--color-2);
+}
+
+@mixin toolbar_button_hovered_mixin {
+    background-color: var(--color-3);
+}
+
+@mixin border_button_mixin {
+    border-radius: 4px;
+    padding: 2.6px 10px;
+    margin: 4px 0 !important;
+}
+
+@mixin border_button_selected_mixin {}
+
+@mixin border_button_unselected_mixin {}
+
+@mixin border_button_hovered_mixin {}
+
+@mixin splitter_mixin {
+    background-color: var(--color-background);
+
+    &_handle {
+        background-color: var(--color-3) !important;
+    }
+}
+
+@mixin splitter_hover_mixin {
+    background-color: transparent;
+
+    .flexlayout__splitter_handle {
+        background-color: var(--color-4) !important;
+    }
+}
+
+@mixin splitter_drag_mixin {
+    background-color: transparent;
+
+    .flexlayout__splitter_handle {
+        background-color: var(--color-4) !important;
+    }
+}
+
+@mixin splitter_border_mixin {}
+
+@mixin tabset_tab_divider_mixin {
+    width: 4px;
+}
+
+@mixin border_tab_divider_mixin {}
+
+@import "_base";

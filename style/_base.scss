@@ -16,7 +16,7 @@
 .flexlayout {
     &__layout {
         @include absoluteFill;
-        display:flex;
+        display: flex;
 
         &_overlay {
             @include absoluteFill;
@@ -24,9 +24,9 @@
         }
 
         &_tab_stamps {
-            position:absolute; 
-            top:-10000px; // offscreen
-            z-index:100;
+            position: absolute;
+            top: -10000px; // offscreen
+            z-index: 100;
             display: flex;
             flex-direction: column;
             align-items: start;
@@ -34,22 +34,22 @@
 
         &_moveables {
             visibility: hidden;
-            position:absolute; 
+            position: absolute;
             width: 100px; // size is needed to tabs have something to draw into
             height: 100px;
-            top:-20000px; // offscreen
+            top: -20000px; // offscreen
         }
 
         &_main {
             @include flexFix;
-            flex-grow:1;
-            position:relative;
+            flex-grow: 1;
+            position: relative;
         }
     }
 
     &__layout_border_container {
         @include flexFix;
-        flex-grow:1;
+        flex-grow: 1;
     }
 
     &__layout_border_container_inner {
@@ -74,29 +74,33 @@
                 @include splitter_hover_mixin;
             }
         }
+
         &_border {
             @include splitter_border_mixin;
         }
+
         &_drag {
-            position:absolute;
-            display:flex;
+            position: absolute;
+            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             background-color: var(--color-splitter-drag);
             @include splitter_drag_mixin;
         }
+
         &_handle {
-            background-color:#ccc; 
-            border-radius:3px;
+            background-color: #ccc;
+            border-radius: 3px;
 
             &_horz {
-                width: 3px; 
-                height:30px;
+                width: 3px;
+                height: 30px;
             }
+
             &_vert {
-                width: 30px; 
-                height:3px;
+                width: 30px;
+                height: 3px;
             }
         }
 
@@ -130,7 +134,7 @@
         z-index: 1000;
         background-color: var(--color-edge-marker);
         pointer-events: none;
-        display:flex;
+        display: flex;
         align-items: center;
         justify-content: center;
     }
@@ -161,21 +165,21 @@
     }
 
     &__tabset {
-        display:flex;
+        display: flex;
         flex-direction: column;
         position: relative;
         background-color: var(--color-tabset-background);
         box-sizing: border-box;
         font-family: var(--font-family);
         overflow: hidden;
-        flex-grow:1;
+        flex-grow: 1;
         @include tabset_mixin;
 
         &_container {
             @include flexFix;
             flex-direction: column;
             overflow: hidden;
-            flex-grow:1;
+            flex-grow: 1;
         }
 
         &_tab_divider {
@@ -219,7 +223,7 @@
             }
 
             &_outer_top {
-                padding:0px 2px 0px 2px;
+                padding: 0px 2px 0px 2px;
                 border-bottom: 1px solid var(--color-tabset-divider-line);
             }
 
@@ -243,10 +247,11 @@
                     padding-right: 4px;
                     box-sizing: border-box;
                     white-space: nowrap;
-                  
+
                     &_top {
                         border-top: 2px solid transparent; // if you change this, update the _sizer above
                     }
+
                     &_bottom {
                         border-bottom: 2px solid transparent;
                     }
@@ -281,11 +286,11 @@
         position: relative;
 
         &_moveable {
-            position:relative;
-            height:100%; 
-            min-width:1px;
-            min-height:1px;
-            overflow:auto;
+            position: relative;
+            height: 100%;
+            min-width: 1px;
+            min-height: 1px;
+            overflow: auto;
             box-sizing: border-box;
         }
 
@@ -311,7 +316,7 @@
 
             &_stretch {
                 background-color: transparent;
-                color:var(--color-tab-selected);
+                color: var(--color-tab-selected);
                 width: 100%;
                 padding: 3px 0em;
                 text-wrap: nowrap;
@@ -324,28 +329,29 @@
 
                 @media (hover: hover) {
                     &:hover {
-                        color:var(--color-tab-selected);
+                        color: var(--color-tab-selected);
                         @include tab_button_stretch_hovered_mixin;
                     }
                 }
             }
 
             &--selected {
-                background-color:var(--color-tab-selected-background);
-                color:var(--color-tab-selected);
+                background-color: var(--color-tab-selected-background);
+                color: var(--color-tab-selected);
                 @include tab_button_selected_mixin;
             }
+
             @media (hover: hover) {
                 &:hover {
-                    background-color:var(--color-tab-selected-background);
-                    color:var(--color-tab-selected);
+                    background-color: var(--color-tab-selected-background);
+                    color: var(--color-tab-selected);
                     @include tab_button_hovered_mixin;
                 }
             }
 
             &--unselected {
-                background-color:var(--color-tab-unselected-background);
-                color:var(--color-tab-unselected);
+                background-color: var(--color-tab-unselected-background);
+                color: var(--color-tab-unselected);
                 @include tab_button_unselected_mixin;
             }
 
@@ -385,14 +391,16 @@
                 display: flex;
                 visibility: hidden;
                 border-radius: 4px;
+
                 &:hover {
                     @include close_button_hovered_mixin;
                 }
             }
+
             @media (pointer: coarse) {
-                &_trailing {
-                }
+                &_trailing {}
             }
+
             @media (hover: hover) {
                 &:hover &_trailing {
                     visibility: visible;
@@ -437,23 +445,20 @@
                 background-color: transparent;
                 border-radius: 4px;
                 padding: 1px;
+
                 @media (hover: hover) {
                     &:hover {
                         @include toolbar_button_hovered_mixin;
                     }
                 }
 
-                &-min {
-                }
+                &-min {}
 
-                &-max {
-                }
+                &-max {}
 
-                &-float {
-                }
+                &-float {}
 
-                &-close {
-                }
+                &-close {}
             }
 
             &_sticky_buttons_container {
@@ -505,7 +510,7 @@
 
         &_tab_contents {
             box-sizing: border-box;
-            overflow:hidden;
+            overflow: hidden;
             background-color: var(--color-border-tab-content);
         }
 
@@ -551,6 +556,7 @@
                     transform-origin: top left;
                     transform: rotate(90deg);
                 }
+
                 &_left {
                     flex-direction: row-reverse;
                     transform-origin: top right;
@@ -562,7 +568,7 @@
         &_tab_divider {
             width: 4px;
             @include border_tab_divider_mixin;
-            }
+        }
 
         &_button {
             display: flex;
@@ -580,6 +586,7 @@
                 color: var(--color-border-tab-selected);
                 @include border_button_selected_mixin;
             }
+
             @media (hover: hover) {
                 &:hover {
                     background-color: var(--color-border-tab-selected-background);
@@ -606,14 +613,16 @@
                 display: flex;
                 border-radius: 4px;
                 visibility: hidden;
+
                 &:hover {
                     @include close_button_hovered_mixin;
                 }
             }
+
             @media (pointer: coarse) {
-                &_trailing {
-                }
+                &_trailing {}
             }
+
             @media (hover: hover) {
                 &:hover &_trailing {
                     visibility: visible;
@@ -650,14 +659,14 @@
                 background-color: transparent;
                 border-radius: 4px;
                 padding: 1px;
+
                 @media (hover: hover) {
                     &:hover {
                         @include toolbar_button_hovered_mixin;
                     }
                 }
-                
-                &-float {
-                }
+
+                &-float {}
 
                 &_overflow {
                     display: flex;
@@ -669,12 +678,10 @@
                 }
 
                 &_overflow_top,
-                &_overflow_bottom {
-                }
+                &_overflow_bottom {}
 
                 &_overflow_right,
-                &_overflow_left {
-                }
+                &_overflow_left {}
             }
         }
     }
@@ -726,6 +733,7 @@
         display: flex;
         justify-content: center;
     }
+
     &__error_boundary_content {
         display: flex;
         align-items: center;
@@ -750,8 +758,8 @@
     }
 
     &__border_sizer {
-        position:absolute;
-        top:-30000px; // offscreen
+        position: absolute;
+        top: -30000px; // offscreen
         padding-top: 6px;
         padding-bottom: 5px;
         font-size: var(--font-size);

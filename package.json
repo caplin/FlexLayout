@@ -32,7 +32,8 @@
         "build:demo": "webpack",
         "lint:eslint": "eslint src/*",
         "doc": "typedoc --out typedoc --exclude \"**/examples/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
-        "css": "sass style/rounded.scss  style/rounded.css && sass style/underline.scss style/underline.css && sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/light.scss test/style/light.css && sass style/dark.scss style/dark.css"
+        "css": "sass --no-source-map style:style",
+        "css:dev": "sass --no-source-map --watch style:style"
     },
     "author": "Caplin Systems Ltd",
     "repository": "https://github.com/caplin/FlexLayout",
@@ -77,6 +78,5 @@
         "webpack-dev-server": "^5.0.4",
         "@mui/x-data-grid": "^7.15.0"
     },
-    "dependencies": {
-    }
+    "dependencies": {}
 }
