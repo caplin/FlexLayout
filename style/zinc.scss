@@ -18,7 +18,7 @@ $zinc-950: #09090b;
     --color-5: #{$zinc-600};
     --color-6: #{$zinc-500};
     --color-text: #{$zinc-50};
-    --color-background: #{$zinc-950};
+    --color-background: black;
     --color-drag1: #{$zinc-50};
     --color-drag2: #{$zinc-50};
 }
@@ -45,19 +45,19 @@ $zinc-950: #09090b;
         --color-overflow: var(--color-6);
         --color-icon: var(--color-6);
 
-        --color-tabset-background: var(--color-background);
-        --color-tabset-background-selected: var(--color-background);
-        --color-tabset-background-maximized: var(--color-background);
+        --color-tabset-background: var(--color-1);
+        --color-tabset-background-selected: var(--color-1);
+        --color-tabset-background-maximized: var(--color-1);
         --color-tabset-divider-line: var(--color-4);
 
-        --color-tabset-header-background: var(--color-background);
+        --color-tabset-header-background: var(--color-1);
         --color-tabset-header: var(--color-text);
 
-        --color-border-tab-content: var(--color-background);
-        --color-border-background: var(--color-background);
+        --color-border-tab-content: var(--color-1);
+        --color-border-background: var(--color-1);
         --color-border-divider-line: var(--color-background);
 
-        --color-tab-content: var(--color-background);
+        --color-tab-content: var(--color-1);
         --color-tab-selected: var(--color-text);
         --color-tab-selected-background: var(--color-3);
         --color-tab-unselected: var(--color-6);
@@ -75,12 +75,12 @@ $zinc-950: #09090b;
         --color-splitter-drag: var(--color-5);
 
         --color-drag-rect-border: var(--color-3);
-        --color-drag-rect-background: var(--color-background);
+        --color-drag-rect-background: var(--color-1);
         --color-drag-rect: var(--color-text);
 
         --color-popup-border: var(--color-3);
         --color-popup-unselected: var(--color-text);
-        --color-popup-unselected-background: var(--color-background);
+        --color-popup-unselected-background: var(--color-1);
         --color-popup-selected: var(--color-text);
         --color-popup-selected-background: var(--color-4);
 
@@ -115,6 +115,7 @@ $zinc-950: #09090b;
 
     &__drag_rect {
         border-width: 1px !important;
+        padding: 4px 6px !important;
     }
 
     &__outline_rect {
@@ -194,7 +195,7 @@ $zinc-950: #09090b;
     &_inner {
         border-radius: 6px;
         border: 1px solid var(--color-3);
-        background-color: var(--color-background);
+        background-color: var(--color-1);
 
         &_tab_container {
             padding-left: 4px !important;
