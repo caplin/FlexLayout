@@ -252,7 +252,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         var component = node.getComponent();
 
         if (component === "json") {
-            return (<JsonView model={this.state.model!}/>);
+            return (<JsonView model={this.state.model!} />);
         }
         else if (component === "simpleform") {
             return <SimpleForm />
@@ -423,10 +423,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         let contents: React.ReactNode = "loading ...";
         if (this.state.model !== null) {
             contents = <Layout
-            ref={this.layoutRef}
-            model={this.state.model}
-            popoutWindowName="Demo Popout"
-            factory={this.factory}
+                ref={this.layoutRef}
+                model={this.state.model}
+                popoutWindowName="Demo Popout"
+                factory={this.factory}
                 onAction={this.onAction}
                 onModelChange={this.onModelChange}
                 onRenderTab={this.onRenderTab}
@@ -510,6 +510,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                                 <option value="gray">Gray</option>
                                 <option value="dark">Dark</option>
                                 <option value="rounded">Rounded</option>
+                                <option value="zinc">Zinc</option>
                             </select>
                             {/* <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onNewWindow}>New Window</button> */}
                             <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>

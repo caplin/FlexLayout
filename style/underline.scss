@@ -85,33 +85,26 @@ $font-family: Roboto, Arial, sans-serif !default;
     }
 }
 
-@mixin tabset_mixin {
-}
+@mixin tabset_mixin {}
 
-@mixin tabset_tabbar_mixin {
-}
+@mixin tabset_tabbar_mixin {}
 
-@mixin tabset_header_mixin {
-}
+@mixin tabset_header_mixin {}
 
-@mixin tabset_selected_mixin {
-}
+@mixin tabset_selected_mixin {}
 
-@mixin tabset_maximized_mixin {
-}
+@mixin tabset_maximized_mixin {}
 
-@mixin tab_top_mixin {
-}
+@mixin tab_top_mixin {}
 
-@mixin tab_bottom_mixin {
-}
+@mixin tab_bottom_mixin {}
 
 @mixin tab_button_mixin {
     padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
 
 @mixin tab_button_selected_mixin {
-    border-bottom: var(--underline_height) solid  var(--color-underline);
+    border-bottom: var(--underline_height) solid var(--color-underline);
 }
 
 @mixin tab_button_unselected_mixin {
@@ -120,53 +113,46 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tab_button_hovered_mixin {
-    border-bottom: var(--underline_height) solid  var(--color-underline-hover);
+    border-bottom: var(--underline_height) solid var(--color-underline-hover);
 }
 
 @mixin close_button_hovered_mixin {
-    background-color:var(--color-3);
+    background-color: var(--color-3);
 }
 
 @mixin toolbar_button_hovered_mixin {
-    background-color:var(--color-2);
+    background-color: var(--color-2);
 }
 
-@mixin tab_button_stretch_mixin {
-}
+@mixin tab_button_stretch_mixin {}
 
-@mixin tab_button_stretch_hovered_mixin {
-}
+@mixin tab_button_stretch_hovered_mixin {}
 
-@mixin border_mixin {
-}
+@mixin border_mixin {}
 
 @mixin border_button_mixin {
     padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
 
 @mixin border_button_selected_mixin {
-    border-bottom: var(--underline_height) solid  var(--color-underline);
+    border-bottom: var(--underline_height) solid var(--color-underline);
 }
 
 @mixin border_button_unselected_mixin {
     border-bottom: var(--underline_height) solid transparent;
-    }
+}
 
 @mixin border_button_hovered_mixin {
-    border-bottom: var(--underline_height) solid  var(--color-underline-hover);
+    border-bottom: var(--underline_height) solid var(--color-underline-hover);
 }
 
-@mixin splitter_mixin {
-}
+@mixin splitter_mixin {}
 
-@mixin splitter_hover_mixin {
-}
+@mixin splitter_hover_mixin {}
 
-@mixin splitter_drag_mixin {
-}
+@mixin splitter_drag_mixin {}
 
-@mixin splitter_border_mixin {
-}
+@mixin splitter_border_mixin {}
 
 @mixin tabset_tab_divider_mixin {
     width: 1px;
@@ -183,5 +169,5 @@ $font-family: Roboto, Arial, sans-serif !default;
 @import "_base";
 
 .flexlayout__tab_button_textbox {
-    border:none;
+    border: none;
 }
