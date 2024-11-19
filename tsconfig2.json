@@ -1,20 +1,24 @@
 {
     "compilerOptions": {
-        "outDir": "./lib/",
+        "outDir": "lib",
         "sourceMap": true,
-        "noImplicitAny": true,
-        "module": "ES2020",
-        "target": "ES6",
+        "rootDir": "src",
+        "noImplicitAny": false,
+        "target": "ES2023",
+        "module": "ESNext",
         "declaration": true,
-        "declarationDir": "./declarations",
-        "stripInternal": true,
-        "alwaysStrict": true,
-        "forceConsistentCasingInFileNames": true,
-        "noImplicitReturns": true,
-        "strict": true,
-        "noUnusedLocals": true,
+        "declarationDir": "lib",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
         "jsx": "react",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "preserveConstEnums": true,
+        "allowSyntheticDefaultImports": true,
+        "pretty": true,
+        "noEmitOnError": true,
+        "removeComments": false,
         "skipLibCheck": true
     },
-    "include": ["./src/**/*"]
+    "include": ["src"]
 }
