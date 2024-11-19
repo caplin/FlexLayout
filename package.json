@@ -3,6 +3,7 @@
     "version": "0.8.1",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
+    "type": "module",
     "types": "./declarations/index.d.ts",
     "keywords": [
         "react",
@@ -26,7 +27,7 @@
     "scripts": {
         "start": "webpack serve",
         "build": "npm run css && npm run doc && npm run build:demo && npm run build:esm && npm run build:umd && npm run build:umd:min",
-        "build:esm": "tsc -p tsconfig2.json",
+        "build:esm": "rollup -c rollup.config.mjs",
         "build:umd": "webpack --mode=development --config webpack_build.config.js",
         "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
         "build:demo": "webpack",
@@ -49,6 +50,8 @@
         "@emotion/styled": "^11.13.0",
         "@fontsource/roboto": "^5.0.14",
         "@mui/material": "^6.0.1",
+        "@rollup/plugin-node-resolve": "^15.3.0",
+        "@rollup/plugin-typescript": "^12.1.1",
         "@types/node": "^22.5.0",
         "@types/prismjs": "^1.26.4",
         "@types/react": "^18.3.4",
@@ -65,6 +68,7 @@
         "react-chartjs-2": "^5.2.0",
         "react-dom": "^18.3.1",
         "react-scripts": "5.0.1",
+        "rollup": "^4.27.3",
         "sass": "^1.77.8",
         "source-map-loader": "^5.0.0",
         "style-loader": "^4.0.0",
@@ -77,6 +81,5 @@
         "webpack-dev-server": "^5.0.4",
         "@mui/x-data-grid": "^7.15.0"
     },
-    "dependencies": {
-    }
+    "dependencies": {}
 }
