@@ -2,8 +2,14 @@ import * as React from 'react';
 import { useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import type { ColDef } from 'ag-grid-community';
+import { ModuleRegistry, ClientSideRowModelModule, ColumnAutoSizeModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+ModuleRegistry.registerModules([
+    ColumnAutoSizeModule,
+    ClientSideRowModelModule,
+]);
 
 // Row Data Interface
 interface IRow {
@@ -41,7 +47,7 @@ export const AGGridExample = () => {
         flex: 1,
     };
 
-    React.useEffect(()=> {
+    React.useEffect(() => {
         // fix resizing in popouts, since resize observer will be lost
         if (gridRef.current!.api) {
             const newWidth = selfRef.current!.getBoundingClientRect().width;
@@ -55,7 +61,7 @@ export const AGGridExample = () => {
     // Container: Defines the grid's theme & dimensions.
     return (
         <div ref={selfRef} className={"ag-theme-alpine"} style={{ width: '100%', height: '100%' }}>
-            <AgGridReact ref={gridRef}  rowData={rowData} columnDefs={colDefs} defaultColDef={defaultColDef} />
+            <AgGridReact ref={gridRef} rowData={rowData} columnDefs={colDefs} defaultColDef={defaultColDef} />
         </div>
     );
 };

@@ -1,3 +1,10 @@
+0.8.2
+Updated dependencies 
+Enabled use with React 19
+Removed strict mode from demo due to bug in React 19 (https://github.com/facebook/react/issues/29585) causing
+  tabs to re-mount when moved
+Used CodeSandbox in README.md since react 19 doesn't create UMD versions needed by JSFiddle.
+
 0.8.1
 Fixed enableDrag on tab and tabset nodes.
 Fixed calc for min/max tabset height from min/max tab height.

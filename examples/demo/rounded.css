@@ -53,6 +53,8 @@ html,body
     align-items:center;
     padding-left:5px;
     padding-right:5px;
+    flex-wrap: wrap;
+
 }
 
 .contents

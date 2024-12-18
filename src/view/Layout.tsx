@@ -85,7 +85,7 @@ export interface ILayoutProps {
  */
 export class Layout extends React.Component<ILayoutProps> {
     /** @internal */
-    private selfRef: React.RefObject<LayoutInternal>;
+    private selfRef: React.RefObject<LayoutInternal | null>;
     /** @internal */
     private revision: number; // so LayoutInternal knows this is a parent render (used for optimization)
 
@@ -190,10 +190,10 @@ interface ILayoutInternalState {
 export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayoutInternalState> {
     public static dragState: DragState | undefined = undefined;
 
-    private selfRef: React.RefObject<HTMLDivElement>;
-    private moveablesRef: React.RefObject<HTMLDivElement>;
-    private findBorderBarSizeRef: React.RefObject<HTMLDivElement>;
-    private mainRef: React.RefObject<HTMLDivElement>;
+    private selfRef: React.RefObject<HTMLDivElement | null>;
+    private moveablesRef: React.RefObject<HTMLDivElement | null>;
+    private findBorderBarSizeRef: React.RefObject<HTMLDivElement | null>;
+    private mainRef: React.RefObject<HTMLDivElement | null>;
     private previousModel?: Model;
     private orderedIds: string[];
     private moveableElementMap = new Map<string, HTMLElement>();
@@ -1033,7 +1033,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
 
 
     public setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number) {
-        let dragElement: JSX.Element = (
+        let dragElement = (
             <div style={{ position: "unset" }}
                 className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT) + " " + this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT)}>
                 {component}

@@ -10,7 +10,7 @@ FlexLayout is a layout manager that arranges React components in multiple tab se
 
 [Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html)
 
-Try it now using [JSFiddle](https://jsfiddle.net/fvd9btea/)
+Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
 [API Doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/index.html)
 
@@ -104,7 +104,7 @@ var json = {
                     {
                         type: "tab",
                         name: "One",
-                        component: "button",
+                        component: "placeholder",
                     }
                 ]
             },
@@ -115,7 +115,7 @@ var json = {
                     {
                         type: "tab",
                         name: "Two",
-                        component: "button",
+                        component: "placeholder",
                     }
                 ]
             }
@@ -134,8 +134,8 @@ function App() {
   const factory = (node) => {
     var component = node.getComponent();
 
-    if (component === "button") {
-      return <button>{node.getName()}</button>;
+    if (component === "placeholder") {
+      return <div>{node.getName()}</div>;
     }
   }
 
@@ -149,7 +149,7 @@ function App() {
 
 The above code would render two tab sets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
 
-Try it now using [JSFiddle](https://jsfiddle.net/fvd9btea/)
+Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
 A simple Typescript example can be found here:
 

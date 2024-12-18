@@ -28,7 +28,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     nextGridIndex: number = 1;
     showingPopupMenu: boolean = false;
     htmlTimer?: any = null;
-    layoutRef: React.RefObject<Layout>;
+    layoutRef: React.RefObject<Layout | null>;
 
     constructor(props: any) {
         super(props);
@@ -466,7 +466,8 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
         }
 
         return (
-            <React.StrictMode>
+            // commented out strictmode until: extra effect in strict mode is fixed see: https://github.com/facebook/react/issues/29585
+            // <React.StrictMode> 
                 <ContextExample.Provider value="from context">
                     <div className="app">
                         <div className="toolbar" dir="ltr">
@@ -526,7 +527,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                         </div>
                     </div>
                 </ContextExample.Provider>
-            </React.StrictMode>
+            //</React.StrictMode>
         );
     }
 
