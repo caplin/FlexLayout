@@ -411,7 +411,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                     (border.isAutoHide() && (border.getChildren().length > 0 || this.state.showHiddenBorder === location)));
                 if (showBorder) {
                     borderSetComponents.set(location, <BorderTabSet layout={this} border={border} size={this.state.calculatedBorderBarSize} />);
-                    borderSetContentComponents.set(location, <BorderTab layout={this} border={border} show={border.getSelected() !== -1} />);
+                    borderSetContentComponents.set(location, <BorderTab layout={this} border={border} show={border.getSelected() !== -1 && border.isShowing() }/>);
                 }
             }
 

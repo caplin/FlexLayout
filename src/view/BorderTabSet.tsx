@@ -197,7 +197,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         outerStyle = { width: borderHeight };
     } else if (border.getLocation() === DockLocation.RIGHT) {
         innerStyle = { left: "100%" , top:position};
-        outerStyle = { width: borderHeight };
+        outerStyle = { width: borderHeight};
     } else {
         innerStyle = { left:position};
         outerStyle = { height: borderHeight };
@@ -207,8 +207,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         <div
             ref={selfRef}
             style={{
-                display: "flex",
-                flexDirection: (border.getOrientation() === Orientation.VERT ? "row" : "column")
+                display: border.isShowing() ? "flex":'none',
+                flexDirection: (border.getOrientation() === Orientation.VERT ? "row" : "column"),
             }}
             className={borderClasses}
             data-layout-path={border.getPath()}
@@ -219,7 +219,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         >
             <div
                 style={outerStyle}
-                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " xxxxx " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}
             >
                 <div
                     style={innerStyle}
