@@ -219,7 +219,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         >
             <div
                 style={outerStyle}
-                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " xxxxx " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}
             >
                 <div
                     style={innerStyle}
