@@ -2,12 +2,12 @@
   --color-text: black;
   --color-background: transparent;
   --color-base: #f2f6fb;
-  --color-1: #e7eef8;
-  --color-2: #dce7f4;
-  --color-3: #d1dff1;
-  --color-4: #c7d8ee;
-  --color-5: #bdd1eb;
-  --color-6: #b3cae8;
+  --color-1: rgb(230.69, 238.17, 247.52);
+  --color-2: rgb(219.7193, 230.5749, 244.1444);
+  --color-3: rgb(209.077721, 223.207653, 240.870068);
+  --color-4: rgb(198.75538937, 216.06142341, 237.69396596);
+  --color-5: rgb(188.7427276889, 209.1295807077, 234.6131469812);
+  --color-6: rgb(179.0304458582, 202.4056932865, 231.6247525718);
   --color-drag1: rgb(95, 134, 196);
   --color-drag2: rgb(95, 134, 196);
   --color-drag1-background: rgba(95, 134, 196, 0.1);

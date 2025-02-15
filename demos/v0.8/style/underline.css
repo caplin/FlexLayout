@@ -2,12 +2,12 @@
   --color-text: black;
   --color-background: white;
   --color-base: white;
-  --color-1: #fafafa;
-  --color-2: whitesmoke;
-  --color-3: #eeeeee;
-  --color-4: #e6e6e6;
-  --color-5: #e0e0e0;
-  --color-6: #d9d9d9;
+  --color-1: rgb(249.9, 249.9, 249.9);
+  --color-2: rgb(244.902, 244.902, 244.902);
+  --color-3: rgb(237.55494, 237.55494, 237.55494);
+  --color-4: rgb(230.4282918, 230.4282918, 230.4282918);
+  --color-5: rgb(223.515443046, 223.515443046, 223.515443046);
+  --color-6: rgb(216.8099797546, 216.8099797546, 216.8099797546);
   --color-drag1: rgb(95, 134, 196);
   --color-drag2: rgb(119, 166, 119);
   --color-drag1-background: rgba(95, 134, 196, 0.1);
