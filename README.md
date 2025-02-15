@@ -147,13 +147,13 @@ function App() {
 }
 ```		
 
-The above code would render two tab sets horizontally each containing a single tab that hosts a button component. The tabs could be moved and resized by dragging and dropping. Additional grids could be added to the layout by sending actions to the model.
+The above code would render two tab sets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
 A simple Typescript example can be found here:
 
-https://github.com/nealus/FlexLayout_cra_example
+https://github.com/nealus/flexlayout-vite-example
 
 The model json contains 4 top level elements:
 
