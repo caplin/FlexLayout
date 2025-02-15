@@ -43,6 +43,7 @@ html,body
     display:flex;
     flex-direction: column;
     flex-grow:1;
+    flex-wrap: wrap;
 }
 
 .toolbar
@@ -50,6 +51,8 @@ html,body
     margin:2px;
     display: flex;
     align-items:center;
+    flex-wrap: wrap;
+
 }
 
 .contents
