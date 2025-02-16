@@ -16,7 +16,6 @@ import { TabNode } from "./TabNode";
 import { TabSetNode } from "./TabSetNode";
 import { randomUUID } from "./Utils";
 import { LayoutWindow } from "./LayoutWindow";
-import { isOnScreen } from "../view/Utils";
 
 /** @internal */
 export const DefaultMin = 0;
@@ -406,18 +405,10 @@ export class Model {
             model.borders = BorderSet.fromJson(json.borders, model);
         }
         if (json.popouts) {
-            let i= 0;
-            let top = 100;
-            let left = 100;
             for (const windowId in json.popouts) {
                 const windowJson = json.popouts[windowId];
                 const layoutWindow = LayoutWindow.fromJson(windowJson, model, windowId);
                 model.windows.set(windowId, layoutWindow);
-                // offscreen windows will reload cascaded (since cannot reposition)
-                if (!isOnScreen(layoutWindow.rect)) {
-                    layoutWindow.rect = new Rect(top + i*50, left+ i*50, 600, 400);
-                    i++;
-                }
             }
         }
 

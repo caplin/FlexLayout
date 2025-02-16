@@ -4,7 +4,6 @@ import { Model } from "./Model";
 import { RowNode } from "./RowNode";
 import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
-import { keepOnScreen } from "../view/Utils";
 import { LayoutInternal } from "../view/Layout";
 
 export class LayoutWindow {
@@ -112,8 +111,7 @@ export class LayoutWindow {
     static fromJson(windowJson: IJsonPopout, model: Model, windowId: string): LayoutWindow {
         const count = model.getwindowsMap().size;
         let rect = windowJson.rect ? Rect.fromJson(windowJson.rect) : new Rect(50 + 50 * count, 50 + 50 * count, 600, 400);
-        rect = keepOnScreen(rect); // snaps to grid of 10x10 and then moves into visible area
-        // snapping prevents issue where window moves 1 pixel per save/restore on Chrome
+        rect.snap(10); // snapping prevents issue where window moves 1 pixel per save/restore on Chrome
         const layoutWindow = new LayoutWindow(windowId, rect);
         layoutWindow.root = RowNode.fromJson(windowJson.layout, model, layoutWindow);
         return layoutWindow;

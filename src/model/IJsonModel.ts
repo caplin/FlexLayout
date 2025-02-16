@@ -585,7 +585,7 @@ export interface ITabSetAttributes {
 	enableTabStrip?: boolean;
 
 	/**
-	  show tabs in location top or bottom
+	  wrap tabs onto multiple lines
 
 	  Default: inherited from Global attribute tabSetEnableTabWrap (default false)
 	 */

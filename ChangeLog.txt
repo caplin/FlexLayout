@@ -1,3 +1,8 @@
+0.8.3
+Prevent sticky buttons scrolling when there are no tabs
+Fix border 'show' attribute
+Removed code to adjust popout positions when loading
+
 0.8.2
 Updated dependencies 
 Enabled use with React 19

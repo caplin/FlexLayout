@@ -406,7 +406,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             const borderSetContentComponents = new Map<DockLocation, React.ReactNode>();
             for (const [_, location] of DockLocation.values) {
                 const border = borders.get(location);
-                const showBorder = border && (
+                const showBorder = border && border.isShowing() && (
                     !border.isAutoHide() ||
                     (border.isAutoHide() && (border.getChildren().length > 0 || this.state.showHiddenBorder === location)));
                 if (showBorder) {

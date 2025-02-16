@@ -20,7 +20,7 @@ FlexLayout's only dependency is React.
 
 Features:
 *	splitters
-*	tabs
+*	tabs (scrolling or wrapped)
 *	tab dragging and ordering
 *	tab set dragging (move all the tabs in a tab set in one operation)
 *	dock to tab set or edge of frame

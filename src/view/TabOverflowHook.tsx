@@ -154,6 +154,7 @@ export const useTabOverflow = (
     };
 
     const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
+        if (node.getChildren().length===0) return;
         let delta = 0;
         if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
             delta = -event.deltaX;

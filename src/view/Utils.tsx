@@ -3,7 +3,6 @@ import { Node } from "../model/Node";
 import { TabNode } from "../model/TabNode";
 import { LayoutInternal } from "./Layout";
 import { TabSetNode } from "../model/TabSetNode";
-import { Rect } from "../Rect";
 
 /** @internal */
 export function isDesktop() {
@@ -110,29 +109,6 @@ export function canDockToWindow(node: Node) {
         return true;
     }
     return false;
-}
-
-export function keepOnScreen(rect: Rect) {
-    rect.snap(10);
-
-    const availableScreenWidth = window.screen.availWidth;
-    const availableScreenHeight = window.screen.availHeight;
-
-    if (rect.x + rect.width > availableScreenWidth || rect.y + rect.height > availableScreenHeight) {
-        // Adjust the rectangle to fit within the available screen space
-        rect.x = Math.max(0, Math.min(rect.x, availableScreenWidth - rect.width));
-        rect.y = Math.max(0, Math.min(rect.y, availableScreenHeight - rect.height));
-    }
-
-    return rect;
-}
-
-export function isOnScreen(rect: Rect) {
-    const availableScreenWidth = window.screen.availWidth;
-    const availableScreenHeight = window.screen.availHeight;
-
-    return (rect.x >= 0 && rect.getRight() <= availableScreenWidth &&
-        rect.y >= 0 || rect.getBottom() <= availableScreenHeight);
 }
 
 export function copyInlineStyles(source: HTMLElement, target: HTMLElement): boolean {

@@ -95,6 +95,12 @@ export const Tab = (props: ITabProps) => {
         }
     }
 
+    if (parentNode instanceof BorderNode) {
+        if (!parentNode.isShowing()) {
+            style.display = "none";
+        }
+    }
+
     let className = cm(CLASSES.FLEXLAYOUT__TAB);
     if (parentNode instanceof BorderNode) {
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER);

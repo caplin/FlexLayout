@@ -560,7 +560,7 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         );
 
         attributeDefinitions.addInherited("enableTabWrap", "tabSetEnableTabWrap").setDescription(
-            `show tabs in location top or bottom`
+            `wrap tabs onto multiple lines`
         );
         attributeDefinitions.addInherited("tabLocation", "tabSetTabLocation").setDescription(
             `the location of the tabs either top or bottom`
