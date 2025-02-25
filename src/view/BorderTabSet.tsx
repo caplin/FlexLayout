@@ -27,6 +27,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     const toolbarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
     const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
+    const tabStripInnerRef = React.useRef<HTMLDivElement | null>(null);
 
     const icons = layout.getIcons();
 
@@ -34,8 +35,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         border.setTabHeaderRect(Rect.getBoundingClientRect(selfRef.current!).relativeTo(layout.getDomRect()!));
     });
     
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated }
-        = useTabOverflow(border, Orientation.flip(border.getOrientation()), toolbarRef, stickyButtonsRef);
+    const { selfRef, userControlledPositionRef, onScroll, hiddenTabs, onMouseWheel, isTabOverflow } = 
+        useTabOverflow(layout, border, Orientation.flip(border.getOrientation()), tabStripInnerRef,
+            layout.getClassName(CLASSES.FLEXLAYOUT__BORDER_BUTTON)
+    );
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
@@ -53,12 +56,14 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = layout.getShowOverflowMenu();
+        const items = hiddenTabs.map(h=> {return {index: h, node: (border.getChildren()[h] as TabNode)};});
         if (callback !== undefined) {
-            callback(border, event, hiddenTabs, onOverflowItemSelect);
+
+            callback(border, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             showPopup(element,
-                hiddenTabs,
+                items,
                 onOverflowItemSelect,
                 layout);
         }
@@ -67,7 +72,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
         layout.doAction(Actions.selectTab(item.node.getId()));
-        userControlledLeft.current = false;
+        userControlledPositionRef.current = false; 
     };
 
     const onPopoutTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -125,7 +130,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     }
 
     if (stickyButtons.length > 0) {
-        if (tabsTruncated) {
+        if (isTabOverflow) {
             buttons = [...stickyButtons, ...buttons];
         } else {
             tabButtons.push(<div
@@ -144,7 +149,9 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
         if (typeof icons.more === "function") {
-            overflowContent = icons.more(border, hiddenTabs);
+            const items = hiddenTabs.map(h=> {return {index: h, node: (border.getChildren()[h] as TabNode)};});
+
+            overflowContent = icons.more(border, items);
         } else {
             overflowContent = (<>
                 {icons.more}
@@ -193,15 +200,17 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     let outerStyle = {};
     const borderHeight = size - 1;
     if (border.getLocation() === DockLocation.LEFT) {
-        innerStyle = { right: "100%", top: position };
-        outerStyle = { width: borderHeight };
+        innerStyle = { right: "100%", top:0 };
+        outerStyle = { width: borderHeight, overflowY: "auto"};
     } else if (border.getLocation() === DockLocation.RIGHT) {
-        innerStyle = { left: "100%" , top:position};
-        outerStyle = { width: borderHeight };
+        innerStyle = { left: "100%", top:0};
+        outerStyle = { width: borderHeight, overflowY: "auto" };
     } else {
-        innerStyle = { left:position};
-        outerStyle = { height: borderHeight };
+        innerStyle = {left:0 };
+        outerStyle = { height: borderHeight, overflowX: "auto" };
     }
+    const miniScrollbarClasses = cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR) + (border.isEnableTabScrollbar()?"":" " + cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_HIDDEN));
+    
 
     return (
         <div
@@ -218,9 +227,11 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             onWheel={onMouseWheel}
         >
             <div
+                ref={tabStripInnerRef}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName()) + " " + miniScrollbarClasses}
                 style={outerStyle}
-                className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_ + border.getLocation().getName())}
-            >
+                onScroll={onScroll}  
+                >
                 <div
                     style={innerStyle}
                     className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + border.getLocation().getName())}

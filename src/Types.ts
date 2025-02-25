@@ -111,4 +111,7 @@ export enum CLASSES {
     FLEXLAYOUT__POPUP_MENU_CONTAINER = "flexlayout__popup_menu_container",
     FLEXLAYOUT__POPUP_MENU_ITEM = "flexlayout__popup_menu_item",
     FLEXLAYOUT__POPUP_MENU = "flexlayout__popup_menu",
+
+    FLEXLAYOUT__MINI_SCROLLBAR = "flexlayout__mini_scrollbar",
+    FLEXLAYOUT__MINI_SCROLLBAR_HIDDEN = "flexlayout__mini_scrollbar_hidden",
 }

@@ -1224,7 +1224,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     // *************************** End Drag Drop *************************************
 }
 
-export const FlexLayoutVersion = "0.8.1";
+export const FlexLayoutVersion = "0.8.4";
 
 export type DragRectRenderCallback = (
     content: React.ReactNode | undefined,

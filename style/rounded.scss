@@ -54,7 +54,7 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-tab-selected: var(--color-text);
         --color-tab-selected-background: var(--color-2);
         --color-tab-unselected: gray;
-        --color-tab-unselected-background: transparent;
+        --color-tab-unselected-background: #d3d4e745;
         --color-tab-textbox: var(--color-text);
         --color-tab-textbox-background: var(--color-3);
 
@@ -106,7 +106,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 
 @mixin tab_button_mixin {
     border-radius: 10px;
-    padding: 2px 0.6em;
+    padding: 2px 0.8em;
 }
 
 @mixin tab_button_selected_mixin {
@@ -138,7 +138,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 
 @mixin border_button_mixin {
     border-radius: 10px;
-    padding: 2px 0.7em;
+    padding: 2px 0.8em;
 }
 
 @mixin border_button_selected_mixin {
@@ -170,19 +170,28 @@ $font-family: Roboto, Arial, sans-serif !default;
 
 @import "_base";
 
+.flexlayout__tabset {
+    padding: 3px;
+}
+
 .flexlayout__tabset_content {
-    padding: 1px 5px 5px 5px;
+    padding: 1px 3px 3px 3px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }
 
 .flexlayout__tab_border {
     border-radius: 10px;
-    padding:3px;
+    padding:5px;
 }
 
 .flexlayout__tabset_tabbar_outer_top {
     border-bottom:unset;
+    padding-bottom: 1px;
+}
+
+.flexlayout__tabset_tabbar_inner_tab_container_top {
+    border-bottom: 2px solid transparent;
 }
 
 .flexlayout__border_tab_contents {
@@ -191,4 +200,12 @@ $font-family: Roboto, Arial, sans-serif !default;
 
 .flexlayout__border_tab_contents {
     border-radius: 10px;
+}
+
+.flexlayout__border_sizer {
+    padding-bottom: 6px;
+}
+
+.flexlayout__border_bottom {
+    border-top: 2px solid var(--color-border-divider-line);
 }

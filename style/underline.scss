@@ -120,7 +120,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tab_button_hovered_mixin {
-    border-bottom: var(--underline_height) solid  var(--color-underline-hover);
+    // border-bottom: var(--underline_height) solid  var(--color-underline-hover);
 }
 
 @mixin close_button_hovered_mixin {

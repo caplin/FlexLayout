@@ -1,3 +1,8 @@
+0.8.4
+Added attribute 'enableTabScrollbar' to TabSet and Border nodes 
+  Enabling this attribute will show a mini 'scrollbar' for the tabs to indicate the scroll position
+  See the Demo apps default layout for an example.
+
 0.8.3
 Prevent sticky buttons scrolling when there are no tabs
 Fix border 'show' attribute

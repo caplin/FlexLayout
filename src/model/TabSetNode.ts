@@ -209,6 +209,10 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         return this.getAttr("autoSelectTab") as boolean;
     }
 
+    isEnableTabScrollbar() {
+        return this.getAttr("enableTabScrollbar") as boolean;
+    }
+
     getClassNameTabStrip() {
         return this.getAttr("classNameTabStrip") as string | undefined;
     }
@@ -571,6 +575,11 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         attributeDefinitions.addInherited("enableActiveIcon", "tabSetEnableActiveIcon").setType(Attribute.BOOLEAN).setDescription(
             `whether the active icon (*) should be displayed when the tabset is active`
         );
+
+        attributeDefinitions.addInherited("enableTabScrollbar", "tabSetEnableTabScrollbar").setType(Attribute.BOOLEAN).setDescription(
+            `whether to show a mini scrollbar for the tabs`
+        );
+
         return attributeDefinitions;
     }
 

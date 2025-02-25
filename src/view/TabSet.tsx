@@ -43,22 +43,27 @@ export const TabSet = (props: ITabSetProps) => {
         const newContentRect = Rect.getContentRect(contentRef.current!).relativeTo(layout.getDomRect()!);
         if (!node.getContentRect().equals(newContentRect)) {
             node.setContentRect(newContentRect);
-            layout.redrawInternal("tabset content rect " + newContentRect);
+            setTimeout(()=> { //prevent Maximum update depth exceeded error
+                layout.redrawInternal("tabset content rect " + newContentRect);
+            },0);
         }
     });
 
     // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
-    const { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated } = useTabOverflow(node, Orientation.HORZ, buttonBarRef, stickyButtonsRef);
+    const { selfRef, userControlledPositionRef, onScroll, hiddenTabs, onMouseWheel, isTabOverflow } = 
+        useTabOverflow(layout, node, Orientation.HORZ, tabStripInnerRef, 
+            layout.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = layout.getShowOverflowMenu();
+        const items = hiddenTabs.map(h=> {return {index: h, node: (node.getChildren()[h] as TabNode)};});
         if (callback !== undefined) {
-            callback(node, event, hiddenTabs, onOverflowItemSelect);
+            callback(node, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             showPopup(
                 element,
-                hiddenTabs,
+                items,
                 onOverflowItemSelect,
                 layout
             );
@@ -68,7 +73,7 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
         layout.doAction(Actions.selectTab(item.node.getId()));
-        userControlledLeft.current = false;
+        userControlledPositionRef.current = false;
     };
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
@@ -86,12 +91,6 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
         if (!isAuxMouseEvent(event)) {
-            let name = node.getName();
-            if (name === undefined) {
-                name = "";
-            } else {
-                name = ": " + name;
-            }
             layout.doAction(Actions.setActiveTabset(node.getId(), layout.getWindowId()));
         }
     };
@@ -144,12 +143,6 @@ export const TabSet = (props: ITabSetProps) => {
     // Start Render
 
     const cm = layout.getClassName;
-
-    // tabbar inner can get shifted left via tab rename, this resets scrollleft to 0
-    if (tabStripInnerRef.current !== null && tabStripInnerRef.current!.scrollLeft !== 0) {
-        tabStripInnerRef.current.scrollLeft = 0;
-    }
-
     const selectedTabNode: TabNode = node.getSelectedNode() as TabNode;
     const path = node.getPath();
 
@@ -191,7 +184,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     if (stickyButtons.length > 0) {
-        if (!node.isEnableTabWrap() && (tabsTruncated || isTabStretch)) {
+        if (!node.isEnableTabWrap() && (isTabOverflow || isTabStretch)) {
             buttons = [...stickyButtons, ...buttons];
         } else {
             tabs.push(<div
@@ -211,7 +204,8 @@ export const TabSet = (props: ITabSetProps) => {
             const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
             let overflowContent;
             if (typeof icons.more === "function") {
-                overflowContent = icons.more(node, hiddenTabs);
+                const items = hiddenTabs.map(h=> {return {index: h, node: (node.getChildren()[h] as TabNode)};});
+                overflowContent = icons.more(node, items);
             } else {
                 overflowContent = (<>
                     {icons.more}
@@ -360,6 +354,7 @@ export const TabSet = (props: ITabSetProps) => {
         }
     } else {
         if (node.isEnableTabStrip()) {
+            const miniScrollbarClasses = cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR) + (node.isEnableTabScrollbar()?"":" " + cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_HIDDEN));
             tabStrip = (
                 <div className={tabStripClasses}
                     ref={tabStripRef}
@@ -373,9 +368,12 @@ export const TabSet = (props: ITabSetProps) => {
                     onWheel={onMouseWheel}
                     onDragStart={onDragStart}
                 >
-                    <div ref={tabStripInnerRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}>
+                    <div ref={tabStripInnerRef} 
+                        className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation()) + " " + miniScrollbarClasses}
+                        style={{overflowX: 'auto', overflowY:"hidden"}}
+                        onScroll={onScroll}                        >
                         <div
-                            style={{ left: position, width: (isTabStretch ? "100%" : "10000px") }}
+                            style={{width: (isTabStretch ? "100%" : "none") }}
                             className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation())}
                         >
                             {tabs}

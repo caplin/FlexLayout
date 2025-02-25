@@ -159,6 +159,10 @@ export class BorderNode extends Node implements IDropTarget {
         }
     }
 
+    isEnableTabScrollbar() {
+        return this.getAttr("enableTabScrollbar") as boolean;
+    }
+
     /** @internal */
     setSelected(index: number) {
         this.attributes.selected = index;
@@ -445,6 +449,9 @@ export class BorderNode extends Node implements IDropTarget {
         );
         attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute.BOOLEAN).setDescription(
             `hide border if it has zero tabs`
+        );
+        attributeDefinitions.addInherited("enableTabScrollbar", "borderEnableTabScrollbar").setType(Attribute.BOOLEAN).setDescription(
+            `whether to show a mini scrollbar for the tabs`
         );
         return attributeDefinitions;
     }

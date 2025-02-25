@@ -245,7 +245,7 @@
                     white-space: nowrap;
                   
                     &_top {
-                        border-top: 2px solid transparent; // if you change this, update the _sizer above
+                        border-top: 2px solid transparent; 
                     }
                     &_bottom {
                         border-bottom: 2px solid transparent;
@@ -337,7 +337,6 @@
             }
             @media (hover: hover) {
                 &:hover {
-                    background-color:var(--color-tab-selected-background);
                     color:var(--color-tab-selected);
                     @include tab_button_hovered_mixin;
                 }
@@ -410,6 +409,8 @@
                 color: var(--color-overflow);
                 font-size: inherit;
                 background-color: transparent;
+                width:2em;
+                overflow: hidden;
             }
         }
 
@@ -534,6 +535,7 @@
         &_inner {
             position: relative;
             box-sizing: border-box;
+            align-items: center;
             display: flex;
             overflow: hidden;
             flex-grow: 1;
@@ -545,7 +547,6 @@
                 padding-right: 2px;
                 box-sizing: border-box;
                 position: absolute;
-                width: 10000px;
 
                 &_right {
                     transform-origin: top left;
@@ -666,6 +667,7 @@
                     color: var(--color-overflow);
                     font-size: inherit;
                     background-color: transparent;
+                    width:2em;
                 }
 
                 &_overflow_top,
@@ -757,4 +759,25 @@
         font-size: var(--font-size);
         font-family: var(--font-family);
     }
+
+    &__mini_scrollbar::-webkit-scrollbar {
+        width: 3px; 
+        height: 3px;
+    }
+
+    &__mini_scrollbar_hidden::-webkit-scrollbar {
+        display: none;
+    }
+    
+    &__mini_scrollbar::-webkit-scrollbar-button {
+        display: none;
+    }
+    
+    &__mini_scrollbar::-webkit-scrollbar-thumb {
+        background: #aaa; 
+        border-radius: 10px;
+    }
+
 }
+
+

@@ -93,6 +93,15 @@ export interface IGlobalAttributes {
 	borderEnableDrop?: boolean;
 
 	/**
+	  Value for BorderNode attribute enableTabScrollbar if not overridden
+
+	  whether to show a mini scrollbar for the tabs
+
+	  Default: false
+	 */
+	borderEnableTabScrollbar?: boolean;
+
+	/**
 	  Value for BorderNode attribute maxSize if not overridden
 
 	  the maximum size of the tab area
@@ -413,6 +422,15 @@ export interface IGlobalAttributes {
 	tabSetEnableSingleTabStretch?: boolean;
 
 	/**
+	  Value for TabSetNode attribute enableTabScrollbar if not overridden
+
+	  whether to show a mini scrollbar for the tabs
+
+	  Default: false
+	 */
+	tabSetEnableTabScrollbar?: boolean;
+
+	/**
 	  Value for TabSetNode attribute enableTabStrip if not overridden
 
 	  enable tab strip and allow multiple tabs in this tabset
@@ -424,7 +442,7 @@ export interface IGlobalAttributes {
 	/**
 	  Value for TabSetNode attribute enableTabWrap if not overridden
 
-	  show tabs in location top or bottom
+	  wrap tabs onto multiple lines
 
 	  Default: false
 	 */
@@ -576,6 +594,13 @@ export interface ITabSetAttributes {
 	  Default: inherited from Global attribute tabSetEnableSingleTabStretch (default false)
 	 */
 	enableSingleTabStretch?: boolean;
+
+	/**
+	  whether to show a mini scrollbar for the tabs
+
+	  Default: inherited from Global attribute tabSetEnableTabScrollbar (default false)
+	 */
+	enableTabScrollbar?: boolean;
 
 	/**
 	  enable tab strip and allow multiple tabs in this tabset
@@ -889,6 +914,13 @@ export interface IBorderAttributes {
 	  Default: inherited from Global attribute borderEnableDrop (default true)
 	 */
 	enableDrop?: boolean;
+
+	/**
+	  whether to show a mini scrollbar for the tabs
+
+	  Default: inherited from Global attribute borderEnableTabScrollbar (default false)
+	 */
+	enableTabScrollbar?: boolean;
 
 	/**
 	  the maximum size of the tab area

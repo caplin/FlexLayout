@@ -1,56 +1,161 @@
 import * as React from "react";
-import { TabNode } from "../model/TabNode";
-import { Rect } from "../Rect";
 import { TabSetNode } from "../model/TabSetNode";
 import { BorderNode } from "../model/BorderNode";
 import { Orientation } from "../Orientation";
+import { LayoutInternal } from "./Layout";
+import { TabNode } from "../model/TabNode";
 
 /** @internal */
 export const useTabOverflow = (
+    layout: LayoutInternal,
     node: TabSetNode | BorderNode,
     orientation: Orientation,
-    toolbarRef: React.MutableRefObject<HTMLElement | null>,
-    stickyButtonsRef: React.MutableRefObject<HTMLElement | null>
+    tabStripRef: React.RefObject<HTMLElement | null>,
+    tabClassName: string
 ) => {
-    const firstRender = React.useRef<boolean>(true);
-    const tabsTruncated = React.useRef<boolean>(false);
-    const lastRect = React.useRef<Rect>(Rect.empty());
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const [hiddenTabs, setHiddenTabs] = React.useState<number[]>([]);
+    const [isTabOverflow, setTabOverflow] = React.useState<boolean>(false);
 
-    const [position, setPosition] = React.useState<number>(0);
-    const userControlledLeft = React.useRef<boolean>(false);
-    const [hiddenTabs, setHiddenTabs] = React.useState<{ node: TabNode; index: number }[]>([]);
-    const lastHiddenCount = React.useRef<number>(0);
+    const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const userControlledPositionRef = React.useRef<boolean>(false);
+    const updateHiddenTabsTimerRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
+    const hiddenTabsRef = React.useRef<number[]>([]);
+    hiddenTabsRef.current = hiddenTabs;
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
-    React.useLayoutEffect(() => {
-        userControlledLeft.current = false;
+    React.useEffect(() => {
+        userControlledPositionRef.current = false;
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
-    React.useLayoutEffect(() => {
-        const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
-        if (nodeRect.width > 0 && nodeRect.height > 0) {
-            updateVisibleTabs();
+    React.useEffect(() => {
+        checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
+
+        if (!userControlledPositionRef.current) {
+            const selectedTab = findSelectedTab();
+            if (selectedTab) {
+                selectedTab.scrollIntoView();
+            }
         }
+
+        updateHiddenTabs();  
     });
 
-    const instance = toolbarRef.current;
-    React.useEffect(() => {
-        if (!instance) {
-            return;
-        }
-        instance.addEventListener("wheel", onWheel, { passive: false });
-        return () => {
-            instance.removeEventListener("wheel", onWheel);
-        };
-    }, [instance]);
+    const updateHiddenTabs = () => {
+        if (updateHiddenTabsTimerRef.current === undefined) {
+            // throttle updates to prevent Maximum update depth exceeded error
+            updateHiddenTabsTimerRef.current = setTimeout(() => {
+                const newHiddenTabs = findHiddenTabs();
+                if (!arraysEqual(newHiddenTabs, hiddenTabsRef.current)) {
+                    setHiddenTabs(newHiddenTabs);
+                }
 
-    // needed to prevent default mouse wheel over tabset/border (cannot do with react event?)
-    const onWheel = (event: Event) => {
-        event.preventDefault();
+                updateHiddenTabsTimerRef.current = undefined;
+            }, 100);
+        }
+    }
+
+    const updateTabRects = () => {
+        if (tabStripRef.current) {
+            const tabContainer = tabStripRef.current.firstElementChild!;
+
+            const nodeChildren = node.getChildren();
+            let i = 0;
+            Array.from(tabContainer.children).forEach((child) => {
+                if (child.classList.contains(tabClassName)) {
+                    const childNode = nodeChildren[i] as TabNode;
+                    childNode.setTabRect(layout.getBoundingClientRect(child as HTMLElement));
+                    i++;
+                }
+            });
+        }
+    }
+
+    const onScroll = () => {
+        updateTabRects();
+        updateHiddenTabs();
+        userControlledPositionRef.current = true;
     };
 
-    const getNear = (rect: Rect) => {
+    const findSelectedTab: () => Element | undefined = () => {
+        let found: Element | undefined = undefined;
+        if (tabStripRef.current) {
+            const tabContainer = tabStripRef.current.firstElementChild!;
+
+            Array.from(tabContainer.children).forEach((child) => {
+                if (child.classList.contains(tabClassName + "--selected")) {
+                    found = child;
+                }
+            });
+        }
+        return found;
+    };
+
+    const checkForOverflow = () => {
+        if (tabStripRef.current) {
+            const strip = tabStripRef.current;
+            const tabContainer = strip.firstElementChild!;
+
+            const offset = isTabOverflow ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
+            const dock = (getSize(tabContainer) + offset) > getSize(tabStripRef.current);
+            if (dock !== isTabOverflow) {
+                setTabOverflow(dock);
+            }
+        }
+    }
+
+    const findHiddenTabs: () => number[] = () => {
+        const hidden: number[] = [];
+        if (tabStripRef.current) {
+            const strip = tabStripRef.current;
+            const stripRect = strip.getBoundingClientRect();
+            const visibleNear = getNear(stripRect) - 1;
+            const visibleFar = getFar(stripRect) + 1;
+
+            const tabContainer = strip.firstElementChild!;
+
+            let i = 0;
+            Array.from(tabContainer.children).forEach((child) => {
+                const tabRect = child.getBoundingClientRect();
+
+                if (child.classList.contains(tabClassName)) {
+                    if (getNear(tabRect) < visibleNear || getFar(tabRect) > visibleFar) {
+                        hidden.push(i);
+                    }
+                    i++;
+                }
+            });
+        }
+
+        return hidden;
+    };
+
+    const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
+        if (tabStripRef.current) {
+            if (node.getChildren().length === 0) return;
+            let delta = 0;
+            if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+                delta = -event.deltaX;
+            } else {
+                delta = -event.deltaY;
+            }
+            if (event.deltaMode === 1) {
+                // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+                delta *= 40;
+            }
+            const newPos = getScrollPosition() - delta;
+            const maxScroll = getScrollSize(tabStripRef.current) - getSize(tabStripRef.current);
+            const p = Math.max(0, Math.min(maxScroll, newPos));
+            userControlledPositionRef.current = true;
+            setScrollPosition(p);
+            updateTabRects();
+            updateHiddenTabs();
+            event.stopPropagation();
+        }
+    };
+
+    // orientation helpers:
+
+    const getNear = (rect: DOMRect) => {
         if (orientation === Orientation.HORZ) {
             return rect.x;
         } else {
@@ -58,117 +163,49 @@ export const useTabOverflow = (
         }
     };
 
-    const getFar = (rect: Rect) => {
+    const getFar = (rect: DOMRect) => {
         if (orientation === Orientation.HORZ) {
-            return rect.getRight();
+            return rect.right;
         } else {
-            return rect.getBottom();
+            return rect.bottom;
         }
     };
 
-    const getSize = (rect: DOMRect | Rect) => {
+    const getSize = (elm: Element) => {
         if (orientation === Orientation.HORZ) {
-            return rect.width;
+            return elm.clientWidth;
         } else {
-            return rect.height;
+            return elm.clientHeight;
         }
-    };
+    }
 
-    const updateVisibleTabs = () => {
-        const tabMargin = 2;
-        if (firstRender.current === true) {
-            tabsTruncated.current = false;
-        }
-        const nodeRect = node instanceof TabSetNode ? node.getRect() : (node as BorderNode).getTabHeaderRect()!;
-        let lastChild = node.getChildren()[node.getChildren().length - 1] as TabNode;
-        const stickyButtonsSize = stickyButtonsRef.current === null ? 0 : getSize(stickyButtonsRef.current!.getBoundingClientRect());
-
-        if (
-            firstRender.current === true ||
-            (lastHiddenCount.current === 0 && hiddenTabs.length !== 0) ||
-            nodeRect.width !== lastRect.current.width || // incase rect changed between first render and second
-            nodeRect.height !== lastRect.current.height
-        ) {
-            lastHiddenCount.current = hiddenTabs.length;
-            lastRect.current = nodeRect;
-            const enabled = node instanceof TabSetNode ? node.isEnableTabStrip() === true : true;
-            let endPos = getFar(nodeRect) - stickyButtonsSize;
-            if (toolbarRef.current !== null) {
-                endPos -= getSize(toolbarRef.current.getBoundingClientRect());
-            }
-            if (enabled && node.getChildren().length > 0) {
-                if (hiddenTabs.length === 0 && position === 0 && getFar(lastChild.getTabRect()!) + tabMargin < endPos) {
-                    return; // nothing to do all tabs are shown in available space
-                }
-
-                let shiftPos = 0;
-
-                const selectedTab = node.getSelectedNode() as TabNode;
-                if (selectedTab && !userControlledLeft.current) {
-                    const selectedRect = selectedTab.getTabRect()!;
-                    const selectedStart = getNear(selectedRect) - tabMargin;
-                    const selectedEnd = getFar(selectedRect) + tabMargin;
-
-                    // when selected tab is larger than available space then align left
-                    if (getSize(selectedRect) + 2 * tabMargin >= endPos - getNear(nodeRect)) {
-                        shiftPos = getNear(nodeRect) - selectedStart;
-                        // console.log("shiftPos1", shiftPos, getNear(nodeRect), selectedStart);
-                    } else {
-                        if (selectedEnd > endPos || selectedStart < getNear(nodeRect)) {
-                            if (selectedStart < getNear(nodeRect)) {
-                                shiftPos = getNear(nodeRect) - selectedStart;
-                                // console.log("shiftPos2", shiftPos, getNear(nodeRect), selectedStart);
-                            }
-                            // use second if statement to prevent tab moving back then forwards if not enough space for single tab
-                            if (selectedEnd + shiftPos > endPos) {
-                                shiftPos = endPos - selectedEnd;
-                            }
-                        }
-                    }
-                }
-
-                const extraSpace = Math.max(0, endPos - (getFar(lastChild.getTabRect()!) + tabMargin + shiftPos));
-                const newPosition = Math.min(0, position + shiftPos + extraSpace);
-                // console.log("newPosition", newPosition, position, shiftPos, extraSpace);
-
-                // find hidden tabs
-                const diff = newPosition - position;
-                const hidden: { node: TabNode; index: number }[] = [];
-                for (let i = 0; i < node.getChildren().length; i++) {
-                    const child = node.getChildren()[i] as TabNode;
-                    if (getNear(child.getTabRect()!) + diff < getNear(nodeRect!) || getFar(child.getTabRect()!) + diff > endPos) {
-                        hidden.push({ node: child, index: i });
-                    }
-                }
-
-                tabsTruncated.current = hidden.length > 0;
-
-                firstRender.current = false; // need to do a second render
-                setHiddenTabs(hidden);
-                // console.log(newPosition);
-                setPosition(newPosition);
-            }
+    const getScrollSize = (elm: Element) => {
+        if (orientation === Orientation.HORZ) {
+            return elm.scrollWidth;
         } else {
-            firstRender.current = true;
+            return elm.scrollHeight;
         }
-    };
+    }
 
-    const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
-        if (node.getChildren().length===0) return;
-        let delta = 0;
-        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-            delta = -event.deltaX;
+    const setScrollPosition = (p: number) => {
+        if (orientation === Orientation.HORZ) {
+            tabStripRef.current!.scrollLeft = p;
         } else {
-            delta = -event.deltaY;
+            tabStripRef.current!.scrollTop = p;
         }
-        if (event.deltaMode === 1) {
-            // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
-            delta *= 40;
-        }
-        setPosition(position + delta);
-        userControlledLeft.current = true;
-        event.stopPropagation();
-    };
+    }
 
-    return { selfRef, position, userControlledLeft, hiddenTabs, onMouseWheel, tabsTruncated: tabsTruncated.current };
+    const getScrollPosition = () => {
+        if (orientation === Orientation.HORZ) {
+            return tabStripRef.current!.scrollLeft;
+        } else {
+            return tabStripRef.current!.scrollTop;
+        }
+    }
+
+    return { selfRef, userControlledPositionRef, onScroll, hiddenTabs, onMouseWheel, isTabOverflow };
 };
+
+function arraysEqual(arr1: number[], arr2: number[]) {
+    return arr1.length === arr2.length && arr1.every((val, index) => val === arr2[index]);
+}

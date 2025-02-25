@@ -685,6 +685,7 @@ export class Model {
         attributeDefinitions.add("tabMaxHeight", DefaultMax).setType(Attribute.NUMBER);
         attributeDefinitions.add("tabSetMaxWidth", DefaultMax).setType(Attribute.NUMBER);
         attributeDefinitions.add("tabSetMaxHeight", DefaultMax).setType(Attribute.NUMBER);
+        attributeDefinitions.add("tabSetEnableTabScrollbar", false).setType(Attribute.BOOLEAN);
 
         // border
         attributeDefinitions.add("borderSize", 200).setType(Attribute.NUMBER);
@@ -695,6 +696,7 @@ export class Model {
         attributeDefinitions.add("borderAutoSelectTabWhenClosed", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("borderClassName", undefined).setType(Attribute.STRING);
         attributeDefinitions.add("borderEnableAutoHide", false).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("borderEnableTabScrollbar", false).setType(Attribute.BOOLEAN);
 
         return attributeDefinitions;
     }
