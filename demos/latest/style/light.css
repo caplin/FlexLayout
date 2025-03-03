@@ -2,12 +2,12 @@
   --color-text: black;
   --color-background: white;
   --color-base: white;
-  --color-1: #f7f7f7;
-  --color-2: #f0f0f0;
-  --color-3: #e9e9e9;
-  --color-4: #e2e2e2;
-  --color-5: #dbdbdb;
-  --color-6: #d4d4d4;
+  --color-1: rgb(247.35, 247.35, 247.35);
+  --color-2: rgb(239.9295, 239.9295, 239.9295);
+  --color-3: rgb(232.731615, 232.731615, 232.731615);
+  --color-4: rgb(225.74966655, 225.74966655, 225.74966655);
+  --color-5: rgb(218.9771765535, 218.9771765535, 218.9771765535);
+  --color-6: rgb(212.4078612569, 212.4078612569, 212.4078612569);
   --color-drag1: rgb(95, 134, 196);
   --color-drag2: rgb(119, 166, 119);
   --color-drag1-background: rgba(95, 134, 196, 0.1);
@@ -341,7 +341,6 @@
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
-    background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
   }
 }
@@ -393,6 +392,8 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
+  overflow: hidden;
 }
 .flexlayout__tab_toolbar {
   display: flex;
@@ -488,6 +489,7 @@
 .flexlayout__border_inner {
   position: relative;
   box-sizing: border-box;
+  align-items: center;
   display: flex;
   overflow: hidden;
   flex-grow: 1;
@@ -499,7 +501,6 @@
   padding-right: 2px;
   box-sizing: border-box;
   position: absolute;
-  width: 10000px;
 }
 .flexlayout__border_inner_tab_container_right {
   transform-origin: top left;
@@ -593,6 +594,7 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
 }
 .flexlayout__popup_menu {
   font-size: var(--font-size);
@@ -664,6 +666,20 @@
   padding-bottom: 5px;
   font-size: var(--font-size);
   font-family: var(--font-family);
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+.flexlayout__mini_scrollbar_hidden::-webkit-scrollbar {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 10px;
 }
 
 /*# sourceMappingURL=light.css.map */

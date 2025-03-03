@@ -2,12 +2,12 @@
   --color-text: #eeeeee;
   --color-background: black;
   --color-base: black;
-  --color-1: #121212;
-  --color-2: #1a1a1a;
-  --color-3: #262626;
+  --color-1: rgb(17.85, 17.85, 17.85);
+  --color-2: rgb(25.5, 25.5, 25.5);
+  --color-3: rgb(38.25, 38.25, 38.25);
   --color-4: #333333;
-  --color-5: #404040;
-  --color-6: #4d4d4d;
+  --color-5: rgb(63.75, 63.75, 63.75);
+  --color-6: rgb(76.5, 76.5, 76.5);
   --color-drag1: rgb(207, 232, 255);
   --color-drag2: rgb(183, 209, 181);
   --color-drag1-background: rgba(128, 128, 128, 0.15);
@@ -345,7 +345,6 @@
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
-    background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
   }
 }
@@ -406,6 +405,8 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
+  overflow: hidden;
 }
 .flexlayout__tab_toolbar {
   display: flex;
@@ -501,6 +502,7 @@
 .flexlayout__border_inner {
   position: relative;
   box-sizing: border-box;
+  align-items: center;
   display: flex;
   overflow: hidden;
   flex-grow: 1;
@@ -512,7 +514,6 @@
   padding-right: 2px;
   box-sizing: border-box;
   position: absolute;
-  width: 10000px;
 }
 .flexlayout__border_inner_tab_container_right {
   transform-origin: top left;
@@ -609,6 +610,7 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
 }
 .flexlayout__popup_menu {
   font-size: var(--font-size);
@@ -680,6 +682,20 @@
   padding-bottom: 5px;
   font-size: var(--font-size);
   font-family: var(--font-family);
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+.flexlayout__mini_scrollbar_hidden::-webkit-scrollbar {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 10px;
 }
 
 /*# sourceMappingURL=dark.css.map */

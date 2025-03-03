@@ -2,12 +2,12 @@
   --color-text: black;
   --color-background: white;
   --color-base: white;
-  --color-1: #fafafa;
-  --color-2: whitesmoke;
-  --color-3: #eeeeee;
-  --color-4: #e6e6e6;
-  --color-5: #e0e0e0;
-  --color-6: #d9d9d9;
+  --color-1: rgb(249.9, 249.9, 249.9);
+  --color-2: rgb(244.902, 244.902, 244.902);
+  --color-3: rgb(237.55494, 237.55494, 237.55494);
+  --color-4: rgb(230.4282918, 230.4282918, 230.4282918);
+  --color-5: rgb(223.515443046, 223.515443046, 223.515443046);
+  --color-6: rgb(216.8099797546, 216.8099797546, 216.8099797546);
   --color-drag1: rgb(95, 134, 196);
   --color-drag2: rgb(119, 166, 119);
   --color-drag1-background: rgba(95, 134, 196, 0.1);
@@ -349,9 +349,7 @@
 }
 @media (hover: hover) {
   .flexlayout__tab_button:hover {
-    background-color: var(--color-tab-selected-background);
     color: var(--color-tab-selected);
-    border-bottom: var(--underline_height) solid var(--color-underline-hover);
   }
 }
 .flexlayout__tab_button--unselected {
@@ -403,6 +401,8 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
+  overflow: hidden;
 }
 .flexlayout__tab_toolbar {
   display: flex;
@@ -498,6 +498,7 @@
 .flexlayout__border_inner {
   position: relative;
   box-sizing: border-box;
+  align-items: center;
   display: flex;
   overflow: hidden;
   flex-grow: 1;
@@ -509,7 +510,6 @@
   padding-right: 2px;
   box-sizing: border-box;
   position: absolute;
-  width: 10000px;
 }
 .flexlayout__border_inner_tab_container_right {
   transform-origin: top left;
@@ -610,6 +610,7 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
+  width: 2em;
 }
 .flexlayout__popup_menu {
   font-size: var(--font-size);
@@ -681,6 +682,20 @@
   padding-bottom: 5px;
   font-size: var(--font-size);
   font-family: var(--font-family);
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+.flexlayout__mini_scrollbar_hidden::-webkit-scrollbar {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+.flexlayout__mini_scrollbar::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 10px;
 }
 
 .flexlayout__tab_button_textbox {
