@@ -75,10 +75,10 @@ export enum CLASSES {
     FLEXLAYOUT__TABSET_SELECTED = "flexlayout__tabset-selected",
     FLEXLAYOUT__TABSET_SIZER = "flexlayout__tabset_sizer",
     FLEXLAYOUT__TABSET_TAB_DIVIDER = "flexlayout__tabset_tab_divider",
-
     FLEXLAYOUT__TABSET_CONTENT = "flexlayout__tabset_content",
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
     FLEXLAYOUT__TABSET_TABBAR_INNER_ = "flexlayout__tabset_tabbar_inner_",
+   
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER = "flexlayout__tabset_tabbar_inner_tab_container",
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ = "flexlayout__tabset_tabbar_inner_tab_container_",
 
@@ -110,8 +110,9 @@ export enum CLASSES {
 
     FLEXLAYOUT__POPUP_MENU_CONTAINER = "flexlayout__popup_menu_container",
     FLEXLAYOUT__POPUP_MENU_ITEM = "flexlayout__popup_menu_item",
+    FLEXLAYOUT__POPUP_MENU_ITEM__SELECTED = "flexlayout__popup_menu_item--selected",
     FLEXLAYOUT__POPUP_MENU = "flexlayout__popup_menu",
 
     FLEXLAYOUT__MINI_SCROLLBAR = "flexlayout__mini_scrollbar",
-    FLEXLAYOUT__MINI_SCROLLBAR_HIDDEN = "flexlayout__mini_scrollbar_hidden",
+    FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER = "flexlayout__mini_scrollbar_container",
 }

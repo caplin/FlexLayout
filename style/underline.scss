@@ -82,6 +82,10 @@ $font-family: Roboto, Arial, sans-serif !default;
         --color-underline: rgb(65, 105, 225);
         --color-underline-hover: #aaa;
         --underline_height: 3px;
+
+        --color-mini-scroll-indicator:rgba(128, 128, 128, 0.5);
+        --color-mini-scroll-indicator-hovered:rgba(128, 128, 128, 0.7);
+        --size-mini-scroll-indicator:4px;
     }
 }
 

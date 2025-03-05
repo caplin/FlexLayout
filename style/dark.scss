@@ -78,6 +78,10 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-edge-marker: gray;
         --color-edge-icon: #eee;
+
+        --color-mini-scroll-indicator:rgba(128, 128, 128, 0.5);
+        --color-mini-scroll-indicator-hovered:rgba(128, 128, 128, 0.8);
+        --size-mini-scroll-indicator:3px;
     }
 }
 @mixin tabset_mixin {

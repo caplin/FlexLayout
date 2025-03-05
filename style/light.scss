@@ -39,7 +39,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-tabset-background: var(--color-background);
         --color-tabset-background-selected: var(--color-1);
-        --color-tabset-background-maximized: var(--color-6);
+        --color-tabset-background-maximized: var(--color-2);
         --color-tabset-divider-line: var(--color-4);
 
         --color-tabset-header-background: var(--color-background);
@@ -78,6 +78,10 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-edge-marker: #aaa;
         --color-edge-icon: #555;
+
+        --color-mini-scroll-indicator:rgba(128, 128, 128, 0.5);
+        --color-mini-scroll-indicator-hovered:rgba(128, 128, 128, 0.7);
+        --size-mini-scroll-indicator:3px;
     }
 }
 

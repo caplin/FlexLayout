@@ -1,3 +1,6 @@
+0.8.5
+Changed the mini scrollbar to only show when tabs are hovered over 
+
 0.8.4
 Added attribute 'enableTabScrollbar' to TabSet and Border nodes 
   Enabling this attribute will show a mini 'scrollbar' for the tabs to indicate the scroll position

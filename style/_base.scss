@@ -234,7 +234,11 @@
                 box-sizing: border-box;
                 display: flex;
                 flex-grow: 1;
-                overflow: hidden;
+                scrollbar-width: none; // firefox
+
+                &::-webkit-scrollbar {
+                    display: none;
+                }
 
                 &_tab_container {
                     position: relative;
@@ -537,8 +541,12 @@
             box-sizing: border-box;
             align-items: center;
             display: flex;
-            overflow: hidden;
             flex-grow: 1;
+            scrollbar-width: none; // firefox
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
             &_tab_container {
                 white-space: nowrap;
@@ -667,7 +675,7 @@
                     color: var(--color-overflow);
                     font-size: inherit;
                     background-color: transparent;
-                    width:2em;
+                    width:1.5em;
                 }
 
                 &_overflow_top,
@@ -690,6 +698,12 @@
             white-space: nowrap;
             cursor: pointer;
             border-radius: 2px;
+
+            &--selected {
+                font-weight: 500;
+                background-color: var(--color-tab-selected-background);
+                color: var(--color-tab-selected);
+            }
         }
 
         @media (hover: hover) {
@@ -760,24 +774,35 @@
         font-family: var(--font-family);
     }
 
-    &__mini_scrollbar::-webkit-scrollbar {
-        width: 3px; 
-        height: 3px;
+    &__mini_scrollbar {
+        position: absolute;
+        background-color:var(--color-mini-scroll-indicator);
+        border-radius:5px;
+        width:var(--size-mini-scroll-indicator);
+        height:var(--size-mini-scroll-indicator);
+        visibility: hidden; 
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     }
 
-    &__mini_scrollbar_hidden::-webkit-scrollbar {
-        display: none;
-    }
-    
-    &__mini_scrollbar::-webkit-scrollbar-button {
-        display: none;
-    }
-    
-    &__mini_scrollbar::-webkit-scrollbar-thumb {
-        background: #aaa; 
-        border-radius: 10px;
+    &__mini_scrollbar:hover {
+        background-color: var(--color-mini-scroll-indicator-hovered);
+        transition: background-color 0.3s ease-in-out;
     }
 
+    &__mini_scrollbar_container {
+        position: relative;
+        display: flex;
+        flex-grow: 1;
+        overflow: hidden;
+        
+        @media (hover: hover) {
+            &:hover .flexlayout__mini_scrollbar {
+                opacity: 1; 
+                visibility: visible;
+            }
+        }
+    }
 }
 
 

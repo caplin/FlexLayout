@@ -4,6 +4,7 @@ import { BorderNode } from "../model/BorderNode";
 import { Orientation } from "../Orientation";
 import { LayoutInternal } from "./Layout";
 import { TabNode } from "../model/TabNode";
+import { startDrag } from "./Utils";
 
 /** @internal */
 export const useTabOverflow = (
@@ -11,6 +12,7 @@ export const useTabOverflow = (
     node: TabSetNode | BorderNode,
     orientation: Orientation,
     tabStripRef: React.RefObject<HTMLElement | null>,
+    miniScrollRef: React.RefObject<HTMLElement | null>,
     tabClassName: string
 ) => {
     const [hiddenTabs, setHiddenTabs] = React.useState<number[]>([]);
@@ -20,8 +22,16 @@ export const useTabOverflow = (
     const userControlledPositionRef = React.useRef<boolean>(false);
     const updateHiddenTabsTimerRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
     const hiddenTabsRef = React.useRef<number[]>([]);
+    const thumbInternalPos = React.useRef<number>(0);
     hiddenTabsRef.current = hiddenTabs;
 
+    // if node changes (new model) then reset scroll to 0
+    React.useEffect(() => {
+        if (tabStripRef.current) {
+            setScrollPosition(0);
+        }
+    }, [node]);
+    
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useEffect(() => {
         userControlledPositionRef.current = false;
@@ -37,8 +47,46 @@ export const useTabOverflow = (
             }
         }
 
-        updateHiddenTabs();  
+        updateHiddenTabs();
+        updateScrollMetrics();
     });
+
+    const updateScrollMetrics = () => {
+        if (tabStripRef.current && miniScrollRef.current) {
+            const t = tabStripRef.current;
+            const s = miniScrollRef.current;
+
+            const size = getSize(t);
+            const scrollSize = getScrollSize(t);
+            const position = getScrollPosition(t);
+
+            if (scrollSize > size && scrollSize > 0) {
+                let thumbSize = size * size / scrollSize;
+                let adjust = 0;
+                if (thumbSize < 20) {
+                    adjust = 20 - thumbSize;
+                    thumbSize = 20;
+                }
+                const thumbPos = position * (size - adjust) / scrollSize; 
+                if (orientation === Orientation.HORZ) {
+                    s.style.width = thumbSize + "px";
+                    s.style.left = thumbPos + "px";
+                } else {
+                    s.style.height = thumbSize + "px";
+                    s.style.top = thumbPos + "px";
+                }
+                s.style.display = "block";
+            } else {
+                s.style.display = "none";
+            }
+
+            if (orientation === Orientation.HORZ) {
+                s.style.bottom = "0px";
+            } else {
+                s.style.right = "0px";
+            }
+        }
+    }
 
     const updateHiddenTabs = () => {
         if (updateHiddenTabsTimerRef.current === undefined) {
@@ -71,10 +119,54 @@ export const useTabOverflow = (
     }
 
     const onScroll = () => {
-        updateTabRects();
-        updateHiddenTabs();
         userControlledPositionRef.current = true;
+        updateTabRects();
+        updateScrollMetrics()
+        updateHiddenTabs();
     };
+
+    const onScrollPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+        event.stopPropagation();
+        miniScrollRef.current!.setPointerCapture(event.pointerId)
+        const r = miniScrollRef.current?.getBoundingClientRect()!;
+        if (orientation === Orientation.HORZ) {
+            thumbInternalPos.current = event.clientX - r.x;
+        } else {
+            thumbInternalPos.current = event.clientY - r.y;
+        }
+        userControlledPositionRef.current = true;
+        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
+    }
+
+    const onDragMove = (x: number, y: number) => {
+        if (tabStripRef.current && miniScrollRef.current) {
+            const t = tabStripRef.current;
+            const s = miniScrollRef.current;
+            const size = getSize(t);
+            const scrollSize = getScrollSize(t);
+            const thumbSize = getSize(s);
+
+            const r = t.getBoundingClientRect()!;
+            let thumb = 0;
+            if (orientation === Orientation.HORZ) {
+                thumb = x - r.x - thumbInternalPos.current;
+            } else {
+                thumb = y - r.y - thumbInternalPos.current
+            }
+
+            thumb = Math.max(0, Math.min(scrollSize - thumbSize, thumb));
+            if (size > 0) {
+                const scrollPos = thumb * scrollSize / size;
+                setScrollPosition(scrollPos);
+            }
+        }
+    }
+
+    const onDragEnd = () => {
+    }
+
+    const onDragCancel = () => {
+    }
 
     const findSelectedTab: () => Element | undefined = () => {
         let found: Element | undefined = undefined;
@@ -132,24 +224,23 @@ export const useTabOverflow = (
     const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
         if (tabStripRef.current) {
             if (node.getChildren().length === 0) return;
+
             let delta = 0;
-            if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-                delta = -event.deltaX;
-            } else {
+            if (Math.abs(event.deltaY) > 0) {
                 delta = -event.deltaY;
+                if (event.deltaMode === 1) {
+                    // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+                    delta *= 40;
+                }
+                const newPos = getScrollPosition(tabStripRef.current) - delta;
+                const maxScroll = getScrollSize(tabStripRef.current) - getSize(tabStripRef.current);
+                const p = Math.max(0, Math.min(maxScroll, newPos));
+                setScrollPosition(p);
+                updateTabRects();
+                updateHiddenTabs();
+                userControlledPositionRef.current = true;
+                event.stopPropagation();
             }
-            if (event.deltaMode === 1) {
-                // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
-                delta *= 40;
-            }
-            const newPos = getScrollPosition() - delta;
-            const maxScroll = getScrollSize(tabStripRef.current) - getSize(tabStripRef.current);
-            const p = Math.max(0, Math.min(maxScroll, newPos));
-            userControlledPositionRef.current = true;
-            setScrollPosition(p);
-            updateTabRects();
-            updateHiddenTabs();
-            event.stopPropagation();
         }
     };
 
@@ -195,15 +286,15 @@ export const useTabOverflow = (
         }
     }
 
-    const getScrollPosition = () => {
+    const getScrollPosition = (elm: Element) => {
         if (orientation === Orientation.HORZ) {
-            return tabStripRef.current!.scrollLeft;
+            return elm.scrollLeft;
         } else {
-            return tabStripRef.current!.scrollTop;
+            return elm.scrollTop;
         }
     }
 
-    return { selfRef, userControlledPositionRef, onScroll, hiddenTabs, onMouseWheel, isTabOverflow };
+    return { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isTabOverflow };
 };
 
 function arraysEqual(arr1: number[], arr2: number[]) {

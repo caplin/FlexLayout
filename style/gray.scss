@@ -77,6 +77,10 @@ $font_family: Roboto, Arial, sans-serif !default;
 
         --color-edge-marker: #aaa;
         --color-edge-icon: #555;
+
+        --color-mini-scroll-indicator:rgba(128, 128, 128, 0.5);
+        --color-mini-scroll-indicator-hovered:rgba(128, 128, 128, 0.7);
+        --size-mini-scroll-indicator:3px;
     }
 }
 
@@ -99,11 +103,11 @@ $font_family: Roboto, Arial, sans-serif !default;
 }
 
 @mixin tabset_selected_mixin {
-    background-image: linear-gradient(var(--color-background),var(--color-4));
+    background-image: linear-gradient(var(--color-background),var(--color-3));
 }
 
 @mixin tabset_maximized_mixin {
-    background-image: linear-gradient(var(--color-6),var(--color-2));
+    background-image: linear-gradient(var(--color-3),var(--color-1));
 }
 
 @mixin tab_top_mixin {

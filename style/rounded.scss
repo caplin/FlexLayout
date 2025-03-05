@@ -40,7 +40,7 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-tabset-background: white;
         --color-tabset-background-selected: white;
-        --color-tabset-background-maximized: var(--color-2);
+        --color-tabset-background-maximized: white;
         --color-tabset-divider-line: white;
 
         --color-tabset-header-background: var(--color-background);
@@ -79,6 +79,11 @@ $font-family: Roboto, Arial, sans-serif !default;
 
         --color-edge-marker: #a6bbdf;
         --color-edge-icon: #555;
+
+        --color-mini-scroll-indicator:rgba(180, 200, 230, 0.5);
+        --color-mini-scroll-indicator-hovered:rgba(180, 200, 230, 0.7);
+
+        --size-mini-scroll-indicator:4px;
     }
 }
 
