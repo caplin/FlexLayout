@@ -35,6 +35,8 @@ export interface ILayoutProps {
     model: Model;
     /** factory function for creating the tab components */
     factory: (node: TabNode) => React.ReactNode;
+    /** sets a top level class name on popout windows */
+    popoutClassName?: string;
     /** object mapping keys among close, maximize, restore, more, popout to React nodes to use in place of the default icons, can alternatively return functions for creating the React nodes */
     icons?: IIcons;
     /** function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning undefined from the function will halt the action, otherwise return the action to continue */
@@ -388,8 +390,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
-            </div>
-        );
+                </div>
+            );
     }
 
     renderBorders(
@@ -538,7 +540,9 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                             onSetWindow={this.onSetWindow}
                             onCloseWindow={this.onCloseWindow}
                         >
-                            <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                            <div className={this.props.popoutClassName}>
+                                 <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                            </div>
                         </PopoutWindow>
                     );
                     i++;
@@ -1022,7 +1026,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             }
             if (!rendered) {
                 if (isSafari()) { // safari doesnt render the offscreen tabstamps
-                    this.setDragComponent(event, <TabButtonStamp node={node as TabNode} layout={this}/>, x,y);
+                    this.setDragComponent(event, <TabButtonStamp node={node as TabNode} layout={this} />, x, y);
                 } else {
                     event.dataTransfer!.setDragImage((node as TabNode).getTabStamp()!, x, y);
                 }
@@ -1224,7 +1228,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     // *************************** End Drag Drop *************************************
 }
 
-export const FlexLayoutVersion = "0.8.5";
+export const FlexLayoutVersion = "0.8.6";
 
 export type DragRectRenderCallback = (
     content: React.ReactNode | undefined,

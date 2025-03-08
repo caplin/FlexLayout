@@ -1,3 +1,9 @@
+0.8.6
+Restructured scss files to remove use of deprecated @import rule
+Added combined.css containing all themes.
+Updated demo to use combined.css for simple theme switching using class names
+Added option in demo to show the layout structure
+
 0.8.5
 Changed the mini scrollbar to only show when tabs are hovered over 
 

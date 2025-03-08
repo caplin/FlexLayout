@@ -38,7 +38,6 @@ export enum CLASSES {
     FLEXLAYOUT__ERROR_BOUNDARY_CONTENT = "flexlayout__error_boundary_content",
 
     FLEXLAYOUT__FLOATING_WINDOW_CONTENT = "flexlayout__floating_window_content",
-    FLEXLAYOUT__FLOATING_WINDOW_TAB = "flexlayout__floating_window_tab",
 
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
     FLEXLAYOUT__LAYOUT_MOVEABLES = "flexlayout__layout_moveables",
@@ -69,11 +68,9 @@ export enum CLASSES {
     FLEXLAYOUT__TABSET = "flexlayout__tabset",
     FLEXLAYOUT__TABSET_CONTAINER = "flexlayout__tabset_container",
     FLEXLAYOUT__TABSET_HEADER = "flexlayout__tabset_header",
-    FLEXLAYOUT__TABSET_HEADER_SIZER = "flexlayout__tabset_header_sizer",
     FLEXLAYOUT__TABSET_HEADER_CONTENT = "flexlayout__tabset_header_content",
     FLEXLAYOUT__TABSET_MAXIMIZED = "flexlayout__tabset-maximized",
     FLEXLAYOUT__TABSET_SELECTED = "flexlayout__tabset-selected",
-    FLEXLAYOUT__TABSET_SIZER = "flexlayout__tabset_sizer",
     FLEXLAYOUT__TABSET_TAB_DIVIDER = "flexlayout__tabset_tab_divider",
     FLEXLAYOUT__TABSET_CONTENT = "flexlayout__tabset_content",
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
@@ -96,9 +93,6 @@ export enum CLASSES {
     FLEXLAYOUT__TAB_BUTTON_TEXTBOX = "flexlayout__tab_button_textbox",
     FLEXLAYOUT__TAB_BUTTON_TRAILING = "flexlayout__tab_button_trailing",
     FLEXLAYOUT__TAB_BUTTON_STAMP = "flexlayout__tab_button_stamp",
-
-    FLEXLAYOUT__TAB_FLOATING = "flexlayout__tab_floating",
-    FLEXLAYOUT__TAB_FLOATING_INNER = "flexlayout__tab_floating_inner",
 
     FLEXLAYOUT__TAB_TOOLBAR = "flexlayout__tab_toolbar",
     FLEXLAYOUT__TAB_TOOLBAR_BUTTON = "flexlayout__tab_toolbar_button",

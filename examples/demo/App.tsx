@@ -22,7 +22,16 @@ var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
 const ContextExample = React.createContext('');
 
-class App extends React.Component<any, { layoutFile: string | null, model: Model | null, json?: string, adding: boolean, fontSize: string, realtimeResize: boolean }> {
+class App extends React.Component<any, { 
+    layoutFile: string | null, 
+    model: Model | null, 
+    json?: string, 
+    adding: boolean, 
+    fontSize: string, 
+    realtimeResize: boolean,
+    showLayout: boolean,
+    popoutClassName: string
+}> {
 
     loadingLayoutName?: string;
     nextGridIndex: number = 1;
@@ -32,7 +41,15 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
 
     constructor(props: any) {
         super(props);
-        this.state = { layoutFile: null, model: null, adding: false, fontSize: "medium", realtimeResize: false };
+        this.state = { 
+            layoutFile: null, 
+            model: null, 
+            adding: false, 
+            fontSize: "medium",
+            realtimeResize: false,
+            showLayout: false,
+            popoutClassName: "flexlayout__theme_light"
+            };
         this.layoutRef = React.createRef();
 
         // save layout when unloading page
@@ -131,6 +148,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
     onRealtimeResize = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             realtimeResize: event.target.checked
+        });
+    }
+
+    onShowLayout = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({
+            showLayout: event.target.checked
         });
     }
 
@@ -337,37 +360,10 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
 
     onThemeChange = (event: React.FormEvent) => {
         var target = event.target as HTMLSelectElement;
-
-        let flexlayout_stylesheet: any = window.document.getElementById("flexlayout-stylesheet");
-        let page_stylesheet = window.document.getElementById("page-stylesheet");
-        let index = flexlayout_stylesheet.href.lastIndexOf("/");
-        let newAddress = flexlayout_stylesheet.href.substr(0, index);
-
-        let s1 = document.createElement("link");
-        s1.setAttribute("id", "flexlayout-stylesheet");
-        s1.setAttribute("rel", "stylesheet");
-        s1.setAttribute("href", newAddress + "/" + target.value + ".css");
-
-        let s2 = document.createElement("link");
-        s2.setAttribute("id", "page-stylesheet");
-        s2.setAttribute("rel", "stylesheet");
-        s2.setAttribute("href", target.value + ".css");
-
-        const promises: Promise<boolean>[] = [];
-        promises.push(new Promise((resolve) => {
-            s1.onload = () => resolve(true);
-        }));
-        promises.push(new Promise((resolve) => {
-            s2.onload = () => resolve(true);
-        }));
-        document.head.appendChild(s1);
-        document.head.appendChild(s2);
-
-        Promise.all(promises).then(() => {
-            document.head.removeChild(flexlayout_stylesheet);
-            document.head.removeChild(page_stylesheet!);
-            this.forceUpdate();
-        });
+        const themeClassName = "flexlayout__theme_"+ target.value;
+        document.documentElement.className = themeClassName;
+        // need to set popout top level class name to new theme
+        this.setState({popoutClassName: themeClassName});
     }
 
     onFontSizeChange = (event: React.FormEvent) => {
@@ -425,6 +421,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
             contents = <Layout
             ref={this.layoutRef}
             model={this.state.model}
+            popoutClassName={this.state.popoutClassName}
             popoutWindowName="Demo Popout"
             factory={this.factory}
                 onAction={this.onAction}
@@ -487,6 +484,12 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                                 type="checkbox"
                                 checked={this.state.realtimeResize}
                                 onChange={this.onRealtimeResize} />
+                            <span style={{ marginLeft:5, fontSize: "14px" }}>Show layout</span>
+                            <input
+                                name="show layout"
+                                type="checkbox"
+                                checked={this.state.showLayout}
+                                onChange={this.onShowLayout} />
                             <select className="toolbar_control" style={{ marginLeft: 5 }}
                                 onChange={this.onFontSizeChange}
                                 defaultValue="medium">
@@ -522,7 +525,7 @@ class App extends React.Component<any, { layoutFile: string | null, model: Model
                             </button>
                             <button className="toolbar_control" disabled={this.state.adding} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
                         </div>
-                        <div className="contents">
+                        <div className={"contents" + (this.state.showLayout? " showLayout":"")}>
                             {contents}
                         </div>
                     </div>

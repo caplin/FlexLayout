@@ -9,7 +9,5 @@ fonts/
 @private/
 .DS_Store
 typedoc/
-style/dark.css.map
-style/gray.css.map
-style/light.css.map
-test/style/light.css.map
+style/*.css.map
+test/style/*.css.map

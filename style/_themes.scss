@@ -1,0 +1,649 @@
+@use 'sass:color';
+
+@mixin light_theme {
+    $color_text: black !default;
+    $color_background: white !default;
+    $color_base: white !default;
+    $color_1: color.adjust($color_base, $lightness: -3%) !default;
+    $color_2: color.adjust($color_1, $lightness: -3%) !default;
+    $color_3: color.adjust($color_2, $lightness: -3%) !default;
+    $color_4: color.adjust($color_3, $lightness: -3%) !default;
+    $color_5: color.adjust($color_4, $lightness: -3%) !default;
+    $color_6: color.adjust($color_5, $lightness: -3%) !default;
+    $color_drag1: rgb(95, 134, 196) !default;
+    $color_drag2: rgb(119, 166, 119) !default;
+    $color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+    $color_drag2_background: rgba(119, 166, 119, 0.075) !default;
+
+    $font-size: medium !default;
+    $font-family: Roboto, Arial, sans-serif !default;
+
+    .flexlayout {
+        &__layout {
+            --color-text: #{$color_text};
+            --color-background: #{$color_background};
+            --color-base: #{$color_base};
+            --color-1: #{$color_1};
+            --color-2: #{$color_2};
+            --color-3: #{$color_3};
+            --color-4: #{$color_4};
+            --color-5: #{$color_5};
+            --color-6: #{$color_6};
+            --color-drag1: #{$color_drag1};
+            --color-drag2: #{$color_drag2};
+            --color-drag1-background: #{$color_drag1_background};
+            --color-drag2-background: #{$color_drag2_background};
+
+            --font-size: #{$font_size};
+            --font-family: #{$font_family};
+
+            --color-overflow: gray;
+            --color-icon: gray;
+
+            --color-tabset-background: var(--color-background);
+            --color-tabset-background-selected: var(--color-1);
+            --color-tabset-background-maximized: var(--color-2);
+            --color-tabset-divider-line: var(--color-4);
+
+            --color-tabset-header-background: var(--color-background);
+            --color-tabset-header: var(--color-text);
+
+            --color-border-tab-content: var(--color-background);
+            --color-border-background: var(--color-background);
+            --color-border-divider-line: var(--color-4);
+
+            --color-tab-content: var(--color-background);
+            --color-tab-selected: var(--color-text);
+            --color-tab-selected-background: var(--color-4);
+            --color-tab-unselected: gray;
+            --color-tab-unselected-background: transparent;
+            --color-tab-textbox: var(--color-text);
+            --color-tab-textbox-background: var(--color-3);
+
+            --color-border-tab-selected: var(--color-text);
+            --color-border-tab-selected-background: var(--color-4);
+            --color-border-tab-unselected: gray;
+            --color-border-tab-unselected-background: var(--color-2);
+
+            --color-splitter: var(--color-1);
+            --color-splitter-hover: var(--color-4);
+            --color-splitter-drag: var(--color-4);
+
+            --color-drag-rect-border: #ccc;
+            --color-drag-rect-background: var(--color-5);
+            --color-drag-rect: var(--color-text);
+
+            --color-popup-border: var(--color-6);
+            --color-popup-unselected: var(--color-text);
+            --color-popup-unselected-background: #{$color_background};
+            --color-popup-selected: var(--color-text);
+            --color-popup-selected-background: var(--color-3);
+
+            --color-edge-marker: #aaa;
+            --color-edge-icon: #555;
+
+            --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+            --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+            --size-mini-scroll-indicator: 3px;
+
+            --color-toolbar-button-hover: var(--color-3);
+        }
+    }
+}
+
+@mixin light_theme_overrides {
+/* 
+    light theme overrides 
+*/
+
+}
+
+@mixin dark_theme {
+    $color_text: #eeeeee !default;
+    $color_background: black !default;
+    $color_base: black !default;
+    $color_1: color.adjust($color_base, $lightness: 7%) !default;
+    $color_2: color.adjust($color_base, $lightness: 10%) !default;
+    $color_3: color.adjust($color_base, $lightness: 15%) !default;
+    $color_4: color.adjust($color_base, $lightness: 20%) !default;
+    $color_5: color.adjust($color_base, $lightness: 25%) !default;
+    $color_6: color.adjust($color_base, $lightness: 30%) !default;
+    $color_drag1: rgb(207, 232, 255) !default;
+    $color_drag2: rgb(183, 209, 181) !default;
+    $color_drag1_background: rgba(128, 128, 128, 0.15) !default;
+    $color_drag2_background: rgba(128, 128, 128, 0.15) !default;
+
+    $font-size: medium !default;
+    $font-family: Roboto, Arial, sans-serif !default;
+
+    .flexlayout {
+        &__layout {
+            --color-text: #{$color_text};
+            --color-background: #{$color_background};
+            --color-base: #{$color_base};
+            --color-1: #{$color_1};
+            --color-2: #{$color_2};
+            --color-3: #{$color_3};
+            --color-4: #{$color_4};
+            --color-5: #{$color_5};
+            --color-6: #{$color_6};
+            --color-drag1: #{$color_drag1};
+            --color-drag2: #{$color_drag2};
+            --color-drag1-background: #{$color_drag1_background};
+            --color-drag2-background: #{$color_drag2_background};
+
+            --font-size: #{$font_size};
+            --font-family: #{$font_family};
+
+            --color-overflow: gray;
+            --color-icon: gray;
+
+            --color-tabset-background: var(--color-1);
+            --color-tabset-background-selected: var(--color-1);
+            --color-tabset-background-maximized: var(--color-6);
+            --color-tabset-divider-line: var(--color-4);
+
+            --color-tabset-header-background: var(--color-1);
+            --color-tabset-header: var(--color-text);
+
+            --color-border-tab-content: var(--color-background);
+            --color-border-background: var(--color-1);
+            --color-border-divider-line: var(--color-4);
+
+            --color-tab-content: var(--color-background);
+            --color-tab-selected: var(--color-text);
+            --color-tab-selected-background: var(--color-4);
+            --color-tab-unselected: gray;
+            --color-tab-unselected-background: transparent;
+            --color-tab-textbox: var(--color-text);
+            --color-tab-textbox-background: var(--color-3);
+
+            --color-border-tab-selected: var(--color-text);
+            --color-border-tab-selected-background: var(--color-4);
+            --color-border-tab-unselected: gray;
+            --color-border-tab-unselected-background: var(--color-2);
+
+            --color-splitter: var(--color-2);
+            --color-splitter-hover: var(--color-4);
+            --color-splitter-drag: var(--color-5);
+
+            --color-drag-rect-border: var(--color-4);
+            --color-drag-rect-background: var(--color-1);
+            --color-drag-rect: var(--color-text);
+
+            --color-popup-border: var(--color-6);
+            --color-popup-unselected: var(--color-text);
+            --color-popup-unselected-background: var(--color-background);
+            --color-popup-selected: var(--color-text);
+            --color-popup-selected-background: var(--color-4);
+
+            --color-edge-marker: gray;
+            --color-edge-icon: #eee;
+
+            --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+            --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.8);
+            --size-mini-scroll-indicator: 3px;
+
+            --color-toolbar-button-hover: var(--color-4);
+        }
+    }
+}
+
+@mixin dark_theme_overrides {
+/* 
+    dark theme overrides 
+*/
+    .flexlayout {
+        &__tabset_header {
+            box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+        }
+
+        &__tabset-selected {
+            background-image: linear-gradient(var(--color-background), var(--color-4));
+        }
+
+        &__tabset-maximized {
+            background-image: linear-gradient(var(--color-6), var(--color-2));
+        }
+
+        &__tab_top {
+            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+
+        &__tab_bottom {
+            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        &__border_button {
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+            border-radius: 3px;
+        }
+    }
+}
+
+@mixin gray_theme {
+    $color_text: black !default;
+    $color_background: white !default;
+    $color_base: white !default;
+    $color_1: color.adjust($color_base, $lightness: -3%) !default;
+    $color_2: color.adjust($color_base, $lightness: -10%) !default;
+    $color_3: color.adjust($color_base, $lightness: -15%) !default;
+    $color_4: color.adjust($color_base, $lightness: -20%) !default;
+    $color_5: color.adjust($color_base, $lightness: -25%) !default;
+    $color_6: color.adjust($color_base, $lightness: -30%) !default;
+    $color_drag1: rgb(95, 134, 196) !default;
+    $color_drag2: rgb(119, 166, 119) !default;
+    $color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+    $color_drag2_background: rgba(119, 166, 119, 0.075) !default;
+    $font_size: medium !default;
+    $font_family: Roboto, Arial, sans-serif !default;
+
+    .flexlayout {
+        &__layout {
+            --color-text: #{$color_text};
+            --color-background: #{$color_background};
+            --color-base: #{$color_base};
+            --color-1: #{$color_1};
+            --color-2: #{$color_2};
+            --color-3: #{$color_3};
+            --color-4: #{$color_4};
+            --color-5: #{$color_5};
+            --color-6: #{$color_6};
+            --color-drag1: #{$color_drag1};
+            --color-drag2: #{$color_drag2};
+            --color-drag1-background: #{$color_drag1_background};
+            --color-drag2-background: #{$color_drag2_background};
+
+            --font-size: #{$font_size};
+            --font-family: #{$font_family};
+
+            --color-overflow: gray;
+            --color-icon: gray;
+
+            --color-tabset-background: var(--color-1);
+            --color-tabset-background-selected: var(--color-1);
+            --color-tabset-background-maximized: var(--color-6);
+            --color-tabset-divider-line: var(--color-3);
+
+            --color-tabset-header-background: var(--color-1);
+            --color-tabset-header: var(--color-text);
+
+            --color-border-tab-content: var(--color-background);
+            --color-border-background: var(--color-1);
+            --color-border-divider-line: var(--color-3);
+
+            --color-tab-content: var(--color-background);
+            --color-tab-selected: var(--color-text);
+            --color-tab-selected-background: var(--color-3);
+            --color-tab-unselected: gray;
+            --color-tab-unselected-background: transparent;
+            --color-tab-textbox: var(--color-text);
+            --color-tab-textbox-background: var(--color-3);
+
+            --color-border-tab-selected: var(--color-text);
+            --color-border-tab-selected-background: var(--color-3);
+            --color-border-tab-unselected: gray;
+            --color-border-tab-unselected-background: var(--color-2);
+
+            --color-splitter: var(--color-2);
+            --color-splitter-hover: var(--color-4);
+            --color-splitter-drag: var(--color-5);
+
+            --color-drag-rect-border: var(--color-4);
+            --color-drag-rect-background: var(--color-3);
+            --color-drag-rect: var(--color-text);
+
+            --color-popup-border: var(--color-6);
+            --color-popup-unselected: var(--color-text);
+            --color-popup-unselected-background: #{$color_background};
+            --color-popup-selected: var(--color-text);
+            --color-popup-selected-background: var(--color-3);
+
+            --color-edge-marker: #aaa;
+            --color-edge-icon: #555;
+
+            --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+            --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+            --size-mini-scroll-indicator: 3px;
+
+            --color-toolbar-button-hover: var(--color-4);
+        }
+    }
+}
+
+@mixin gray_theme_overrides {
+/* 
+    gray theme overrides 
+*/    
+    .flexlayout {
+        &__tabset-selected {
+            background-image: linear-gradient(var(--color-background), var(--color-4));
+        }
+
+        &__tabset_header {
+            box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+        }
+
+        &__tabset-selected {
+            background-image: linear-gradient(var(--color-background), var(--color-3));
+        }
+
+        &__tabset-maximized {
+            background-image: linear-gradient(var(--color-3), var(--color-1));
+        }
+
+        &__tab_button_top {
+            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+        }
+
+        &__tab_button_bottom {
+            box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        &__border_button {
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, .15);
+            border-radius: 3px;
+        }
+    }
+}
+
+@mixin underline_theme {
+    $color_text: black !default;
+    $color_background: white !default;
+    $color_base: white !default;
+    $color_1: color.adjust($color_base, $lightness: -2%) !default;
+    $color_2: color.adjust($color_1, $lightness: -2%) !default;
+    $color_3: color.adjust($color_2, $lightness: -3%) !default;
+    $color_4: color.adjust($color_3, $lightness: -3%) !default;
+    $color_5: color.adjust($color_4, $lightness: -3%) !default;
+    $color_6: color.adjust($color_5, $lightness: -3%) !default;
+    $color_drag1: rgb(95, 134, 196) !default;
+    $color_drag2: rgb(119, 166, 119) !default;
+    $color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+    $color_drag2_background: rgba(119, 166, 119, 0.075) !default;
+
+    $font-size: medium !default;
+    $font-family: Roboto, Arial, sans-serif !default;
+
+    .flexlayout {
+        &__layout {
+            --color-text: #{$color_text};
+            --color-background: #{$color_background};
+            --color-base: #{$color_base};
+            --color-1: #{$color_1};
+            --color-2: #{$color_2};
+            --color-3: #{$color_3};
+            --color-4: #{$color_4};
+            --color-5: #{$color_5};
+            --color-6: #{$color_6};
+            --color-drag1: #{$color_drag1};
+            --color-drag2: #{$color_drag2};
+            --color-drag1-background: #{$color_drag1_background};
+            --color-drag2-background: #{$color_drag2_background};
+
+            --font-size: #{$font_size};
+            --font-family: #{$font_family};
+
+            --color-overflow: gray;
+            --color-icon: gray;
+
+            --color-tabset-background: var(--color-background);
+            --color-tabset-background-selected: var(--color-1);
+            --color-tabset-background-maximized: var(--color-6);
+            --color-tabset-divider-line: var(--color-3);
+
+            --color-tabset-header-background: var(--color-background);
+            --color-tabset-header: var(--color-text);
+
+            --color-border-tab-content: var(--color-background);
+            --color-border-background: var(--color-background);
+            --color-border-divider-line: var(--color-3);
+
+            --color-tab-content: var(--color-background);
+            --color-tab-selected: var(--color-text);
+            --color-tab-selected-background: transparent;
+            --color-tab-unselected: gray;
+            --color-tab-unselected-background: transparent;
+            --color-tab-textbox: var(--color-text);
+            --color-tab-textbox-background: var(--color-3);
+
+            --color-border-tab-selected: var(--color-text);
+            --color-border-tab-selected-background: transparent;
+            --color-border-tab-unselected: gray;
+            --color-border-tab-unselected-background: transparent;
+
+            --color-splitter: var(--color-1);
+            --color-splitter-hover: var(--color-4);
+            --color-splitter-drag: var(--color-4);
+
+            --color-drag-rect-border: var(--color-6);
+            --color-drag-rect-background: var(--color-4);
+            --color-drag-rect: var(--color-text);
+
+            --color-popup-border: var(--color-6);
+            --color-popup-unselected: var(--color-text);
+            --color-popup-unselected-background: #{$color_background};
+            --color-popup-selected: var(--color-text);
+            --color-popup-selected-background: var(--color-3);
+
+            --color-edge-marker: #aaa;
+            --color-edge-icon: #555;
+
+            --color-underline: rgb(65, 105, 225);
+            --color-underline-hover: #aaa;
+            --underline_height: 3px;
+
+            --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+            --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+            --size-mini-scroll-indicator: 4px;
+
+            --color-toolbar-button-hover: var(--color-3);
+        }
+    }
+}
+
+@mixin underline_theme_overrides {
+/* 
+    underline theme overrides 
+*/
+    .flexlayout {
+
+        &__tab_button {
+            padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
+        }
+
+        &__tab_button--selected {
+            border-bottom: var(--underline_height) solid var(--color-underline);
+        }
+
+        &__tab_button--unselected {
+            border-bottom: var(--underline_height) solid transparent;
+        }
+
+        &__border_button {
+            padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
+        }
+
+        &__border_button--selected {
+            border-bottom: var(--underline_height) solid var(--color-underline);
+        }
+
+        &__border_button--unselected {
+            border-bottom: var(--underline_height) solid transparent;
+        }
+
+        &__tabset_tab_divider,
+        &__border_tab_divider {
+            width: 1px;
+            margin: 4px 6px 4px 6px;
+            border-left: 1px solid #ddd;
+        }
+
+        &__tab_button_textbox {
+            border: none;
+        }
+    }
+}
+
+@mixin rounded_theme {
+    $color_text: black !default;
+    $color_background: #f2f6fb !default;
+    $color_base: #f2f6fb !default;
+    $color_1: color.adjust($color_base, $lightness: -3%) !default;
+    $color_2: color.adjust($color_1, $lightness: -3%) !default;
+    $color_3: color.adjust($color_2, $lightness: -3%) !default;
+    $color_4: color.adjust($color_3, $lightness: -3%) !default;
+    $color_5: color.adjust($color_4, $lightness: -3%) !default;
+    $color_6: color.adjust($color_5, $lightness: -3%) !default;
+    $color_drag1: rgb(95, 134, 196) !default;
+    $color_drag2: rgb(119, 166, 119) !default;
+    $color_drag1_background: rgba(95, 134, 196, 0.1) !default;
+    $color_drag2_background: rgba(119, 166, 119, 0.075) !default;
+
+    $font-size: medium !default;
+    $font-family: Roboto, Arial, sans-serif !default;
+
+    .flexlayout {
+        &__layout {
+
+            --color-text: #{$color_text};
+            --color-background: #{$color_background};
+            --color-base: #{$color_base};
+            --color-1: #{$color_1};
+            --color-2: #{$color_2};
+            --color-3: #{$color_3};
+            --color-4: #{$color_4};
+            --color-5: #{$color_5};
+            --color-6: #{$color_6};
+            --color-drag1: #{$color_drag1};
+            --color-drag2: #{$color_drag1};
+            --color-drag1-background: #{$color_drag1_background};
+            --color-drag2-background: #{$color_drag1_background};
+
+            --font-size: #{$font_size};
+            --font-family: #{$font_family};
+
+            --color-overflow: #999db2;
+            --color-icon: #999db2;
+
+            --color-tabset-background: white;
+            --color-tabset-background-selected: white;
+            --color-tabset-background-maximized: white;
+            --color-tabset-divider-line: white;
+
+            --color-tabset-header-background: var(--color-background);
+            --color-tabset-header: var(--color-text);
+
+            --color-border-tab-content: white;
+            --color-border-background: var(--color-background);
+            --color-border-divider-line: var(--color-background);
+
+            --color-tab-content: white;
+            --color-tab-selected: var(--color-text);
+            --color-tab-selected-background: var(--color-2);
+            --color-tab-unselected: gray;
+            --color-tab-unselected-background: #d3d4e745;
+            --color-tab-textbox: var(--color-text);
+            --color-tab-textbox-background: var(--color-3);
+
+            --color-border-tab-selected: var(--color-text);
+            --color-border-tab-selected-background: var(--color-2);
+            --color-border-tab-unselected: gray;
+            --color-border-tab-unselected-background: #d3d4e745;
+
+            --color-splitter: #{$color_background};
+            --color-splitter-hover: var(--color-4);
+            --color-splitter-drag: var(--color-4);
+
+            --color-drag-rect-border: #ccc;
+            --color-drag-rect-background: var(--color-5);
+            --color-drag-rect: var(--color-text);
+
+            --color-popup-border: var(--color-6);
+            --color-popup-unselected: var(--color-text);
+            --color-popup-unselected-background: #{$color_background};
+            --color-popup-selected: var(--color-text);
+            --color-popup-selected-background: var(--color-3);
+
+            --color-edge-marker: #a6bbdf;
+            --color-edge-icon: #555;
+
+            --color-mini-scroll-indicator: rgba(180, 200, 230, 0.5);
+            --color-mini-scroll-indicator-hovered: rgba(180, 200, 230, 0.7);
+
+            --size-mini-scroll-indicator: 4px;
+
+            --color-toolbar-button-hover: var(--color-2);
+        }
+    }
+}
+
+@mixin rounded_theme_overrides {
+/* 
+    rounded theme overrides 
+*/
+    .flexlayout {
+        &__tabset {
+            padding: 3px;
+            border-radius: 10px;
+        }
+
+        &__tabset_content {
+            padding: 1px 3px 3px 3px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        &__tab_border {
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        &__border_tab_contents {
+            border-radius: 10px;
+        }
+
+        &__tab_button,
+        &__border_button {
+            border-radius: 10px;
+            padding: 2px 0.8em;
+        }
+
+        &__tabset_tabbar_outer_top {
+            border-bottom: unset;
+            padding-bottom: 1px;
+        }
+
+        &__tabset_tabbar_inner_tab_container_top {
+            border-bottom: 2px solid transparent;
+        }
+
+        &__border_bottom {
+            border-top: 2px solid var(--color-border-divider-line);
+        }
+
+        &__border_sizer {
+            padding-bottom: 6px;
+        }
+
+        &__tab_button_trailing:hover {
+            background-color: var(--color-3);
+        }
+        
+        &__border_button_trailing:hover {
+            background-color: var(--color-3);
+        }
+
+        &__splitter {
+            background-color: transparent;
+        }
+    }
+}

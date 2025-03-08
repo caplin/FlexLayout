@@ -1,0 +1,46 @@
+@use "base";
+@use "themes";
+
+.flexlayout__theme_light {
+    @include themes.light_theme;
+}
+
+.flexlayout__theme_dark {
+    @include themes.dark_theme;
+}
+
+.flexlayout__theme_gray {
+    @include themes.gray_theme;
+}
+
+.flexlayout__theme_underline {
+    @include themes.underline_theme;
+}
+
+.flexlayout__theme_rounded {
+    @include themes.rounded_theme;
+}
+
+
+@include base.baseMixin;
+
+
+.flexlayout__theme_light {
+    @include themes.light_theme_overrides;
+}
+
+.flexlayout__theme_dark {
+    @include themes.dark_theme_overrides;
+}
+
+.flexlayout__theme_gray {
+    @include themes.gray_theme_overrides;
+}
+
+.flexlayout__theme_underline {
+    @include themes.underline_theme_overrides;
+}
+
+.flexlayout__theme_rounded {
+    @include themes.rounded_theme_overrides;
+}

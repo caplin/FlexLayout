@@ -30,7 +30,7 @@ Features:
 *   popout tabs into new browser windows
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
-*	theming - light, underline, gray, round and dark
+*	theming - light, dark, underline, gray, rounded and combined
 *	works on mobile devices (iPad, Android)
 *   add tabs using drag, add to active tab set, add to tab set by id
 *	tab and tab set attributes: enableTabStrip, enableDock, enableDrop...
@@ -52,7 +52,7 @@ Import FlexLayout in your modules:
 import {Layout, Model} from 'flexlayout-react';
 ```
 
-Include the light, underline, gray or dark theme by either:
+Include the light, dark, underline, gray, rounded or combined theme by either:
 
 Adding an additional import:
 
@@ -65,6 +65,9 @@ or by adding the css to your html:
 ```
 <link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
 ```
+
+[How to change the theme dynamically in code](#dynamically-changing-the-theme)
+
 
 ## Usage
 
@@ -173,6 +176,10 @@ The layout element is built up using 3 types of 'node':
 
 The layout structure is defined with rows within rows that contain tabsets that themselves contain tabs.
 
+Within the demo app you can show the layout structure by ticking the 'Show layout' checkbox, rows are shown in blue, tabsets in orange.
+
+![FlexLayout Demo Showing Layout](Screenshot_layout.png?raw=true "Demo showing layout")
+
 The optional borders element is made up of border nodes
 
 * border - borders contain a list of tabs and the index of the selected tab, they can only be used in the borders
@@ -194,6 +201,26 @@ tabs or drag and drop).
 
 ```
  global: {tabSetEnableTabStrip:false},
+```
+
+## Dynamically Changing the Theme
+
+The 'combined.css' theme contains all the other themes and can be used for theme switching.
+
+When using combined.css, add a className (of the form "flexlayout__theme_[theme name]") to the div containing the `<Layout>` to select the applied theme.
+
+For example: 
+```
+    <div ref={containerRef} className="flexlayout__theme_light">
+        <Layout model={model} factory={factory} />
+    </div>
+```
+
+Change the theme in code by changing the className on the containing div.
+
+For example:
+```
+    containerRef.current!.className = "flexlayout__theme_dark"
 ```
 
 ## Model Actions

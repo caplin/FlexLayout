@@ -1,4 +1,175 @@
-.flexlayout__layout {
+.flexlayout__theme_light .flexlayout__layout {
+  --color-text: black;
+  --color-background: white;
+  --color-base: white;
+  --color-1: rgb(247.35, 247.35, 247.35);
+  --color-2: rgb(239.7, 239.7, 239.7);
+  --color-3: rgb(232.05, 232.05, 232.05);
+  --color-4: rgb(224.4, 224.4, 224.4);
+  --color-5: rgb(216.75, 216.75, 216.75);
+  --color-6: rgb(209.1, 209.1, 209.1);
+  --color-drag1: rgb(95, 134, 196);
+  --color-drag2: rgb(119, 166, 119);
+  --color-drag1-background: rgba(95, 134, 196, 0.1);
+  --color-drag2-background: rgba(119, 166, 119, 0.075);
+  --font-size: medium;
+  --font-family: Roboto, Arial, sans-serif;
+  --color-overflow: gray;
+  --color-icon: gray;
+  --color-tabset-background: var(--color-background);
+  --color-tabset-background-selected: var(--color-1);
+  --color-tabset-background-maximized: var(--color-2);
+  --color-tabset-divider-line: var(--color-4);
+  --color-tabset-header-background: var(--color-background);
+  --color-tabset-header: var(--color-text);
+  --color-border-tab-content: var(--color-background);
+  --color-border-background: var(--color-background);
+  --color-border-divider-line: var(--color-4);
+  --color-tab-content: var(--color-background);
+  --color-tab-selected: var(--color-text);
+  --color-tab-selected-background: var(--color-4);
+  --color-tab-unselected: gray;
+  --color-tab-unselected-background: transparent;
+  --color-tab-textbox: var(--color-text);
+  --color-tab-textbox-background: var(--color-3);
+  --color-border-tab-selected: var(--color-text);
+  --color-border-tab-selected-background: var(--color-4);
+  --color-border-tab-unselected: gray;
+  --color-border-tab-unselected-background: var(--color-2);
+  --color-splitter: var(--color-1);
+  --color-splitter-hover: var(--color-4);
+  --color-splitter-drag: var(--color-4);
+  --color-drag-rect-border: #ccc;
+  --color-drag-rect-background: var(--color-5);
+  --color-drag-rect: var(--color-text);
+  --color-popup-border: var(--color-6);
+  --color-popup-unselected: var(--color-text);
+  --color-popup-unselected-background: white;
+  --color-popup-selected: var(--color-text);
+  --color-popup-selected-background: var(--color-3);
+  --color-edge-marker: #aaa;
+  --color-edge-icon: #555;
+  --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+  --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+  --size-mini-scroll-indicator: 3px;
+  --color-toolbar-button-hover: var(--color-3);
+}
+
+.flexlayout__theme_dark .flexlayout__layout {
+  --color-text: #eeeeee;
+  --color-background: black;
+  --color-base: black;
+  --color-1: rgb(17.85, 17.85, 17.85);
+  --color-2: rgb(25.5, 25.5, 25.5);
+  --color-3: rgb(38.25, 38.25, 38.25);
+  --color-4: #333333;
+  --color-5: rgb(63.75, 63.75, 63.75);
+  --color-6: rgb(76.5, 76.5, 76.5);
+  --color-drag1: rgb(207, 232, 255);
+  --color-drag2: rgb(183, 209, 181);
+  --color-drag1-background: rgba(128, 128, 128, 0.15);
+  --color-drag2-background: rgba(128, 128, 128, 0.15);
+  --font-size: medium;
+  --font-family: Roboto, Arial, sans-serif;
+  --color-overflow: gray;
+  --color-icon: gray;
+  --color-tabset-background: var(--color-1);
+  --color-tabset-background-selected: var(--color-1);
+  --color-tabset-background-maximized: var(--color-6);
+  --color-tabset-divider-line: var(--color-4);
+  --color-tabset-header-background: var(--color-1);
+  --color-tabset-header: var(--color-text);
+  --color-border-tab-content: var(--color-background);
+  --color-border-background: var(--color-1);
+  --color-border-divider-line: var(--color-4);
+  --color-tab-content: var(--color-background);
+  --color-tab-selected: var(--color-text);
+  --color-tab-selected-background: var(--color-4);
+  --color-tab-unselected: gray;
+  --color-tab-unselected-background: transparent;
+  --color-tab-textbox: var(--color-text);
+  --color-tab-textbox-background: var(--color-3);
+  --color-border-tab-selected: var(--color-text);
+  --color-border-tab-selected-background: var(--color-4);
+  --color-border-tab-unselected: gray;
+  --color-border-tab-unselected-background: var(--color-2);
+  --color-splitter: var(--color-2);
+  --color-splitter-hover: var(--color-4);
+  --color-splitter-drag: var(--color-5);
+  --color-drag-rect-border: var(--color-4);
+  --color-drag-rect-background: var(--color-1);
+  --color-drag-rect: var(--color-text);
+  --color-popup-border: var(--color-6);
+  --color-popup-unselected: var(--color-text);
+  --color-popup-unselected-background: var(--color-background);
+  --color-popup-selected: var(--color-text);
+  --color-popup-selected-background: var(--color-4);
+  --color-edge-marker: gray;
+  --color-edge-icon: #eee;
+  --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+  --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.8);
+  --size-mini-scroll-indicator: 3px;
+  --color-toolbar-button-hover: var(--color-4);
+}
+
+.flexlayout__theme_gray .flexlayout__layout {
+  --color-text: black;
+  --color-background: white;
+  --color-base: white;
+  --color-1: rgb(247.35, 247.35, 247.35);
+  --color-2: rgb(229.5, 229.5, 229.5);
+  --color-3: rgb(216.75, 216.75, 216.75);
+  --color-4: #cccccc;
+  --color-5: rgb(191.25, 191.25, 191.25);
+  --color-6: rgb(178.5, 178.5, 178.5);
+  --color-drag1: rgb(95, 134, 196);
+  --color-drag2: rgb(119, 166, 119);
+  --color-drag1-background: rgba(95, 134, 196, 0.1);
+  --color-drag2-background: rgba(119, 166, 119, 0.075);
+  --font-size: medium;
+  --font-family: Roboto, Arial, sans-serif;
+  --color-overflow: gray;
+  --color-icon: gray;
+  --color-tabset-background: var(--color-1);
+  --color-tabset-background-selected: var(--color-1);
+  --color-tabset-background-maximized: var(--color-6);
+  --color-tabset-divider-line: var(--color-3);
+  --color-tabset-header-background: var(--color-1);
+  --color-tabset-header: var(--color-text);
+  --color-border-tab-content: var(--color-background);
+  --color-border-background: var(--color-1);
+  --color-border-divider-line: var(--color-3);
+  --color-tab-content: var(--color-background);
+  --color-tab-selected: var(--color-text);
+  --color-tab-selected-background: var(--color-3);
+  --color-tab-unselected: gray;
+  --color-tab-unselected-background: transparent;
+  --color-tab-textbox: var(--color-text);
+  --color-tab-textbox-background: var(--color-3);
+  --color-border-tab-selected: var(--color-text);
+  --color-border-tab-selected-background: var(--color-3);
+  --color-border-tab-unselected: gray;
+  --color-border-tab-unselected-background: var(--color-2);
+  --color-splitter: var(--color-2);
+  --color-splitter-hover: var(--color-4);
+  --color-splitter-drag: var(--color-5);
+  --color-drag-rect-border: var(--color-4);
+  --color-drag-rect-background: var(--color-3);
+  --color-drag-rect: var(--color-text);
+  --color-popup-border: var(--color-6);
+  --color-popup-unselected: var(--color-text);
+  --color-popup-unselected-background: white;
+  --color-popup-selected: var(--color-text);
+  --color-popup-selected-background: var(--color-3);
+  --color-edge-marker: #aaa;
+  --color-edge-icon: #555;
+  --color-mini-scroll-indicator: rgba(128, 128, 128, 0.5);
+  --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
+  --size-mini-scroll-indicator: 3px;
+  --color-toolbar-button-hover: var(--color-4);
+}
+
+.flexlayout__theme_underline .flexlayout__layout {
   --color-text: black;
   --color-background: white;
   --color-base: white;
@@ -56,6 +227,63 @@
   --color-mini-scroll-indicator-hovered: rgba(128, 128, 128, 0.7);
   --size-mini-scroll-indicator: 4px;
   --color-toolbar-button-hover: var(--color-3);
+}
+
+.flexlayout__theme_rounded .flexlayout__layout {
+  --color-text: black;
+  --color-background: #f2f6fb;
+  --color-base: #f2f6fb;
+  --color-1: rgb(230.3, 237.9, 247.4);
+  --color-2: rgb(218.6, 229.8, 243.8);
+  --color-3: rgb(206.9, 221.7, 240.2);
+  --color-4: rgb(195.2, 213.6, 236.6);
+  --color-5: rgb(183.5, 205.5, 233);
+  --color-6: rgb(171.8, 197.4, 229.4);
+  --color-drag1: rgb(95, 134, 196);
+  --color-drag2: rgb(95, 134, 196);
+  --color-drag1-background: rgba(95, 134, 196, 0.1);
+  --color-drag2-background: rgba(95, 134, 196, 0.1);
+  --font-size: medium;
+  --font-family: Roboto, Arial, sans-serif;
+  --color-overflow: #999db2;
+  --color-icon: #999db2;
+  --color-tabset-background: white;
+  --color-tabset-background-selected: white;
+  --color-tabset-background-maximized: white;
+  --color-tabset-divider-line: white;
+  --color-tabset-header-background: var(--color-background);
+  --color-tabset-header: var(--color-text);
+  --color-border-tab-content: white;
+  --color-border-background: var(--color-background);
+  --color-border-divider-line: var(--color-background);
+  --color-tab-content: white;
+  --color-tab-selected: var(--color-text);
+  --color-tab-selected-background: var(--color-2);
+  --color-tab-unselected: gray;
+  --color-tab-unselected-background: #d3d4e745;
+  --color-tab-textbox: var(--color-text);
+  --color-tab-textbox-background: var(--color-3);
+  --color-border-tab-selected: var(--color-text);
+  --color-border-tab-selected-background: var(--color-2);
+  --color-border-tab-unselected: gray;
+  --color-border-tab-unselected-background: #d3d4e745;
+  --color-splitter: #f2f6fb;
+  --color-splitter-hover: var(--color-4);
+  --color-splitter-drag: var(--color-4);
+  --color-drag-rect-border: #ccc;
+  --color-drag-rect-background: var(--color-5);
+  --color-drag-rect: var(--color-text);
+  --color-popup-border: var(--color-6);
+  --color-popup-unselected: var(--color-text);
+  --color-popup-unselected-background: #f2f6fb;
+  --color-popup-selected: var(--color-text);
+  --color-popup-selected-background: var(--color-3);
+  --color-edge-marker: #a6bbdf;
+  --color-edge-icon: #555;
+  --color-mini-scroll-indicator: rgba(180, 200, 230, 0.5);
+  --color-mini-scroll-indicator-hovered: rgba(180, 200, 230, 0.7);
+  --size-mini-scroll-indicator: 4px;
+  --color-toolbar-button-hover: var(--color-2);
 }
 
 /*
@@ -677,34 +905,151 @@
 }
 
 /* ======================== End of Base Classes =========================== */
-/* 
-    underline theme overrides 
-*/
-.flexlayout__tab_button {
+.flexlayout__theme_light {
+  /* 
+      light theme overrides 
+  */
+}
+
+.flexlayout__theme_dark {
+  /* 
+      dark theme overrides 
+  */
+}
+.flexlayout__theme_dark .flexlayout__tabset_header {
+  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+}
+.flexlayout__theme_dark .flexlayout__tabset-selected {
+  background-image: linear-gradient(var(--color-background), var(--color-4));
+}
+.flexlayout__theme_dark .flexlayout__tabset-maximized {
+  background-image: linear-gradient(var(--color-6), var(--color-2));
+}
+.flexlayout__theme_dark .flexlayout__tab_top {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.flexlayout__theme_dark .flexlayout__tab_bottom {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.flexlayout__theme_dark .flexlayout__border_button {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.flexlayout__theme_gray {
+  /* 
+      gray theme overrides 
+  */
+}
+.flexlayout__theme_gray .flexlayout__tabset-selected {
+  background-image: linear-gradient(var(--color-background), var(--color-4));
+}
+.flexlayout__theme_gray .flexlayout__tabset_header {
+  box-shadow: inset 0 0 3px 0 rgba(136, 136, 136, 0.54);
+}
+.flexlayout__theme_gray .flexlayout__tabset-selected {
+  background-image: linear-gradient(var(--color-background), var(--color-3));
+}
+.flexlayout__theme_gray .flexlayout__tabset-maximized {
+  background-image: linear-gradient(var(--color-3), var(--color-1));
+}
+.flexlayout__theme_gray .flexlayout__tab_button_top {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.flexlayout__theme_gray .flexlayout__tab_button_bottom {
+  box-shadow: inset -2px 0px 5px rgba(0, 0, 0, 0.1);
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.flexlayout__theme_gray .flexlayout__border_button {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.flexlayout__theme_underline {
+  /* 
+      underline theme overrides 
+  */
+}
+.flexlayout__theme_underline .flexlayout__tab_button {
   padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
-.flexlayout__tab_button--selected {
+.flexlayout__theme_underline .flexlayout__tab_button--selected {
   border-bottom: var(--underline_height) solid var(--color-underline);
 }
-.flexlayout__tab_button--unselected {
+.flexlayout__theme_underline .flexlayout__tab_button--unselected {
   border-bottom: var(--underline_height) solid transparent;
 }
-.flexlayout__border_button {
+.flexlayout__theme_underline .flexlayout__border_button {
   padding: 2px 0.5em calc(4px - var(--underline_height)) 0.5em;
 }
-.flexlayout__border_button--selected {
+.flexlayout__theme_underline .flexlayout__border_button--selected {
   border-bottom: var(--underline_height) solid var(--color-underline);
 }
-.flexlayout__border_button--unselected {
+.flexlayout__theme_underline .flexlayout__border_button--unselected {
   border-bottom: var(--underline_height) solid transparent;
 }
-.flexlayout__tabset_tab_divider, .flexlayout__border_tab_divider {
+.flexlayout__theme_underline .flexlayout__tabset_tab_divider, .flexlayout__theme_underline .flexlayout__border_tab_divider {
   width: 1px;
   margin: 4px 6px 4px 6px;
   border-left: 1px solid #ddd;
 }
-.flexlayout__tab_button_textbox {
+.flexlayout__theme_underline .flexlayout__tab_button_textbox {
   border: none;
 }
 
-/*# sourceMappingURL=underline.css.map */
+.flexlayout__theme_rounded {
+  /* 
+      rounded theme overrides 
+  */
+}
+.flexlayout__theme_rounded .flexlayout__tabset {
+  padding: 3px;
+  border-radius: 10px;
+}
+.flexlayout__theme_rounded .flexlayout__tabset_content {
+  padding: 1px 3px 3px 3px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+.flexlayout__theme_rounded .flexlayout__tab_border {
+  border-radius: 10px;
+  padding: 5px;
+}
+.flexlayout__theme_rounded .flexlayout__border_tab_contents {
+  border-radius: 10px;
+}
+.flexlayout__theme_rounded .flexlayout__tab_button, .flexlayout__theme_rounded .flexlayout__border_button {
+  border-radius: 10px;
+  padding: 2px 0.8em;
+}
+.flexlayout__theme_rounded .flexlayout__tabset_tabbar_outer_top {
+  border-bottom: unset;
+  padding-bottom: 1px;
+}
+.flexlayout__theme_rounded .flexlayout__tabset_tabbar_inner_tab_container_top {
+  border-bottom: 2px solid transparent;
+}
+.flexlayout__theme_rounded .flexlayout__border_bottom {
+  border-top: 2px solid var(--color-border-divider-line);
+}
+.flexlayout__theme_rounded .flexlayout__border_sizer {
+  padding-bottom: 6px;
+}
+.flexlayout__theme_rounded .flexlayout__tab_button_trailing:hover {
+  background-color: var(--color-3);
+}
+.flexlayout__theme_rounded .flexlayout__border_button_trailing:hover {
+  background-color: var(--color-3);
+}
+.flexlayout__theme_rounded .flexlayout__splitter {
+  background-color: transparent;
+}
+
+/*# sourceMappingURL=combined.css.map */

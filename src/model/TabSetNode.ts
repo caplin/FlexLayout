@@ -342,16 +342,20 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
                         p = this.tabStripRect.x;
                     }
                     childCenter = r.x + r.width / 2;
-                    if (x >= p && x < childCenter && y > r.y && y < r.getBottom()) {
+                    if (p <= x && x < childCenter && r.y < y && y < r.getBottom()) {
                         const dockLocation = DockLocation.CENTER;
                         const outlineRect = new Rect(r.x - 2, r.y, 3, r.height);
-                        dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
-                        break;
+                        if (this.rect.x < r.x && r.x < this.rect.getRight()) {
+                            dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+                            break;
+                        } else {
+                            return undefined;
+                        }
                     }
                     p = childCenter;
                 }
             }
-            if (dropInfo == null) {
+            if (dropInfo == null && r.getRight() < this.rect!.getRight()) {
                 const dockLocation = DockLocation.CENTER;
                 const outlineRect = new Rect(r.getRight() - 2, yy, 3, h);
                 dropInfo = new DropInfo(this, outlineRect, dockLocation, this.children.length, CLASSES.FLEXLAYOUT__OUTLINE_RECT);

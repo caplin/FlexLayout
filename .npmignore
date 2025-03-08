@@ -1,5 +1,8 @@
 .idea/
 .vscode/
+.github/
+.editorconfig
+.prettierrc.json
 bundles/
 examples/
 fonts/
@@ -17,3 +20,4 @@ webpack_build.config.js
 webpack.config.js 
 yarn.lock
 pnpm-lock.yaml
+Screenshot*.*
