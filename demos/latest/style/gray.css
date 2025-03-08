@@ -700,9 +700,11 @@
   flex-grow: 1;
   overflow: hidden;
 }
-.flexlayout__mini_scrollbar_container:hover .flexlayout__mini_scrollbar {
-  opacity: 1;
-  visibility: visible;
+@media (hover: hover) {
+  .flexlayout__mini_scrollbar_container:hover .flexlayout__mini_scrollbar {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 /*# sourceMappingURL=gray.css.map */
