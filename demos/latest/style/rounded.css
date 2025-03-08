@@ -18,7 +18,7 @@
   --color-icon: #999db2;
   --color-tabset-background: white;
   --color-tabset-background-selected: white;
-  --color-tabset-background-maximized: var(--color-2);
+  --color-tabset-background-maximized: white;
   --color-tabset-divider-line: white;
   --color-tabset-header-background: var(--color-background);
   --color-tabset-header: var(--color-text);
@@ -49,6 +49,9 @@
   --color-popup-selected-background: var(--color-3);
   --color-edge-marker: #a6bbdf;
   --color-edge-icon: #555;
+  --color-mini-scroll-indicator:rgba(180, 200, 230, 0.5);
+  --color-mini-scroll-indicator-hovered:rgba(180, 200, 230, 0.7);
+  --size-mini-scroll-indicator:4px;
 }
 
 .flexlayout__layout {
@@ -258,7 +261,10 @@
   box-sizing: border-box;
   display: flex;
   flex-grow: 1;
-  overflow: hidden;
+  scrollbar-width: none;
+}
+.flexlayout__tabset_tabbar_inner::-webkit-scrollbar {
+  display: none;
 }
 .flexlayout__tabset_tabbar_inner_tab_container {
   position: relative;
@@ -494,8 +500,11 @@
   box-sizing: border-box;
   align-items: center;
   display: flex;
-  overflow: hidden;
   flex-grow: 1;
+  scrollbar-width: none;
+}
+.flexlayout__border_inner::-webkit-scrollbar {
+  display: none;
 }
 .flexlayout__border_inner_tab_container {
   white-space: nowrap;
@@ -599,7 +608,7 @@
   color: var(--color-overflow);
   font-size: inherit;
   background-color: transparent;
-  width: 2em;
+  width: 1.5em;
 }
 .flexlayout__popup_menu {
   font-size: var(--font-size);
@@ -610,6 +619,11 @@
   white-space: nowrap;
   cursor: pointer;
   border-radius: 2px;
+}
+.flexlayout__popup_menu_item--selected {
+  font-weight: 500;
+  background-color: var(--color-tab-selected-background);
+  color: var(--color-tab-selected);
 }
 @media (hover: hover) {
   .flexlayout__popup_menu_item:hover {
@@ -672,19 +686,29 @@
   font-size: var(--font-size);
   font-family: var(--font-family);
 }
-.flexlayout__mini_scrollbar::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+.flexlayout__mini_scrollbar {
+  position: absolute;
+  background-color: var(--color-mini-scroll-indicator);
+  border-radius: 5px;
+  width: var(--size-mini-scroll-indicator);
+  height: var(--size-mini-scroll-indicator);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
-.flexlayout__mini_scrollbar_hidden::-webkit-scrollbar {
-  display: none;
+.flexlayout__mini_scrollbar:hover {
+  background-color: var(--color-mini-scroll-indicator-hovered);
+  transition: background-color 0.3s ease-in-out;
 }
-.flexlayout__mini_scrollbar::-webkit-scrollbar-button {
-  display: none;
+.flexlayout__mini_scrollbar_container {
+  position: relative;
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
 }
-.flexlayout__mini_scrollbar::-webkit-scrollbar-thumb {
-  background: #aaa;
-  border-radius: 10px;
+.flexlayout__mini_scrollbar_container:hover .flexlayout__mini_scrollbar {
+  opacity: 1;
+  visibility: visible;
 }
 
 .flexlayout__tabset {
