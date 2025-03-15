@@ -1,3 +1,7 @@
+0.8.7
+Improved tab scrolling into visible area
+Added sections about tab and tabset customization to readme
+
 0.8.6
 Restructured scss files to remove use of deprecated @import rule
 Added combined.css containing all themes.

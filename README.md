@@ -223,6 +223,55 @@ For example:
     containerRef.current!.className = "flexlayout__theme_dark"
 ```
 
+## Customizing Tabs
+
+You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
+
+
+![FlexLayout Tab structure](Screenshot_customize_tab.png?raw=true "Tab structure")
+
+Update the renderValues parameter as needed:
+
+renderValues.leading : the red block
+
+renderValues.content : the green block
+
+renderValues.buttons : the yellow block
+
+For example:
+
+```
+onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
+    // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
+    // renderValues.content += " *";
+    renderValues.buttons.push(<img key="menu" style={{width:"1em", height:"1em"}} src="images/menu.svg"/>);
+}
+```
+
+## Customizing Tab sets
+
+You can use the `<Layout>` prop onRenderTabSet to customize the tab set rendering:
+
+
+![FlexLayout Tab structure](Screenshot_customize_tabset.png?raw=true "Tab set structure")
+
+Update the renderValues parameter as needed:
+
+renderValues.stickyButtons : the red block
+
+renderValues.buttons : the green block
+
+
+For example:
+
+```
+onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
+    renderValues.stickyButtons.push(<img key="add" style={{width:"1em", height:"1em"}} src="images/add.svg"/>);
+
+    renderValues.buttons.push(<img key="menu" style={{width:"1em", height:"1em"}} src="images/menu.svg"/>);
+}
+```
+
 ## Model Actions
 
 Once the model json has been loaded all changes to the model are applied through actions.

@@ -5,6 +5,7 @@ import { Orientation } from "../Orientation";
 import { LayoutInternal } from "./Layout";
 import { TabNode } from "../model/TabNode";
 import { startDrag } from "./Utils";
+import { Rect } from "../Rect";
 
 /** @internal */
 export const useTabOverflow = (
@@ -23,6 +24,7 @@ export const useTabOverflow = (
     const updateHiddenTabsTimerRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
     const hiddenTabsRef = React.useRef<number[]>([]);
     const thumbInternalPos = React.useRef<number>(0);
+    const repositioningRef = React.useRef<boolean>(false);
     hiddenTabsRef.current = hiddenTabs;
 
     // if node changes (new model) then reset scroll to 0
@@ -31,7 +33,7 @@ export const useTabOverflow = (
             setScrollPosition(0);
         }
     }, [node]);
-    
+
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useEffect(() => {
         userControlledPositionRef.current = false;
@@ -40,23 +42,40 @@ export const useTabOverflow = (
     React.useEffect(() => {
         checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
 
-        if (!userControlledPositionRef.current) {
-            const selectedTab = findSelectedTab();
-            if (selectedTab) {
-                selectedTab.scrollIntoView();
-            }
+        if (userControlledPositionRef.current === false) {
+            scrollIntoView();
         }
 
         updateHiddenTabs();
         updateScrollMetrics();
     });
 
+    function scrollIntoView() {
+        const selectedTabNode = node.getSelectedNode() as TabNode;
+        if (selectedTabNode && tabStripRef.current) {
+            const stripRect = layout.getBoundingClientRect(tabStripRef.current);
+            const selectedRect = selectedTabNode.getTabRect()!;
+
+            let shift = getNear(stripRect) - getNear(selectedRect);
+            if (shift > 2 || getSize(selectedRect) > getSize(stripRect)) { // maybe 2 will prevent jitter?
+                setScrollPosition(getScrollPosition(tabStripRef.current) - shift);
+                repositioningRef.current = true; // prevent onScroll setting userControlledPosition
+            } else {
+                shift = getFar(selectedRect) - getFar(stripRect);
+                if (shift > 2) {
+                    setScrollPosition(getScrollPosition(tabStripRef.current) + shift);
+                    repositioningRef.current = true;
+                }
+            }
+        }
+    }
+
     const updateScrollMetrics = () => {
         if (tabStripRef.current && miniScrollRef.current) {
             const t = tabStripRef.current;
             const s = miniScrollRef.current;
 
-            const size = getSize(t);
+            const size = getElementSize(t);
             const scrollSize = getScrollSize(t);
             const position = getScrollPosition(t);
 
@@ -67,7 +86,7 @@ export const useTabOverflow = (
                     adjust = 20 - thumbSize;
                     thumbSize = 20;
                 }
-                const thumbPos = position * (size - adjust) / scrollSize; 
+                const thumbPos = position * (size - adjust) / scrollSize;
                 if (orientation === Orientation.HORZ) {
                     s.style.width = thumbSize + "px";
                     s.style.left = thumbPos + "px";
@@ -102,25 +121,11 @@ export const useTabOverflow = (
         }
     }
 
-    const updateTabRects = () => {
-        if (tabStripRef.current) {
-            const tabContainer = tabStripRef.current.firstElementChild!;
-
-            const nodeChildren = node.getChildren();
-            let i = 0;
-            Array.from(tabContainer.children).forEach((child) => {
-                if (child.classList.contains(tabClassName)) {
-                    const childNode = nodeChildren[i] as TabNode;
-                    childNode.setTabRect(layout.getBoundingClientRect(child as HTMLElement));
-                    i++;
-                }
-            });
-        }
-    }
-
     const onScroll = () => {
-        userControlledPositionRef.current = true;
-        updateTabRects();
+        if (!repositioningRef.current){
+            userControlledPositionRef.current=true;
+        }
+        repositioningRef.current = false;
         updateScrollMetrics()
         updateHiddenTabs();
     };
@@ -134,7 +139,6 @@ export const useTabOverflow = (
         } else {
             thumbInternalPos.current = event.clientY - r.y;
         }
-        userControlledPositionRef.current = true;
         startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
     }
 
@@ -142,9 +146,9 @@ export const useTabOverflow = (
         if (tabStripRef.current && miniScrollRef.current) {
             const t = tabStripRef.current;
             const s = miniScrollRef.current;
-            const size = getSize(t);
+            const size = getElementSize(t);
             const scrollSize = getScrollSize(t);
-            const thumbSize = getSize(s);
+            const thumbSize = getElementSize(s);
 
             const r = t.getBoundingClientRect()!;
             let thumb = 0;
@@ -168,27 +172,13 @@ export const useTabOverflow = (
     const onDragCancel = () => {
     }
 
-    const findSelectedTab: () => Element | undefined = () => {
-        let found: Element | undefined = undefined;
-        if (tabStripRef.current) {
-            const tabContainer = tabStripRef.current.firstElementChild!;
-
-            Array.from(tabContainer.children).forEach((child) => {
-                if (child.classList.contains(tabClassName + "--selected")) {
-                    found = child;
-                }
-            });
-        }
-        return found;
-    };
-
     const checkForOverflow = () => {
         if (tabStripRef.current) {
             const strip = tabStripRef.current;
             const tabContainer = strip.firstElementChild!;
 
             const offset = isTabOverflow ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
-            const dock = (getSize(tabContainer) + offset) > getSize(tabStripRef.current);
+            const dock = (getElementSize(tabContainer) + offset) > getElementSize(tabStripRef.current);
             if (dock !== isTabOverflow) {
                 setTabOverflow(dock);
             }
@@ -233,12 +223,9 @@ export const useTabOverflow = (
                     delta *= 40;
                 }
                 const newPos = getScrollPosition(tabStripRef.current) - delta;
-                const maxScroll = getScrollSize(tabStripRef.current) - getSize(tabStripRef.current);
+                const maxScroll = getScrollSize(tabStripRef.current) - getElementSize(tabStripRef.current);
                 const p = Math.max(0, Math.min(maxScroll, newPos));
                 setScrollPosition(p);
-                updateTabRects();
-                updateHiddenTabs();
-                userControlledPositionRef.current = true;
                 event.stopPropagation();
             }
         }
@@ -246,7 +233,7 @@ export const useTabOverflow = (
 
     // orientation helpers:
 
-    const getNear = (rect: DOMRect) => {
+    const getNear = (rect: DOMRect | Rect) => {
         if (orientation === Orientation.HORZ) {
             return rect.x;
         } else {
@@ -254,7 +241,7 @@ export const useTabOverflow = (
         }
     };
 
-    const getFar = (rect: DOMRect) => {
+    const getFar = (rect: DOMRect | Rect) => {
         if (orientation === Orientation.HORZ) {
             return rect.right;
         } else {
@@ -262,11 +249,19 @@ export const useTabOverflow = (
         }
     };
 
-    const getSize = (elm: Element) => {
+    const getElementSize = (elm: Element) => {
         if (orientation === Orientation.HORZ) {
             return elm.clientWidth;
         } else {
             return elm.clientHeight;
+        }
+    }
+
+    const getSize = (rect: DOMRect | Rect) => {
+        if (orientation === Orientation.HORZ) {
+            return rect.width;
+        } else {
+            return rect.height;
         }
     }
 

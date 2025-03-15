@@ -11,7 +11,6 @@ import { useTabOverflow } from "./TabOverflowHook";
 import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
-import { Rect } from "../Rect";
 
 /** @internal */
 export interface IBorderTabSetProps {
@@ -33,7 +32,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     const icons = layout.getIcons();
 
     React.useLayoutEffect(() => {
-        border.setTabHeaderRect(Rect.getBoundingClientRect(selfRef.current!).relativeTo(layout.getDomRect()!));
+        border.setTabHeaderRect(layout.getBoundingClientRect(selfRef.current!));
     });
 
     const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isTabOverflow } =

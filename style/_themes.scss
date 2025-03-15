@@ -560,8 +560,8 @@
             --color-border-tab-unselected-background: #d3d4e745;
 
             --color-splitter: #{$color_background};
-            --color-splitter-hover: var(--color-4);
-            --color-splitter-drag: var(--color-4);
+            --color-splitter-hover: var(--color-2);
+            --color-splitter-drag: var(--color-2);
 
             --color-drag-rect-border: #ccc;
             --color-drag-rect-background: var(--color-5);
@@ -642,8 +642,5 @@
             background-color: var(--color-3);
         }
 
-        &__splitter {
-            background-color: transparent;
-        }
     }
 }

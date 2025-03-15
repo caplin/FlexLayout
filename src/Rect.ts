@@ -90,6 +90,14 @@ export class Rect {
         return this.x + this.width;
     }
 
+    get bottom() {
+        return this.y + this.height;
+    }
+
+    get right() {
+        return this.x + this.width;
+    }
+
     getCenter() {
         return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
     }

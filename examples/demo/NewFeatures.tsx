@@ -4,6 +4,18 @@ export function NewFeatures() {
     return (
         <ul>
         <li>
+            New tab set attribute: tabSetEnableTabWrap<br/>
+            <small>All tab sets in this layout will wrap their tabs onto multiple lines when needed</small>
+        </li>
+        <li>
+            Customized tab set rendering using the layout onRenderTabSet property<br/>
+            <small>All tab sets in this layout have an additional menu button</small>
+        </li>
+        <li>
+            Customized tab rendering using the layout onRenderTab property<br/>
+            <small>The 'New' tab has an additional menu button</small>
+        </li>
+        <li>
             Help text (tooltip) option on tabs: <br/>
             <small>Hover over this tab button</small>
         </li>
@@ -30,10 +42,6 @@ export function NewFeatures() {
         <li>
             New onContextMenu prop:<br/>
             <small>All tabs and tab sets in this layout have a custom context menu</small>
-        </li>
-        <li>
-            New tab set attribute: tabSetEnableTabWrap<br/>
-            <small>All tab sets in this layout will wrap their tabs onto multiple lines when needed</small>
         </li>
     </ul>
     );
