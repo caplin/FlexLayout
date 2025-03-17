@@ -87,7 +87,8 @@
 						"id": "#8fcab2f4-23f8-49d7-ae82-f87a9c261200",
 						"name": "New",
 						"helpText": "this tab has helpText defined",
-						"component": "newfeatures"
+						"component": "newfeatures",
+						"icon": "images/article.svg"
 					},
 					{
 						"type": "tab",
