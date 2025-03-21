@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.8.7",
+    "version": "0.8.8",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -47,7 +47,6 @@
     "devDependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
-        "@fontsource/roboto": "^5.1.1",
         "@mui/material": "^6.4.4",
         "@mui/x-data-grid": "^7.26.0",
         "@types/node": "^22.13.4",

@@ -51,7 +51,7 @@ export const TabSet = (props: ITabSetProps) => {
     });
 
     // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
-    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isTabOverflow } =
+    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
         useTabOverflow(layout, node, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
             layout.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
@@ -186,7 +186,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     if (stickyButtons.length > 0) {
-        if (!node.isEnableTabWrap() && (isTabOverflow || isTabStretch)) {
+        if (!node.isEnableTabWrap() && (isDockStickyButtons || isTabStretch)) {
             buttons = [...stickyButtons, ...buttons];
         } else {
             tabs.push(<div
@@ -202,7 +202,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     if (!node.isEnableTabWrap()) {
-        if (hiddenTabs.length > 0) {
+        if (isShowHiddenTabs) {
             const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
             let overflowContent;
             if (typeof icons.more === "function") {
@@ -211,7 +211,7 @@ export const TabSet = (props: ITabSetProps) => {
             } else {
                 overflowContent = (<>
                     {icons.more}
-                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length>0?hiddenTabs.length: ""}</div>
                 </>);
             }
             buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,

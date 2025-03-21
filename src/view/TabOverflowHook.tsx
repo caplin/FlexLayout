@@ -17,7 +17,8 @@ export const useTabOverflow = (
     tabClassName: string
 ) => {
     const [hiddenTabs, setHiddenTabs] = React.useState<number[]>([]);
-    const [isTabOverflow, setTabOverflow] = React.useState<boolean>(false);
+    const [isShowHiddenTabs, setShowHiddenTabs] = React.useState<boolean>(false);
+    const [isDockStickyButtons, setDockStickyButtons] = React.useState<boolean>(false);
 
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const userControlledPositionRef = React.useRef<boolean>(false);
@@ -28,26 +29,26 @@ export const useTabOverflow = (
     hiddenTabsRef.current = hiddenTabs;
 
     // if node changes (new model) then reset scroll to 0
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         if (tabStripRef.current) {
             setScrollPosition(0);
         }
     }, [node]);
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         userControlledPositionRef.current = false;
     }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
 
         if (userControlledPositionRef.current === false) {
             scrollIntoView();
         }
 
-        updateHiddenTabs();
         updateScrollMetrics();
+        updateHiddenTabs();
     });
 
     function scrollIntoView() {
@@ -57,12 +58,12 @@ export const useTabOverflow = (
             const selectedRect = selectedTabNode.getTabRect()!;
 
             let shift = getNear(stripRect) - getNear(selectedRect);
-            if (shift > 2 || getSize(selectedRect) > getSize(stripRect)) { // maybe 2 will prevent jitter?
+            if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) { 
                 setScrollPosition(getScrollPosition(tabStripRef.current) - shift);
                 repositioningRef.current = true; // prevent onScroll setting userControlledPosition
             } else {
                 shift = getFar(selectedRect) - getFar(stripRect);
-                if (shift > 2) {
+                if (shift > 0) {
                     setScrollPosition(getScrollPosition(tabStripRef.current) + shift);
                     repositioningRef.current = true;
                 }
@@ -108,6 +109,13 @@ export const useTabOverflow = (
     }
 
     const updateHiddenTabs = () => {
+        const newHiddenTabs = findHiddenTabs();
+        const showHidden = newHiddenTabs.length > 0;
+
+        if (showHidden !== isShowHiddenTabs) {
+            setShowHiddenTabs(showHidden);
+        }
+
         if (updateHiddenTabsTimerRef.current === undefined) {
             // throttle updates to prevent Maximum update depth exceeded error
             updateHiddenTabsTimerRef.current = setTimeout(() => {
@@ -177,10 +185,10 @@ export const useTabOverflow = (
             const strip = tabStripRef.current;
             const tabContainer = strip.firstElementChild!;
 
-            const offset = isTabOverflow ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
+            const offset = isDockStickyButtons ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
             const dock = (getElementSize(tabContainer) + offset) > getElementSize(tabStripRef.current);
-            if (dock !== isTabOverflow) {
-                setTabOverflow(dock);
+            if (dock !== isDockStickyButtons) {
+                setDockStickyButtons(dock);
             }
         }
     }
@@ -289,7 +297,7 @@ export const useTabOverflow = (
         }
     }
 
-    return { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isTabOverflow };
+    return { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs };
 };
 
 function arraysEqual(arr1: number[], arr2: number[]) {

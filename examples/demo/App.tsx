@@ -11,10 +11,6 @@ import BarChart from "./chart";
 import MapComponent from "./openlayter";
 import { AGGridExample } from "./aggrid";
 import { JsonView } from "./JsonView";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
 import MUIComponent from "./MUIComponent";
 import MUIDataGrid from "./MUIDataGrid";
 

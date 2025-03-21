@@ -5,6 +5,7 @@ import { LayoutInternal } from "./Layout";
 import { TabButtonStamp } from "./TabButtonStamp";
 import { TabSetNode } from "../model/TabSetNode";
 import { BorderNode } from "../model/BorderNode";
+import { useEffect, useRef } from "react";
 
 /** @internal */
 export function showPopup(
@@ -86,6 +87,14 @@ interface IPopupMenuProps {
 /** @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
     const { parentNode, items, onHide, onSelect, classNameMapper, layout } = props;
+    const divRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        // Set focus when the component mounts
+        if (divRef.current) {
+            divRef.current.focus();
+        }
+    }, []);
 
     const onItemClick = (item: { index: number; node: TabNode }, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         onSelect(item);
@@ -104,6 +113,12 @@ const PopupMenu = (props: IPopupMenuProps) => {
 
     const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
         layout.clearDragMain();
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === "Escape") {
+            onHide();
+        }
     };
 
     const itemElements = items.map((item, i) => {
@@ -131,6 +146,9 @@ const PopupMenu = (props: IPopupMenuProps) => {
 
     return (
         <div className={classNameMapper(CLASSES.FLEXLAYOUT__POPUP_MENU)}
+            ref={divRef}
+            tabIndex={0}  // Make div focusable
+            onKeyDown={handleKeyDown}
             data-layout-path="/popup-menu"
         >
             {itemElements}

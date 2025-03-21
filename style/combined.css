@@ -267,7 +267,7 @@
   --color-border-tab-selected-background: var(--color-2);
   --color-border-tab-unselected: gray;
   --color-border-tab-unselected-background: #d3d4e745;
-  --color-splitter: #f2f6fb;
+  --color-splitter: var(--color-background);
   --color-splitter-hover: var(--color-2);
   --color-splitter-drag: var(--color-2);
   --color-drag-rect-border: #ccc;

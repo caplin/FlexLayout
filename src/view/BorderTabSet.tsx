@@ -35,7 +35,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         border.setTabHeaderRect(layout.getBoundingClientRect(selfRef.current!));
     });
 
-    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isTabOverflow } =
+    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
         useTabOverflow(layout, border, Orientation.flip(border.getOrientation()), tabStripInnerRef, miniScrollRef,
             layout.getClassName(CLASSES.FLEXLAYOUT__BORDER_BUTTON)
         );
@@ -132,7 +132,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     }
 
     if (stickyButtons.length > 0) {
-        if (isTabOverflow) {
+        if (isDockStickyButtons) {
             buttons = [...stickyButtons, ...buttons];
         } else {
             tabButtons.push(<div
@@ -147,7 +147,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         }
     }
 
-    if (hiddenTabs.length > 0) {
+    if (isShowHiddenTabs) {
         const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
         let overflowContent;
         if (typeof icons.more === "function") {
@@ -157,7 +157,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         } else {
             overflowContent = (<>
                 {icons.more}
-                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length}</div>
+                <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length>0?hiddenTabs.length: ""}</div>
             </>);
         }
         buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
