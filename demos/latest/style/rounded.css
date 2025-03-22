@@ -36,9 +36,9 @@
   --color-border-tab-selected-background: var(--color-2);
   --color-border-tab-unselected: gray;
   --color-border-tab-unselected-background: #d3d4e745;
-  --color-splitter: #f2f6fb;
-  --color-splitter-hover: var(--color-4);
-  --color-splitter-drag: var(--color-4);
+  --color-splitter: var(--color-background);
+  --color-splitter-hover: var(--color-2);
+  --color-splitter-drag: var(--color-2);
   --color-drag-rect-border: #ccc;
   --color-drag-rect-background: var(--color-5);
   --color-drag-rect: var(--color-text);
@@ -125,6 +125,7 @@
     background-color: var(--color-splitter-hover);
     transition: background-color ease-in 0.1s;
     transition-delay: 0.05s;
+    border-radius: 5px;
   }
 }
 .flexlayout__splitter_drag {
@@ -715,9 +716,6 @@
 }
 .flexlayout__border_button_trailing:hover {
   background-color: var(--color-3);
-}
-.flexlayout__splitter {
-  background-color: transparent;
 }
 
 /*# sourceMappingURL=rounded.css.map */
