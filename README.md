@@ -6,7 +6,7 @@
 
 FlexLayout is a layout manager that arranges React components in multiple tab sets, tabs can be resized and moved.
 
-![FlexLayout Demo Screenshot](Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
+![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
 
 [Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html)
 
@@ -152,6 +152,8 @@ function App() {
 
 The above code would render two tab sets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
 
+![Simple layout](screenshots/Screenshot_two_tabs.png?raw=true "Generated Layout")
+
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
 A simple Typescript example can be found here:
@@ -178,7 +180,7 @@ The layout structure is defined with rows within rows that contain tabsets that 
 
 Within the demo app you can show the layout structure by ticking the 'Show layout' checkbox, rows are shown in blue, tabsets in orange.
 
-![FlexLayout Demo Showing Layout](Screenshot_layout.png?raw=true "Demo showing layout")
+![FlexLayout Demo Showing Layout](screenshots/Screenshot_layout.png?raw=true "Demo showing layout")
 
 The optional borders element is made up of border nodes
 
@@ -228,7 +230,7 @@ For example:
 You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
 
 
-![FlexLayout Tab structure](Screenshot_customize_tab.png?raw=true "Tab structure")
+![FlexLayout Tab structure](screenshots/Screenshot_customize_tab.png?raw=true "Tab structure")
 
 Update the renderValues parameter as needed:
 
@@ -253,7 +255,7 @@ onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
 You can use the `<Layout>` prop onRenderTabSet to customize the tab set rendering:
 
 
-![FlexLayout Tab structure](Screenshot_customize_tabset.png?raw=true "Tab set structure")
+![FlexLayout Tab structure](screenshots/Screenshot_customize_tabset.png?raw=true "Tab set structure")
 
 Update the renderValues parameter as needed:
 
