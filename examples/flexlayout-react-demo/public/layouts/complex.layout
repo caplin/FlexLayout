@@ -1,0 +1,610 @@
+{
+	"global": {
+		"tabEnableFloat": true
+	},
+	"layout": {
+		"type": "row",
+		"id": "#5",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "#6",
+				"weight": 12.5,
+				"selected": 9,
+				"children": [
+					{
+						"type": "tab",
+						"id": "#7",
+						"name": "FX",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#8",
+						"name": "Global",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#37",
+						"name": "grid 26",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#38",
+						"name": "grid 27",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#39",
+						"name": "grid 28",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#40",
+						"name": "grid 29",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#41",
+						"name": "grid 30",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#42",
+						"name": "grid 31",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#49",
+						"name": "grid 38",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#50",
+						"name": "grid 39",
+						"component": "grid"
+					}
+				]
+			},
+			{
+				"type": "row",
+				"id": "#52",
+				"weight": 25,
+				"children": [
+					{
+						"type": "row",
+						"id": "#88",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tabset",
+								"id": "#9",
+								"weight": 50,
+								"selected": 23,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#10",
+										"name": "FI",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#12",
+										"name": "grid 1",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#13",
+										"name": "grid 2",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#14",
+										"name": "grid 3",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#15",
+										"name": "grid 4",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#16",
+										"name": "grid 5",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#17",
+										"name": "grid 6",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#18",
+										"name": "grid 7",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#19",
+										"name": "grid 8",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#20",
+										"name": "grid 9",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#21",
+										"name": "grid 10",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#22",
+										"name": "grid 11",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#23",
+										"name": "grid 12",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#24",
+										"name": "grid 13",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#25",
+										"name": "grid 14",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#26",
+										"name": "grid 15",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#27",
+										"name": "grid 16",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#28",
+										"name": "grid 17",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#29",
+										"name": "grid 18",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#30",
+										"name": "grid 19",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#31",
+										"name": "grid 20",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#32",
+										"name": "grid 21",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#33",
+										"name": "grid 22",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#34",
+										"name": "grid 23",
+										"component": "grid"
+									}
+								]
+							},
+							{
+								"type": "tabset",
+								"id": "#87",
+								"weight": 50,
+								"selected": 7,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#36",
+										"name": "grid 25",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#91",
+										"name": "grid 71",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#92",
+										"name": "grid 72",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#93",
+										"name": "grid 73",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#94",
+										"name": "grid 74",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#95",
+										"name": "grid 75",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#96",
+										"name": "grid 76",
+										"component": "grid"
+									},
+									{
+										"type": "tab",
+										"id": "#97",
+										"name": "grid 77",
+										"component": "grid"
+									}
+								]
+							}
+						]
+					},
+					{
+						"type": "tabset",
+						"id": "#51",
+						"weight": 50,
+						"selected": 12,
+						"children": [
+							{
+								"type": "tab",
+								"id": "#35",
+								"name": "grid 24",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#55",
+								"name": "grid 40",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#56",
+								"name": "grid 41",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#57",
+								"name": "grid 42",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#58",
+								"name": "grid 43",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#59",
+								"name": "grid 44",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#63",
+								"name": "grid 48",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#64",
+								"name": "grid 49",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#66",
+								"name": "grid 51",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#67",
+								"name": "grid 52",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#86",
+								"name": "grid 1",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#89",
+								"name": "grid 2",
+								"component": "grid"
+							},
+							{
+								"type": "tab",
+								"id": "#90",
+								"name": "grid 3",
+								"component": "grid"
+							}
+						],
+						"active": true
+					}
+				]
+			}
+		]
+	},
+	"borders": [
+		{
+			"type": "border",
+			"selected": 13,
+			"size": 132,
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"id": "#1",
+					"name": "Activity Blotter",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "#2",
+					"name": "Execution Blotter",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "#75",
+					"name": "grid 60",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#76",
+					"name": "grid 61",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#77",
+					"name": "grid 62",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#78",
+					"name": "grid 63",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#79",
+					"name": "grid 64",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#60",
+					"name": "grid 45",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#61",
+					"name": "grid 46",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#80",
+					"name": "grid 65",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#81",
+					"name": "grid 66",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#62",
+					"name": "grid 47",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#82",
+					"name": "grid 67",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#65",
+					"name": "grid 50",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#83",
+					"name": "grid 68",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#84",
+					"name": "grid 69",
+					"component": "grid"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"selected": 4,
+			"size": 188,
+			"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"id": "#3",
+					"name": "Navigation",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "#43",
+					"name": "grid 32",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#85",
+					"name": "grid 70",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#44",
+					"name": "grid 33",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#45",
+					"name": "grid 34",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#46",
+					"name": "grid 35",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#48",
+					"name": "grid 37",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#47",
+					"name": "grid 36",
+					"component": "grid"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"selected": 5,
+			"size": 196,
+			"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"id": "#69",
+					"name": "grid 54",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#74",
+					"name": "grid 59",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#73",
+					"name": "grid 58",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#4",
+					"name": "Options",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "#72",
+					"name": "grid 57",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#71",
+					"name": "grid 56",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#70",
+					"name": "grid 55",
+					"component": "grid"
+				},
+				{
+					"type": "tab",
+					"id": "#68",
+					"name": "grid 53",
+					"component": "grid"
+				}
+			]
+		}
+	]
+}
