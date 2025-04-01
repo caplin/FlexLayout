@@ -174,6 +174,10 @@ export class TabNode extends Node implements IDraggable {
         return this.getAttr("maxHeight") as number;
     }
 
+    isVisible() {
+        return this.visible;
+    }
+
     toJson(): IJsonTabNode {
         const json = {};
         TabNode.attributeDefinitions.toJson(json, this.attributes);
@@ -215,8 +219,8 @@ export class TabNode extends Node implements IDraggable {
     /** @internal */
     setVisible(visible: boolean) {
         if (visible !== this.visible) {
-            this.fireEvent("visibility", { visible });
             this.visible = visible;
+            this.fireEvent("visibility", { visible });
         }
     }
 

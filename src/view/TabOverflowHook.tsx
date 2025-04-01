@@ -28,12 +28,12 @@ export const useTabOverflow = (
     const repositioningRef = React.useRef<boolean>(false);
     hiddenTabsRef.current = hiddenTabs;
 
-    // if node changes (new model) then reset scroll to 0
+    // if node id changes (new model) then reset scroll to 0
     React.useLayoutEffect(() => {
         if (tabStripRef.current) {
             setScrollPosition(0);
         }
-    }, [node]);
+    }, [node.getId()]);
 
     // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
     React.useLayoutEffect(() => {

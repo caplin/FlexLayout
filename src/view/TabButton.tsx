@@ -93,8 +93,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const onClose = (event: React.MouseEvent<HTMLElement>) => {
         if (isClosable()) {
             layout.doAction(Actions.deleteTab(node.getId()));
-        } else {
-            onClick();
+            event.stopPropagation();
         }
     };
 

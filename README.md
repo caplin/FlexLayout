@@ -152,7 +152,8 @@ function App() {
 
 The above code would render two tab sets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
 
-![Simple layout](screenshots/Screenshot_two_tabs.png?raw=true "Generated Layout")
+<img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout" style="border: 1px solid #ccc;" />
+
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
@@ -230,7 +231,10 @@ For example:
 You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
 
 
-![FlexLayout Tab structure](screenshots/Screenshot_customize_tab.png?raw=true "Tab structure")
+<img src="screenshots/Screenshot_customize_tab.png?raw=true"
+     alt="FlexLayout Tab structure"
+     title="Tab structure"
+     style="border: 1px solid #ccc;" />
 
 Update the renderValues parameter as needed:
 
@@ -255,7 +259,10 @@ onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
 You can use the `<Layout>` prop onRenderTabSet to customize the tab set rendering:
 
 
-![FlexLayout Tab structure](screenshots/Screenshot_customize_tabset.png?raw=true "Tab set structure")
+<img src="screenshots/Screenshot_customize_tabset.png?raw=true"
+     alt="FlexLayout Tab structure"
+     title="Tab set structure"
+     style="border: 1px solid #ccc;" />
 
 Update the renderValues parameter as needed:
 
@@ -278,15 +285,23 @@ onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderVa
 
 Once the model json has been loaded all changes to the model are applied through actions.
 
-
 You apply actions using the `Model.doAction()` method.
 
 This method takes a single argument, created by one of the action
-generators (typically accessed as `FlexLayout.Actions.<actionName>`):
+generators (accessed as `FlexLayout.Actions.<actionName>`):
 
 [Actions doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Actions.html)
 
 ### Examples
+
+```js
+model.doAction(FlexLayout.Actions.addNode(
+    {type:"tab", component:"grid", name:"a grid", id:"5"},
+    "1", FlexLayout.DockLocation.CENTER, 0));
+```
+
+This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
+
 
 ```js
 model.doAction(FlexLayout.Actions.updateModelAttributes({
@@ -296,14 +311,6 @@ model.doAction(FlexLayout.Actions.updateModelAttributes({
 
 The above example would increase the size of the splitters, this could be used to make
 adjusting the layout easier on a small device.
-
-```js
-model.doAction(FlexLayout.Actions.addNode(
-    {type:"tab", component:"grid", name:"a grid", id:"5"},
-    "1", FlexLayout.DockLocation.CENTER, 0));
-```
-
-This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
 
 Note: you can get the id of a node (e.g., the node returned by the `addNode`
 action) using the method `node.getId()`.
