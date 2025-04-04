@@ -152,7 +152,7 @@ function App() {
 
 The above code would render two tab sets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
 
-<img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout" style="border: 1px solid #ccc;" />
+<img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout"/>
 
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
@@ -233,8 +233,7 @@ You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
 
 <img src="screenshots/Screenshot_customize_tab.png?raw=true"
      alt="FlexLayout Tab structure"
-     title="Tab structure"
-     style="border: 1px solid #ccc;" />
+     title="Tab structure"/>
 
 Update the renderValues parameter as needed:
 
@@ -261,8 +260,7 @@ You can use the `<Layout>` prop onRenderTabSet to customize the tab set renderin
 
 <img src="screenshots/Screenshot_customize_tabset.png?raw=true"
      alt="FlexLayout Tab structure"
-     title="Tab set structure"
-     style="border: 1px solid #ccc;" />
+     title="Tab set structure" />
 
 Update the renderValues parameter as needed:
 
