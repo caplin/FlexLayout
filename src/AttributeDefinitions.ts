@@ -62,7 +62,7 @@ export class AttributeDefinitions {
 
     update(jsonObj: any, obj: any) {
         for (const attr of this.attributes) {
-            if (jsonObj.hasOwnProperty(attr.name)) {
+            if (Object.prototype.hasOwnProperty.call(jsonObj, attr.name)) {
                 const fromValue = jsonObj[attr.name];
                 if (fromValue === undefined) {
                     delete obj[attr.name];
@@ -113,7 +113,7 @@ export class AttributeDefinitions {
                 type = attr.type;
             }
 
-            let defValue = JSON.stringify(defaultValue);
+            const defValue = JSON.stringify(defaultValue);
 
             const required = attr.required ? "" : "?";
 

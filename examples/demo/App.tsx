@@ -461,74 +461,73 @@ class App extends React.Component<any, {
         }
 
         return (
-            // commented out strictmode until: extra effect in strict mode is fixed see: https://github.com/facebook/react/issues/29585
-            // <React.StrictMode> 
-            <ContextExample.Provider value="from context">
-                <div className="app">
-                    <div className="toolbar" dir="ltr">
-                        <select className="toolbar_control" onChange={this.onSelectLayout}>
-                            <option value="default">Default</option>
-                            <option value="newfeatures">New Features</option>
-                            <option value="simple">Simple</option>
-                            <option value="mosaic">Mosaic Style</option>
-                            <option value="sub">SubLayout</option>
-                            <option value="complex">Complex</option>
-                        </select>
-                        <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
-                        <div style={{ flexGrow: 1 }}></div>
-                        <span style={{ fontSize: "14px" }}>Realtime resize</span>
-                        <input
-                            name="realtimeResize"
-                            type="checkbox"
-                            checked={this.state.realtimeResize}
-                            onChange={this.onRealtimeResize} />
-                        <span style={{ marginLeft: 5, fontSize: "14px" }}>Show layout</span>
-                        <input
-                            name="show layout"
-                            type="checkbox"
-                            checked={this.state.showLayout}
-                            onChange={this.onShowLayout} />
-                        <select className="toolbar_control" style={{ marginLeft: 5 }}
-                            onChange={this.onFontSizeChange}
-                            defaultValue="medium">
-                            <option value="xx-small">Size xx-small</option>
-                            <option value="x-small">Size x-small</option>
-                            <option value="small">Size small</option>
-                            <option value="medium">Size medium</option>
-                            <option value="large">Size large</option>
-                            <option value="8px">Size 8px</option>
-                            <option value="10px">Size 10px</option>
-                            <option value="12px">Size 12px</option>
-                            <option value="14px">Size 14px</option>
-                            <option value="16px">Size 16px</option>
-                            <option value="18px">Size 18px</option>
-                            <option value="20px">Size 20px</option>
-                            <option value="25px">Size 25px</option>
-                            <option value="30px">Size 30px</option>
-                        </select>
-                        <select className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="light" onChange={this.onThemeChange}>
-                            <option value="light">Light</option>
-                            <option value="underline">Underline</option>
-                            <option value="gray">Gray</option>
-                            <option value="dark">Dark</option>
-                            <option value="rounded">Rounded</option>
-                        </select>
-                        {/* <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onNewWindow}>New Window</button> */}
-                        <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
-                        <button className="toolbar_control drag-from" draggable={true}
-                            style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
-                            title="Add tab by starting a drag on a draggable element"
-                            onDragStart={this.onDragStart}>
-                            Add Drag
-                        </button>
-                        <button className="toolbar_control" disabled={this.state.adding} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+            <React.StrictMode> 
+                <ContextExample.Provider value="from context">
+                    <div className="app">
+                        <div className="toolbar" dir="ltr">
+                            <select className="toolbar_control" onChange={this.onSelectLayout}>
+                                <option value="default">Default</option>
+                                <option value="newfeatures">New Features</option>
+                                <option value="simple">Simple</option>
+                                <option value="mosaic">Mosaic Style</option>
+                                <option value="sub">SubLayout</option>
+                                <option value="complex">Complex</option>
+                            </select>
+                            <button className="toolbar_control" onClick={this.onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
+                            <div style={{ flexGrow: 1 }}></div>
+                            <span style={{ fontSize: "14px" }}>Realtime resize</span>
+                            <input
+                                name="realtimeResize"
+                                type="checkbox"
+                                checked={this.state.realtimeResize}
+                                onChange={this.onRealtimeResize} />
+                            <span style={{ marginLeft: 5, fontSize: "14px" }}>Show layout</span>
+                            <input
+                                name="show layout"
+                                type="checkbox"
+                                checked={this.state.showLayout}
+                                onChange={this.onShowLayout} />
+                            <select className="toolbar_control" style={{ marginLeft: 5 }}
+                                onChange={this.onFontSizeChange}
+                                defaultValue="medium">
+                                <option value="xx-small">Size xx-small</option>
+                                <option value="x-small">Size x-small</option>
+                                <option value="small">Size small</option>
+                                <option value="medium">Size medium</option>
+                                <option value="large">Size large</option>
+                                <option value="8px">Size 8px</option>
+                                <option value="10px">Size 10px</option>
+                                <option value="12px">Size 12px</option>
+                                <option value="14px">Size 14px</option>
+                                <option value="16px">Size 16px</option>
+                                <option value="18px">Size 18px</option>
+                                <option value="20px">Size 20px</option>
+                                <option value="25px">Size 25px</option>
+                                <option value="30px">Size 30px</option>
+                            </select>
+                            <select className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="light" onChange={this.onThemeChange}>
+                                <option value="light">Light</option>
+                                <option value="underline">Underline</option>
+                                <option value="gray">Gray</option>
+                                <option value="dark">Dark</option>
+                                <option value="rounded">Rounded</option>
+                            </select>
+                            {/* <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onNewWindow}>New Window</button> */}
+                            <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={this.onShowLayoutClick}>Show Layout JSON in Console</button>
+                            <button className="toolbar_control drag-from" draggable={true}
+                                style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
+                                title="Add tab by starting a drag on a draggable element"
+                                onDragStart={this.onDragStart}>
+                                Add Drag
+                            </button>
+                            <button className="toolbar_control" disabled={this.state.adding} style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={this.onAddActiveClick}>Add Active</button>
+                        </div>
+                        <div className={"contents" + (this.state.showLayout ? " showLayout" : "")}>
+                            {contents}
+                        </div>
                     </div>
-                    <div className={"contents" + (this.state.showLayout ? " showLayout" : "")}>
-                        {contents}
-                    </div>
-                </div>
-            </ContextExample.Provider>
-            //</React.StrictMode>
+                </ContextExample.Provider>
+            </React.StrictMode>
         );
     }
 

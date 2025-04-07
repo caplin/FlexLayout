@@ -1,6 +1,6 @@
 {
     "name": "flexlayout-react",
-    "version": "0.8.9",
+    "version": "0.8.10",
     "description": "A multi-tab docking layout manager",
     "main": "lib/index.js",
     "types": "./declarations/index.d.ts",
@@ -30,7 +30,7 @@
         "build:umd": "webpack --mode=development --config webpack_build.config.js",
         "build:umd:min": "webpack --mode=production --config webpack_build_min.config.js",
         "build:demo": "webpack",
-        "lint:eslint": "eslint src/*",
+        "lint": "eslint src/*",
         "doc": "typedoc --out typedoc --exclude \"**/examples/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
         "css": "sass style/rounded.scss  style/rounded.css && sass style/underline.scss style/underline.css && sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/light.scss test/style/light.css && sass style/dark.scss style/dark.css  && sass style/combined.scss style/combined.css"
     },
@@ -47,6 +47,7 @@
     "devDependencies": {
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
+        "@eslint/js": "^9.24.0",
         "@mui/material": "^6.4.4",
         "@mui/x-data-grid": "^7.26.0",
         "@types/node": "^22.13.4",
@@ -57,6 +58,9 @@
         "ag-grid-react": "^33.1.0",
         "chart.js": "^4.4.7",
         "css-loader": "^7.1.2",
+        "eslint": "^9.24.0",
+        "eslint-plugin-react": "^7.37.5",
+        "globals": "^16.0.0",
         "html-webpack-plugin": "^5.6.3",
         "ol": "^10.4.0",
         "prettier": "^3.5.1",
@@ -72,6 +76,7 @@
         "ts-loader": "~9.5.2",
         "typedoc": "^0.27.7",
         "typescript": "^5.7.3",
+        "typescript-eslint": "^8.29.1",
         "webpack": "^5.98.0",
         "webpack-cli": "^6.0.1",
         "webpack-dev-server": "^5.2.0"

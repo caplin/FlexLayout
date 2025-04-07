@@ -197,7 +197,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     private findBorderBarSizeRef: React.RefObject<HTMLDivElement | null>;
     private mainRef: React.RefObject<HTMLDivElement | null>;
     private previousModel?: Model;
-    private orderedIds: string[];
+    private orderedTabIds: string[];
+    private orderedTabMoveableIds: string[];
     private moveableElementMap = new Map<string, HTMLElement>();
     private dropInfo: DropInfo | undefined;
     private outlineDiv?: HTMLElement;
@@ -222,7 +223,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     constructor(props: ILayoutInternalProps) {
         super(props);
 
-        this.orderedIds = [];
+        this.orderedTabIds = [];
+        this.orderedTabMoveableIds = [];
         this.selfRef = React.createRef<HTMLDivElement>();
         this.moveablesRef = React.createRef<HTMLDivElement>();
         this.mainRef = React.createRef<HTMLDivElement>();
@@ -356,17 +358,18 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         const outer = this.renderBorders(inner);
 
         const tabs = this.renderTabs();
-        const reorderedTabs = this.reorderComponents(tabs, this.orderedIds);
+        const reorderedTabs = this.reorderComponents(tabs, this.orderedTabIds);
 
         let floatingWindows = null;
-        let tabMoveables = null;
+        let reorderedTabMoveables = null;
         let tabStamps = null;
         let metricElements = null;
 
         if (this.isMainWindow) {
             floatingWindows = this.renderWindows();
             metricElements = this.renderMetricsElements();
-            tabMoveables = this.renderTabMoveables();
+            const tabMoveables = this.renderTabMoveables();
+            reorderedTabMoveables = this.reorderComponents(tabMoveables, this.orderedTabMoveableIds);
             tabStamps = <div key="__tabStamps__" className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
                 {this.renderTabStamps()}
             </div>;
@@ -386,7 +389,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 <Overlay key="__overlay__" layout={this} show={this.state.showOverlay} />
                 {outer}
                 {reorderedTabs}
-                {tabMoveables}
+                {reorderedTabMoveables}
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
@@ -553,7 +556,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     renderTabMoveables() {
-        const tabMoveables: React.ReactNode[] = [];
+        // const tabMoveables: React.ReactNode[] = [];
+        const tabMoveables = new Map<string, React.ReactNode>();
 
         this.props.model.visitNodes((node) => {
             if (node instanceof TabNode) {
@@ -570,7 +574,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 if (renderTab) {
                     //  console.log("rendertab", child.getName(), this.props.renderRevision);
                     const key = child.getId() + (child.isEnableWindowReMount() ? child.getWindowId() : "");
-                    tabMoveables.push(createPortal(
+                    tabMoveables.set(node.getId(), createPortal(
                         <SizeTracker rect={rect} selected={child.isSelected()} forceRevision={this.state.forceRevision} tabsRevision={this.props.renderRevision} key={key}>
                             <ErrorBoundary message={this.i18nName(I18nLabel.Error_rendering_component)}>
                                 {this.props.factory(child)}
@@ -1228,7 +1232,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     // *************************** End Drag Drop *************************************
 }
 
-export const FlexLayoutVersion = "0.8.9";
+export const FlexLayoutVersion = "0.8.10";
 
 export type DragRectRenderCallback = (
     content: React.ReactNode | undefined,

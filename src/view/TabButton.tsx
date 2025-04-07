@@ -109,7 +109,7 @@ export const TabButton = (props: ITabButtonProps) => {
         if (event.code === 'Escape') {
             // esc
             layout.setEditingTab(undefined);
-        } else if (event.code === 'Enter') {
+        } else if (event.code === 'Enter' || event.code === 'NumpadEnter') {
             // enter
             layout.setEditingTab(undefined);
             layout.doAction(Actions.renameTab(node.getId(), (event.target as HTMLInputElement).value));

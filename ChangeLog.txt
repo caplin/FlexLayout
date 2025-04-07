@@ -1,3 +1,8 @@
+0.8.10
+Fix for #481 Numpad Enter doesn't confirm rename
+Work around <StrictMode> issue in React 19 (https://github.com/facebook/react/issues/29585) causing
+  tabs to re-mount when moved
+
 0.8.9
 Fix for #480 Actions.selectTab is called when closing Tab 
 Added isVisible() method to TabNode

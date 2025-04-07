@@ -34,7 +34,7 @@ export class Rect {
     }
 
     static getBoundingClientRect(element: Element) {
-        let { x, y, width, height } = element.getBoundingClientRect();
+        const { x, y, width, height } = element.getBoundingClientRect();
         return new Rect(x, y, width, height);
     }
 
