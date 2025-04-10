@@ -17,9 +17,14 @@ module.exports = {
     },
 
     devServer: {
-        static: "./",
         client: {
             overlay: false,
+        },
+        static: {
+          directory: path.join(__dirname, './'), 
+          watch: {
+            ignored: /test-results|node_modules/, // Ignore Playwright artifacts and node_modules
+          },
         },
     },
 

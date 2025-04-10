@@ -1,0 +1,45 @@
+{
+  "global": {},
+  "borders": [],
+  "layout": {
+    "type": "row",
+    "weight": 100,
+    "children": [
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "One",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "weight": 50,
+        "name": "TheHeader",
+        "children": [
+          {
+            "type": "tab",
+            "name": "Two",
+            "icon": "/test/images/settings.svg",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "Three",
+            "component": "testing"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -13,7 +13,8 @@
         "strict": true,
         "noUnusedLocals": true,
         "jsx": "react",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": ["vitest/globals"]
     },
-    "include": ["./src/**/*", "./examples/demo/*"]
+    "include": ["./src/**/*", "./examples/demo/*", "./tests/**/*"]
 }

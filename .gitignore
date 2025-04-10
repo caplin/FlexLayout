@@ -11,3 +11,9 @@ fonts/
 typedoc/
 style/*.css.map
 test/style/*.css.map
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

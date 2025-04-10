@@ -1,4 +1,4 @@
-import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Orientation, Rect, RowNode, TabNode, TabSetNode } from "../src";
+import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Orientation, RowNode, TabNode, TabSetNode } from "../src";
 
 /*
 * The textRendered tabs: a representation of the model 'rendered' to a list of tab paths 
@@ -12,12 +12,12 @@ let model: Model;
 
 describe("Tree", function () {
 
-    context("Actions", () => {
+    describe("Actions", () => {
         // afterEach(() => {
         //     checkLayout(model);
         // });
 
-        context("Add", () => {
+        describe("Add", () => {
 
             it("empty tabset", function () {
                 model = Model.fromJson(
@@ -44,7 +44,7 @@ describe("Tree", function () {
                 expect(tab("/ts0/t0").getComponent()).equal("grid");
             });
 
-            context("tabsets", () => {
+            describe("tabsets", () => {
                 beforeEach(() => {
                     model = Model.fromJson(twoTabs);
                     textRender(model);
@@ -128,7 +128,7 @@ describe("Tree", function () {
                 });
             });
 
-            context("borders", () => {
+            describe("borders", () => {
                 beforeEach(() => {
                     model = Model.fromJson(withBorders);
                     textRender(model);
@@ -226,7 +226,7 @@ describe("Tree", function () {
             });
         });
 
-        context("Move", () => {
+        describe("Move", () => {
             beforeEach(() => {
                 model = Model.fromJson(threeTabs);
                 textRender(model);
@@ -280,7 +280,7 @@ describe("Tree", function () {
             });
         });
 
-        context("Move to/from borders", () => {
+        describe("Move to/from borders", () => {
             beforeEach(() => {
                 model = Model.fromJson(withBorders);
                 textRender(model);
@@ -345,7 +345,7 @@ describe("Tree", function () {
             });
         });
 
-        context("Delete", () => {
+        describe("Delete", () => {
             beforeEach(() => {
             });
 
@@ -415,7 +415,7 @@ describe("Tree", function () {
 
         });
 
-        context("Other Actions", () => {
+        describe("Other Actions", () => {
             beforeEach(() => {
                 model = Model.fromJson(twoTabs);
                 textRender(model);
@@ -495,7 +495,7 @@ describe("Tree", function () {
         });
     });
 
-    context("Node events", () => {
+    describe("Node events", () => {
         beforeEach(() => {
             model = Model.fromJson(twoTabs);
             textRender(model);
@@ -582,9 +582,9 @@ function tabset(path: string) {
     return pathMap[path] as TabSetNode;
 }
 
-function row(path: string) {
-    return pathMap[path] as RowNode;
-}
+// function row(path: string) {
+//     return pathMap[path] as RowNode;
+// }
 
 function border(path: string) {
     return pathMap[path] as BorderNode;
@@ -610,7 +610,7 @@ function textRender(model: Model) {
 
 function textRenderInner(pathMap: Record<string, Node>, path: string, children: Node[]) {
     let index = 0;
-    let splitterIndex = 0;
+    // let splitterIndex = 0;
     children.forEach((c) => {
         if (c instanceof BorderNode) {
             const newpath = path + "/b/" + c.getLocation().getName();

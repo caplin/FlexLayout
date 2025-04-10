@@ -4,7 +4,7 @@
 ![npm](https://img.shields.io/npm/dw/flexlayout-react)
 [![npm](https://img.shields.io/npm/v/flexlayout-react)](https://www.npmjs.com/package/flexlayout-react)
 
-FlexLayout is a layout manager that arranges React components in multiple tab sets, tabs can be resized and moved.
+FlexLayout is a layout manager that arranges React components in multiple tabsets, tabs can be resized and moved.
 
 ![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
 
@@ -22,20 +22,21 @@ Features:
 *	splitters
 *	tabs (scrolling or wrapped)
 *	tab dragging and ordering
-*	tab set dragging (move all the tabs in a tab set in one operation)
-*	dock to tab set or edge of frame
-*	maximize tab set (double click tab set header or use icon)
+*	tabset dragging (move all the tabs in a tabset in one operation)
+*	dock to tabset or edge of frame
+*	maximize tabset (double click tabset header or use icon)
 *	tab overflow (show menu when tabs overflow, scroll tabs using mouse wheel)
-*   border tab sets
+*   border tabsets
 *   popout tabs into new browser windows
 *	submodels, allow layouts inside layouts
 *	tab renaming (double click tab text to rename)
 *	theming - light, dark, underline, gray, rounded and combined
 *	works on mobile devices (iPad, Android)
-*   add tabs using drag, add to active tab set, add to tab set by id
-*	tab and tab set attributes: enableTabStrip, enableDock, enableDrop...
-*	customizable tabs and tab set rendering
+*   add tabs using drag, add to active tabset, add to tabset by id
+*	tab and tabset attributes: enableTabStrip, enableDock, enableDrop...
+*	customizable tabs and tabset rendering
 *   component state is preserved when tabs are moved
+*   Playwright tests
 *	typescript type declarations
 
 ## Installation
@@ -71,7 +72,7 @@ or by adding the css to your html:
 
 ## Usage
 
-The `<Layout>` component renders the tab sets and splitters, it takes the following props:
+The `<Layout>` component renders the tabsets and splitters, it takes the following props:
 
 
 #### Required props:
@@ -150,7 +151,7 @@ function App() {
 }
 ```		
 
-The above code would render two tab sets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
+The above code would render two tabsets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
 
 <img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout"/>
 
@@ -253,14 +254,14 @@ onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
 }
 ```
 
-## Customizing Tab sets
+## Customizing Tabsets
 
-You can use the `<Layout>` prop onRenderTabSet to customize the tab set rendering:
+You can use the `<Layout>` prop onRenderTabSet to customize the tabset rendering:
 
 
 <img src="screenshots/Screenshot_customize_tabset.png?raw=true"
      alt="FlexLayout Tab structure"
-     title="Tab set structure" />
+     title="Tabset structure" />
 
 Update the renderValues parameter as needed:
 
@@ -340,11 +341,11 @@ The JSON model is well defined as a set of TypeScript interfaces, see the doc fo
 
 [Row Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
 
-## Tab Set Config Attributes
+## TabSet Config Attributes
 
-[Tab set Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
+[Tabset Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
 
-Note: tab sets will be dynamically created as tabs are moved, and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
+Note: tabsets will be dynamically created as tabs are moved, and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
 
 ## Tab Config attributes
 
@@ -369,7 +370,7 @@ Example:
 ```
 layoutRef.current.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
 ```
-This would add a new grid component to the tab set with id "NAVIGATION" (where layoutRef is a ref to the Layout element, see https://reactjs.org/docs/refs-and-the-dom.html ).
+This would add a new grid component to the tabset with id "NAVIGATION" (where layoutRef is a ref to the Layout element, see https://reactjs.org/docs/refs-and-the-dom.html ).
 
 
 
@@ -461,8 +462,15 @@ pnpm start
 
 Open your browser at http://localhost:8080/examples/ to show the examples directory, click on the examples to run them.
 
-The 'pnpm start' command will watch for changes to flexlayout and example source, so you can make changes to the code
-and then refresh the browser to see the result.
+The 'pnpm start' command will watch for changes to flexlayout and example source, so you can make changes to the code and then refresh the browser to see the result.
+
+Once the demo is running you can run the Playwright tests by running (in another terminal window)
+
+```
+pnpm playwright
+```
+
+<img src="screenshots/PlaywrightUI.png?raw=true" alt="PlaywrightUI" title="PlaywrightUI screenshot"/>
 
 To build the npm distribution run 'pnpm build', this will create the artifacts in the dist dir.
 
