@@ -1,4 +1,3 @@
-import * as React from "react";
 import { TabNode } from "../model/TabNode";
 import { LayoutInternal } from "./Layout";
 import { CLASSES } from "../Types";

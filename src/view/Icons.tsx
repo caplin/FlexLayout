@@ -1,5 +1,3 @@
-import * as React from "react";
-
 const style = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
 
 export const CloseIcon = () => {

@@ -12,9 +12,11 @@
         "noImplicitReturns": true,
         "strict": true,
         "noUnusedLocals": true,
-        "jsx": "react",
+        "jsx": "react-jsx",
         "skipLibCheck": true,
-        "types": ["vitest/globals"]
+        "types": ["vitest/globals"],
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
     "include": ["./src/**/*", "./examples/demo/*", "./tests/**/*"]
 }

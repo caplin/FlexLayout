@@ -17,6 +17,9 @@ export interface ISplitterProps {
 }
 
 /** @internal */
+export let splitterDragging:boolean = false; // used in tabset & borderTab
+
+/** @internal */
 export const Splitter = (props: ISplitterProps) => {
     const { layout, node, index, horizontal } = props;
 
@@ -94,6 +97,7 @@ export const Splitter = (props: ISplitterProps) => {
         }
 
         setDragging(true);
+        splitterDragging = true;
     };
 
     const onDragCancel = () => {
@@ -103,6 +107,7 @@ export const Splitter = (props: ISplitterProps) => {
         }
         outlineDiv.current = undefined;
         setDragging(false);
+        splitterDragging = false;
     };
 
     const onDragMove = (x: number, y: number) => {
@@ -136,6 +141,7 @@ export const Splitter = (props: ISplitterProps) => {
         }
         enablePointerOnIFrames(true, layout.getCurrentDocument()!);
         setDragging(false);
+        splitterDragging = false;
     };
 
     const updateLayout = (realtime: boolean) => {

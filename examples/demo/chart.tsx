@@ -52,11 +52,11 @@ const BarChart: React.FC = () => {
 
     let bar = null;
     if (showBar) {
-        bar = <Bar style={{ width: "100%", height: "100%" }} data={chartData} options={options} />;
+        bar = <Bar data={chartData} options={options} />;
     }
 
     return (
-        <div ref={selfRef} style={{ width: "100%", height: "100%" }}>
+        <div ref={selfRef} style={{height:"100%", overflow:"hidden"}}>
             {bar}
         </div>
     )

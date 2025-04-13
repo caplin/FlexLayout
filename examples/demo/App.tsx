@@ -308,7 +308,7 @@ function App() {
                 model = node.getExtraData().model;
                 // save submodel on save event
                 node.setEventListener("save", (p: any) => {
-                    model!.doAction(Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
+                    latestModel.current!.doAction(Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
                 }
                 );

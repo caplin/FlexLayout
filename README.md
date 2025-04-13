@@ -438,7 +438,7 @@ for example see the getDocument() callback in agGrid at https://www.ag-grid.com/
     these will not work correctly without modification
 * Some third party controls will suspend when the global document is hidden
     you can use the tab overlay attribute to 'gray out' these tabs when the main window is hidden
-* Resize observers may be throttled (or stay attached to the main window), so you may need to use some other way to resize the component when in a popout (see aggrid component in demo).
+* Resize observers may be throttled (or stay attached to the main window), so you may need to use some other way to resize the component when in a popout.
 * Popouts will not size and position correctly when the browser is zoomed (ie set to 50% zoom)
 * Popouts cannot reload in maximized or minimized states
 * by default flexlayout will maintain react state when moving tabs between windows, but you can use the 

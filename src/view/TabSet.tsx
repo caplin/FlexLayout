@@ -12,6 +12,7 @@ import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
 import { createPortal } from "react-dom";
 import { Rect } from "../Rect";
+import { splitterDragging } from "./Splitter";
 
 /** @internal */
 export interface ITabSetProps {
@@ -30,11 +31,11 @@ export const TabSet = (props: ITabSetProps) => {
     const buttonBarRef = React.useRef<HTMLDivElement | null>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
     const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
+    const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
     const icons = layout.getIcons();
 
-    // must use useEffect (rather than useLayoutEffect) otherwise contentrect not set correctly (has height 0 when changing theme in demo)
-    React.useEffect(() => {
+    React.useLayoutEffect(() => {
         node.setRect(layout.getBoundingClientRect(selfRef.current!));
 
         if (tabStripRef.current) {
@@ -42,11 +43,19 @@ export const TabSet = (props: ITabSetProps) => {
         }
 
         const newContentRect = Rect.getContentRect(contentRef.current!).relativeTo(layout.getDomRect()!);
-        if (!node.getContentRect().equals(newContentRect)) {
+        if (!node.getContentRect().equals(newContentRect) && !isNaN(newContentRect.x)) {
             node.setContentRect(newContentRect);
-            setTimeout(() => { //prevent Maximum update depth exceeded error
-                layout.redrawInternal("tabset content rect " + newContentRect);
-            }, 0);
+            if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
+                if (timer.current) {
+                    clearTimeout(timer.current);
+                }
+                timer.current = setTimeout(() => {
+                    layout.redrawInternal("border content rect " + newContentRect);
+                    timer.current = undefined;
+                }, 50);
+            } else {
+                layout.redrawInternal("border content rect " + newContentRect);
+            }
         }
     });
 
@@ -211,7 +220,7 @@ export const TabSet = (props: ITabSetProps) => {
             } else {
                 overflowContent = (<>
                     {icons.more}
-                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length>0?hiddenTabs.length: ""}</div>
+                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
                 </>);
             }
             buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,

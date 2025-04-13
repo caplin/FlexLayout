@@ -9,12 +9,15 @@
         "declarationDir": "./declarations",
         "stripInternal": true,
         "alwaysStrict": true,
+        "moduleResolution": "node",
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,
         "strict": true,
         "noUnusedLocals": true,
-        "jsx": "react",
-        "skipLibCheck": true
+        "jsx": "react-jsx",
+        "skipLibCheck": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
     "include": ["./src/**/*"]
 }

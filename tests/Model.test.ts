@@ -13,9 +13,6 @@ let model: Model;
 describe("Tree", function () {
 
     describe("Actions", () => {
-        // afterEach(() => {
-        //     checkLayout(model);
-        // });
 
         describe("Add", () => {
 
@@ -515,54 +512,7 @@ describe("Tree", function () {
             model.toJson();
             expect(saved).equals(true);
         });
-
-        // it("visibility tab", () => {
-        //     const layoutRect = new Rect(0, 0, 1000, 800);
-        //     model._layout(layoutRect, {
-        //         headerBarSize: 30,
-        //         tabBarSize: 30,
-        //         borderBarSize: 30
-        //     })
-
-        //     let visibility = true;
-        //     tab("/ts0/t0").setEventListener("visibility", (data) => {
-        //         visibility = data.visible;
-        //         console.log(data);
-        //     })
-        //     doAction(Actions.moveNode(tab("/ts1/t0").getId(), tabset("/ts0").getId(), DockLocation.CENTER, -1));
-        //     expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*");
-
-        //     // need to layout for visibility to change!
-        //     model._layout(layoutRect, {
-        //         headerBarSize: 30,
-        //         tabBarSize: 30,
-        //         borderBarSize: 30
-        //     })
-
-        //     expect(visibility).equals(false);
-        // });
-
-        // it("resize tab", () => {
-        //     const layoutRect = new Rect(0, 0, 1000, 800);
-        //     model._layout(layoutRect, {
-        //         headerBarSize: 30,
-        //         tabBarSize: 30,
-        //         borderBarSize: 30
-        //     })
-
-        //     let resized = false;
-        //     tab("/ts0/t0").setEventListener("resize", () => { resized = true; })
-        //     expect(resized).equals(false);
-
-        //     model._layout(layoutRect, {
-        //         headerBarSize: 30,
-        //         tabBarSize: 130, // changed size
-        //         borderBarSize: 30
-        //     })
-        //     expect(resized).equals(true);
-        // });
     });
-    
 });
 
 
@@ -631,56 +581,9 @@ function textRenderInner(pathMap: Record<string, Node>, path: string, children: 
             const newpath = path + ((c.getOrientation() === Orientation.HORZ) ? "/r" : "/c") + index++;
             pathMap[newpath] = c;
             textRenderInner(pathMap, newpath, c.getChildren());
-        // } else if (c instanceof SplitterNode) {
-        //     const newpath = path + "/s" + splitterIndex++;
-        //     pathMap[newpath] = c;
-        //     textRenderInner(pathMap, newpath, c.getChildren());
         }
     });
 }
-
-// // check layout covers area
-// function checkLayout(model: Model) {
-//     const layoutRect = new Rect(0, 0, 1000, 800);
-//     model._layout(layoutRect, {
-//         headerBarSize: 30,
-//         tabBarSize: 30,
-//         borderBarSize: 30
-//     })
-//     if (model.getMaximizedTabset() === undefined) {
-//         // should also check borders
-//         checkRowLayout(model.getRoot());
-//     }
-// }
-
-// // check row children take up all space in row
-// function checkRowLayout(row: RowNode) {
-//     const r = row.getRect();
-//     if (row.getOrientation() === Orientation.HORZ) {
-//         let x = r.x;
-//         row._getDrawChildren().forEach(c => {
-//             const cr = c.getRect();
-//             expect(cr.height).equal(r.height);
-//             x += cr.width;
-//             if (c instanceof RowNode) {
-//                 checkRowLayout(c);
-//             }
-//         });
-//         expect(x).equal(r.getRight());
-//     } else {
-//         let y = r.y;
-//         row._getDrawChildren().forEach(c => {
-//             const cr = c.getRect();
-//             expect(cr.width).equal(r.width);
-//             y += cr.height;
-//             if (c instanceof RowNode) {
-//                 checkRowLayout(c);
-//             }
-//         });
-//         expect(y).equal(r.getBottom());
-
-//     }
-// }
 
 // -------------------- layouts --------------------
 

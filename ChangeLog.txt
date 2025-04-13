@@ -1,3 +1,10 @@
+0.8.11
+Updated dependencies
+Fix for initial tab flash
+Disabled popout of MUI tabs in demo (because Emotion generated styles (in production) cannot be copied to popout window)
+Converted Cypress tests to Playwright
+Updated demo app to use React hooks
+
 0.8.10
 Fix for #481 Numpad Enter doesn't confirm rename
 Work around <StrictMode> issue in React 19 (https://github.com/facebook/react/issues/29585) causing
