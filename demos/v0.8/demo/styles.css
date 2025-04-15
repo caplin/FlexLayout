@@ -26,6 +26,13 @@ body {
     border: 1px solid lightgray;
 }
 
+.tab_content {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 #container {
     left: 10px;
     top: 10px;

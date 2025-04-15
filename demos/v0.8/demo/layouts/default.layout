@@ -182,6 +182,7 @@
 								"type": "tab",
 								"id": "#31b3af95-2fc9-4511-8d5d-1e6255b92eae",
 								"name": "MUI",
+								"enablePopout": false,
 								"component": "mui"
 							}
 						]
@@ -195,6 +196,7 @@
 								"type": "tab",
 								"id": "#4784d2d4-24a4-4ef2-ac6e-7a3ea7b03ba3",
 								"name": "MUI Grid",
+								"enablePopout": false,
 								"component": "muigrid"
 							}
 						]
