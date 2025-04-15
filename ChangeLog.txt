@@ -1,9 +1,11 @@
-0.8.11
+0.8.12
 Updated dependencies
 Fix for initial tab flash
 Disabled popout of MUI tabs in demo (because Emotion generated styles (in production) cannot be copied to popout window)
 Converted Cypress tests to Playwright
 Updated demo app to use React hooks
+
+0.8.11 - deprecated - published with additional files by mistake
 
 0.8.10
 Fix for #481 Numpad Enter doesn't confirm rename

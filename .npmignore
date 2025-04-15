@@ -10,6 +10,15 @@ fonts/
 node_modules/
 spec/
 typedoc/
+tests/
+tests_playwright/
+playwright.config.ts
+playwright-report/
+screenshots/
+test-results/
+tests-playwright/
+eslint.config.mjs
+vitest.config.ts
 test/
 package-lock.json
 tsconfig.json
