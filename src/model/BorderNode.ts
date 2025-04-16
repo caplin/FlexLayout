@@ -35,8 +35,6 @@ export class BorderNode extends Node implements IDropTarget {
     private static attributeDefinitions: AttributeDefinitions = BorderNode.createAttributeDefinitions();
 
     /** @internal */
-    private outerRect: Rect = Rect.empty();
-    /** @internal */
     private contentRect: Rect = Rect.empty();
     /** @internal */
     private tabHeaderRect: Rect = Rect.empty();
@@ -179,16 +177,6 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
     /** @internal */
-    getOuterRect() {
-        return this.outerRect;
-    }
-
-    /** @internal */
-    setOuterRect(r: Rect) {
-        this.outerRect = r;
-    }
-
-    /** @internal */
     getRect() {
         return this.tabHeaderRect!;
     }
@@ -312,8 +300,8 @@ export class BorderNode extends Node implements IDropTarget {
             if (!dragNode.canDockInto(dragNode, dropInfo)) {
                 return undefined;
             }
-        } else if (this.getSelected() !== -1 && this.outerRect!.contains(x, y)) {
-            const outlineRect = this.outerRect;
+        } else if (this.getSelected() !== -1 && this.contentRect!.contains(x, y)) {
+            const outlineRect = this.contentRect;
             dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
             if (!dragNode.canDockInto(dragNode, dropInfo)) {
                 return undefined;

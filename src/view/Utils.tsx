@@ -16,8 +16,8 @@ export function getRenderStateEx(
     iconAngle?: number
 ) {
     let leadingContent = undefined;
-    let titleContent: React.ReactNode = node.getName();
-    let name = node.getName();
+    const titleContent: React.ReactNode = node.getName();
+    const name = node.getName();
     if (iconAngle === undefined) {
         iconAngle = 0;
     }
@@ -30,7 +30,7 @@ export function getRenderStateEx(
         }
     }
 
-    let buttons: any[] = [];
+    const buttons: any[] = [];
 
     // allow customization of leading contents (icon) and contents
     const renderState = { leading: leadingContent, content: titleContent, name, buttons };

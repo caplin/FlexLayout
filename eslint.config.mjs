@@ -13,6 +13,8 @@ export default defineConfig([
     files: ["**/*.{ts,tsx}"], // Apply only to TypeScript and TSX files
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off"
     },
   },
   pluginReact.configs.flat.recommended,

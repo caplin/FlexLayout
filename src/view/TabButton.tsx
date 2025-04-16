@@ -120,7 +120,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const parentNode = node.getParent() as TabSetNode;
 
     const isStretch = parentNode.isEnableSingleTabStretch() && parentNode.getChildren().length === 1;
-    let baseClassName = isStretch ? CLASSES.FLEXLAYOUT__TAB_BUTTON_STRETCH : CLASSES.FLEXLAYOUT__TAB_BUTTON;
+    const baseClassName = isStretch ? CLASSES.FLEXLAYOUT__TAB_BUTTON_STRETCH : CLASSES.FLEXLAYOUT__TAB_BUTTON;
     let classNames = cm(baseClassName);
     classNames += " " + cm(baseClassName + "_" + parentNode.getTabLocation());
 

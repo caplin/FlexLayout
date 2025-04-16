@@ -1,16 +1,13 @@
 node_modules/
 declarations/
-bundles/
 .idea/
 dist/
 lib/
-out/
-fonts/
+demo/dist/
 @private/
 .DS_Store
 typedoc/
 style/*.css.map
-test/style/*.css.map
 
 # Playwright
 /test-results/

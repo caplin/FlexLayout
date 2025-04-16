@@ -9,4 +9,5 @@ export enum I18nLabel {
     Popout_Tab = "Popout selected tab",
     Overflow_Menu_Tooltip = "Hidden tabs",
     Error_rendering_component = "Error rendering component",
+    Error_rendering_component_retry = "Retry",
 }

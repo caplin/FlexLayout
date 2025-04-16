@@ -110,7 +110,7 @@ export class LayoutWindow {
 
     static fromJson(windowJson: IJsonPopout, model: Model, windowId: string): LayoutWindow {
         const count = model.getwindowsMap().size;
-        let rect = windowJson.rect ? Rect.fromJson(windowJson.rect) : new Rect(50 + 50 * count, 50 + 50 * count, 600, 400);
+        const rect = windowJson.rect ? Rect.fromJson(windowJson.rect) : new Rect(50 + 50 * count, 50 + 50 * count, 600, 400);
         rect.snap(10); // snapping prevents issue where window moves 1 pixel per save/restore on Chrome
         const layoutWindow = new LayoutWindow(windowId, rect);
         layoutWindow.root = RowNode.fromJson(windowJson.layout, model, layoutWindow);

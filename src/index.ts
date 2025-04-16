@@ -1,4 +1,5 @@
 export * from './view/Layout';
+export * from './view/Icons';
 
 export * from './model/Action';
 export * from './model/Actions';

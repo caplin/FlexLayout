@@ -613,7 +613,7 @@ export class Model {
         Model.attributeDefinitions.pairAttributes("TabNode", TabNode.getAttributeDefinitions());
         Model.attributeDefinitions.pairAttributes("BorderNode", BorderNode.getAttributeDefinitions());
 
-        let sb = [];
+        const sb = [];
         sb.push(Model.attributeDefinitions.toTypescriptInterface("Global", undefined));
         sb.push(RowNode.getAttributeDefinitions().toTypescriptInterface("Row", Model.attributeDefinitions));
         sb.push(TabSetNode.getAttributeDefinitions().toTypescriptInterface("TabSet", Model.attributeDefinitions));

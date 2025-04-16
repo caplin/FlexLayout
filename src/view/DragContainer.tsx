@@ -21,7 +21,7 @@ export const DragContainer = (props: IDragContainerProps) => {
 
     const cm = layout.getClassName;
 
-    let classNames = cm(CLASSES.FLEXLAYOUT__DRAG_RECT);
+    const classNames = cm(CLASSES.FLEXLAYOUT__DRAG_RECT);
 
     return (<div
             ref={selfRef}

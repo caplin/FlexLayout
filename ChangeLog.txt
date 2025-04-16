@@ -1,3 +1,10 @@
+0.8.13
+Removed UMD builds
+Changed package type to module
+Changed Demo build to use Vite
+Icons are now exported
+Error boundary now has a retry button
+
 0.8.12
 Updated dependencies
 Fix for initial tab flash

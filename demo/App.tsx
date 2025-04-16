@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode } from "../../src/index";
+import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon } from "../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { showPopup } from "./PopupMenu";
 import { SimpleForm } from "./SimpleForm";
@@ -12,7 +12,13 @@ import MUIComponent from "./MUIComponent";
 import MUIDataGrid from "./MUIDataGrid";
 import BarChart from "./chart";
 import * as Prism from "prismjs";
+
+// import 'ag-grid-community/styles/ag-grid.css';
+// import 'ag-grid-community/styles/ag-theme-alpine.css';
 import "prismjs/themes/prism-coy.css";
+import '../style/combined.scss';
+import './styles.css';
+import './popupmenu.css';
 
 var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -403,14 +409,12 @@ function App() {
                 renderValues.buttons.push(<img key="menu" title="added menu button" style={{ width: "1em", height: "1em" }} src="images/menu.svg" />);
             } else if (layoutFile === "default") {
                 renderValues.stickyButtons.push(
-                    <img src="images/add.svg"
-                        alt="Add"
+                    <button
                         key="Add button"
-                        title="Add Tab (using onRenderTabSet callback, see Demo)"
-                        style={{ width: "1.1em", height: "1.1em" }}
+                        title="Add tab"
                         className="flexlayout__tab_toolbar_button"
                         onClick={() => onAddFromTabSetButton(node)}
-                    />);
+                    ><AddIcon /></button>);
 
                 // put overflow button before + button (default is after)
                 // renderValues.overflowPosition=0    

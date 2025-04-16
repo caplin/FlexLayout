@@ -2,7 +2,6 @@ import * as React from "react";
 import { Orientation } from "../Orientation";
 import { LayoutInternal } from "./Layout";
 import { BorderNode } from "../model/BorderNode";
-import { Rect } from "../Rect";
 import { Splitter, splitterDragging } from "./Splitter";
 import { DockLocation } from "../DockLocation";
 import { CLASSES } from "../Types";
@@ -20,11 +19,9 @@ export function BorderTab(props: IBorderTabProps) {
     const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
     React.useLayoutEffect(() => {
-        const outerRect = layout.getBoundingClientRect(selfRef.current!);
-        const contentRect = Rect.getContentRect(selfRef.current!).relativeTo(layout.getDomRect()!);
-        if (outerRect.width > 0) {
-            border.setOuterRect(outerRect);
-            if (!border.getContentRect().equals(contentRect) && !isNaN(contentRect.x)) {
+        const contentRect = layout.getBoundingClientRect(selfRef.current!);
+        if (!isNaN(contentRect.x) && contentRect.width > 0) {
+            if (!border.getContentRect().equals(contentRect)) {
                 border.setContentRect(contentRect);
                 if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
                     if (timer.current) {

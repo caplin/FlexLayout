@@ -274,7 +274,18 @@ For example:
 
 ```
 onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
-    renderValues.stickyButtons.push(<img key="add" style={{width:"1em", height:"1em"}} src="images/add.svg"/>);
+    renderValues.stickyButtons.push(
+        <button
+            key="Add"
+            title="Add"
+            className="flexlayout__tab_toolbar_button"
+            onClick={() => {
+                model.doAction(Actions.addNode({
+                    component: "placeholder",
+                    name: "Added " + nextAddIndex.current++
+                }, node.getId(), DockLocation.CENTER, -1, true));
+            }}
+        ><AddIcon/></button>);
 
     renderValues.buttons.push(<img key="menu" style={{width:"1em", height:"1em"}} src="images/menu.svg"/>);
 }
@@ -457,12 +468,12 @@ pnpm install
 Compile the project and run the examples:
 
 ```
-pnpm start
+pnpm dev
 ```
 
-Open your browser at http://localhost:8080/examples/ to show the examples directory, click on the examples to run them.
+Open your browser at the address shown to see the Demo app.
 
-The 'pnpm start' command will watch for changes to flexlayout and example source, so you can make changes to the code and then refresh the browser to see the result.
+The 'pnpm dev' command will watch for changes to flexlayout and the Demo, so you can make changes to the code and then refresh the browser to see the result.
 
 Once the demo is running you can run the Playwright tests by running (in another terminal window)
 
@@ -472,7 +483,7 @@ pnpm playwright
 
 <img src="screenshots/PlaywrightUI.png?raw=true" alt="PlaywrightUI" title="PlaywrightUI screenshot"/>
 
-To build the npm distribution run 'pnpm build', this will create the artifacts in the dist dir.
+To build the npm distribution run 'pnpm build'.
 
 ## Alternative Layout Managers
 

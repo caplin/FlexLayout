@@ -3,11 +3,11 @@
         "outDir": "./dist/",
         "sourceMap": true,
         "noImplicitAny": true,
-        "module": "ES2020",
-        "target": "ES6",
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "stripInternal": true,
         "alwaysStrict": true,
-        "moduleResolution": "node",
         "forceConsistentCasingInFileNames": true,
         "noImplicitReturns": true,
         "strict": true,
@@ -18,5 +18,5 @@
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true
     },
-    "include": ["./src/**/*", "./examples/demo/*", "./tests/**/*"]
+    "include": ["./src/**/*", "./demo/**/*", "./tests/**/*"]
 }

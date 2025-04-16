@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Model } from "../../src/index";
+import { Model } from "../src/index";
 import * as Prism from "prismjs";
 
 export function JsonView({ model }: { model: Model }) {

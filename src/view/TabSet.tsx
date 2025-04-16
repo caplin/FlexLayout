@@ -11,7 +11,6 @@ import { Orientation } from "../Orientation";
 import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
 import { createPortal } from "react-dom";
-import { Rect } from "../Rect";
 import { splitterDragging } from "./Splitter";
 
 /** @internal */
@@ -42,7 +41,7 @@ export const TabSet = (props: ITabSetProps) => {
             node.setTabStripRect(layout.getBoundingClientRect(tabStripRef.current!));
         }
 
-        const newContentRect = Rect.getContentRect(contentRef.current!).relativeTo(layout.getDomRect()!);
+        const newContentRect = layout.getBoundingClientRect(contentRef.current!);
         if (!node.getContentRect().equals(newContentRect) && !isNaN(newContentRect.x)) {
             node.setContentRect(newContentRect);
             if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
@@ -161,7 +160,7 @@ export const TabSet = (props: ITabSetProps) => {
     if (node.isEnableTabStrip()) {
         for (let i = 0; i < node.getChildren().length; i++) {
             const child = node.getChildren()[i] as TabNode;
-            let isSelected = node.getSelected() === i;
+            const isSelected = node.getSelected() === i;
             tabs.push(
                 <TabButton
                     layout={layout}
@@ -408,7 +407,7 @@ export const TabSet = (props: ITabSetProps) => {
         }
     }
 
-    var emptyTabset: React.ReactNode;
+    let emptyTabset: React.ReactNode;
     if (node.getChildren().length === 0) {
         const placeHolderCallback = layout.getTabSetPlaceHolderCallback();
         if (placeHolderCallback) {
@@ -426,7 +425,7 @@ export const TabSet = (props: ITabSetProps) => {
         content = <>{content}{tabStrip}</>;
     }
 
-    let style: Record<string, any> = {
+    const style: Record<string, any> = {
         flexGrow: Math.max(1, node.getWeight() * 1000),
         minWidth: node.getMinWidth(),
         minHeight: node.getMinHeight(),

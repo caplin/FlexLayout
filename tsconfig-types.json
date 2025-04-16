@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "emitDeclarationOnly": true,
+      "declaration": true,
+      "declarationDir": "declarations",
+      "module": "ESNext",
+      "target": "ESNext",
+      "moduleResolution": "Bundler",
+      "jsx": "react-jsx",
+      "strict": true,
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true
+    },
+    "include": ["src"]
+  }
+  

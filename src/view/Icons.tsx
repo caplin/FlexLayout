@@ -23,7 +23,7 @@ export const OverflowIcon = () => {
 
 export const EdgeIcon = () => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" style={{display:"block",  width:10, height:10}} preserveAspectRatio="none" viewBox="0 0 100 100"><path  fill="var(--color-edge-icon)" stroke="var(--color-edge-icon)" 
+        <svg xmlns="http://www.w3.org/2000/svg" style={{ display: "block", width: 10, height: 10 }} preserveAspectRatio="none" viewBox="0 0 100 100"><path fill="var(--color-edge-icon)" stroke="var(--color-edge-icon)"
             d="M10 30 L90 30 l-40 40 Z" /></svg>
     );
 }
@@ -31,7 +31,7 @@ export const EdgeIcon = () => {
 export const PopoutIcon = () => {
     return (
         // <svg xmlns="http://www.w3.org/2000/svg"  style={style}  viewBox="0 0 24 24" fill="var(--color-icon)"><path d="M0 0h24v24H0z" fill="none"/><path stroke="var(--color-icon)" d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5z"/></svg>
-        
+
         // <svg xmlns="http://www.w3.org/2000/svg" style={style} fill="none" viewBox="0 0 24 24" stroke="var(--color-icon)" stroke-width="2">
         //     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
         // </svg>
@@ -52,6 +52,15 @@ export const RestoreIcon = () => {
 
 export const AsterickIcon = () => {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" style={style} height="24px" viewBox="0 -960 960 960" width="24px" ><path fill="var(--color-icon)" stroke="var(--color-icon)" d="M440-120v-264L254-197l-57-57 187-186H120v-80h264L197-706l57-57 186 187v-264h80v264l186-187 57 57-187 186h264v80H576l187 186-57 57-186-187v264h-80Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" style={style} height="24px" viewBox="0 -960 960 960" width="24px" ><path fill="var(--color-icon)" stroke="var(--color-icon)" d="M440-120v-264L254-197l-57-57 187-186H120v-80h264L197-706l57-57 186 187v-264h80v264l186-187 57 57-187 186h264v80H576l187 186-57 57-186-187v264h-80Z" /></svg>
+    );
+}
+
+export const AddIcon = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" style={style} height="24px" viewBox="0 0 24 24" fill="var(--color-icon)">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path stroke="var(--color-icon)" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+        </svg>
     );
 }

@@ -393,8 +393,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
-                </div>
-            );
+            </div>
+        );
     }
 
     renderBorders(
@@ -544,7 +544,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                             onCloseWindow={this.onCloseWindow}
                         >
                             <div className={this.props.popoutClassName}>
-                                 <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                                <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
                             </div>
                         </PopoutWindow>
                     );
@@ -576,7 +576,9 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                     const key = child.getId() + (child.isEnableWindowReMount() ? child.getWindowId() : "");
                     tabMoveables.set(node.getId(), createPortal(
                         <SizeTracker rect={rect} selected={child.isSelected()} forceRevision={this.state.forceRevision} tabsRevision={this.props.renderRevision} key={key}>
-                            <ErrorBoundary message={this.i18nName(I18nLabel.Error_rendering_component)}>
+                            <ErrorBoundary
+                                message={this.i18nName(I18nLabel.Error_rendering_component)}
+                                retryText={this.i18nName(I18nLabel.Error_rendering_component_retry)}>
                                 {this.props.factory(child)}
                             </ErrorBoundary>
                         </SizeTracker>
@@ -760,12 +762,14 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     updateRect = () => {
-        const rect = this.getDomRect()
-        if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
-            // console.log("updateRect", rect.floor());
-            this.setState({ rect });
-            if (this.windowId !== Model.MAIN_WINDOW_ID) {
-                this.redrawInternal("rect updated");
+        if (this.selfRef.current) {
+            const rect = Rect.fromDomRect(this.selfRef.current.getBoundingClientRect());
+            if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+                // console.log("updateRect", rect.floor());
+                this.setState({ rect });
+                if (this.windowId !== Model.MAIN_WINDOW_ID) {
+                    this.redrawInternal("rect updated");
+                }
             }
         }
     };
@@ -810,11 +814,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     getDomRect() {
-        if (this.selfRef.current) {
-            return Rect.fromDomRect(this.selfRef.current.getBoundingClientRect());
-        } else {
-            return Rect.empty();
-        }
+        return this.state.rect;
     }
 
     getWindowId() {
@@ -1041,7 +1041,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
 
 
     public setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number) {
-        let dragElement = (
+        const dragElement = (
             <div style={{ position: "unset" }}
                 className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT) + " " + this.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT)}>
                 {component}
@@ -1182,7 +1182,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
 
             this.checkForBorderToShow(pos.x, pos.y);
 
-            let dropInfo = this.props.model.findDropTargetNode(this.windowId, LayoutInternal.dragState!.dragNode!, pos.x, pos.y);
+            const dropInfo = this.props.model.findDropTargetNode(this.windowId, LayoutInternal.dragState!.dragNode!, pos.x, pos.y);
             if (dropInfo) {
                 this.dropInfo = dropInfo;
                 if (this.outlineDiv) {
@@ -1232,7 +1232,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     // *************************** End Drag Drop *************************************
 }
 
-export const FlexLayoutVersion = "0.8.12";
+export const FlexLayoutVersion = "0.8.13";
 
 export type DragRectRenderCallback = (
     content: React.ReactNode | undefined,

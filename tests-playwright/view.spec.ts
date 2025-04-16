@@ -21,9 +21,11 @@ import { CLASSES } from '../src/Types';
 
 */
 
+const baseURL = 'http://localhost:5173/demo';
+
 test.describe('drag tests two tabs', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_two_tabs');
+    await page.goto(baseURL + '?layout=test_two_tabs');
     await expect(page).toHaveTitle(/FlexLayout Demo/);
     await page.getByRole('button', { name: 'Reload' }).click();
 
@@ -102,7 +104,7 @@ test.describe('drag tests two tabs', () => {
 
 test.describe('three tabs', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_three_tabs');
+    await page.goto(baseURL + '?layout=test_three_tabs');
     await expect(page).toHaveTitle(/FlexLayout Demo/);
     await expect(findAllTabSets(page)).toHaveCount(3);
     // store "from" locator
@@ -296,7 +298,7 @@ test.describe('three tabs', () => {
 
 test.describe('borders', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+    await page.goto(baseURL + '?layout=test_with_borders');
     await expect(findAllTabSets(page)).toHaveCount(3);
   });
 
@@ -435,7 +437,7 @@ test.describe('borders', () => {
 
 test.describe('Overflow menu', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+    await page.goto(baseURL + '?layout=test_with_borders');
 
     await findPath(page, '/ts0/tabstrip').click();
     await page.locator('[data-id=add-active]').click();
@@ -473,7 +475,7 @@ test.describe('Overflow menu', () => {
 
 test.describe('Add methods', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+    await page.goto(baseURL + '?layout=test_with_borders');
     await expect(await findAllTabSets(page)).toHaveCount(3);
   });
 
@@ -514,7 +516,7 @@ test.describe('Add methods', () => {
 
 test.describe('Delete methods', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+    await page.goto(baseURL + '?layout=test_with_borders');
     await expect(await findAllTabSets(page)).toHaveCount(3);
   });
 
@@ -545,7 +547,7 @@ test.describe('Delete methods', () => {
 
 test.describe('Splitters', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_two_tabs');
+    await page.goto(baseURL + '?layout=test_two_tabs');
     await expect(page).toHaveTitle(/FlexLayout Demo/);
   });
 
@@ -637,7 +639,7 @@ test.describe('Splitters', () => {
 
 test.describe('Maximize methods', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+    await page.goto(baseURL + '?layout=test_with_borders');
     await expect(await findAllTabSets(page)).toHaveCount(3);
   });
 
@@ -668,7 +670,7 @@ test.describe('Maximize methods', () => {
 
 test.describe('Others', () => {
     test.beforeEach(async ({ page }) => {
-      await page.goto('http://localhost:8080/examples/demo?layout=test_with_borders');
+      await page.goto(baseURL + '?layout=test_with_borders');
       await expect(await findAllTabSets(page)).toHaveCount(3);
     });
 
@@ -746,7 +748,7 @@ test.describe('Others', () => {
 
 
 test('tab can have icon', async ({ page }) => {
-  await page.goto('http://localhost:8080/examples/demo?layout=test_with_onRenderTab');
+  await page.goto(baseURL + '?layout=test_with_onRenderTab');
   await expect(await findAllTabSets(page)).toHaveCount(3);
   const tabButtonLeading = await findPath(page, "/ts1/tb0").locator(`.${CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING} img`);
   await expect(tabButtonLeading).toHaveAttribute('src', 'images/settings.svg');
@@ -754,7 +756,7 @@ test('tab can have icon', async ({ page }) => {
 
 test.describe('Extended App', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_onRenderTab');
+    await page.goto(baseURL + '?layout=test_with_onRenderTab');
     await expect(await findAllTabSets(page)).toHaveCount(3);
   });
 
@@ -808,7 +810,7 @@ test.describe('Extended App', () => {
 
 test.describe('Extended layout2', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:8080/examples/demo?layout=test_with_min_size');
+    await page.goto(baseURL + '?layout=test_with_min_size');
     await expect(await findAllTabSets(page)).toHaveCount(4);
   });
 
