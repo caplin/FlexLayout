@@ -532,6 +532,7 @@ function App() {
                             <option value="mosaic">Mosaic Style</option>
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
+                            <option value="ecmind">ECMind</option>
                         </select>
                         <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                         <div style={{ flexGrow: 1 }}></div>
