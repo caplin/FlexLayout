@@ -9,6 +9,7 @@
         "borderMinSize": 100,
         "borderEnableTabScrollbar": true,
 		"tabSetEnableDeleteWhenEmpty": false,
+        "tabSetEnableHideWhenEmpty": true,
         "borderEnableAutoHide": false
     },
     "borders": [

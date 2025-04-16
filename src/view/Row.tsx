@@ -35,6 +35,8 @@ export const Row = (props: IRowProps) => {
         if (child instanceof RowNode) {
             items.push(<Row key={child.getId()} layout={layout} node={child} />);
         } else if (child instanceof TabSetNode) {
+            if (child.getChildren().length == 0 && child.isEnableHideWhenEmpty())
+                continue;
             items.push(<TabSet key={child.getId()} layout={layout} node={child} />);
         }
         i++;

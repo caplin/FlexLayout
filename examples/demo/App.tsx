@@ -135,6 +135,14 @@ function App() {
         // console.log("Added tab", addedTab);
     }
 
+    const onAddToEmptyTabset = (event: React.MouseEvent) => {
+        (layoutRef!.current!).addTabToTabSet("mwLeftTabSet", {
+            component: "grid",
+            icon: "images/article.svg",
+            name: "Grid " + nextGridIndex.current++
+        });
+    }
+
     const onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
         const addedTab = (layoutRef!.current!).addTabToTabSet(node.getId(), {
             component: "grid",
@@ -582,6 +590,7 @@ function App() {
                             Add Drag
                         </button>
                         <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={onAddActiveClick}>Add Active</button>
+                        <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToEmptyTabSet" onClick={onAddToEmptyTabset}>Add to Empty Tabset</button>
                     </div>
                     <div className={"contents" + (showLayout ? " showLayout" : "")}>
                         {contents}

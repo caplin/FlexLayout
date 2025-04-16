@@ -173,6 +173,10 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         return this.getAttr("enableDeleteWhenEmpty") as boolean;
     }
 
+    isEnableHideWhenEmpty() {
+        return this.getAttr("enableHideWhenEmpty") as boolean;
+    }
+
     isEnableDrop() {
         return this.getAttr("enableDrop") as boolean;
     }
@@ -528,6 +532,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
         attributeDefinitions.addInherited("enableDeleteWhenEmpty", "tabSetEnableDeleteWhenEmpty").setDescription(
             `whether to delete this tabset when is has no tabs`
+        );
+        attributeDefinitions.addInherited("enableHideWhenEmpty", "tabSetEnableHideWhenEmpty").setDescription(
+            "whether to hide this tabset when it has no tabs"
         );
         attributeDefinitions.addInherited("enableDrop", "tabSetEnableDrop").setDescription(
             `allow user to drag tabs into this tabset`
