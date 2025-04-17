@@ -377,6 +377,15 @@ export interface IGlobalAttributes {
 	tabSetEnableDeleteWhenEmpty?: boolean;
 
 	/**
+	  Value for TabSetNode attribute enableHideWhenEmpty if not overridden
+	   
+	  whether to hide this tabset when it has no tabs
+    
+	  Default: inherited from Global attribute tabSetEnableHidWhenEmpty (default false)
+     */
+	tabSetEnableHideWhenEmpty?: boolean;
+
+	/**
 	  Value for TabSetNode attribute enableDivide if not overridden
 
 	  allow user to drag tabs to region of this tabset, splitting into new tabset
@@ -559,6 +568,13 @@ export interface ITabSetAttributes {
 	  Default: inherited from Global attribute tabSetEnableDeleteWhenEmpty (default true)
 	 */
 	enableDeleteWhenEmpty?: boolean;
+
+	/** 
+	  whether to hide this tabset when it has no tabs
+    
+	  Default: inherited from Global attribute tabSetEnableHideWhenEmpty (default false)
+     */
+	enableHideWhenEmpty?: boolean;
 
 	/**
 	  allow user to drag tabs to region of this tabset, splitting into new tabset

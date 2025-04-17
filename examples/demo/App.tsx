@@ -135,6 +135,22 @@ function App() {
         // console.log("Added tab", addedTab);
     }
 
+    const onAddToLeftEmptyTabset = (event: React.MouseEvent) => {
+        (layoutRef!.current!).addTabToTabSet("mwLeftTabSet", {
+            component: "grid",
+            icon: "images/article.svg",
+            name: "Grid " + nextGridIndex.current++
+        });
+    }
+
+    const onAddToRightEmptyTabset = (event: React.MouseEvent) => {
+        (layoutRef!.current!).addTabToTabSet("mwRightTabSet", {
+            component: "grid",
+            icon: "images/article.svg",
+            name: "Grid " + nextGridIndex.current++
+        });
+    }
+
     const onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
         const addedTab = (layoutRef!.current!).addTabToTabSet(node.getId(), {
             component: "grid",
@@ -532,6 +548,7 @@ function App() {
                             <option value="mosaic">Mosaic Style</option>
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
+                            <option value="ecmind">ECMind</option>
                         </select>
                         <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                         <div style={{ flexGrow: 1 }}></div>
@@ -581,6 +598,12 @@ function App() {
                             Add Drag
                         </button>
                         <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={onAddActiveClick}>Add Active</button>
+                        {layoutFile === "ecmind" &&
+                            <div>
+                                <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToEmptyTabSet" onClick={onAddToLeftEmptyTabset}>Add to left empty Tabset</button>
+                                <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToEmptyTabSet" onClick={onAddToRightEmptyTabset}>Add to right empty Tabset</button>
+                            </div>
+                        }
                     </div>
                     <div className={"contents" + (showLayout ? " showLayout" : "")}>
                         {contents}
