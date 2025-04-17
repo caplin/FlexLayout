@@ -43,7 +43,7 @@ export const Row = (props: IRowProps) => {
     }
 
     const style: Record<string, any> = {
-        flexGrow: Math.max(1, node.getWeight()*1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
+        flexGrow: Math.max(1, node.getWeight() * 1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
         minWidth: node.getMinWidth(),
         minHeight: node.getMinHeight(),
         maxWidth: node.getMaxWidth(),
@@ -56,12 +56,12 @@ export const Row = (props: IRowProps) => {
         style.flexDirection = "column";
     }
 
-     return (
+    return (
         <div
             ref={selfRef}
             className={layout.getClassName(CLASSES.FLEXLAYOUT__ROW)}
             style={style}
-            >
+        >
             {items}
         </div>
     );
