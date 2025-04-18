@@ -1,0 +1,101 @@
+{
+  "global": {},
+  "borders": [
+    {
+      "type": "border",
+      "location": "top",
+      "children": [
+        {
+          "type": "tab",
+          "id": "onRenderTab2",
+          "name": "top1",
+          "component": "testing"
+        }
+      ]
+    },
+    {
+      "type": "border",
+      "location": "bottom",
+      "children": [
+        {
+          "type": "tab",
+          "name": "bottom1",
+          "component": "testing"
+        },
+        {
+          "type": "tab",
+          "name": "bottom2",
+          "component": "testing"
+        }
+      ]
+    },
+    {
+      "type": "border",
+      "location": "left",
+      "children": [
+        {
+          "type": "tab",
+          "name": "left1",
+          "component": "testing"
+        }
+      ]
+    },
+    {
+      "type": "border",
+      "location": "right",
+      "children": [
+        {
+          "type": "tab",
+          "name": "right1",
+          "component": "testing"
+        }
+      ]
+    }
+  ],
+  "layout": {
+    "type": "row",
+    "weight": 100,
+    "children": [
+      {
+        "type": "tabset",
+        "id": "onRenderTabSet1",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "id": "345",
+            "name": "One",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "id": "onRenderTabSet2",
+        "name": "will be replaced",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "id": "onRenderTab1",
+            "name": "Two",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "id": "onRenderTabSet3",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "id": "123",
+            "name": "Three",
+            "component": "testing"
+          }
+        ]
+      }
+    ]
+  }
+}
