@@ -1,6 +1,6 @@
 {
   "name": "flexlayout-react",
-  "version": "0.8.13",
+  "version": "0.8.14",
   "description": "A multi-tab docking layout manager",
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
@@ -11,7 +11,8 @@
   "types": "./declarations/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/index.js"
+      "import": "./lib/index.js",
+      "types": "./declarations/index.d.ts"
     },
     "./style/*": "./style/*"
   },
