@@ -1,8 +1,7 @@
 node_modules/
-declarations/
-.idea/
+types/
 dist/
-lib/
+.idea/
 demo/dist/
 @private/
 .DS_Store

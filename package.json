@@ -1,24 +1,24 @@
 {
   "name": "flexlayout-react",
-  "version": "0.8.14",
+  "version": "0.8.15",
   "description": "A multi-tab docking layout manager",
   "author": "Caplin Systems Ltd",
   "repository": "https://github.com/caplin/FlexLayout",
   "license": "ISC",
   "type":"module",
-  "main": "./lib/index.js",
-  "module": "./lib/index.js",
-  "types": "./declarations/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/index.js",
-      "types": "./declarations/index.d.ts"
+      "import": "./dist/index.js",
+      "types": "./types/index.d.ts"
     },
     "./style/*": "./style/*"
   },
   "files": [
-    "declarations/",
-    "lib/",
+    "dist/",
+    "types/",
     "style/"
   ],
   "keywords": [
@@ -43,16 +43,16 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
-    "build": "npm run build:clean && npm run css && npm run doc && npm run build:demo && npm run build:types && npm run build:libs",
-    "build:clean": "rimraf lib/ declarations/ typedoc/",
+    "build": "npm run build:clean && npm run build:demo && npm run css && npm run build:lib && npm run build:types && npm run doc",
+    "build:clean": "rimraf demo/dist dist/ types/ typedoc/",
     "build:demo": "vite build",
     "build:types": "tsc -p tsconfig-types.json",
-    "build:libs": "vite build --config vite.config.lib.ts",
+    "build:lib": "vite build --config vite.config.lib.ts",
     "test": "vitest",
     "playwright": "playwright test --ui",
     "lint": "eslint src/*",
     "doc": "typedoc --out typedoc --exclude \"**/demo/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
-    "css": "sass style/rounded.scss  style/rounded.css && sass style/underline.scss style/underline.css && sass style/gray.scss style/gray.css && sass style/light.scss style/light.css && sass style/dark.scss style/dark.css  && sass style/combined.scss style/combined.css"
+    "css": "sass style:style"
   },
   "eslintConfig": {
     "extends": "react-app"

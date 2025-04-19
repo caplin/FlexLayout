@@ -19,7 +19,6 @@ import { TabSetNode } from "../model/TabSetNode";
 import { BorderTab } from "./BorderTab";
 import { BorderTabSet } from "./BorderTabSet";
 import { DragContainer } from "./DragContainer";
-import { ErrorBoundary } from "./ErrorBoundary";
 import { PopoutWindow } from "./PopoutWindow";
 import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
 import { Overlay } from "./Overlay";
@@ -334,6 +333,9 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         if (this.selfRef.current) {
             this.resizeObserver?.unobserve(this.selfRef.current);
         }
+        if (this.isMainWindow) {
+            this.props.model.removeChangeListener(this.onModelChange);
+        }
         this.styleObserver?.disconnect();
     }
 
@@ -556,7 +558,6 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     renderTabMoveables() {
-        // const tabMoveables: React.ReactNode[] = [];
         const tabMoveables = new Map<string, React.ReactNode>();
 
         this.props.model.visitNodes((node) => {
@@ -567,20 +568,21 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 const selected = child.isSelected();
                 const rect = (child.getParent() as BorderNode | TabSetNode).getContentRect();
 
+                const visible = selected || !child.isEnableRenderOnDemand();
                 // only render first time if size >0
-                const renderTab = child.isRendered() ||
-                    ((selected || !child.isEnableRenderOnDemand()) && (rect.width > 0 && rect.height > 0));
+                const renderTab = child.isRendered() || (visible && (rect.width > 0 && rect.height > 0));
 
                 if (renderTab) {
-                    //  console.log("rendertab", child.getName(), this.props.renderRevision);
                     const key = child.getId() + (child.isEnableWindowReMount() ? child.getWindowId() : "");
                     tabMoveables.set(node.getId(), createPortal(
-                        <SizeTracker rect={rect} selected={child.isSelected()} forceRevision={this.state.forceRevision} tabsRevision={this.props.renderRevision} key={key}>
-                            <ErrorBoundary
-                                message={this.i18nName(I18nLabel.Error_rendering_component)}
-                                retryText={this.i18nName(I18nLabel.Error_rendering_component_retry)}>
-                                {this.props.factory(child)}
-                            </ErrorBoundary>
+                        <SizeTracker
+                            layout={this}
+                            node={child}
+                            rect={rect}
+                            visible={visible}
+                            forceRevision={this.state.forceRevision}
+                            tabsRevision={this.props.renderRevision}
+                            key={key}>
                         </SizeTracker>
                         , element, key));
 
@@ -618,18 +620,13 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 const renderTab = child.isRendered() || selected || !child.isEnableRenderOnDemand();
 
                 if (renderTab) {
-                    // const rect = (child.getParent() as BorderNode | TabSetNode).getContentRect();
-                    // const key = child.getId();
-
                     tabs.set(child.getId(), (
-                        // <SizeTracker rect={rect} forceRevision={this.state.forceRevision} key={key}>
                         <Tab
                             key={child.getId()}
                             layout={this}
                             path={path}
                             node={child}
                             selected={selected} />
-                        // </SizeTracker>
                     ));
                 }
             }
@@ -1159,7 +1156,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 this.setState({ showEdges: this.props.model.isEnableEdgeDock() });
             }
 
-            const clientRect = this.selfRef.current?.getBoundingClientRect()!;
+            const clientRect = this.selfRef.current!.getBoundingClientRect()!;
             const r = new Rect(
                 event.clientX - (clientRect.left),
                 event.clientY - (clientRect.top),
@@ -1231,8 +1228,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
 
     // *************************** End Drag Drop *************************************
 }
-
-export const FlexLayoutVersion = "0.8.14";
+declare const __VERSION__: string;
+export const FlexLayoutVersion = __VERSION__;
 
 export type DragRectRenderCallback = (
     content: React.ReactNode | undefined,
@@ -1255,6 +1252,8 @@ export type ShowOverflowMenuCallback = (
 export type TabSetPlaceHolderCallback = (node: TabSetNode) => React.ReactNode;
 
 export interface ITabSetRenderValues {
+    /** a component to be placed before the tabs */
+    leading: React.ReactNode;
     /** components that will be added after the tabs */
     stickyButtons: React.ReactNode[];
     /** components that will be added at the end of the tabset */

@@ -177,12 +177,14 @@ export const TabSet = (props: ITabSetProps) => {
         }
     }
 
+    let leading : React.ReactNode = undefined;
     let stickyButtons: React.ReactNode[] = [];
     let buttons: React.ReactNode[] = [];
 
     // allow customization of header contents and buttons
-    const renderState: ITabSetRenderValues = { stickyButtons, buttons, overflowPosition: undefined };
+    const renderState: ITabSetRenderValues = { leading, stickyButtons, buttons, overflowPosition: undefined };
     layout.customizeTabSet(node, renderState);
+    leading = renderState.leading;
     stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
 
@@ -341,6 +343,15 @@ export const TabSet = (props: ITabSetProps) => {
         }
     }
 
+    let leadingContainer: React.ReactNode = undefined;
+    if (leading) {
+        leadingContainer = (
+            <div className={cm(CLASSES.FLEXLAYOUT__TABSET_LEADING)}>
+                {leading}
+            </div>
+        );
+    }
+
     if (node.isEnableTabWrap()) {
         if (node.isEnableTabStrip()) {
             tabStrip = (
@@ -356,6 +367,7 @@ export const TabSet = (props: ITabSetProps) => {
                     draggable={true}
                     onDragStart={onDragStart}
                 >
+                    {leadingContainer}
                     {tabs}
                     <div style={{ flexGrow: 1 }} />
                     {buttonbar}
@@ -386,6 +398,7 @@ export const TabSet = (props: ITabSetProps) => {
                     onWheel={onMouseWheel}
                     onDragStart={onDragStart}
                 >
+                    {leadingContainer}
                     <div className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER)}>
                         <div ref={tabStripInnerRef}
                             className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}

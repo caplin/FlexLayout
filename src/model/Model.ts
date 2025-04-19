@@ -181,7 +181,7 @@ export class Model {
             case Actions.CLOSE_WINDOW: {
                 const window = this.windows.get(action.data.windowId);
                 if (window) {
-                    this.rootWindow.root?.drop(window?.root!, DockLocation.CENTER, -1);
+                    this.rootWindow.root?.drop(window!.root!, DockLocation.CENTER, -1);
                     this.rootWindow.visitNodes((node, level) => {
                         if (node instanceof RowNode) {
                             node.setWindowId(Model.MAIN_WINDOW_ID);

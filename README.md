@@ -55,16 +55,17 @@ import {Layout, Model} from 'flexlayout-react';
 
 Include the light, dark, underline, gray, rounded or combined theme by either:
 
-Adding an additional import:
+Adding an import in your js code:
 
 ```
 import 'flexlayout-react/style/light.css';  
 ```
 
-or by adding the css to your html:
+or by copying the relevant css from the node_modules/flexlayout-react/style directory to your 
+ public assets folder (e.g. public/style) and linking the css in your html:
 
 ```
-<link rel="stylesheet" href="node_modules/flexlayout-react/style/light.css" />
+<link rel="stylesheet" href="/style/light.css" />
 ```
 
 [How to change the theme dynamically in code](#dynamically-changing-the-theme)
@@ -94,7 +95,7 @@ The model can be created using the Model.fromJson(jsonObject) static method, and
 ## Example Configuration:
 
 ```javascript
-var json = {
+const json = {
     global: {},
     borders: [],
     layout: {
@@ -136,7 +137,7 @@ const model = Model.fromJson(json);
 function App() {
 
   const factory = (node) => {
-    var component = node.getComponent();
+    const component = node.getComponent();
 
     if (component === "placeholder") {
       return <div>{node.getName()}</div>;
@@ -264,6 +265,8 @@ You can use the `<Layout>` prop onRenderTabSet to customize the tabset rendering
      title="Tabset structure" />
 
 Update the renderValues parameter as needed:
+
+renderValues.leading : the blue block
 
 renderValues.stickyButtons : the red block
 
@@ -419,7 +422,7 @@ an additional icon is shown in the tab header bar allowing the tab to be popped 
 into an external window.
 
 For popouts to work there needs to be an additional html page 'popout.html' hosted
-at the same location as the main page (copy the one from examples/demo). The popout.html is the host page for the
+at the same location as the main page (copy the one from the demo app). The popout.html is the host page for the
 popped out tab, the styles from the main page will be copied into it at runtime.
 
 Because popouts are rendering into a different document to the main layout any code in the popped out
@@ -457,7 +460,7 @@ enableWindowReMount tab attribute to force the component to re-mount.
 
 See this article about using React portals in this way: https://dev.to/noriste/the-challenges-of-rendering-an-openlayers-map-in-a-popup-through-react-2elh
 
-## Running the Examples and Building the Project
+## Running the Demo and Building the Project
 
 First install dependencies:
 
@@ -465,15 +468,13 @@ First install dependencies:
 pnpm install
 ```
 
-Compile the project and run the examples:
+Run the Demo app:
 
 ```
 pnpm dev
 ```
 
-Open your browser at the address shown to see the Demo app.
-
-The 'pnpm dev' command will watch for changes to flexlayout and the Demo, so you can make changes to the code and then refresh the browser to see the result.
+The 'pnpm dev' command will watch for changes to FlexLayout and the Demo, so you can make changes to the FlexLayout code and see the changes in your browser.
 
 Once the demo is running you can run the Playwright tests by running (in another terminal window)
 

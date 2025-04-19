@@ -132,11 +132,7 @@ export abstract class Node {
         for (const node of this.children) {
             let newPath = path;
             if (node.getType() === "row") {
-                if (node.getOrientation() === Orientation.VERT) {
-                    newPath += "/c" + i;
-                } else {
-                    newPath += "/r" + i;
-                }
+                newPath += "/r" + i;
             } else if (node.getType() === "tabset") {
                 newPath += "/ts" + i;
             } else if (node.getType() === "tab") {

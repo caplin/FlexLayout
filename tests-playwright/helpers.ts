@@ -1,4 +1,4 @@
-    import { test, expect, Page, Locator } from '@playwright/test';
+    import { expect, Page, Locator } from '@playwright/test';
 
     export const findAllTabSets = (page: Page) => {
         return page.locator('.flexlayout__tabset');

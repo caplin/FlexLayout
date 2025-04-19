@@ -195,6 +195,10 @@
                 position: relative;
             }
 
+            &_leading {
+                display:flex;
+            }
+
             &_header {
                 // tabset header bar
                 display: flex;
@@ -477,6 +481,10 @@
                 box-sizing: border-box;
                 overflow: hidden;
                 background-color: var(--color-border-tab-content);
+            }
+            
+            &_leading {
+                display:flex;
             }
 
             &_top {

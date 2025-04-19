@@ -120,11 +120,14 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         borderClasses += " " + border.getClassName();
     }
 
-    // allow customization of tabset right/bottom buttons
+    // allow customization of tabset
+    let leading : React.ReactNode = undefined;
     let buttons: any[] = [];
-    const stickyButtons: any[] = [];
-    const renderState: ITabSetRenderValues = { buttons, stickyButtons: stickyButtons, overflowPosition: undefined };
+    let stickyButtons: any[] = [];
+    const renderState: ITabSetRenderValues = { leading, buttons, stickyButtons: stickyButtons, overflowPosition: undefined };
     layout.customizeTabSet(border, renderState);
+    leading = renderState.leading;
+    stickyButtons = renderState.stickyButtons;
     buttons = renderState.buttons;
 
     if (renderState.overflowPosition === undefined) {
@@ -222,6 +225,15 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         );
     }
 
+    let leadingContainer: React.ReactNode = undefined;
+    if (leading) {
+        leadingContainer = (
+            <div className={cm(CLASSES.FLEXLAYOUT__BORDER_LEADING)}>
+                {leading}
+            </div>
+        );
+    }
+
     return (
         <div
             ref={selfRef}
@@ -236,6 +248,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             onContextMenu={onContextMenu}
             onWheel={onMouseWheel}
         >
+            {leadingContainer}
             <div className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER)}>
                 <div
                     ref={tabStripInnerRef}

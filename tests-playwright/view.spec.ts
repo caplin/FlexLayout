@@ -1,5 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
-import { describe } from 'node:test';
+import { test, expect, Page } from '@playwright/test';
 import { checkBorderTab, checkTab, drag, dragSplitter, dragToEdge, findAllTabSets, findPath, findTabButton, Location } from './helpers';
 import { CLASSES } from '../src/Types';
 
@@ -11,8 +10,8 @@ import { CLASSES } from '../src/Types';
     /ts1 - the second tabset in the root row
     /ts1/tabstrip - the second tabsets tabstrip
     /ts1/header - the second tabsets header
-    /c2/ts0 - the first tabset in the column at position 2 in the root row
-    /s0 - the first splitter in the root row (the one after the first tabset/column)
+    /r2/ts0 - the first tabset in the row at position 2 in the root row
+    /s0 - the first splitter in the root row (the one after the first tabset/row)
     /ts1/t2 - the third tab (the tab content) in the second tabset in the root row
     /ts1/tb2 - the third tab button (the tab button in the tabstrip) in the second tabset in the root row
     /border/top/t1
@@ -53,8 +52,8 @@ test.describe('drag tests two tabs', () => {
     const tabSets = await findAllTabSets(page);
     expect(await tabSets.count()).toBe(2);
 
-    await checkTab(page, '/c0/ts0', 0, true, 'One');
-    await checkTab(page, '/c0/ts1', 0, true, 'Two');
+    await checkTab(page, '/r0/ts0', 0, true, 'One');
+    await checkTab(page, '/r0/ts1', 0, true, 'Two');
   });
 
   test('tab to tab bottom', async ({ page }) => {
@@ -65,8 +64,8 @@ test.describe('drag tests two tabs', () => {
     const tabSets = await findAllTabSets(page);
     expect(await tabSets.count()).toBe(2);
 
-    await checkTab(page, '/c0/ts0', 0, true, 'Two');
-    await checkTab(page, '/c0/ts1', 0, true, 'One');
+    await checkTab(page, '/r0/ts0', 0, true, 'Two');
+    await checkTab(page, '/r0/ts1', 0, true, 'One');
   });
 
   test('tab to tab left', async ({ page }) => {
@@ -97,8 +96,8 @@ test.describe('drag tests two tabs', () => {
     const from = await findTabButton(page, '/ts0', 0);
     await dragToEdge(page, from, 2); // Drag to the edge at index 2
 
-    await checkTab(page, '/c0/ts0', 0, true, 'Two');
-    await checkTab(page, '/c0/ts1', 0, true, 'One');
+    await checkTab(page, '/r0/ts0', 0, true, 'Two');
+    await checkTab(page, '/r0/ts1', 0, true, 'One');
   });
 });
 
@@ -142,8 +141,8 @@ test.describe('three tabs', () => {
     await drag(page, from, to, Location.TOP);
     await expect(findAllTabSets(page)).toHaveCount(3);
 
-    await checkTab(page, '/c0/ts0', 0, true, 'One');
-    await checkTab(page, '/c0/ts1', 0, true, 'Two');
+    await checkTab(page, '/r0/ts0', 0, true, 'One');
+    await checkTab(page, '/r0/ts1', 0, true, 'Two');
     await checkTab(page, '/ts1', 0, true, 'Three');
   });
 
@@ -154,9 +153,9 @@ test.describe('three tabs', () => {
     await drag(page, from, to, Location.BOTTOM);
     await expect(findAllTabSets(page)).toHaveCount(3);
 
-    await checkTab(page, '/c0/r0/ts0', 0, true, 'Two');
-    await checkTab(page, '/c0/r0/ts1', 0, true, 'Three');
-    await checkTab(page, '/c0/ts1', 0, true, 'One');
+    await checkTab(page, '/r0/r0/ts0', 0, true, 'Two');
+    await checkTab(page, '/r0/r0/ts1', 0, true, 'Three');
+    await checkTab(page, '/r0/ts1', 0, true, 'One');
   });
 
   test('tab to tab left', async ({ page }) => {
@@ -188,9 +187,9 @@ test.describe('three tabs', () => {
     const from = findTabButton(page, '/ts0', 0);
     await dragToEdge(page, from, 0);
 
-    await checkTab(page, '/c0/ts0', 0, true, 'One');
-    await checkTab(page, '/c0/r1/ts0', 0, true, 'Two');
-    await checkTab(page, '/c0/r1/ts1', 0, true, 'Three');
+    await checkTab(page, '/r0/ts0', 0, true, 'One');
+    await checkTab(page, '/r0/r1/ts0', 0, true, 'Two');
+    await checkTab(page, '/r0/r1/ts1', 0, true, 'Three');
   });
 
   test('tab to edge left', async ({ page }) => {
@@ -206,9 +205,9 @@ test.describe('three tabs', () => {
     const from = findTabButton(page, '/ts0', 0);
     await dragToEdge(page, from, 2);
 
-    await checkTab(page, '/c0/r0/ts0', 0, true, 'Two');
-    await checkTab(page, '/c0/r0/ts1', 0, true, 'Three');
-    await checkTab(page, '/c0/ts1', 0, true, 'One');
+    await checkTab(page, '/r0/r0/ts0', 0, true, 'Two');
+    await checkTab(page, '/r0/r0/ts1', 0, true, 'Three');
+    await checkTab(page, '/r0/ts1', 0, true, 'One');
   });
 
   test('tab to edge right', async ({ page }) => {
@@ -226,15 +225,15 @@ test.describe('three tabs', () => {
     await drag(page, from, to, Location.BOTTOM);
 
     const rowFrom = findTabButton(page, '/ts0', 0);
-    const rowTo = findPath(page, '/c1/ts0/t0');
+    const rowTo = findPath(page, '/r1/ts0/t0');
     await drag(page, rowFrom, rowTo, Location.BOTTOM);
 
     const tabsets = findAllTabSets(page);
     await expect(tabsets).toHaveCount(3);
 
-    await checkTab(page, '/c0/ts0', 0, true, 'Three');
-    await checkTab(page, '/c0/ts1', 0, true, 'Two');
-    await checkTab(page, '/c0/ts2', 0, true, 'One');
+    await checkTab(page, '/r0/ts0', 0, true, 'Three');
+    await checkTab(page, '/r0/ts1', 0, true, 'Two');
+    await checkTab(page, '/r0/ts2', 0, true, 'One');
   });
 
   test('row to single tabset', async ({ page }) => {
@@ -302,7 +301,7 @@ test.describe('borders', () => {
     await expect(findAllTabSets(page)).toHaveCount(3);
   });
 
-  const borderToTabTest = async (page, border: string, tabtext: string, index: number) => {
+  const borderToTabTest = async (page: Page, border: string, tabtext: string, index: number) => {
     const from = await findTabButton(page, border, 0);
     const to = await findPath(page, '/ts0/t0');
     await drag(page, from, to, Location.CENTER);
@@ -327,7 +326,7 @@ test.describe('borders', () => {
     await borderToTabTest(page, '/border/right', 'right1', 1);
   });
 
-  const tabToBorderTest = async (page, border: string, tabtext: string, index: number) => {
+  const tabToBorderTest = async (page: Page, border: string, tabtext: string, index: number) => {
     const from = await findTabButton(page, '/ts0', 0);
     const to = await findTabButton(page, border, 0);
     await drag(page, from, to, Location.CENTER);
@@ -352,7 +351,7 @@ test.describe('borders', () => {
     await tabToBorderTest(page, '/border/right', 'One', 0);
   });
 
-  const openTabTest = async (page, border: string, tabtext: string, index: number) => {
+  const openTabTest = async (page: Page, border: string, tabtext: string, index: number) => {
     await (await findTabButton(page, border, 0)).click();
     const from = await findTabButton(page, '/ts0', 0);
     const to = await findPath(page, border);
@@ -378,7 +377,7 @@ test.describe('borders', () => {
     await openTabTest(page, '/border/right', 'right1', 1);
   });
 
-  const openTabCenterTest = async (page, border: string, tabtext: string, index: number) => {
+  const openTabCenterTest = async (page: Page, border: string, tabtext: string, index: number) => {
     await (await findTabButton(page, border, 0)).click();
     const from = await findTabButton(page, '/ts0', 0);
     const to = await findPath(page, `${border}/t0`);
@@ -404,7 +403,7 @@ test.describe('borders', () => {
     await openTabCenterTest(page, '/border/right', 'right1', 1);
   });
 
-  const inBorderTabMoveTest = async (page, border: string, tabtext: string, index: number) => {
+  const inBorderTabMoveTest = async (page: Page, border: string, tabtext: string, index: number) => {
     const from = await findTabButton(page, '/ts0', 0);
     const to = await findPath(page, border);
     await drag(page, from, to, Location.CENTER);
@@ -595,16 +594,16 @@ test.describe('Splitters', () => {
       const tabsets = findAllTabSets(page);
       await expect(tabsets).toHaveCount(2);
   
-      await checkTab(page, '/c0/ts0', 0, true, 'Two');
-      await checkTab(page, '/c0/ts1', 0, true, 'One');
+      await checkTab(page, '/r0/ts0', 0, true, 'Two');
+      await checkTab(page, '/r0/ts1', 0, true, 'One');
     });
   
     test('resizes with hsplitter', async ({ page }) => {
-      const from = findPath(page, '/c0/s0');
+      const from = findPath(page, '/r0/s0');
       await dragSplitter(page, from, true, 100); // down 100px
   
-      const e1 = findPath(page, '/c0/ts1');
-      const e2 = findPath(page, '/c0/ts0');
+      const e1 = findPath(page, '/r0/ts1');
+      const e2 = findPath(page, '/r0/ts0');
   
       const h1 = (await e1.boundingBox())?.height ?? 0;
       const h2 = (await e2.boundingBox())?.height ?? 0;
@@ -613,22 +612,22 @@ test.describe('Splitters', () => {
     });
   
     test('moves hsplitter to bottom edge and back', async ({ page }) => {
-      const from = findPath(page, '/c0/s0');
+      const from = findPath(page, '/r0/s0');
       await dragSplitter(page, from, true, 1000); // to bottom edge
       await dragSplitter(page, from, true, -100); // 100px back
   
-      const e1 = findPath(page, '/c0/ts1');
+      const e1 = findPath(page, '/r0/ts1');
       const h1 = (await e1.boundingBox())?.height ?? 0;
   
       expect(Math.abs(h1 - 130)).toBeLessThan(10);
     });
   
     test('moves hsplitter to top edge and back', async ({ page }) => {
-      const from = findPath(page, '/c0/s0');
+      const from = findPath(page, '/r0/s0');
       await dragSplitter(page, from, true, -1000); // to top edge
       await dragSplitter(page, from, true, 100); // 100px back
   
-      const e1 = findPath(page, '/c0/ts0');
+      const e1 = findPath(page, '/r0/ts0');
       const h1 = (await e1.boundingBox())?.height ?? 0;
   
       expect(Math.abs(h1 - 130)).toBeLessThan(10);
@@ -817,25 +816,25 @@ test.describe('Extended layout2', () => {
   test('check tabset min size', async ({ page }) => {
     let from = findPath(page, '/s0');
     await dragSplitter(page, from, false, -1000);
-    let ts0 = findPath(page, '/ts0');
+    const ts0 = findPath(page, '/ts0');
     const w1 = await ts0.boundingBox();
     expect(Math.abs(w1!.width - 100)).toBeLessThan(2);
 
     from = findPath(page, '/s1');
     await dragSplitter(page, from, false, 1000);
-    const ts0c2 = findPath(page, '/c2/ts0');
+    const ts0c2 = findPath(page, '/r2/ts0');
     const w2 = await ts0c2.boundingBox();
     expect(Math.abs(w2!.width - 100)).toBeLessThan(2);
 
-    from = findPath(page, '/c2/s0');
+    from = findPath(page, '/r2/s0');
     await dragSplitter(page, from, true, -1000);
-    const ts0c2height = findPath(page, '/c2/ts0');
+    const ts0c2height = findPath(page, '/r2/ts0');
     const h1 = await ts0c2height.boundingBox();
     expect(Math.abs(h1!.height - 130)).toBeLessThan(10);
 
-    from = findPath(page, '/c2/s0');
+    from = findPath(page, '/r2/s0');
     await dragSplitter(page, from, true, 1000);
-    const ts1 = findPath(page, '/c2/ts1');
+    const ts1 = findPath(page, '/r2/ts1');
     const h2 = await ts1.boundingBox();
     expect(Math.abs(h2!.height - 130)).toBeLessThan(10);
   });
@@ -881,9 +880,9 @@ test.describe('Extended layout2', () => {
     await expect(findPath(page, '/ts1')).toBeVisible();
     await expect(findPath(page, '/ts2')).not.toBeVisible();
 
-    await findPath(page, '/c2/ts0/button/close').click();
+    await findPath(page, '/r2/ts0/button/close').click();
 
-    await expect(findPath(page, '/c2/ts0')).not.toBeVisible();
+    await expect(findPath(page, '/r2/ts0')).not.toBeVisible();
     await expect(findPath(page, '/ts0')).toBeVisible();
     await expect(findPath(page, '/ts1')).toBeVisible();
     await expect(findPath(page, '/ts2')).toBeVisible();

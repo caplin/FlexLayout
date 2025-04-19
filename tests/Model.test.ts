@@ -1,4 +1,4 @@
-import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Orientation, RowNode, TabNode, TabSetNode } from "../src";
+import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, RowNode, TabNode, TabSetNode } from "../src";
 
 /*
 * The textRendered tabs: a representation of the model 'rendered' to a list of tab paths 
@@ -80,24 +80,24 @@ describe("Tree", function () {
                     const id0 = tabset("/ts0").getId();
                     doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.TOP, -1));
 
-                    expect(tabs).equal("/c0/ts0/t0[newtab1]*,/c0/ts1/t0[One]*,/ts1/t0[Two]*");
+                    expect(tabs).equal("/r0/ts0/t0[newtab1]*,/r0/ts1/t0[One]*,/ts1/t0[Two]*");
 
                     const id1 = tabset("/ts1").getId();
                     doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.TOP, -1));
 
-                    expect(tabs).equal("/c0/ts0/t0[newtab1]*,/c0/ts1/t0[One]*,/c1/ts0/t0[newtab2]*,/c1/ts1/t0[Two]*");
+                    expect(tabs).equal("/r0/ts0/t0[newtab1]*,/r0/ts1/t0[One]*,/r1/ts0/t0[newtab2]*,/r1/ts1/t0[Two]*");
                 });
 
                 it("add to tabset bottom", () => {
                     const id0 = tabset("/ts0").getId();
                     doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.BOTTOM, -1));
 
-                    expect(tabs).equal("/c0/ts0/t0[One]*,/c0/ts1/t0[newtab1]*,/ts1/t0[Two]*");
+                    expect(tabs).equal("/r0/ts0/t0[One]*,/r0/ts1/t0[newtab1]*,/ts1/t0[Two]*");
 
                     const id1 = tabset("/ts1").getId();
                     doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.BOTTOM, -1));
 
-                    expect(tabs).equal("/c0/ts0/t0[One]*,/c0/ts1/t0[newtab1]*,/c1/ts0/t0[Two]*,/c1/ts1/t0[newtab2]*");
+                    expect(tabs).equal("/r0/ts0/t0[One]*,/r0/ts1/t0[newtab1]*,/r1/ts0/t0[Two]*,/r1/ts1/t0[newtab2]*");
                 });
 
                 it("add to tabset left", () => {
@@ -252,14 +252,14 @@ describe("Tree", function () {
                 const fromId = tab("/ts0/t0").getId();
                 const toId = tab("/ts1").getId();
                 doAction(Actions.moveNode(fromId, toId, DockLocation.TOP, -1));
-                expect(tabs).equal("/c0/ts0/t0[One]*,/c0/ts1/t0[Two]*,/ts1/t0[Three]*");
+                expect(tabs).equal("/r0/ts0/t0[One]*,/r0/ts1/t0[Two]*,/ts1/t0[Three]*");
             });
 
             it("move to bottom", () => {
                 const fromId = tab("/ts0/t0").getId();
                 const toId = tab("/ts1").getId();
                 doAction(Actions.moveNode(fromId, toId, DockLocation.BOTTOM, -1));
-                expect(tabs).equal("/c0/ts0/t0[Two]*,/c0/ts1/t0[One]*,/ts1/t0[Three]*");
+                expect(tabs).equal("/r0/ts0/t0[Two]*,/r0/ts1/t0[One]*,/ts1/t0[Three]*");
             });
 
             it("move to left", () => {
@@ -379,8 +379,8 @@ describe("Tree", function () {
                 model = Model.fromJson(threeTabs);
                 textRender(model);
                 expect(tabs).equal("/ts0/t0[One]*,/ts1/t0[Two]*,/ts2/t0[Three]*");
-                let fromId = tab("/ts0/t0").getId();
-                let toId = tab("/ts1").getId();
+                const fromId = tab("/ts0/t0").getId();
+                const toId = tab("/ts1").getId();
                 doAction(Actions.moveNode(fromId, toId, DockLocation.CENTER, -1));
                 expect(tabs).equal("/ts0/t0[Two],/ts0/t1[One]*,/ts1/t0[Three]*");
 
@@ -578,7 +578,7 @@ function textRenderInner(pathMap: Record<string, Node>, path: string, children: 
             tabsArray.push(newpath + "[" + c.getName() + "]" + (selected ? "*" : ""));
             textRenderInner(pathMap, newpath, c.getChildren());
         } else if (c instanceof RowNode) {
-            const newpath = path + ((c.getOrientation() === Orientation.HORZ) ? "/r" : "/c") + index++;
+            const newpath = path + "/r" + index++;
             pathMap[newpath] = c;
             textRenderInner(pathMap, newpath, c.getChildren());
         }

@@ -18,6 +18,7 @@ export enum CLASSES {
     FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER = "flexlayout__border_inner_tab_container",
     FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ = "flexlayout__border_inner_tab_container_",
     FLEXLAYOUT__BORDER_TAB_DIVIDER = "flexlayout__border_tab_divider",
+    FLEXLAYOUT__BORDER_LEADING = "flexlayout__border_leading",
 
     FLEXLAYOUT__BORDER_SIZER = "flexlayout__border_sizer",
 
@@ -75,6 +76,7 @@ export enum CLASSES {
     FLEXLAYOUT__TABSET_CONTENT = "flexlayout__tabset_content",
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
     FLEXLAYOUT__TABSET_TABBAR_INNER_ = "flexlayout__tabset_tabbar_inner_",
+    FLEXLAYOUT__TABSET_LEADING = "flexlayout__tabset_leading",
    
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER = "flexlayout__tabset_tabbar_inner_tab_container",
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ = "flexlayout__tabset_tabbar_inner_tab_container_",

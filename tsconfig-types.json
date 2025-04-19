@@ -2,7 +2,7 @@
     "compilerOptions": {
       "emitDeclarationOnly": true,
       "declaration": true,
-      "declarationDir": "declarations",
+      "declarationDir": "types",
       "module": "ESNext",
       "target": "ESNext",
       "moduleResolution": "Bundler",

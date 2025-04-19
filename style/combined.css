@@ -465,6 +465,9 @@
   box-sizing: border-box;
   position: relative;
 }
+.flexlayout__tabset_leading {
+  display: flex;
+}
 .flexlayout__tabset_header {
   display: flex;
   align-items: center;
@@ -686,6 +689,9 @@
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--color-border-tab-content);
+}
+.flexlayout__border_leading {
+  display: flex;
 }
 .flexlayout__border_top {
   border-bottom: 1px solid var(--color-border-divider-line);

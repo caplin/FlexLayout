@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon } from "../src/index";
+import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon } from "../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { showPopup } from "./PopupMenu";
 import { SimpleForm } from "./SimpleForm";
@@ -20,7 +20,7 @@ import '../style/combined.scss';
 import './styles.css';
 import './popupmenu.css';
 
-var fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
+const fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
 const ContextExample = React.createContext('');
 
@@ -46,13 +46,13 @@ function App() {
     latestLayoutFile.current = layoutFile;
 
     const save = () => {
-        var jsonStr = JSON.stringify(latestModel.current!.toJson(), null, "\t");
+        const jsonStr = JSON.stringify(latestModel.current!.toJson(), null, "\t");
         localStorage.setItem(latestLayoutFile.current!, jsonStr);
     }
 
     const load = (jsonText: string) => {
-        let json = JSON.parse(jsonText);
-        let model = Model.fromJson(json);
+        const json = JSON.parse(jsonText);
+        const model = Model.fromJson(json);
         // model.setOnCreateTabSet((tabNode?: TabNode) => {
         //     console.log("onCreateTabSet " + tabNode);
         //     // return { type: "tabset", name: "Header Text" };
@@ -63,7 +63,6 @@ function App() {
         //model.setOnAllowDrop(this.allowDrop);
 
         const html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
-        // this.setState({ layoutFile: this.loadingLayoutName!, model: model, json: html });
         setLayoutFile(loadingLayoutName!.current);
         setModel(model);
         setJson(html);
@@ -77,7 +76,7 @@ function App() {
         loadingLayoutName.current = layoutName;
         let loaded = false;
         if (!reload) {
-            var json = localStorage.getItem(layoutName);
+            const json = localStorage.getItem(layoutName);
             if (json != null) {
                 load(json);
                 loaded = true;
@@ -131,14 +130,12 @@ function App() {
                 name: "Text" + nextGridIndex.current++
             });
         } else {
-
             (layoutRef!.current!).addTabToActiveTabSet({
                 component: "grid",
                 icon: "images/article.svg",
                 name: "Grid " + nextGridIndex.current++
             });
         }
-        // console.log("Added tab", addedTab);
     }
 
     const onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
@@ -179,7 +176,7 @@ function App() {
             event.stopPropagation();
             // console.log(node, event);
             showPopup(
-                node instanceof TabNode ? "Tab: " + node.getName() : "Type: " + node.getType(),
+                "Menu for " + (node instanceof TabNode ? "Tab: " + node.getName() : node.getType()),
                 (layoutRef!.current!).getRootDiv()!,
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
@@ -276,7 +273,7 @@ function App() {
         // node.setEventListener("visibility", function(p){console.log("visibility", node.getName(), p.visible);});
         // node.setEventListener("close", function(p){console.log("close", node.getName());});
 
-        var component = node.getComponent();
+        const component = node.getComponent();
 
         if (component === "json") {
             return (<JsonView model={latestModel.current!} />);
@@ -308,7 +305,7 @@ function App() {
             return <SimpleTable fields={fields} data={node.getExtraData().data} node={node} onDragStart={onTableDragStart} />;
         }
         else if (component === "sub") {
-            var model = node.getExtraData().model;
+            let model = node.getExtraData().model;
             if (model == null) {
                 node.getExtraData().model = Model.fromJson(node.getConfig().model);
                 model = node.getExtraData().model;
@@ -356,7 +353,7 @@ function App() {
     }
 
     const onSelectLayout = (event: React.FormEvent) => {
-        var target = event.target as HTMLSelectElement;
+        const target = event.target as HTMLSelectElement;
         loadLayout(target.value);
     }
 
@@ -365,7 +362,7 @@ function App() {
     }
 
     const onThemeChange = (event: React.FormEvent) => {
-        var target = event.target as HTMLSelectElement;
+        const target = event.target as HTMLSelectElement;
         const themeClassName = "flexlayout__theme_" + target.value;
         document.documentElement.className = themeClassName;
         // need to set popout top level class name to new theme
@@ -373,7 +370,7 @@ function App() {
     }
 
     const onFontSizeChange = (event: React.FormEvent) => {
-        var target = event.target as HTMLSelectElement;
+        const target = event.target as HTMLSelectElement;
         setFontSize(target.value);
 
         const flexLayoutElement = document.querySelector('.flexlayout__layout') as HTMLElement | null;
@@ -384,9 +381,8 @@ function App() {
         // renderValues.content = (<div>hello</div>);
         // renderValues.content += " *";
         // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
-        // renderValues.name = "tab " + node.getId(); // name used in overflow menu
         if (layoutFile === "newfeatures" && node.getComponent() === "newfeatures") {
-            renderValues.buttons.push(<img key="menu" title="added menu button" style={{ width: "1em", height: "1em" }} src="images/menu.svg" />);
+            renderValues.buttons.push(createButton("Tab settings", "settingbtn", undefined, <SettingsIcon />));
         }
 
         // playwright testing
@@ -406,16 +402,20 @@ function App() {
     const onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (node instanceof TabSetNode) {
             if (layoutFile === "newfeatures") {
-                renderValues.buttons.push(<img key="menu" title="added menu button" style={{ width: "1em", height: "1em" }} src="images/menu.svg" />);
-            } else if (layoutFile === "default") {
-                renderValues.stickyButtons.push(
-                    <button
-                        key="Add button"
-                        title="Add tab"
-                        className="flexlayout__tab_toolbar_button"
-                        onClick={() => onAddFromTabSetButton(node)}
-                    ><AddIcon /></button>);
+                const button = createButton("Tabset menu", "menubtn", (e: React.MouseEvent<HTMLElement, MouseEvent>) => onContextMenu(node, e), <MenuIcon />);
+                renderValues.leading = <div style={{ display: "flex", alignItems: "center", alignContent: "center", padding: 3 }}>
+                    {button}
+                </div>;
+            }
 
+            if (layoutFile === "newfeatures") {
+                renderValues.buttons.push(createButton("Tabset settings", "settingbtn", undefined, <SettingsIcon />));
+            }
+
+            if (layoutFile === "default") {
+                const button = createButton("Add tab", "addtab", (e: React.MouseEvent<HTMLElement, MouseEvent>) => onAddFromTabSetButton(node), <AddIcon />);
+
+                renderValues.stickyButtons.push(button);
                 // put overflow button before + button (default is after)
                 // renderValues.overflowPosition=0    
             }
@@ -445,6 +445,16 @@ function App() {
         }
     }
 
+    const createButton = (title: string, key: string, handler: React.MouseEventHandler | undefined, content: React.ReactNode) => {
+        return (<button className="flexlayout__tab_toolbar_button"
+            title={title}
+            key={key}
+            style={{ display: "flex", alignItems: "center" }}
+            onClick={handler}>
+            {content}
+        </button>);
+    }
+
     const onTabSetPlaceHolder = (node: TabSetNode) => {
         return <div
             key="placeholder"
@@ -457,12 +467,12 @@ function App() {
     }
 
     const makeFakeData = () => {
-        var data = [];
-        var r = Math.random() * 50;
-        for (var i = 0; i < r; i++) {
-            var rec: { [key: string]: any; } = {};
+        const data = [];
+        const r = Math.random() * 50;
+        for (let i = 0; i < r; i++) {
+            const rec: { [key: string]: any; } = {};
             rec.Name = randomString(5, "BCDFGHJKLMNPQRSTVWXYZ");
-            for (var j = 1; j < fields.length; j++) {
+            for (let j = 1; j < fields.length; j++) {
                 rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
             }
             data.push(rec);
@@ -471,8 +481,8 @@ function App() {
     }
 
     const randomString = (len: number, chars: string) => {
-        var a = [];
-        for (var i = 0; i < len; i++) {
+        const a = [];
+        for (let i = 0; i < len; i++) {
             a.push(chars[Math.floor(Math.random() * chars.length)]);
         }
 
@@ -598,13 +608,13 @@ function App() {
 function SimpleTable(props: { fields: any, node: Node, data: any, onDragStart: (event: React.DragEvent<HTMLDivElement>, node: Node) => void }) {
 
     // if (Math.random()>0.8) throw Error("oppps I crashed");
-    var headercells = props.fields.map(function (field: any) {
+    const headercells = props.fields.map(function (field: any) {
         return <th key={field}>{field}</th>;
     });
 
-    var rows = [];
-    for (var i = 0; i < props.data.length; i++) {
-        var row = props.fields.map((field: any) => <td key={field}>{props.data[i][field]}</td>);
+    const rows = [];
+    for (let i = 0; i < props.data.length; i++) {
+        const row = props.fields.map((field: any) => <td key={field}>{props.data[i][field]}</td>);
         rows.push(<tr key={i}>{row}</tr>);
     }
 
