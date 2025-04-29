@@ -272,6 +272,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             this.resizeObserver.observe(this.selfRef.current);
         }
 
+        this.currentWindow.addEventListener('scroll', this.onScroll);
+
         if (this.isMainWindow) {
             this.props.model.addChangeListener(this.onModelChange);
             this.updateLayoutMetrics();
@@ -333,10 +335,17 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         if (this.selfRef.current) {
             this.resizeObserver?.unobserve(this.selfRef.current);
         }
+
+        this.currentWindow?.removeEventListener('scroll', this.onScroll);
+
         if (this.isMainWindow) {
             this.props.model.removeChangeListener(this.onModelChange);
         }
         this.styleObserver?.disconnect();
+    }
+
+    onScroll = () => {
+        this.updateRect();
     }
 
     render() {
