@@ -1,3 +1,7 @@
+## 0.8.16 - 2025-04-30
+
+* **Fixed:** [#488](https://github.com/caplin/FlexLayout/issues/488) Wrong tab position on scroll
+
 ## 0.8.15 - 2025-04-25
 
 * **Added:** Option to tabset customization to allow the creation of a control to the left of the tabs (see the 'New Features' layout in the demo for an example).
