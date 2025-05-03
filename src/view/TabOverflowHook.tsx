@@ -51,6 +51,18 @@ export const useTabOverflow = (
         updateHiddenTabs();
     });
 
+    React.useEffect(() => {
+        selfRef.current?.addEventListener("wheel", onWheel, { passive: false });
+        return () => {
+            selfRef.current?.removeEventListener("wheel", onWheel);
+        };
+    }, [selfRef.current]);
+
+    // needed to prevent default mouse wheel over tabset/border when page scrolled (cannot do with react event?)
+    const onWheel = (event: Event) => {
+        event.preventDefault();
+    };
+
     function scrollIntoView() {
         const selectedTabNode = node.getSelectedNode() as TabNode;
         if (selectedTabNode && tabStripRef.current) {

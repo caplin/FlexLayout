@@ -1,3 +1,7 @@
+## 0.8.17 - 2025-05-03
+
+* **Fixed:** Issues with tab redraw and scroll when page is scrolled down (corrects fix for [#488])
+
 ## 0.8.16 - 2025-04-30
 
 * **Fixed:** [#488](https://github.com/caplin/FlexLayout/issues/488) Wrong tab position on scroll

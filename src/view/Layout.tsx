@@ -272,8 +272,6 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             this.resizeObserver.observe(this.selfRef.current);
         }
 
-        this.currentWindow.addEventListener('scroll', this.onScroll);
-
         if (this.isMainWindow) {
             this.props.model.addChangeListener(this.onModelChange);
             this.updateLayoutMetrics();
@@ -336,16 +334,10 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             this.resizeObserver?.unobserve(this.selfRef.current);
         }
 
-        this.currentWindow?.removeEventListener('scroll', this.onScroll);
-
         if (this.isMainWindow) {
             this.props.model.removeChangeListener(this.onModelChange);
         }
         this.styleObserver?.disconnect();
-    }
-
-    onScroll = () => {
-        this.updateRect();
     }
 
     render() {
@@ -820,7 +812,12 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     getDomRect() {
-        return this.state.rect;
+        // must get on demand, since page may have scrolled
+        if (this.selfRef.current) {
+            return Rect.fromDomRect(this.selfRef.current.getBoundingClientRect());
+        } else {
+            return Rect.empty();
+        }
     }
 
     getWindowId() {
