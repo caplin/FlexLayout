@@ -20,7 +20,7 @@ import { BorderTab } from "./BorderTab";
 import { BorderTabSet } from "./BorderTabSet";
 import { DragContainer } from "./DragContainer";
 import { PopoutWindow } from "./PopoutWindow";
-import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon, PinIcon, UnpinIcon } from "./Icons";
 import { Overlay } from "./Overlay";
 import { Row } from "./Row";
 import { Tab } from "./Tab";
@@ -1288,6 +1288,8 @@ export interface IIcons {
     more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
     edgeArrow?: React.ReactNode;
     activeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
+    pin?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    unpin?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
 }
 
 const defaultIcons = {
@@ -1298,7 +1300,9 @@ const defaultIcons = {
     restore: <RestoreIcon />,
     more: <OverflowIcon />,
     edgeArrow: <EdgeIcon />,
-    activeTabset: <AsterickIcon />
+    activeTabset: <AsterickIcon />,
+    pin: <PinIcon />,
+    unpin: <UnpinIcon />,
 };
 
 enum DragSource {

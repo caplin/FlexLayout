@@ -158,6 +158,10 @@ export class TabNode extends Node implements IDraggable {
         return this.getAttr("enableRenderOnDemand") as boolean;
     }
 
+    isPinned() {
+        return this.getAttr("pinned") as boolean;
+    } 
+
     getMinWidth() {
         return this.getAttr("minWidth") as number;
     }
@@ -364,7 +368,9 @@ export class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("enableWindowReMount", false).setType(Attribute.BOOLEAN).setDescription(
             `if enabled the tab will re-mount when popped out/in`
         );
-
+        attributeDefinitions.add("pinned", true).setType(Attribute.BOOLEAN).setDescription(
+            `whether the tab remains open when clicking elsewhere`
+        );
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN).setDescription(
             `allow user to close tab via close button`
         );

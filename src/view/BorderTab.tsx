@@ -17,6 +17,8 @@ export function BorderTab(props: IBorderTabProps) {
     const { layout, border, show } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
+    const selectedNode = border.getSelectedNode();
+    const pinned = selectedNode?.isPinned();
 
     React.useLayoutEffect(() => {
         const contentRect = layout.getBoundingClientRect(selfRef.current!);
@@ -55,20 +57,47 @@ export function BorderTab(props: IBorderTabProps) {
 
     style.display = show ? "flex" : "none";
 
+    if (show && pinned === false) {
+        style.position = "absolute";
+        style.zIndex = 999;
+        style.pointerEvents = "none";
+        style.backgroundColor = "transparent";
+        const headerRect = border.getTabHeaderRect();
+        if (border.getLocation() === DockLocation.LEFT) {
+            style.left = headerRect.width;
+            style.top = 0;
+            style.bottom = 0;
+        } else if (border.getLocation() === DockLocation.RIGHT) {
+            style.right = headerRect.width;
+            style.top = 0;
+            style.bottom = 0;
+        } else if (border.getLocation() === DockLocation.TOP) {
+            style.top = headerRect.height;
+            style.left = 0;
+            style.right = 0;
+        } else { // DockLocation.BOTTOM
+            style.bottom = headerRect.height;
+            style.left = 0;
+            style.right = 0;
+        }
+    }
+
     const className = layout.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_CONTENTS);
+
+    const splitter = show && pinned !== false ? <Splitter layout={layout} node={border} index={0} horizontal={horizontal} /> : null;
 
     if (border.getLocation() === DockLocation.LEFT || border.getLocation() === DockLocation.TOP) {
         return (
             <>
                 <div ref={selfRef} style={style} className={className}>
                 </div>
-                {show && <Splitter layout={layout} node={border} index={0} horizontal={horizontal} />}
+                {splitter}
             </>
         );
     } else {
         return (
             <>
-                {show && <Splitter layout={layout} node={border} index={0} horizontal={horizontal} />}
+                {splitter}
                 <div ref={selfRef} style={style} className={className}>
                 </div>
             </>
