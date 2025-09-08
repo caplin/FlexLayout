@@ -1,42 +1,42 @@
-import { TabNode } from "../model/TabNode";
-import { LayoutInternal } from "./Layout";
-import { CLASSES } from "../Types";
-import { getRenderStateEx } from "./Utils";
+import { TabNode } from '../model/TabNode';
+import { LayoutInternal } from './Layout';
+import { CLASSES } from '../Types';
+import { getRenderStateEx } from './Utils';
 
 /** @internal */
 export interface ITabButtonStampProps {
-    node: TabNode;
-    layout: LayoutInternal;
+  node: TabNode;
+  layout: LayoutInternal;
 }
 
 /** @internal */
 export const TabButtonStamp = (props: ITabButtonStampProps) => {
-    const { layout, node } = props;
+  const { layout, node } = props;
 
-    const cm = layout.getClassName;
+  const cm = layout.getClassName;
 
-    const classNames = cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
+  const classNames = cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_STAMP);
 
-    const renderState = getRenderStateEx(layout, node);
+  const renderState = getRenderStateEx(layout, node);
 
-    const content = renderState.content ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
-            {renderState.content}
-        </div>)
-        : node.getNameForOverflowMenu();
+  const content = renderState.content ? (
+    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
+      {renderState.content}
+    </div>
+  ) : (
+    node.getNameForOverflowMenu()
+  );
 
-    const leading = renderState.leading ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
-            {renderState.leading}
-        </div>) : null;
+  const leading = renderState.leading ? (
+    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
+      {renderState.leading}
+    </div>
+  ) : null;
 
-    return (
-        <div
-            className={classNames}
-            title={node.getHelpText()}
-        >
-            {leading}
-            {content}
-        </div>
-    );
+  return (
+    <div className={classNames} title={node.getHelpText()}>
+      {leading}
+      {content}
+    </div>
+  );
 };
