@@ -665,6 +665,7 @@ export class Model {
 
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);
+        attributeDefinitions.add("tabSetEnableHideWhenEmpty", false).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrop", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDrag", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabSetEnableDivide", true).setType(Attribute.BOOLEAN);

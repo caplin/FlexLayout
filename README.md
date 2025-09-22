@@ -1,10 +1,8 @@
-# FlexLayout
+# Flexycakes
 
-[![GitHub](https://img.shields.io/github/license/Caplin/FlexLayout)](https://github.com/caplin/FlexLayout/blob/master/LICENSE)
-![npm](https://img.shields.io/npm/dw/flexlayout-react)
-[![npm](https://img.shields.io/npm/v/flexlayout-react)](https://www.npmjs.com/package/flexlayout-react)
-
-## Flexycakes
+[![GitHub](https://img.shields.io/github/license/powerdragonfire/flexycakes)](https://github.com/powerdragonfire/flexycakes/blob/master/LICENSE)
+![npm](https://img.shields.io/npm/dw/flexycakes)
+[![npm](https://img.shields.io/npm/v/flexycakes)](https://www.npmjs.com/package/flexycakes)
 
 This is **Flexycakes**, a fork of FlexLayout with enhanced features including pin/unpin functionality for panels. Flexycakes extends the original FlexLayout capabilities with additional user interface improvements and workflow optimizations.
 
@@ -38,7 +36,7 @@ Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
 [Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
-FlexLayout's only dependency is React.
+Flexycakes's only dependency is React.
 
 Features:
 *	splitters
@@ -63,16 +61,16 @@ Features:
 
 ## Installation
 
-FlexLayout is in the npm repository. install using:
+Flexycakes is in the npm repository. install using:
 
 ```
-npm install flexlayout-react
+npm install flexycakes
 ```
 
-Import FlexLayout in your modules:
+Import Flexycakes in your modules:
 
 ```
-import {Layout, Model} from 'flexlayout-react';
+import {Layout, Model} from 'flexycakes';
 ```
 
 Include the light, dark, underline, gray, rounded or combined theme by either:
@@ -80,7 +78,7 @@ Include the light, dark, underline, gray, rounded or combined theme by either:
 Adding an import in your js code:
 
 ```
-import 'flexlayout-react/style/light.css';  
+import 'flexycakes/style/light.css';  
 ```
 
 or by copying the relevant css from the node_modules/flexlayout-react/style directory to your 
@@ -496,7 +494,7 @@ Run the Demo app:
 pnpm dev
 ```
 
-The 'pnpm dev' command will watch for changes to FlexLayout and the Demo, so you can make changes to the FlexLayout code and see the changes in your browser.
+The 'pnpm dev' command will watch for changes to FlexLayout and the Demo, so you can make changes to the Flexycakes code and see the changes in your browser.
 
 Once the demo is running you can run the Playwright tests by running (in another terminal window)
 
