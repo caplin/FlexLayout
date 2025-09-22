@@ -1,7 +1,28 @@
 {
   "name": "flexycakes",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "Community fork of caplin/FlexLayout (ISC). Not affiliated.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caplin/FlexLayout.git"
+  },
+  "license": "ISC",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./types/index.d.ts"
+    },
+    "./style/*": "./style/*"
+  },
+  "files": [
+    "dist/",
+    "types/",
+    "style/"
+  ],
   "keywords": [
     "react",
     "layout",
@@ -21,40 +42,6 @@
     "docking library",
     "docking layout"
   ],
-  "homepage": "https://github.com/powerdragonfire/flex-core#readme",
-  "bugs": {
-    "url": "https://github.com/powerdragonfire/flex-core/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/powerdragonfire/flex-core.git"
-  },
-  "license": "ISC",
-  "author": "powerdragonfire",
-  "maintainers": [
-    {
-      "name": "powerdragonfire",
-      "email": "flex.core.git@gmail.com"
-    }
-  ],
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./types/index.d.ts"
-    },
-    "./style/*": "./style/*"
-  },
-  "main": "./dist/index.js",
-  "types": "./types/index.d.ts",
-  "directories": {
-    "test": "tests"
-  },
-  "files": [
-    "dist/",
-    "types/",
-    "style/"
-  ],
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
@@ -68,6 +55,13 @@
     "lint": "eslint src/*",
     "doc": "typedoc --out typedoc --exclude \"**/demo/**/*.tsx\" --excludeInternal --disableSources --excludePrivate --excludeProtected --readme none ./src",
     "css": "sass style:style"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",
@@ -93,7 +87,7 @@
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "rimraf": "^6.0.1",
     "sass": "^1.86.3",
     "styled-components": "^6.1.17",
@@ -102,13 +96,5 @@
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.0",
     "vitest": "^3.1.1"
-  },
-  "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0",
-    "react-dom": "^18.0.0 || ^19.0.0"
-  },
-  "module": "./dist/index.js",
-  "eslintConfig": {
-    "extends": "react-app"
   }
 }

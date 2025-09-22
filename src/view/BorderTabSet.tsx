@@ -178,9 +178,46 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     }
 
     const selectedIndex = border.getSelected();
-    if (selectedIndex !== -1) {
-        const selectedTabNode = border.getChildren()[selectedIndex] as TabNode;
-        if (selectedTabNode !== undefined && layout.isSupportsPopout() && selectedTabNode.isEnablePopout()) {
+    const selectedTabNode = selectedIndex !== -1 ? (border.getChildren()[selectedIndex] as TabNode) : undefined;
+    const isPinned = selectedTabNode?.isPinned();
+
+    React.useEffect(() => {
+        if (selectedTabNode && !isPinned) {
+            const onBodyPointerDown = (e: PointerEvent) => {
+                const layoutRect = layout.getDomRect();
+                const x = e.clientX - layoutRect.x;
+                const y = e.clientY - layoutRect.y;
+                if (!border.getTabHeaderRect().contains(x, y) && !border.getContentRect().contains(x, y)) {
+                    layout.doAction(Actions.selectTab(selectedTabNode.getId()));
+                }
+            };
+            document.addEventListener("pointerdown", onBodyPointerDown);
+            return () => document.removeEventListener("pointerdown", onBodyPointerDown);
+        }
+    }, [selectedTabNode, isPinned, border, layout]);
+
+    if (selectedTabNode !== undefined) {
+        const pinTitle = selectedTabNode.isPinned() ? layout.i18nName(I18nLabel.Unpin_Tab) : layout.i18nName(I18nLabel.Pin_Tab);
+        const pinIcon = selectedTabNode.isPinned()
+            ? ((typeof icons.unpin === "function") ? icons.unpin(selectedTabNode) : icons.unpin)
+            : ((typeof icons.pin === "function") ? icons.pin(selectedTabNode) : icons.pin);
+        const onPinClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+            layout.doAction(Actions.updateNodeAttributes(selectedTabNode.getId(), { pinned: !selectedTabNode.isPinned() }));
+            event.stopPropagation();
+        };
+        buttons.push(
+            <button
+                key="pin"
+                title={pinTitle}
+                className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON)}
+                onClick={onPinClick}
+                onPointerDown={onInterceptPointerDown}
+            >
+                {pinIcon}
+            </button>
+        );
+
+        if (layout.isSupportsPopout() && selectedTabNode.isEnablePopout()) {
             const popoutTitle = layout.i18nName(I18nLabel.Popout_Tab);
             buttons.push(
                 <button

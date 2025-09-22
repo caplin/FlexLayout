@@ -4,6 +4,28 @@
 ![npm](https://img.shields.io/npm/dw/flexlayout-react)
 [![npm](https://img.shields.io/npm/v/flexlayout-react)](https://www.npmjs.com/package/flexlayout-react)
 
+## Flexycakes
+
+This is **Flexycakes**, a fork of FlexLayout with enhanced features including pin/unpin functionality for panels. Flexycakes extends the original FlexLayout capabilities with additional user interface improvements and workflow optimizations.
+
+### Installation
+
+Install Flexycakes using npm:
+
+```
+npm install flexycakes
+```
+
+Import Flexycakes in your modules:
+
+```
+import {Layout, Model} from 'flexycakes';
+```
+
+---
+
+## About FlexLayout
+
 FlexLayout is a layout manager that arranges React components in multiple tabsets, tabs can be resized and moved.
 
 ![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")

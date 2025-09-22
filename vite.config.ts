@@ -5,11 +5,7 @@ import pkg from './package.json';
 export default defineConfig({
   root: './demo/',
   base: './', // use relative paths
-  plugins: [react({
-      babel: {
-        plugins: ['babel-plugin-react-compiler'],
-      },
-    }),],
+  plugins: [react()],
   build: {
     outDir: 'dist',
     rollupOptions: {
