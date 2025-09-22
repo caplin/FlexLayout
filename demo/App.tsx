@@ -541,6 +541,7 @@ function App() {
                     <div className="toolbar" dir="ltr">
                         <select className="toolbar_control" onChange={onSelectLayout}>
                             <option value="default">Default</option>
+                            <option value="popup">Popup</option>
                             <option value="newfeatures">New Features</option>
                             <option value="simple">Simple</option>
                             <option value="mosaic">Mosaic Style</option>

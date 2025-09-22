@@ -20,7 +20,7 @@ import { BorderTab } from "./BorderTab";
 import { BorderTabSet } from "./BorderTabSet";
 import { DragContainer } from "./DragContainer";
 import { PopoutWindow } from "./PopoutWindow";
-import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, FloatingIcon, DockableIcon, PopoutIcon, RestoreIcon } from "./Icons";
 import { Overlay } from "./Overlay";
 import { Row } from "./Row";
 import { Tab } from "./Tab";
@@ -28,6 +28,8 @@ import { copyInlineStyles, enablePointerOnIFrames, isDesktop, isSafari } from ".
 import { LayoutWindow } from "../model/LayoutWindow";
 import { TabButtonStamp } from "./TabButtonStamp";
 import { SizeTracker } from "./SizeTracker";
+import { LayoutPopup } from '../model/LayoutPopup';
+import { Popup } from './Popup';
 
 export interface ILayoutProps {
     /** the model for this layout */
@@ -210,8 +212,21 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
 
     private dragEnterCount: number = 0;
     private dragging: boolean = false;
+    private moving: boolean = false;
+    private moveStartX: number = 0;
+    private moveStartY: number = 0;
+    private moveInitialLeft: number = 0;
+    private moveInitialTop: number = 0;
+    private resizeSide: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | null = null;
+    private resizing: boolean = false;
+    private resizeStartX: number = 0;
+    private resizeStartY: number = 0;
+    private resizeStartWidth: number = 0;
+    private resizeStartHeight: number = 0;
+    private resizeStartTop: number = 0;
+    private resizeStartLeft: number = 0;
     private windowId: string;
-    private layoutWindow: LayoutWindow;
+    private layoutWindow: LayoutWindow | LayoutPopup;
     private mainLayout: LayoutInternal;
     private isMainWindow: boolean;
     private isDraggingOverWindow: boolean;
@@ -367,6 +382,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         let reorderedTabMoveables = null;
         let tabStamps = null;
         let metricElements = null;
+        let resizeEventsListeners: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> = {};
+        let resizeHandles = null;
 
         if (this.isMainWindow) {
             floatingWindows = this.renderWindows();
@@ -378,6 +395,22 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             </div>;
         }
 
+        if (this.isPopup()) {
+            resizeHandles = <>
+                <span style={{ position: "absolute", height: "4px", width: "100%", bottom: "0px", left: "0px" }}></span>
+                <span style={{ position: "absolute", height: "4px", width: "100%", top: "0px", left: "0px" }}></span>
+                <span style={{ position: "absolute", height: "100%", width: "4px", right: "0px", top: "0px" }}></span>
+                <span style={{ position: "absolute", height: "100%", width: "4px", left: "0px", top: "0px" }}></span>
+            </>;
+
+            resizeEventsListeners = {};
+            if (this.isPopup()) {
+                resizeEventsListeners.onPointerDown = this.onResizeStart;
+                resizeEventsListeners.onPointerMove = this.onResize;
+                resizeEventsListeners.onPointerUp = this.onResizeEnd;
+            }
+        }
+
         return (
             <div
                 ref={this.selfRef}
@@ -386,6 +419,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 onDragLeave={this.onDragLeaveRaw}
                 onDragOver={this.onDragOver}
                 onDrop={this.onDrop}
+                {...resizeEventsListeners}
             >
                 <div ref={this.moveablesRef} key="__moveables__" className={this.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES)}></div>
                 {metricElements}
@@ -396,6 +430,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
+                {resizeHandles}
             </div>
         );
     }
@@ -534,8 +569,9 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             const windows = this.props.model.getwindowsMap();
             let i = 1;
             for (const [windowId, layoutWindow] of windows) {
+                if (windowId === Model.MAIN_WINDOW_ID) continue;
 
-                if (windowId !== Model.MAIN_WINDOW_ID) {
+                if (layoutWindow instanceof LayoutWindow) {
                     floatingWindows.push(
                         <PopoutWindow
                             key={windowId}
@@ -551,8 +587,26 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                             </div>
                         </PopoutWindow>
                     );
-                    i++;
                 }
+                else if (layoutWindow instanceof LayoutPopup) {
+                    floatingWindows.push(
+                        <Popup
+                            key={windowId}
+                            layout={this}
+                            title={this.popoutWindowName + " " + i}
+                            layoutWindow={layoutWindow}
+                            url={this.popoutURL + "?id=" + windowId}
+                            onSetWindow={this.onSetWindow}
+                            onCloseWindow={this.onCloseWindow}
+                        >
+                            <div className={this.props.popoutClassName}>
+                                <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                            </div>
+                        </Popup>
+                    );
+                }
+
+                i++;
             }
         }
         return floatingWindows;
@@ -1085,6 +1139,18 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         }
     }
 
+    isPopup() {
+        return this.layoutWindow instanceof LayoutPopup;
+    }
+
+    isDockingMode() {
+        if (!(this.layoutWindow instanceof LayoutPopup)) {
+            return true;
+        }
+
+        return (this.layoutWindow as LayoutPopup).isDockingMode;
+    }
+
     onDragEnterRaw = (event: React.DragEvent<HTMLElement>) => {
         this.dragEnterCount++;
         if (this.dragEnterCount === 1) {
@@ -1233,6 +1299,177 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     }
 
     // *************************** End Drag Drop *************************************
+
+    onMoveStart = (event: React.PointerEvent<HTMLElement>) => {
+        const movableDiv = event.currentTarget;
+
+        if (!movableDiv.contains(event.target as HTMLElement)) return; // only start move if on the movable div, not a child element
+
+        event.preventDefault();
+        this.moving = true;
+        
+        const { rect } = this.layoutWindow;
+
+        this.moveStartX = event.clientX;
+        this.moveStartY = event.clientY;
+        this.moveInitialLeft = rect.x;
+        this.moveInitialTop = rect.y;
+    }
+
+    onMove = (event: React.PointerEvent<HTMLElement>) => {
+        if (!this.moving) return;
+
+        const movableDiv = event.currentTarget;
+        movableDiv.setPointerCapture(event.pointerId);
+
+        const deltaX = event.clientX - this.moveStartX;
+        const deltaY = event.clientY - this.moveStartY;
+
+        this.doAction(Actions.updateWindowRect(this.windowId, {
+            x: this.moveInitialLeft + deltaX,
+            y: this.moveInitialTop + deltaY,
+        }));
+    }
+
+    onMoveEnd = (event: React.PointerEvent<HTMLElement>) => {
+        const movableDiv = event.currentTarget;
+        this.moving = false;
+        movableDiv.releasePointerCapture(event.pointerId);
+    }
+
+    onResizeStart = (event: React.PointerEvent<HTMLElement>) => {
+        const resizable = event.currentTarget;
+        const rect = resizable.getBoundingClientRect();
+
+        this.resizeSide = this.getResizeSide(resizable, event);
+
+        if (this.resizeSide) {
+            event.preventDefault();
+            event.stopPropagation();
+            resizable.setPointerCapture(event.pointerId);
+
+            this.resizing = true;
+            this.resizeStartX = event.clientX;
+            this.resizeStartY = event.clientY;
+
+            this.resizeStartWidth = rect.width;
+            this.resizeStartHeight = rect.height;
+            this.resizeStartTop = rect.y;
+            this.resizeStartLeft = rect.x;
+        }
+    }
+
+    onResize = (event: React.PointerEvent<HTMLElement>) => {
+        const resizable = event.currentTarget;
+
+        const hoverSide = this.getResizeSide(resizable, event);
+        resizable.style.cursor = this.getCursorForSide(hoverSide);
+
+        if (this.resizing) {
+            const dx = event.clientX - this.resizeStartX;
+            const dy = event.clientY - this.resizeStartY;
+
+            switch (this.resizeSide) {
+                case 'right':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        width: this.resizeStartWidth + dx,
+                    }));
+                    break;
+                case 'left':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        x: this.resizeStartLeft + dx,
+                        width: this.resizeStartWidth - dx,
+                    }));
+                    break;
+                case 'bottom':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        height: this.resizeStartHeight + dy,
+                    }));
+                    break;
+                case 'top':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        y: this.resizeStartTop + dy,
+                        height: this.resizeStartHeight - dy,
+                    }));
+                    break;
+                case 'top-left':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        x: this.resizeStartLeft + dx,
+                        y: this.resizeStartTop + dy,
+                        width: this.resizeStartWidth - dx,
+                        height: this.resizeStartHeight - dy,
+                    }));
+                    break;
+                case 'top-right':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        y: this.resizeStartTop + dy,
+                        width: this.resizeStartWidth + dx,
+                        height: this.resizeStartHeight - dy,
+                    }));
+                    break;
+                case 'bottom-left':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        x: this.resizeStartLeft + dx,
+                        width: this.resizeStartWidth - dx,
+                        height: this.resizeStartHeight + dy,
+                    }));
+                    break;
+                case 'bottom-right':
+                    this.doAction(Actions.updateWindowRect(this.windowId, {
+                        width: this.resizeStartWidth + dx,
+                        height: this.resizeStartHeight + dy,
+                    }));
+                    break;
+            }
+        }
+    }
+
+    private getCursorForSide(side: typeof this.resizeSide): string {
+        switch (side) {
+            case 'left':
+            case 'right':
+                return 'ew-resize';
+            case 'top':
+            case 'bottom':
+                return 'ns-resize';
+            case 'top-left':
+            case 'bottom-right':
+                return 'nwse-resize';
+            case 'top-right':
+            case 'bottom-left':
+                return 'nesw-resize';
+            default:
+                return 'default';
+        }
+    }
+    
+    getResizeSide(resizable: HTMLElement, event: React.PointerEvent<HTMLElement>) {
+        const rect = resizable.getBoundingClientRect();
+        const borderSize = 4;
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        const withinLeft = mouseX < borderSize;
+        const withinRight = mouseX > rect.width - borderSize;
+        const withinTop = mouseY < borderSize;
+        const withinBottom = mouseY > rect.height - borderSize;
+
+        if (mouseX < borderSize && mouseY < borderSize) return 'top-left';
+        if (mouseX > rect.width - borderSize && mouseY < borderSize) return 'top-right';
+        if (mouseX < borderSize && mouseY > rect.height - borderSize) return 'bottom-left';
+        if (mouseX > rect.width - borderSize && mouseY > rect.height - borderSize) return 'bottom-right';
+
+        if (withinLeft) return 'left';
+        if (withinRight) return 'right';
+        if (withinTop) return 'top';
+        if (withinBottom) return 'bottom';
+        return null;
+    }
+
+    onResizeEnd = (event: React.PointerEvent<HTMLElement>) => {
+        this.resizing = false;
+        this.resizeSide = null;
+    }
 }
 declare const __VERSION__: string;
 export const FlexLayoutVersion = __VERSION__;
@@ -1281,6 +1518,8 @@ export interface ITabRenderValues {
 
 export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    floating?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
+    dockable?: (React.ReactNode | ((tabNode: TabNode | TabSetNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
@@ -1292,6 +1531,8 @@ export interface IIcons {
 
 const defaultIcons = {
     close: <CloseIcon />,
+    floating: <FloatingIcon />,
+    dockable: <DockableIcon />,
     closeTabset: <CloseIcon />,
     popout: <PopoutIcon />,
     maximize: <MaximizeIcon />,
