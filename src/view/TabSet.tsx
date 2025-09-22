@@ -12,6 +12,7 @@ import { CLASSES } from "../Types";
 import { isAuxMouseEvent } from "./Utils";
 import { createPortal } from "react-dom";
 import { splitterDragging } from "./Splitter";
+import { LayoutPopup } from '../model/LayoutPopup';
 
 /** @internal */
 export interface ITabSetProps {
@@ -33,6 +34,7 @@ export const TabSet = (props: ITabSetProps) => {
     const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
 
     const icons = layout.getIcons();
+    const isPopupMode = layout.isPopup() && node.isPopupRoot() && !layout.isDockingMode();
 
     React.useLayoutEffect(() => {
         node.setRect(layout.getBoundingClientRect(selfRef.current!));
@@ -87,6 +89,8 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
+        if (isPopupMode) return;
+
         if (!layout.getEditingTab()) {
             if (node.isEnableDrag()) {
                 event.stopPropagation();
@@ -150,6 +154,10 @@ export const TabSet = (props: ITabSetProps) => {
         }
     };
 
+    const onToggleDockingMode = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        layout.doAction(Actions.toggleDockingMode(layout.getWindowId()));
+    };
+
     // Start Render
 
     const cm = layout.getClassName;
@@ -189,7 +197,7 @@ export const TabSet = (props: ITabSetProps) => {
     buttons = renderState.buttons;
 
     const isTabStretch = node.isEnableSingleTabStretch() && node.getChildren().length === 1;
-    const showClose = (isTabStretch && ((node.getChildren()[0] as TabNode).isEnableClose())) || node.isEnableClose();
+    const showClose = (isTabStretch && ((node.getChildren()[0] as TabNode).isEnableClose())) || node.isEnableClose() || layout.isPopup();
 
     if (renderState.overflowPosition === undefined) {
         renderState.overflowPosition = stickyButtons.length;
@@ -237,6 +245,36 @@ export const TabSet = (props: ITabSetProps) => {
                 >
                     {overflowContent}
                 </button>
+            );
+        }
+    }
+
+    if (layout.isPopup()) {
+        const window = layout.getModel().getwindowsMap().get(layout.getWindowId()) as LayoutPopup;
+        const pinTitle = layout.i18nName(I18nLabel.Pin_Tab);
+
+        if (window.isDockingMode) {
+            buttons.push(
+                <div
+                    key="dockable"
+                    data-layout-path={path + "/button/dockable"}
+                    title={pinTitle}
+                    onClick={onToggleDockingMode}
+                >
+                    {(typeof icons.dockable === "function" ? icons.dockable(node) : icons.dockable)}
+                </div>
+            );
+        }
+        else {
+            buttons.push(
+                <div
+                    key="floating"
+                    data-layout-path={path + "/button/floating"}
+                    title={pinTitle}
+                    onClick={onToggleDockingMode}
+                >
+                    {(typeof icons.floating === "function" ? icons.floating(node) : icons.floating)}
+                </div>
             );
         }
     }
@@ -385,6 +423,14 @@ export const TabSet = (props: ITabSetProps) => {
                     />
                 );
             }
+
+            const movableEventsListeners: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> = {};
+            if (isPopupMode) {
+                movableEventsListeners.onPointerDown = layout.onMoveStart;
+                movableEventsListeners.onPointerMove = layout.onMove;
+                movableEventsListeners.onPointerUp = layout.onMoveEnd;
+            }
+
             tabStrip = (
                 <div className={tabStripClasses}
                     ref={tabStripRef}
@@ -404,6 +450,7 @@ export const TabSet = (props: ITabSetProps) => {
                             className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}
                             style={{ overflowX: 'auto', overflowY: "hidden" }}
                             onScroll={onScroll}
+                            {...movableEventsListeners}
                         >
                             <div
                                 style={{ width: (isTabStretch ? "100%" : "none") }}

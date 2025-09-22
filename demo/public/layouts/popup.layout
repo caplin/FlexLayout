@@ -1,0 +1,215 @@
+{
+	"global": {
+		"tabSetEnableSingleTabStretch": true
+	},
+	"borders": [],
+	"layout": {
+		"type": "row",
+		"id": "1",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "2",
+				"weight": 0.2,
+				"children": [
+					{
+						"type": "tab",
+						"id": "3",
+						"name": "Layout JSON",
+						"component": "json",
+						"enablePopout": true
+					}
+				],
+				"active": true
+			},
+			{
+				"type": "tabset",
+				"id": "4",
+				"weight": 0.2,
+				"children": [
+					{
+						"type": "tab",
+						"id": "5",
+						"name": "Grid 1",
+						"component": "grid",
+						"icon": "images/article.svg",
+						"enablePopout": true
+					},
+					{
+						"type": "tab",
+						"id": "5b",
+						"name": "Grid 1",
+						"component": "grid",
+						"icon": "images/article.svg",
+						"enablePopout": true
+					}
+				]
+			}
+		]
+	},
+	"popups": {
+		"b0d755f6-b7ca-48d0-bafc-8d37241b3db4": {
+			"rect": {
+				"height": 200,
+				"width": 400,
+				"x": 100,
+				"y": 100
+			},
+			"layout": {
+				"type": "row",
+				"id": "6",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "7",
+						"weight": 1,
+						"children": [
+							{
+								"type": "tab",
+								"id": "8",
+								"name": "Grid 2",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "9",
+								"name": "Grid 3",
+								"component": "grid",
+								"icon": "images/article.svg"
+							}
+						]
+					}
+				]
+			}
+		},
+		"6356e1d9-8b58-4139-9f7c-846ac1185ae0": {
+			"rect": {
+				"height": 200,
+				"width": 400,
+				"x": 600,
+				"y": 200
+			},
+			"layout": {
+				"type": "row",
+				"id": "6h",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "7s",
+						"weight": 1,
+						"children": [
+							{
+								"type": "tab",
+								"id": "8a",
+								"name": "Grid 2dfg",
+								"component": "grid",
+								"icon": "images/article.svg"
+							}
+						]
+					}
+				]
+			}
+		},
+		"8bfed9a6-470d-4309-80f6-ea8ff367f5a4": {
+			"rect": {
+				"height": 100,
+				"width": 800,
+				"x": 100,
+				"y": 600
+			},
+			"layout": {
+				"type": "row",
+				"id": "feb0094c-0aac-421e-9154-1c4998a556c0",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "2a9889d9-cf04-4269-87c9-bbc1759842cf",
+						"weight": 0.2,
+						"children": [
+							{
+								"type": "tab",
+								"id": "6c1e256f-ed5d-4500-88a2-6941fcd18e69",
+								"name": "Layout JSON",
+								"component": "json"
+							}
+						],
+						"active": true
+					},
+					{
+						"type": "tabset",
+						"id": "b0788f86-7a8b-4643-959f-600711f6cab7",
+						"weight": 0.2,
+						"children": [
+							{
+								"type": "tab",
+								"id": "0fe797bf-f9f0-42ff-9bad-28032303b087",
+								"name": "Grid 1",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "d057cdeb-7420-467f-9165-6acf4323712c",
+								"name": "Grid 1",
+								"component": "grid",
+								"icon": "images/article.svg"
+							}
+						]
+					}
+				]
+			}
+		}
+	},
+	"popouts": {
+		"2feb4a46-0d72-458c-9d29-82495938cda7": {
+			"rect": {
+				"height": 300,
+				"width": 800,
+				"x": 100,
+				"y": 600
+			},
+			"layout": {
+				"type": "row",
+				"id": "d0ec924c-3d4b-4484-8ff5-d44722775f70",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "bac93933-288a-4a0b-b9f5-823ec9745570",
+						"weight": 0.2,
+						"children": [
+							{
+								"type": "tab",
+								"id": "2e3d0e6e-aee7-4476-b19b-10f24851b67c",
+								"name": "Layout JSON",
+								"component": "json"
+							}
+						],
+						"active": true
+					},
+					{
+						"type": "tabset",
+						"id": "cce5875c-263d-443a-ad54-3f9476f0ade9",
+						"weight": 0.2,
+						"children": [
+							{
+								"type": "tab",
+								"id": "0cafdc45-5694-412d-8cce-786c86925128",
+								"name": "Grid 1",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "2857d7af-e201-47f6-bdac-5f1c145a2e7e",
+								"name": "Grid 1",
+								"component": "grid",
+								"icon": "images/article.svg"
+							}
+						]
+					}
+				]
+			}
+		}
+	}
+}
