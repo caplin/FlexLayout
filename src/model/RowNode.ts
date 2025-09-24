@@ -96,17 +96,37 @@ export class RowNode extends Node implements IDropTarget {
     }
 
     /** @internal */
+    isHiddenNode(node: TabSetNode | RowNode): boolean {
+        return node instanceof TabSetNode &&
+            node.getChildren().length === 0 &&
+            node.isEnableHideWhenEmpty();
+    }
+
+    /** @internal */
     getSplitterBounds(index: number) {
         const h = this.getOrientation() === Orientation.HORZ;
         const c = this.getChildren();
         const ss = this.model.getSplitterSize();
         const fr = c[0].getRect();
-        const lr = c[c.length - 1].getRect();
+        let lr = c[c.length - 1].getRect();
+
+        // Special-case: Last node is hidden, in this case 
+        // we take the most right node which is visible
+        for (let i = c.length - 1; i >= 0; i--) {
+            const n = c[i] as TabSetNode | RowNode;
+            if (!this.isHiddenNode(n)) {
+                lr = n.getRect();
+                break;
+            }
+        }
+
         let p = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
         const q = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
 
         for (let i = 0; i < index; i++) {
             const n = c[i] as TabSetNode | RowNode;
+            if (this.isHiddenNode(n))
+                continue;
             p[0] += h ? n.getMinWidth() : n.getMinHeight();
             q[0] += h ? n.getMaxWidth() : n.getMaxHeight();
             if (i > 0) {
@@ -117,6 +137,8 @@ export class RowNode extends Node implements IDropTarget {
 
         for (let i = c.length - 1; i >= index; i--) {
             const n = c[i] as TabSetNode | RowNode;
+            if (this.isHiddenNode(n))
+                continue;
             p[1] -= (h ? n.getMinWidth() : n.getMinHeight()) + ss;
             q[1] -= (h ? n.getMaxWidth() : n.getMaxHeight()) + ss;
         }
