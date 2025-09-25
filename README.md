@@ -1,120 +1,176 @@
-# Flexycakes
+<div align="center">
+        <a href="https://github.com/powerdragonfire/flexycakes" title="Flexycakes">
+            <img src="./flexycakes-logo.png" alt="React Hook Form Logo - React hook custom hook for form validation" />
+        </a>
+</div>
 
-[![GitHub](https://img.shields.io/github/license/powerdragonfire/flexycakes)](https://github.com/powerdragonfire/flexycakes/blob/master/LICENSE)
-![npm](https://img.shields.io/npm/dw/flexycakes)
-[![npm](https://img.shields.io/npm/v/flexycakes)](https://www.npmjs.com/package/flexycakes)
+<div align="center">
+
+[![npm downloads](https://img.shields.io/npm/dm/react-hook-form.svg?style=for-the-badge)](https://www.npmjs.com/package/flexycakes)
+[![npm](https://img.shields.io/npm/l/react-hook-form?style=for-the-badge)](https://github.com/powerdragonfire/flexycakes/blob/master/LICENSE)
+[![Discord](https://img.shields.io/discord/754891658327359538.svg?style=for-the-badge&label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/7bERmQjH)
+
+</div>
+
+<p align="center">
+  <a href="https://powerdragonfire.github.io/flexycakes/demos/v1.0/demo/index.html">Examples</a> | 
+  <a href="https://powerdragonfire.github.io/flexycakes/demos/v1.0/typedoc/index.html">API</a> |
+  <a href="#quick-start">Quick Start</a> |
+  <a href="https://github.com/users/powerdragonfire/projects/10/views/1">Feature Tracker</a> |
+  <a href="https://codesandbox.io/p/devbox/flexlayout-example-master-forked-g3tdzn?workspaceId=ws_Uv3sirbkAsy6tf81TaC9XG">Sandbox</a> |
+  <a href="https://github.com/caplin/FlexLayout">Flexlayout</a>
+</p>
 
 This is **Flexycakes**, a fork of FlexLayout with enhanced features including pin/unpin functionality for panels. Flexycakes extends the original FlexLayout capabilities with additional user interface improvements and workflow optimizations.
 
+## 📍 Pin Board
+
+<div align="center">
+
+### 💰 Paid Bounties Program
+
+</div>
+
+> **🚀 Exciting News!** We're launching a paid bounty system to support young developers in the open source community.
+
+<div align="center">
+
+[![Join Discord](https://img.shields.io/badge/Join%20Discord-Get%20Updates-7289da?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/7bERmQjH)
+
+</div>
+
+**What we're working on:**
+
+- 🔍 Researching the best bounty platforms
+- 📋 Setting up contract logistics
+- 🎯 Defining contribution opportunities
+- 💡 Creating developer-friendly workflows
+
+**Stay tuned:** Join our Discord community for real-time updates and early access to bounty opportunities!
+
+## 🚀 Quick Start
+
 ### Installation
 
-Install Flexycakes using npm:
+Install Flexycakes from npm:
 
-```
+```bash
 npm install flexycakes
 ```
 
-Import Flexycakes in your modules:
+or using yarn:
 
+```bash
+yarn add flexycakes
 ```
-import {Layout, Model} from 'flexycakes';
+
+or using pnpm:
+
+```bash
+pnpm add flexycakes
 ```
+
+### Basic Setup
+
+1. **Import the components:**
+
+    ```javascript
+    import { Layout, Model } from "flexycakes";
+    ```
+
+2. **Include a theme:**
+
+    **Option A:** Import in your JavaScript code:
+
+    ```javascript
+    import "flexycakes/style/light.css";
+    ```
+
+    **Option B:** Link in your HTML:
+
+    ```html
+    <link rel="stylesheet" href="/style/light.css" />
+    ```
+
+3. **Optional:** For dynamic theming, see [Theme Switching](#theme-switching)
+
+### Development Setup with Symbolic Linking
+
+If you're contributing to Flexycakes or want to develop locally:
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/powerdragonfire/flexycakes.git
+    cd flexycakes
+    ```
+
+2. **Install dependencies:**
+
+    ```bash
+    pnpm install
+    ```
+
+3. **Create a symbolic link:**
+
+    ```bash
+    # Build the library first
+    pnpm build
+
+    # Create global link
+    npm link
+    # or with pnpm
+    pnpm link --global
+    ```
+
+4. **Link in your project:**
+
+    ```bash
+    cd /path/to/your/project
+    npm link flexycakes
+    # or with pnpm
+    pnpm link --global flexycakes
+    ```
+
+5. **Start development mode:**
+
+    ```bash
+    # In flexycakes directory
+    pnpm dev
+    ```
+
+    This will watch for changes and rebuild automatically.
 
 ---
 
-## About FlexLayout
+## 📖 Usage Guide
 
-FlexLayout is a layout manager that arranges React components in multiple tabsets, tabs can be resized and moved.
+### Basic Layout Setup
 
-![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
+The `<Layout>` component renders the tabsets and splitters. Here's what you need:
 
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html)
+#### Required Props
 
-Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
+| Prop      | Type     | Description                               |
+| --------- | -------- | ----------------------------------------- |
+| `model`   | Model    | The layout model containing the structure |
+| `factory` | Function | Creates React components for each tab     |
 
-[API Doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/index.html)
+> 💡 **Tip:** See [Optional Layout Props](#layout-properties) for additional configuration options.
 
-[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
+### Core Concepts
 
-Flexycakes's only dependency is React.
+The **model** is a tree of Node objects that define your layout structure:
 
-Features:
-*	splitters
-*	tabs (scrolling or wrapped)
-*	tab dragging and ordering
-*	tabset dragging (move all the tabs in a tabset in one operation)
-*	dock to tabset or edge of frame
-*	maximize tabset (double click tabset header or use icon)
-*	tab overflow (show menu when tabs overflow, scroll tabs using mouse wheel)
-*   border tabsets
-*   popout tabs into new browser windows
-*	submodels, allow layouts inside layouts
-*	tab renaming (double click tab text to rename)
-*	theming - light, dark, underline, gray, rounded and combined
-*	works on mobile devices (iPad, Android)
-*   add tabs using drag, add to active tabset, add to tabset by id
-*	tab and tabset attributes: enableTabStrip, enableDock, enableDrop...
-*	customizable tabs and tabset rendering
-*   component state is preserved when tabs are moved
-*   Playwright tests
-*	typescript type declarations
+- Created using `Model.fromJson(jsonObject)`
+- Saved using `model.toJson()`
 
-## Installation
+The **factory** function takes a Node object and returns the React component to render in that tab.
 
-Flexycakes is in the npm repository. install using:
-
-```
-npm install flexycakes
-```
-
-Import Flexycakes in your modules:
-
-```
-import {Layout, Model} from 'flexycakes';
-```
-
-Include the light, dark, underline, gray, rounded or combined theme by either:
-
-Adding an import in your js code:
-
-```
-import 'flexycakes/style/light.css';  
-```
-
-or by copying the relevant css from the node_modules/flexlayout-react/style directory to your 
- public assets folder (e.g. public/style) and linking the css in your html:
-
-```
-<link rel="stylesheet" href="/style/light.css" />
-```
-
-[How to change the theme dynamically in code](#dynamically-changing-the-theme)
-
-
-## Usage
-
-The `<Layout>` component renders the tabsets and splitters, it takes the following props:
-
-
-#### Required props:
-
-
-| Prop            | Description       |
-| --------------- | ----------------- |
-| model           | the layout model  |
-| factory         | a factory function for creating React components |
-
-Additional [optional props](#optional-layout-props)
-
-The model is tree of Node objects that define the structure of the layout.
-
-The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout.
-
-The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
-
-## Example Configuration:
+### Simple Example
 
 ```javascript
+// Define your layout structure
 const json = {
     global: {},
     borders: [],
@@ -128,10 +184,10 @@ const json = {
                 children: [
                     {
                         type: "tab",
-                        name: "One",
-                        component: "placeholder",
-                    }
-                ]
+                        name: "Dashboard",
+                        component: "dashboard",
+                    },
+                ],
             },
             {
                 type: "tabset",
@@ -139,379 +195,434 @@ const json = {
                 children: [
                     {
                         type: "tab",
-                        name: "Two",
-                        component: "placeholder",
-                    }
-                ]
-            }
-        ]
-    }
+                        name: "Settings",
+                        component: "settings",
+                    },
+                ],
+            },
+        ],
+    },
 };
-```
 
-## Example Code
-
-```javascript
+// Create your app
 const model = Model.fromJson(json);
 
 function App() {
+    const factory = (node) => {
+        const component = node.getComponent();
 
-  const factory = (node) => {
-    const component = node.getComponent();
+        switch (component) {
+            case "dashboard":
+                return <DashboardComponent />;
+            case "settings":
+                return <SettingsComponent />;
+            default:
+                return <div>{node.getName()}</div>;
+        }
+    };
 
-    if (component === "placeholder") {
-      return <div>{node.getName()}</div>;
-    }
-  }
-
-  return (
-    <Layout
-      model={model}
-      factory={factory} />
-  );
+    return <Layout model={model} factory={factory} />;
 }
-```		
-
-The above code would render two tabsets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
+```
 
 <img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout"/>
 
+> 🎮 **Try it live:** [CodeSandbox Demo](https://codesandbox.io/p/devbox/flexlayout-example-master-forked-g3tdzn?workspaceId=ws_Uv3sirbkAsy6tf81TaC9XG) | [TypeScript Example](https://github.com/nealus/flexlayout-vite-example)
 
-Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
+---
 
-A simple Typescript example can be found here:
+## 🏗️ Layout Structure
 
-https://github.com/nealus/flexlayout-vite-example
+### JSON Model Components
 
-The model json contains 4 top level elements:
+The model JSON has 4 main sections:
 
-* global - (optional) where global options are defined
-* layout - where the main row/tabset/tabs layout hierarchy is defined
-* borders - (optional) where up to 4 borders are defined ("top", "bottom", "left", "right").
-* popouts - (optional) where the popout windows are defined
+| Section   | Required | Description                                    |
+| --------- | -------- | ---------------------------------------------- |
+| `global`  | ❌       | Global layout options                          |
+| `layout`  | ✅       | Main layout hierarchy                          |
+| `borders` | ❌       | Edge panels ("top", "bottom", "left", "right") |
+| `popouts` | ❌       | External window definitions                    |
 
-The layout element is built up using 3 types of 'node':
+### Node Types
 
-* row - rows contains a list of tabsets and child rows, the top level 'row' will render horizontally (unless the global attribute rootOrientationVertical is set)
-, child 'rows' will render in the opposite orientation to their parent row.
+#### 🔹 Row Nodes
 
-* tabset - tabsets contain a list of tabs and the index of the selected tab
+- **Purpose:** Container for tabsets and child rows
+- **Orientation:** Top-level rows are horizontal (unless `rootOrientationVertical` is set)
+- **Children:** Tabsets and other rows
 
-* tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
+#### 🔹 TabSet Nodes
 
-The layout structure is defined with rows within rows that contain tabsets that themselves contain tabs.
+- **Purpose:** Container for tabs
+- **Properties:** List of tabs + selected tab index
+- **Behavior:** Auto-created when tabs move, deleted when empty (unless `enableDeleteWhenEmpty: false`)
 
-Within the demo app you can show the layout structure by ticking the 'Show layout' checkbox, rows are shown in blue, tabsets in orange.
+#### 🔹 Tab Nodes
 
-![FlexLayout Demo Showing Layout](screenshots/Screenshot_layout.png?raw=true "Demo showing layout")
+- **Purpose:** Individual panel content
+- **Properties:** Component name (for factory) + display text
+- **Content:** Loaded via the factory function
 
-The optional borders element is made up of border nodes
+#### 🔹 Border Nodes
 
-* border - borders contain a list of tabs and the index of the selected tab, they can only be used in the borders
-top level element.
+- **Purpose:** Edge-docked panels
+- **Location:** Can only exist in the `borders` section
+- **Behavior:** Similar to tabsets but docked to screen edges
 
-The tree structure for the JSON model is well defined as Typescript interfaces, see  [JSON Model](#json-model-definition)
+![FlexLayout Demo Showing Layout](screenshots/Screenshot_layout.png?raw=true "Demo showing layout structure")
 
-Each type of node has a defined set of requires/optional attributes.
+> 💡 **Pro Tip:** Use the [demo app](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html) to visually create layouts, then export the JSON via 'Show Layout JSON in console'.
 
-Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
+### Weight System
 
-NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html) app, modify one of the
-existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
+Node weights determine relative sizing:
 
-By changing global or node attributes you can change the layout appearance and functionality, for example:
+- **Example:** Weights of 30,70 = same as 3,7
+- **Usage:** Only relative values matter
+- **Application:** Applies to rows and tabsets within their parent
 
-Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without
-tabs or drag and drop).
+---
 
-```
- global: {tabSetEnableTabStrip:false},
-```
+## 🎨 Customization
 
-## Dynamically Changing the Theme
+### Theme Switching
 
-The 'combined.css' theme contains all the other themes and can be used for theme switching.
+#### Available Themes
 
-When using combined.css, add a className (of the form "flexlayout__theme_[theme name]") to the div containing the `<Layout>` to select the applied theme.
+- `light.css` - Clean light theme
+- `dark.css` - Dark mode theme
+- `gray.css` - Neutral gray theme
+- `underline.css` - Minimal underline style
+- `rounded.css` - Rounded corners theme
+- `combined.css` - All themes in one file
 
-For example: 
-```
-    <div ref={containerRef} className="flexlayout__theme_light">
-        <Layout model={model} factory={factory} />
-    </div>
-```
+#### Dynamic Theme Switching
 
-Change the theme in code by changing the className on the containing div.
+Use the `combined.css` theme for runtime switching:
 
-For example:
-```
-    containerRef.current!.className = "flexlayout__theme_dark"
-```
+```javascript
+// Setup with theme container
+<div ref={containerRef} className="flexlayout__theme_light">
+    <Layout model={model} factory={factory} />
+</div>;
 
-## Customizing Tabs
-
-You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
-
-
-<img src="screenshots/Screenshot_customize_tab.png?raw=true"
-     alt="FlexLayout Tab structure"
-     title="Tab structure"/>
-
-Update the renderValues parameter as needed:
-
-renderValues.leading : the red block
-
-renderValues.content : the green block
-
-renderValues.buttons : the yellow block
-
-For example:
-
-```
-onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
-    // renderValues.leading = <img style={{width:"1em", height:"1em"}}src="images/folder.svg"/>;
-    // renderValues.content += " *";
-    renderValues.buttons.push(<img key="menu" style={{width:"1em", height:"1em"}} src="images/menu.svg"/>);
-}
+// Change theme programmatically
+containerRef.current.className = "flexlayout__theme_dark";
 ```
 
-## Customizing Tabsets
+### Custom Tab Rendering
 
-You can use the `<Layout>` prop onRenderTabSet to customize the tabset rendering:
+Customize individual tabs with `onRenderTab`:
 
+<img src="screenshots/Screenshot_customize_tab.png?raw=true" alt="Tab customization areas" title="Tab structure"/>
 
-<img src="screenshots/Screenshot_customize_tabset.png?raw=true"
-     alt="FlexLayout Tab structure"
-     title="Tabset structure" />
+```javascript
+const onRenderTab = (node, renderValues) => {
+    // renderValues.leading = <Icon />; (red area)
+    // renderValues.content += " *"; (green area)
+    renderValues.buttons.push(<MenuIcon key="menu" />); // yellow area
+};
 
-Update the renderValues parameter as needed:
-
-renderValues.leading : the blue block
-
-renderValues.stickyButtons : the red block
-
-renderValues.buttons : the green block
-
-
-For example:
-
+<Layout model={model} factory={factory} onRenderTab={onRenderTab} />;
 ```
-onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
+
+### Custom TabSet Rendering
+
+Customize tabset headers with `onRenderTabSet`:
+
+<img src="screenshots/Screenshot_customize_tabset.png?raw=true" alt="TabSet customization areas" title="Tabset structure"/>
+
+```javascript
+const onRenderTabSet = (node, renderValues) => {
+    // Add persistent buttons (red area)
     renderValues.stickyButtons.push(
-        <button
-            key="Add"
-            title="Add"
-            className="flexlayout__tab_toolbar_button"
-            onClick={() => {
-                model.doAction(Actions.addNode({
-                    component: "placeholder",
-                    name: "Added " + nextAddIndex.current++
-                }, node.getId(), DockLocation.CENTER, -1, true));
-            }}
-        ><AddIcon/></button>);
+        <button key="add" onClick={() => addNewTab(node)}>
+            +
+        </button>,
+    );
 
-    renderValues.buttons.push(<img key="menu" style={{width:"1em", height:"1em"}} src="images/menu.svg"/>);
+    // Add contextual buttons (green area)
+    renderValues.buttons.push(<SettingsIcon key="settings" />);
+};
+```
+
+---
+
+## ⚡ Actions & Events
+
+### Model Actions
+
+All layout changes happen through actions via `Model.doAction()`:
+
+```javascript
+// Add a new tab
+model.doAction(
+    Actions.addNode(
+        { type: "tab", component: "grid", name: "New Grid" },
+        "targetTabsetId",
+        DockLocation.CENTER,
+        0, // position (use -1 for end)
+    ),
+);
+
+// Update global settings
+model.doAction(
+    Actions.updateModelAttributes({
+        splitterSize: 40,
+    }),
+);
+```
+
+> 📚 **Reference:** [Full Actions API](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Actions.html)
+
+### Tab Events
+
+Handle tab lifecycle events:
+
+```javascript
+function MyComponent({ node }) {
+    useEffect(() => {
+        // Listen for resize events
+        node.setEventListener("resize", ({ rect }) => {
+            console.log("Tab resized:", rect);
+        });
+
+        // Save data before serialization
+        node.setEventListener("save", () => {
+            node.getConfig().myData = getCurrentData();
+        });
+
+        // Handle visibility changes
+        node.setEventListener("visibility", ({ visible }) => {
+            if (visible) startUpdates();
+            else stopUpdates();
+        });
+    }, [node]);
 }
 ```
 
-## Model Actions
+#### Available Events
 
-Once the model json has been loaded all changes to the model are applied through actions.
+| Event        | Parameters  | Description                  |
+| ------------ | ----------- | ---------------------------- |
+| `resize`     | `{rect}`    | Tab resized during layout    |
+| `close`      | `none`      | Tab is being closed          |
+| `visibility` | `{visible}` | Tab visibility changed       |
+| `save`       | `none`      | Before serialization to JSON |
 
-You apply actions using the `Model.doAction()` method.
+---
 
-This method takes a single argument, created by one of the action
-generators (accessed as `FlexLayout.Actions.<actionName>`):
+## 🪟 Popout Windows
 
-[Actions doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Actions.html)
+### Overview
 
-### Examples
+Render tabs in external browser windows for multi-monitor setups.
 
-```js
-model.doAction(FlexLayout.Actions.addNode(
-    {type:"tab", component:"grid", name:"a grid", id:"5"},
-    "1", FlexLayout.DockLocation.CENTER, 0));
+### Setup Requirements
+
+1. **HTML Host Page:** Copy `popout.html` to your public directory
+2. **Tab Configuration:** Add `enablePopout: true` to tab definitions
+3. **Styling:** Styles are automatically copied from main window
+
+### Code Considerations
+
+Popout windows use a different `document` and `window`. Access them via:
+
+```javascript
+function PopoutComponent() {
+    const selfRef = useRef();
+
+    const handleEvent = () => {
+        // ❌ Wrong - uses main window
+        document.addEventListener("click", handler);
+
+        // ✅ Correct - uses popout window
+        const popoutDoc = selfRef.current.ownerDocument;
+        const popoutWindow = popoutDoc.defaultView;
+        popoutDoc.addEventListener("click", handler);
+    };
+
+    return <div ref={selfRef}>Content</div>;
+}
 ```
 
-This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
+### Limitations
 
+- ⚠️ **Context:** Code runs in main window JS context
+- ⚠️ **Events:** Must use popout window/document for listeners
+- ⚠️ **Throttling:** Timers throttle when main window is hidden
+- ⚠️ **Libraries:** Third-party controls may not work without modification
+- ⚠️ **Zoom:** Incorrect sizing when browser is zoomed
+- ⚠️ **State:** Windows can't reload in maximized/minimized states
 
-```js
-model.doAction(FlexLayout.Actions.updateModelAttributes({
-    splitterSize:40
-}));
-```
+> 📖 **Deep Dive:** [React Portals in Popups](https://dev.to/noriste/the-challenges-of-rendering-an-openlayers-map-in-a-popup-through-react-2elh)
 
-The above example would increase the size of the splitters, this could be used to make
-adjusting the layout easier on a small device.
+---
 
-Note: you can get the id of a node (e.g., the node returned by the `addNode`
-action) using the method `node.getId()`.
-If an id wasn't assigned when the node was created, then one will be created for you of the form `#<uuid>` (e.g. `#0c459064-8dee-444e-8636-eb9ab910fb27`).
+## 🛠️ Development
 
-Note: You can intercept actions resulting from GUI changes before they are applied by
-implementing the `onAction` callback property of the `Layout`.
+### Running Locally
 
-## Optional Layout Props
-
-There are many optional properties that can be applied to the layout:
-
-[Layout Properties doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/ILayoutProps.html)
-
-
-## JSON Model Definition
-
-The JSON model is well defined as a set of TypeScript interfaces, see the doc for details of all the attributes allowed:
-
-## Model Config Attributes
-
-[Model Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonModel.html)
-
-## Global Config Attributes
-
-[Global Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IGlobalAttributes.html)
-
-## Row Config Attributes
-
-[Row Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
-
-## TabSet Config Attributes
-
-[Tabset Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
-
-Note: tabsets will be dynamically created as tabs are moved, and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
-
-## Tab Config attributes
-
-[Tab Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabNode.html)
-
-## Border Config attributes
-
-[Border Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonBorderNode.html)
-
-
-
-
-
-## Layout Component Methods to Create New Tabs
-
-There are methods on the Layout Component for adding tabs:
-
-[Layout Methods doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Layout.html)
-
-Example:
-
-```
-layoutRef.current.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
-```
-This would add a new grid component to the tabset with id "NAVIGATION" (where layoutRef is a ref to the Layout element, see https://reactjs.org/docs/refs-and-the-dom.html ).
-
-
-
-## Tab Node Events
-
-You can handle events on nodes by adding a listener, this would typically be done
-when the component is mounted in a useEffect method:
-
-Example:
-```
-    function MyComponent({node}) {
-
-      useEffect(() => {
-        // save subject in flexlayout node tree
-        node.setEventListener("save", () => {
-             node.getConfig().subject = subject;
-           };
-        }, []);
-    }
-
-```
-
-| Event        | parameters          | Description  |
-| ------------- |:-------------:| -----|
-| resize |  {rect}    |  called when tab is resized during layout, called before it is rendered with the new size|
-| close |   none   |  called when a tab is closed |
-| visibility |  {visible}    | called when the visibility of a tab changes |
-| save |   none   | called before a tabnode is serialized to json, use to save node config by adding data to the object returned by node.getConfig()|
-
-## Popout Windows
-
-Tabs can be rendered into external browser windows (for use in multi-monitor setups)
-by configuring them with the enablePopout attribute. When this attribute is present
-an additional icon is shown in the tab header bar allowing the tab to be popped out
-into an external window.
-
-For popouts to work there needs to be an additional html page 'popout.html' hosted
-at the same location as the main page (copy the one from the demo app). The popout.html is the host page for the
-popped out tab, the styles from the main page will be copied into it at runtime.
-
-Because popouts are rendering into a different document to the main layout any code in the popped out
-tab that uses the global document or window objects for event listeners will not work correctly (for example custom popup menus where the code uses document.addEventListener(...)),
-they need to instead use the document/window of the popout. To get the document/window of the popout use the
-following method on one of the elements rendered in the popout (for example a ref or target in an event handler):
-
-```
-    const currentDocument = selfRef.current.ownerDocument;
-    const currentWindow = currentDocument.defaultView!;
-```
-
-In the above code selfRef is a React ref to the toplevel element in the tab being rendered.
-
-Note: libraries may support popout windows by allowing you to specify the document to use,
-for example see the getDocument() callback in agGrid at https://www.ag-grid.com/javascript-grid-callbacks/
-
-### Limitations of Popouts
-* FlexLayout uses React Portals to draw the popout window content,
-    this means all the code runs in the main Window's JS context, so effectively the popout windows are just extensions of the area on which the main window can render panels.
-
-* Your code must use the popout window/document in popout windows when adding event listeners (e.g popoutDocument.addEventListener(...)).
-
-* Timers throttle when main window is in the background
-    you could implement a webworker timer replacement if needed (which will not throttle)
-* Many third party controls will use the global document for some event listeners,
-    these will not work correctly without modification
-* Some third party controls will suspend when the global document is hidden
-    you can use the tab overlay attribute to 'gray out' these tabs when the main window is hidden
-* Resize observers may be throttled (or stay attached to the main window), so you may need to use some other way to resize the component when in a popout.
-* Popouts will not size and position correctly when the browser is zoomed (ie set to 50% zoom)
-* Popouts cannot reload in maximized or minimized states
-* by default flexlayout will maintain react state when moving tabs between windows, but you can use the 
-enableWindowReMount tab attribute to force the component to re-mount.
-
-See this article about using React portals in this way: https://dev.to/noriste/the-challenges-of-rendering-an-openlayers-map-in-a-popup-through-react-2elh
-
-## Running the Demo and Building the Project
-
-First install dependencies:
-
-```
+```bash
+# Install dependencies
 pnpm install
-```
 
-Run the Demo app:
-
-```
+# Start development server
 pnpm dev
-```
 
-The 'pnpm dev' command will watch for changes to FlexLayout and the Demo, so you can make changes to the Flexycakes code and see the changes in your browser.
-
-Once the demo is running you can run the Playwright tests by running (in another terminal window)
-
-```
+# Run tests (in separate terminal)
 pnpm playwright
 ```
 
-<img src="screenshots/PlaywrightUI.png?raw=true" alt="PlaywrightUI" title="PlaywrightUI screenshot"/>
+<img src="screenshots/PlaywrightUI.png?raw=true" alt="Playwright UI" title="Playwright test interface"/>
 
-To build the npm distribution run 'pnpm build'.
+### Building
 
-## Alternative Layout Managers
+```bash
+# Build for distribution
+pnpm build
+```
 
-| Name | Repository |
-| ------------- |:-------------|
-| rc-dock | https://github.com/ticlo/rc-dock |
-| Dockview | https://dockview.dev/ |
-| lumino | https://github.com/jupyterlab/lumino |
-| golden-layout | https://github.com/golden-layout/golden-layout |
-| react-mosaic | https://github.com/nomcopter/react-mosaic |
+The built files will be in the `dist/` directory.
+
+---
+
+## 📚 Appendix
+
+<details>
+<summary><strong>🔧 Configuration Reference</strong></summary>
+
+### Layout Properties
+
+Complete list of optional props for the `<Layout>` component:
+
+- [Layout Properties Documentation](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/ILayoutProps.html)
+
+### JSON Model Schemas
+
+TypeScript interfaces for all configuration objects:
+
+#### Core Model
+
+- [Model Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonModel.html)
+- [Global Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IGlobalAttributes.html)
+
+#### Node Types
+
+- [Row Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
+- [TabSet Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
+- [Tab Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabNode.html)
+- [Border Attributes](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonBorderNode.html)
+
+</details>
+
+<details>
+<summary><strong>🎯 Advanced Usage</strong></summary>
+
+### Layout Component Methods
+
+Programmatically add tabs using Layout component methods:
+
+```javascript
+// Get reference to Layout component
+const layoutRef = useRef();
+
+// Add tab to specific tabset
+layoutRef.current.addTabToTabSet("NAVIGATION", {
+    type: "tab",
+    component: "grid",
+    name: "New Grid",
+});
+```
+
+[Complete Layout Methods API](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Layout.html)
+
+### Multi-Splitter Mode
+
+Remove tabs entirely for a pure splitter interface:
+
+```javascript
+const json = {
+    global: {
+        tabSetEnableTabStrip: false,
+    },
+    // ... rest of layout
+};
+```
+
+### Node ID Management
+
+```javascript
+// Auto-generated IDs are UUIDs
+const autoId = "#0c459064-8dee-444e-8636-eb9ab910fb27";
+
+// Get node ID
+const nodeId = node.getId();
+
+// Use in actions
+model.doAction(Actions.selectTab(nodeId));
+```
+
+</details>
+
+<details>
+<summary><strong>🔗 Alternative Solutions</strong></summary>
+
+Comparing Flexycakes with other React layout managers:
+
+| Library        | Repository                                                                    | Key Features                       |
+| -------------- | ----------------------------------------------------------------------------- | ---------------------------------- |
+| **Flexycakes** | [powerdragonfire/flexycakes](https://github.com/powerdragonfire/flexycakes)   | Enhanced FlexLayout with pin/unpin |
+| rc-dock        | [ticlo/rc-dock](https://github.com/ticlo/rc-dock)                             | Dock-style layouts                 |
+| Dockview       | [dockview.dev](https://dockview.dev/)                                         | Modern docking solution            |
+| Lumino         | [jupyterlab/lumino](https://github.com/jupyterlab/lumino)                     | JupyterLab's layout system         |
+| Golden Layout  | [golden-layout/golden-layout](https://github.com/golden-layout/golden-layout) | Multi-window layouts               |
+| React Mosaic   | [nomcopter/react-mosaic](https://github.com/nomcopter/react-mosaic)           | Tiling window manager              |
+
+</details>
+
+<details>
+<summary><strong>📋 Migration Guide</strong></summary>
+
+### From FlexLayout to Flexycakes
+
+Flexycakes is a drop-in replacement for FlexLayout with additional features:
+
+1. **Update package:**
+
+    ```bash
+    npm uninstall flexlayout-react
+    npm install flexycakes
+    ```
+
+2. **Update imports:**
+
+    ```javascript
+    // Before
+    import FlexLayout from "flexlayout-react";
+
+    // After
+    import { Layout, Model } from "flexycakes";
+    ```
+
+3. **Update CSS imports:**
+
+    ```javascript
+    // Before
+    import "flexlayout-react/style/light.css";
+
+    // After
+    import "flexycakes/style/light.css";
+    ```
+
+### New Features in Flexycakes
+
+- 📌 Pin/Unpin functionality for panels
+- 🎨 Enhanced UI components
+- ⚡ Improved workflow optimizations
+- 🔧 Additional customization options
+
+</details>
+
+---

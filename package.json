@@ -1,10 +1,10 @@
 {
   "name": "flexycakes",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Community fork of caplin/FlexLayout (ISC). Not affiliated.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/caplin/FlexLayout.git"
+    "url": "git+https://github.com/powerdragonfire/flexycakes.git"
   },
   "license": "ISC",
   "type": "module",
@@ -45,6 +45,7 @@
   "scripts": {
     "dev": "vite",
     "preview": "vite preview",
+    "watch": "vite build --watch",
     "build": "npm run build:clean && npm run build:demo && npm run css && npm run build:lib && npm run build:types && npm run doc",
     "build:clean": "rimraf demo/dist dist/ types/ typedoc/",
     "build:demo": "vite build",
