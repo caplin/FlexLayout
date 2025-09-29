@@ -1,6 +1,10 @@
 # Change Log
 
-## 1.2.0 - 2025-29-25
+## 1.2.1
+
+- **Fixed:** v0.9 Hidden Tabset Fix, courtesy of @Lukas Götz. See PR Conversation [here](https://github.com/caplin/FlexLayout/pull/485).
+
+## 1.2.0
 
 - **Enhanced:** README enhancements - new Kibana, Discord, LOGO!
 - **Enhanced:** Watch script to support Symbolic Linking with HRM for local development
@@ -8,7 +12,7 @@
 
 ## 1.1.0 - NPM Publish Error
 
-## 1.0.0 - 2025-09-22
+## 1.0.0
 
 - **Added:** New global boolean variable `tabSetEnableHideWhenEmpty` to control hiding of empty tabsets.
 - **Added:** New optional boolean attribute `enableHideWhenEmpty` on `ITabSetAttribute` that inherits from the global `tabSetEnableHideWhenEmpty` setting.
@@ -18,7 +22,7 @@
 - **Feature:** Empty tabsets can now serve as placeholders for future tab insertion, appearing only when populated with content.
 - **Use Case:** Enables programmatic opening of tabs in placeholder tabsets for complex layouts like PDF editors with side panels.
 
-## 0.9.0 = 2025-09-22
+## 0.9.0
 
 - **Added:** Pin/unpin feature for side (left/right) and bottom panels. Users can now keep panels permanently visible ("pinned") or allow them to collapse automatically ("unpinned"), similar to behavior in modern IDEs and dashboard layouts.
 - **Enhanced:** Improved layout flexibility by allowing users to control panel visibility behavior, helping to streamline workflows and reduce visual clutter in complex layouts.

@@ -26,20 +26,46 @@ export const Row = (props: IRowProps) => {
 
     const items: React.ReactNode[] = [];
 
-    let i = 0;
+    const isHiddenNode = (node: any): boolean =>
+        (
+            node instanceof TabSetNode &&
+            node.getChildren().length === 0 &&
+            node.isEnableHideWhenEmpty()
+        ) ||
+        (
+            node instanceof RowNode &&
+            node.getChildren().every((cr) => isHiddenNode(cr))
+        );
 
-    for (const child of node.getChildren()) {
-        if (i > 0) {
+    const children = node.getChildren();
+
+    for (let i = 0; i < children.length; i++) {
+
+        const c = children[i];
+        const lc = i > 0 ? children[i - 1] : undefined;
+        const hidden = isHiddenNode(c);
+        const lcHidden = lc ? isHiddenNode(lc) : undefined;
+
+        if (lc && !lcHidden && !hidden) {
             items.push(<Splitter key={"splitter" + i} layout={layout} node={node} index={i} horizontal={horizontal} />)
         }
-        if (child instanceof RowNode) {
-            items.push(<Row key={child.getId()} layout={layout} node={child} />);
-        } else if (child instanceof TabSetNode) {
-            if (child.getChildren().length == 0 && child.isEnableHideWhenEmpty())
-                continue;
-            items.push(<TabSet key={child.getId()} layout={layout} node={child} />);
+        if (c instanceof RowNode) {
+            if (hidden) {
+                items.push(<div style={{ "display": "none" }}>
+                    <Row key={c.getId()} layout={layout} node={c} />
+                </div>);
+            } else {
+                items.push(<Row key={c.getId()} layout={layout} node={c} />);
+            }
+        } else if (c instanceof TabSetNode) {
+            if (!hidden) {
+                items.push(<TabSet key={c.getId()} layout={layout} node={c} />);
+            } else {
+                items.push(<div style={{ "display": "none" }}>
+                    <TabSet key={c.getId()} layout={layout} node={c} />
+                </div>);
+            }
         }
-        i++;
     }
 
     const style: Record<string, any> = {
@@ -66,5 +92,3 @@ export const Row = (props: IRowProps) => {
         </div>
     );
 };
-
-
