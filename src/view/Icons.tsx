@@ -75,6 +75,16 @@ export const MenuIcon = () => {
 }
 
 
+export const FloatIcon = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" style={style} viewBox="0 0 24 24" fill="var(--color-icon)">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <path stroke="var(--color-icon)" d="M3 3h8v2H5v6H3V3zm6 18H3v-8h2v6h4v2zm12-8v8h-8v-2h6v-6h2zm0-10v8h-2V5h-6V3h8z" />
+            <path stroke="var(--color-icon)" d="M9 9h6v6H9z" />
+        </svg>
+    );
+}
+
 export const SettingsIcon = (props: React.SVGProps<SVGSVGElement>) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props} style={style} viewBox="0 0 24 24" fill="var(--color-icon)">

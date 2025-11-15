@@ -39,6 +39,12 @@ export enum CLASSES {
     FLEXLAYOUT__ERROR_BOUNDARY_CONTENT = "flexlayout__error_boundary_content",
 
     FLEXLAYOUT__FLOATING_WINDOW_CONTENT = "flexlayout__floating_window_content",
+    FLEXLAYOUT__FLOATING_TAB = "flexlayout__floating_tab",
+    FLEXLAYOUT__FLOATING_TAB_HEADER = "flexlayout__floating_tab_header",
+    FLEXLAYOUT__FLOATING_TAB_TITLE = "flexlayout__floating_tab_title",
+    FLEXLAYOUT__FLOATING_TAB_CLOSE = "flexlayout__floating_tab_close",
+    FLEXLAYOUT__FLOATING_TAB_DOCK = "flexlayout__floating_tab_dock",
+    FLEXLAYOUT__FLOATING_TAB_CONTENT = "flexlayout__floating_tab_content",
 
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
     FLEXLAYOUT__LAYOUT_MOVEABLES = "flexlayout__layout_moveables",

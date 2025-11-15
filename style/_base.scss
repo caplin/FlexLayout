@@ -706,6 +706,61 @@
             }
         }
 
+        &__floating_tab {
+            position: absolute;
+            background: var(--color-tab-content);
+            border: 1px solid var(--color-tabset-divider-line);
+            border-radius: 5px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+
+            &_header {
+                background: var(--color-tabset-background);
+                border-bottom: 1px solid var(--color-tabset-divider-line);
+                padding: 0px 2px 0px 2px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: grab;
+                user-select: none;
+                min-height: 32px;
+                box-sizing: border-box;
+
+                &:active {
+                    cursor: grabbing;
+                }
+            }
+
+            &_title {
+                font-weight: normal;
+                color: var(--color-tab-selected);
+                padding: 3px 0.5em;
+                display: flex;
+                align-items: center;
+                flex-grow: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            &_close,
+            &_dock {
+                // These buttons now use the tab_toolbar_button styles from above
+            }
+
+            &_content {
+                flex: 1;
+                overflow: auto;
+                background: var(--color-tab-content);
+                box-sizing: border-box;
+            }
+        }
+
         &__error_boundary_container {
             @include absoluteFill;
             display: flex;

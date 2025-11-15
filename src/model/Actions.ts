@@ -22,6 +22,8 @@ export class Actions {
     static POPOUT_TABSET = "FlexLayout_PopoutTabset";
     static CLOSE_WINDOW = "FlexLayout_CloseWindow";
     static CREATE_WINDOW = "FlexLayout_CreateWindow";
+    static FLOAT_TAB = "FlexLayout_FloatTab";
+    static UNFLOAT_TAB = "FlexLayout_UnFloatTab";
 
     /**
      * Adds a tab node to the given tabset node
@@ -156,6 +158,24 @@ export class Actions {
      */
     static popoutTab(nodeId: string): Action {
         return new Action(Actions.POPOUT_TAB, { node: nodeId });
+    }
+
+    /**
+     *
+     * @param nodeId
+     * @returns {Action} the action
+     */
+    static floatTab(nodeId: string): Action {
+        return new Action(Actions.FLOAT_TAB, { node: nodeId });
+    }
+
+    /**
+     * Docks a floating tab back to the layout
+     * @param floatingId the id of the floating tab to dock
+     * @returns {Action} the action
+     */
+    static unfloatTab(floatingId: string): Action {
+        return new Action(Actions.UNFLOAT_TAB, { floatingId });
     }
 
     /**

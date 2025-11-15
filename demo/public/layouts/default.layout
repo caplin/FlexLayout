@@ -19,6 +19,7 @@
 					"id": "#0ae8e0fb-dba2-4b14-9d75-08781231479a",
 					"name": "Output",
 					"component": "grid",
+					"tabEnableFloat": "true",
 					"enableClose": false,
 					"icon": "images/bar_chart.svg"
 				},
@@ -172,6 +173,7 @@
 								"type": "tab",
 								"id": "#0e23b4b3-498a-4625-a916-b1e6e19eaf3f",
 								"name": "Wikipedia",
+								"enableFloat": true,
 								"component": "multitype",
 								"config": {
 									"type": "url",
@@ -182,6 +184,7 @@
 								"type": "tab",
 								"id": "#31b3af95-2fc9-4511-8d5d-1e6255b92eae",
 								"name": "MUI",
+								"enableFloat": true,
 								"enablePopout": false,
 								"component": "mui"
 							}
@@ -196,6 +199,7 @@
 								"type": "tab",
 								"id": "#4784d2d4-24a4-4ef2-ac6e-7a3ea7b03ba3",
 								"name": "MUI Grid",
+								"enableFloat": true,
 								"enablePopout": false,
 								"component": "muigrid"
 							}
