@@ -8,13 +8,13 @@ FlexLayout is a layout manager that arranges React components in multiple tabset
 
 ![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
 
-[Run the Demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html)
+[Run the Demo](https://caplin.github.io/FlexLayout/demos/v0.8/demo/index.html)
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
-[API Doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/index.html)
+[API Doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/index.html)
 
-[Screenshot of Caplin Liberator Explorer using FlexLayout](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
+[Screenshot of Caplin Liberator Explorer using FlexLayout](https://caplin.github.io/FlexLayout/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
 
 FlexLayout's only dependency is React.
 
@@ -196,7 +196,7 @@ Each type of node has a defined set of requires/optional attributes.
 
 Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
 
-NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/demo/index.html) app, modify one of the
+NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://caplin.github.io/FlexLayout/demos/v0.8/demo/index.html) app, modify one of the
 existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
 
 By changing global or node attributes you can change the layout appearance and functionality, for example:
@@ -303,7 +303,7 @@ You apply actions using the `Model.doAction()` method.
 This method takes a single argument, created by one of the action
 generators (accessed as `FlexLayout.Actions.<actionName>`):
 
-[Actions doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Actions.html)
+[Actions doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/classes/Actions.html)
 
 ### Examples
 
@@ -336,7 +336,7 @@ implementing the `onAction` callback property of the `Layout`.
 
 There are many optional properties that can be applied to the layout:
 
-[Layout Properties doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/ILayoutProps.html)
+[Layout Properties doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/ILayoutProps.html)
 
 
 ## JSON Model Definition
@@ -345,29 +345,29 @@ The JSON model is well defined as a set of TypeScript interfaces, see the doc fo
 
 ## Model Config Attributes
 
-[Model Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonModel.html)
+[Model Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonModel.html)
 
 ## Global Config Attributes
 
-[Global Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IGlobalAttributes.html)
+[Global Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IGlobalAttributes.html)
 
 ## Row Config Attributes
 
-[Row Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
+[Row Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
 
 ## TabSet Config Attributes
 
-[Tabset Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
+[Tabset Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
 
 Note: tabsets will be dynamically created as tabs are moved, and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
 
 ## Tab Config attributes
 
-[Tab Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonTabNode.html)
+[Tab Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonTabNode.html)
 
 ## Border Config attributes
 
-[Border Attributes doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/interfaces/IJsonBorderNode.html)
+[Border Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonBorderNode.html)
 
 
 
@@ -377,7 +377,7 @@ Note: tabsets will be dynamically created as tabs are moved, and deleted when al
 
 There are methods on the Layout Component for adding tabs:
 
-[Layout Methods doc](https://rawgit.com/caplin/FlexLayout/demos/demos/v0.8/typedoc/classes/Layout.html)
+[Layout Methods doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/classes/Layout.html)
 
 Example:
 
