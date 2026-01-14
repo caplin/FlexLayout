@@ -5,7 +5,8 @@ export default defineConfig({
   test: {
     globals: true,     // so can use `describe`/`it` without importing them
     environment: 'node', 
-    include: ['tests/**/*.test.{js,ts}'], 
+    include: ['tests/**/*.test.{js,ts}'],
+    setupFiles: ['./tests/setup.ts'],
   },
 
   define: {
