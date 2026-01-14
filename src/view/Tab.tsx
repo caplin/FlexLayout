@@ -71,6 +71,11 @@ export const Tab = (props: ITabProps) => {
 
     rect.styleWithPosition(style);
 
+    if (parentNode instanceof BorderNode && !node.isPinned()) {
+        style.zIndex = 1000;
+        style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+    }
+
     let overlay = null;
 
     if (selected) {
