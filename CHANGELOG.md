@@ -1,3 +1,7 @@
+## 0.8.18 - 2026-01-14
+
+* **Updated:** README.md links to use github.io.
+
 ## 0.8.17 - 2025-05-03
 
 * **Fixed:** Issues with tab redraw and scroll when page is scrolled down (corrects fix for [#488])
