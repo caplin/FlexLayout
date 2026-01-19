@@ -19,6 +19,7 @@ export const Row = (props: IRowProps) => {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     const horizontal = node.getOrientation() === Orientation.HORZ;
+    const renderPopupBar = layout.isPopup() && node.getChildren().length > 1;
 
     React.useLayoutEffect(() => {
         node.setRect(layout.getBoundingClientRect(selfRef.current!));
@@ -54,7 +55,7 @@ export const Row = (props: IRowProps) => {
         style.flexDirection = "column";
     }
 
-     return (
+     const row = (
         <div
             ref={selfRef}
             className={layout.getClassName(CLASSES.FLEXLAYOUT__ROW)}
@@ -63,6 +64,20 @@ export const Row = (props: IRowProps) => {
             {items}
         </div>
     );
+
+    if (renderPopupBar) {
+        return (
+            <div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
+                <div className={CLASSES.FLEXLAYOUT__POPUP_TABBAR_OUTER}
+                    onPointerDown={layout.onMoveStart} onPointerMove={layout.onMove} onPointerUp={layout.onMoveEnd}>
+                    <div className={CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER}>Popup</div>
+                </div>
+                {row}
+            </div>
+        );
+    }
+
+    return row;
 };
 
 

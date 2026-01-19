@@ -22,6 +22,9 @@ export class Actions {
     static POPOUT_TABSET = "FlexLayout_PopoutTabset";
     static CLOSE_WINDOW = "FlexLayout_CloseWindow";
     static CREATE_WINDOW = "FlexLayout_CreateWindow";
+    static UPDATE_WINDOW_RECT = "FlexLayout_UpdateWindowRect";
+    static TOGGLE_DOCKING_MODE = "FlexLayout_ToggleDockingMode";
+    static BRING_TO_FRONT = "FlexLayout_BringToFront";
 
     /**
      * Adds a tab node to the given tabset node
@@ -184,5 +187,17 @@ export class Actions {
      */
     static createWindow(layout: IJsonRowNode, rect: IJsonRect): Action {
         return new Action(Actions.CREATE_WINDOW, { layout, rect});
+    }
+
+    static updateWindowRect(windowId: string, updatedRect: {x?: number, y?: number, width?: number, height?: number}): Action {
+        return new Action(Actions.UPDATE_WINDOW_RECT, { windowId, ...updatedRect });
+    }
+
+    static toggleDockingMode(windowId: string): Action {
+        return new Action(Actions.TOGGLE_DOCKING_MODE, { windowId });
+    }
+
+    static bringToFront(windowId: string): Action {
+        return new Action(Actions.BRING_TO_FRONT, { windowId });
     }
 }

@@ -16,6 +16,7 @@ import { TabNode } from "./TabNode";
 import { TabSetNode } from "./TabSetNode";
 import { randomUUID } from "./Utils";
 import { LayoutWindow } from "./LayoutWindow";
+import { LayoutPopup } from './LayoutPopup';
 
 /** @internal */
 export const DefaultMin = 0;
@@ -44,7 +45,7 @@ export class Model {
     /** @internal */
     private onCreateTabSet?: (tabNode?: TabNode) => ITabSetAttributes;
     /** @internal */
-    private windows: Map<string, LayoutWindow>;
+    private windows: Map<string, LayoutWindow | LayoutPopup>;
     /** @internal */
     private rootWindow: LayoutWindow;
 
@@ -287,6 +288,38 @@ export class Model {
                 node.updateAttrs(action.data.json);
                 break;
             }
+            case Actions.UPDATE_WINDOW_RECT: {
+                const window = this.windows.get(action.data.windowId)!;
+                const { x, y, width, height } = action.data;
+
+                const newRect = window.rect.clone();
+                if (x) newRect.x = x;
+                if (y) newRect.y = y;
+                if (width) newRect.width = width;
+                if (height) newRect.height = height;
+
+                window.rect = newRect;
+                break;
+            }
+            case Actions.TOGGLE_DOCKING_MODE: {
+                const window = this.windows.get(action.data.windowId)!;
+                if (!(window instanceof LayoutPopup)) {
+                    console.warn("Warning: TOGGLE_DOCKING_MODE action can only be applied to popup windows");
+                    return;
+                }
+
+                window.isDockingMode = !window.isDockingMode;
+                break;
+            }
+            case Actions.BRING_TO_FRONT: {
+                const window = this.windows.get(action.data.windowId)!;
+
+                if (window) {
+                    this.windows.delete(action.data.windowId);
+                    this.windows.set(action.data.windowId, window);
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -349,6 +382,17 @@ export class Model {
         return this.windows;
     }
 
+    getWindowOrderNumber(windowId: string): number {
+        let i = 0;
+        for (const id of this.windows.keys()) {
+            if (id === windowId) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
     /**
      * Visits all the nodes in the model and calls the given function for each
      * @param fn a function that takes visited node and a integer level as parameters
@@ -409,6 +453,13 @@ export class Model {
                 const windowJson = json.popouts[windowId];
                 const layoutWindow = LayoutWindow.fromJson(windowJson, model, windowId);
                 model.windows.set(windowId, layoutWindow);
+            }
+        }
+        if (json.popups) {
+            for (const windowId in json.popups) {
+                const windowJson = json.popups[windowId];
+                const layoutPopup = LayoutPopup.fromJson(windowJson, model, windowId);
+                model.windows.set(windowId, layoutPopup);
             }
         }
 
