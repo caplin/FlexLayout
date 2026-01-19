@@ -238,7 +238,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
         <div
             ref={selfRef}
             style={{
-                display: "flex",
+                display: border.isShowing() ? "flex" : "none",
                 flexDirection: (border.getOrientation() === Orientation.VERT ? "row" : "column")
             }}
             className={borderClasses}
