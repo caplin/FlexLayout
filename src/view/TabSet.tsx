@@ -144,6 +144,14 @@ export const TabSet = (props: ITabSetProps) => {
         event.stopPropagation();
     };
 
+    const onFloatTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        if (selectedTabNode !== undefined) {
+            console.log('Float button clicked for tab:', selectedTabNode.getId());
+            layout.doAction(Actions.floatTab(selectedTabNode.getId()));
+        }
+        event.stopPropagation();
+    };
+
     const onDoubleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (node.canMaximize()) {
             layout.maximize(node);
@@ -257,6 +265,23 @@ export const TabSet = (props: ITabSetProps) => {
                 onPointerDown={onInterceptPointerDown}
             >
                 {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
+            </button>
+        );
+    }
+
+    // Add float button if enabled
+    if (selectedTabNode !== undefined && selectedTabNode.isEnableFloat()) {
+        const floatTitle = "Float Tab";
+        buttons.push(
+            <button
+                key="float"
+                data-layout-path={path + "/button/float"}
+                title={floatTitle}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
+                onClick={onFloatTab}
+                onPointerDown={onInterceptPointerDown}
+            >
+                {(typeof icons.float === "function") ? icons.float(selectedTabNode) : icons.float}
             </button>
         );
     }

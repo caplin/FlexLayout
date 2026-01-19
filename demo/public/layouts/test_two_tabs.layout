@@ -12,7 +12,8 @@
           {
             "type": "tab",
             "name": "One",
-            "component": "testing"
+            "component": "testing",
+            "enableFloat": true
           }
         ]
       },

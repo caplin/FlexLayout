@@ -7,6 +7,7 @@ export interface IJsonModel {
     borders?: IJsonBorderNode[];
     layout: IJsonRowNode; // top level 'row' is horizontal, rows inside rows take opposite orientation to parent row (ie can act as columns)
 	popouts?: Record<string, IJsonPopout>;
+	floatings?: Record<string, IJsonFloating>;
 }
 
 export interface IJsonRect {
@@ -19,6 +20,14 @@ export interface IJsonRect {
 export interface IJsonPopout {
     layout: IJsonRowNode;
 	rect: IJsonRect ;
+}
+
+export interface IJsonFloating {
+    tabId: string;
+    rect: IJsonRect;
+    zIndex: number;
+    originalParentId: string;
+    originalIndex: number;
 }
 
 export interface IJsonBorderNode extends IBorderAttributes {
@@ -248,6 +257,15 @@ export interface IGlobalAttributes {
 	  Default: false
 	 */
 	tabEnablePopout?: boolean;
+
+	/**
+	  Value for TabNode attribute enableFloat if not overridden
+
+	  enable floating tab feature
+
+	  Default: false
+	 */
+	tabEnableFloat?: boolean;
 
 	/**
 	  Value for TabNode attribute enablePopoutIcon if not overridden
@@ -766,6 +784,13 @@ export interface ITabAttributes {
 	enablePopout?: boolean;
 
 	/**
+	  enable floating tab feature
+
+	  Default: inherited from Global attribute tabEnableFloat (default false)
+	 */
+	enableFloat?: boolean;
+
+	/**
 	  whether to show the popout icon in the tabset header if this tab enables popouts
 
 	  Default: inherited from Global attribute tabEnablePopoutIcon (default true)
@@ -865,11 +890,39 @@ export interface ITabAttributes {
 	tabsetClassName?: string;
 
 	/**
-	  
+
 
 	  Fixed value: "tab"
 	 */
 	type?: string;
+
+	/**
+	  x position of tab when floating or after dock
+
+	  Default: undefined
+	 */
+	x?: number;
+
+	/**
+	  y position of tab when floating or after dock
+
+	  Default: undefined
+	 */
+	y?: number;
+
+	/**
+	  width of tab when floating
+
+	  Default: undefined
+	 */
+	floatingWidth?: number;
+
+	/**
+	  height of tab when floating
+
+	  Default: undefined
+	 */
+	floatingHeight?: number;
 
 }
 export interface IBorderAttributes {
