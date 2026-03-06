@@ -1,3 +1,9 @@
+## 0.8.19 - 2026-03-06
+
+* **Fixed:** Fixed Maximum update depth exceeded error due to size jitter
+* **Fixed:** Double model changed callbacks
+* **Updated:** Dependencies.
+
 ## 0.8.18 - 2026-01-14
 
 * **Updated:** README.md links to use github.io.

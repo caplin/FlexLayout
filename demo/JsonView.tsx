@@ -4,7 +4,7 @@ import * as Prism from "prismjs";
 
 export function JsonView({ model }: { model: Model }) {
 
-  const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
+  const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [json, setJson] = React.useState<string>("");
 
   React.useEffect(() => {

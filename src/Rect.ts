@@ -78,6 +78,17 @@ export class Rect {
         return this.x === rect?.x && this.y === rect?.y && this.width === rect?.width && this.height === rect?.height
     }
 
+    aboutEquals(rect: Rect | null | undefined) {
+        if (!rect) return false;
+        const epsilon = 0.5;
+        return (
+            Math.abs(this.x - rect.x) < epsilon &&
+            Math.abs(this.y - rect.y) < epsilon &&
+            Math.abs(this.width - rect.width) < epsilon &&
+            Math.abs(this.height - rect.height) < epsilon
+        );
+    }
+
     equalSize(rect: Rect | null | undefined) {
         return this.width === rect?.width && this.height === rect?.height
     }

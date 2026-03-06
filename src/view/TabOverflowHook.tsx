@@ -22,7 +22,7 @@ export const useTabOverflow = (
 
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const userControlledPositionRef = React.useRef<boolean>(false);
-    const updateHiddenTabsTimerRef = React.useRef<NodeJS.Timeout | undefined>(undefined);
+    const updateHiddenTabsTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const hiddenTabsRef = React.useRef<number[]>([]);
     const thumbInternalPos = React.useRef<number>(0);
     const repositioningRef = React.useRef<boolean>(false);

@@ -16,12 +16,12 @@ export interface IBorderTabProps {
 export function BorderTab(props: IBorderTabProps) {
     const { layout, border, show } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
-    const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
+    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     React.useLayoutEffect(() => {
         const contentRect = layout.getBoundingClientRect(selfRef.current!);
         if (!isNaN(contentRect.x) && contentRect.width > 0) {
-            if (!border.getContentRect().equals(contentRect)) {
+            if (!border.getContentRect().aboutEquals(contentRect)) {
                 border.setContentRect(contentRect);
                 if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
                     if (timer.current) {
@@ -32,7 +32,9 @@ export function BorderTab(props: IBorderTabProps) {
                         timer.current = undefined;
                     }, 50);
                 } else {
-                    layout.redrawInternal("border content rect " + contentRect);
+                    requestAnimationFrame(() => {
+                        layout.redrawInternal("border content rect " + contentRect);
+                    });
                 }
             }
         }

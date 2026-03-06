@@ -21,6 +21,7 @@
         &__layout {
             @include absoluteFill;
             display: flex;
+            overflow:hidden;
             background-color: var(--color-background);
 
             &_overlay {

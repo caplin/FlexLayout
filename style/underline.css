@@ -68,6 +68,7 @@
   bottom: 0;
   position: absolute;
   display: flex;
+  overflow: hidden;
   background-color: var(--color-background);
 }
 .flexlayout__layout_overlay {

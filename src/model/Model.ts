@@ -18,7 +18,7 @@ import { randomUUID } from "./Utils";
 import { LayoutWindow } from "./LayoutWindow";
 
 /** @internal */
-export const DefaultMin = 0;
+export const DefaultMin = 1;
 /** @internal */
 export const DefaultMax = 99999;
 

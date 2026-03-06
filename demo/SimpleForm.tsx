@@ -2,7 +2,7 @@ import * as React from "react";
 
 export function SimpleForm() {
 
-    const timer = React.useRef<NodeJS.Timeout | undefined>(undefined);
+    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const [value, setValue] = React.useState<number>(0);
 
 

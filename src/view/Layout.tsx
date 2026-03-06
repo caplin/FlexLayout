@@ -273,7 +273,6 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         }
 
         if (this.isMainWindow) {
-            this.props.model.addChangeListener(this.onModelChange);
             this.updateLayoutMetrics();
         } else {
             // since resizeObserver doesn't always work as expected when observing element in another document
@@ -762,7 +761,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     updateRect = () => {
         if (this.selfRef.current) {
             const rect = Rect.fromDomRect(this.selfRef.current.getBoundingClientRect());
-            if (!rect.equals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
+            if (!rect.aboutEquals(this.state.rect) && rect.width !== 0 && rect.height !== 0) {
                 // console.log("updateRect", rect.floor());
                 this.setState({ rect });
                 if (this.windowId !== Model.MAIN_WINDOW_ID) {
