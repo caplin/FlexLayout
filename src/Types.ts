@@ -111,4 +111,7 @@ export enum CLASSES {
 
     FLEXLAYOUT__MINI_SCROLLBAR = "flexlayout__mini_scrollbar",
     FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER = "flexlayout__mini_scrollbar_container",
+
+    FLEXLAYOUT__POPUP = "flexlayout__popup",
+    FLEXLAYOUT__POPUP_TABBAR_OUTER = "flexlayout__popup_tabbar_outer",
 }

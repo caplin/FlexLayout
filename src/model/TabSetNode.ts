@@ -10,6 +10,7 @@ import { BorderNode } from "./BorderNode";
 import { IDraggable } from "./IDraggable";
 import { IDropTarget } from "./IDropTarget";
 import { IJsonTabSetNode } from "./IJsonModel";
+import { LayoutPopup } from './LayoutPopup';
 import { LayoutWindow } from "./LayoutWindow";
 import { Model } from "./Model";
 import { Node } from "./Node";
@@ -21,7 +22,7 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
 
     /** @internal */
-    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow) {
+    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow | LayoutPopup) {
         const newLayoutNode = new TabSetNode(model, json);
 
         if (json.children != null) {
@@ -211,6 +212,18 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     isEnableTabScrollbar() {
         return this.getAttr("enableTabScrollbar") as boolean;
+    }
+
+    isPopupRoot() {
+        if (!(this.parent instanceof RowNode)) {
+            return false;
+        }
+
+        if (this.parent.getChildren().length !== 1) {
+            return false;
+        }
+
+        return !this.parent.getParent();
     }
 
     getClassNameTabStrip() {

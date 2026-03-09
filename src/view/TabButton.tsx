@@ -22,6 +22,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const contentRef = React.useRef<HTMLInputElement | null>(null);
     const icons = layout.getIcons();
+    const isPopupMode = layout.isPopup() && node.isPopupRoot() && !layout.isDockingMode();
 
     React.useLayoutEffect(() => {
         node.setTabRect(layout.getBoundingClientRect(selfRef.current!));
@@ -31,6 +32,8 @@ export const TabButton = (props: ITabButtonProps) => {
     });
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
+        if (isPopupMode) return;
+
         if (node.isEnableDrag()) {
             event.stopPropagation(); // prevent starting a tabset drag as well
             layout.setDragNode(event.nativeEvent, node as TabNode);
@@ -40,6 +43,7 @@ export const TabButton = (props: ITabButtonProps) => {
     };
 
     const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
+        if (isPopupMode) return;
         layout.clearDragMain();
     };
 
@@ -178,6 +182,13 @@ export const TabButton = (props: ITabButtonProps) => {
         );
     }
 
+    const movableEventsListeners: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> = {};
+    if (isPopupMode) {
+        movableEventsListeners.onPointerDown = layout.onMoveStart;
+        movableEventsListeners.onPointerMove = layout.onMove;
+        movableEventsListeners.onPointerUp = layout.onMoveEnd;
+    }
+
     return (
         <div
             ref={selfRef}
@@ -191,6 +202,7 @@ export const TabButton = (props: ITabButtonProps) => {
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDoubleClick={onDoubleClick}
+            {...movableEventsListeners}
         >
             {leading}
             {content}

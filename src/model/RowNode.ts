@@ -14,12 +14,13 @@ import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
 import { canDockToWindow } from "../view/Utils";
 import { LayoutWindow } from "./LayoutWindow";
+import { LayoutPopup } from './LayoutPopup';
 
 export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
 
     /** @internal */
-    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow) {
+    static fromJson(json: any, model: Model, layoutWindow: LayoutWindow | LayoutPopup) {
         const newLayoutNode = new RowNode(model, layoutWindow.windowId, json);
 
         if (json.children != null) {

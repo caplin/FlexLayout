@@ -6,6 +6,7 @@ import { IDraggable } from "./IDraggable";
 import { IJsonTabNode } from "./IJsonModel";
 import { Model } from "./Model";
 import { Node } from "./Node";
+import { RowNode } from './RowNode';
 import { TabSetNode } from "./TabSetNode";
 
 export class TabNode extends Node implements IDraggable {
@@ -100,6 +101,19 @@ export class TabNode extends Node implements IDraggable {
 
     isPoppedOut() {
         return this.getWindowId() !== Model.MAIN_WINDOW_ID;
+    }
+
+    isPopupRoot() {
+        const grandparent = this.parent?.getParent();
+        if (!(grandparent instanceof RowNode)) {
+            return false;
+        }
+
+        if (grandparent.getParent()) {
+            return false;
+        }
+
+        return grandparent.getChildren().length === 1;
     }
 
     isSelected() {
