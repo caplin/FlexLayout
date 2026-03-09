@@ -20,7 +20,8 @@ import { BorderTab } from "./BorderTab";
 import { BorderTabSet } from "./BorderTabSet";
 import { DragContainer } from "./DragContainer";
 import { PopoutWindow } from "./PopoutWindow";
-import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
+import { FloatingTab } from "./FloatingTab";
+import { AsterickIcon, CloseIcon, EdgeIcon, FloatIcon, MaximizeIcon, OverflowIcon, PopoutIcon, RestoreIcon } from "./Icons";
 import { Overlay } from "./Overlay";
 import { Row } from "./Row";
 import { Tab } from "./Tab";
@@ -363,12 +364,14 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         const reorderedTabs = this.reorderComponents(tabs, this.orderedTabIds);
 
         let floatingWindows = null;
+        let floatingTabs = null;
         let reorderedTabMoveables = null;
         let tabStamps = null;
         let metricElements = null;
 
         if (this.isMainWindow) {
             floatingWindows = this.renderWindows();
+            floatingTabs = this.renderFloatingTabs();
             metricElements = this.renderMetricsElements();
             const tabMoveables = this.renderTabMoveables();
             reorderedTabMoveables = this.reorderComponents(tabMoveables, this.orderedTabMoveableIds);
@@ -395,6 +398,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
+                {floatingTabs}
             </div>
         );
     }
@@ -555,6 +559,36 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             }
         }
         return floatingWindows;
+    }
+
+    renderFloatingTabs() {
+        const floatingTabs: React.ReactNode[] = [];
+        const floatings = this.props.model.getFloatingsMap();
+
+        for (const [floatingId, floating] of floatings) {
+            const tabFactory = this.props.factory;
+            const tabNode = this.props.model.getNodeById(floating.tabId) as TabNode;
+            if (tabNode) {
+                const component = tabFactory(tabNode);
+
+                floatingTabs.push(
+                    <FloatingTab
+                        key={floatingId}
+                        floating={floating}
+                        floatingId={floatingId}
+                        layout={this}
+                        tabNode={tabNode}
+                        onCloseFloating={this.onCloseFloating}
+                        onDockFloating={this.onDockFloating}
+                        onUpdateFloating={this.onUpdateFloating}
+                    >
+                        {component}
+                    </FloatingTab>
+                );
+            }
+        }
+
+        return floatingTabs;
     }
 
     renderTabMoveables() {
@@ -864,6 +898,52 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
     };
 
     onSetWindow = (windowLayout: LayoutWindow, window: Window) => {
+    };
+
+    onCloseFloating = (floatingId: string) => {
+        const floating = this.props.model.getFloatingsMap().get(floatingId);
+        if (floating) {
+            // Delete the tab node which will also clean up the floating reference
+            this.doAction(Actions.deleteTab(floating.tabId));
+            // Also remove from floating map
+            this.props.model.removeFloating(floatingId);
+        }
+    };
+
+    onDockFloating = (floatingId: string, x: number, y: number) => {
+        // Use the action system - this will trigger model change listeners
+        this.doAction(Actions.unfloatTab(floatingId));
+    };
+
+    onUpdateFloating = (floatingId: string, rect: Rect, zIndex: number) => {
+        const floating = this.props.model.getFloatingsMap().get(floatingId);
+        if (floating) {
+            floating.rect = rect.toJson();
+            floating.zIndex = zIndex;
+        }
+    };
+
+    findDropTargetAtPosition = (x: number, y: number): { nodeId: string; location: DockLocation; index: number } | null => {
+        // Convert screen coordinates to layout coordinates
+        const layoutRect = this.getDomRect();
+        const localX = x - layoutRect.x;
+        const localY = y - layoutRect.y;
+
+        // Find the first tabset as a fallback
+        const firstTabSet = this.props.model.getFirstTabSet();
+        if (firstTabSet) {
+            return {
+                nodeId: firstTabSet.getId(),
+                location: DockLocation.CENTER,
+                index: -1
+            };
+        }
+
+        return null;
+    };
+
+    getDropTargetAtPoint = (x: number, y: number) => {
+        return this.findDropTargetAtPosition(x, y);
     };
 
     getScreenRect(inRect: Rect) {
@@ -1282,6 +1362,7 @@ export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    float?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     restore?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
@@ -1293,6 +1374,7 @@ const defaultIcons = {
     close: <CloseIcon />,
     closeTabset: <CloseIcon />,
     popout: <PopoutIcon />,
+    float: <FloatIcon />,
     maximize: <MaximizeIcon />,
     restore: <RestoreIcon />,
     more: <OverflowIcon />,
