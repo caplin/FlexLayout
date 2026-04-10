@@ -1,5 +1,5 @@
-import { DockLocation } from "../DockLocation";
-import { DropInfo } from "../DropInfo";
+import { DockLocation } from "./DockLocation";
+import { DropInfo } from "./DropInfo";
 import { BorderNode } from "./BorderNode";
 import { IDraggable } from "./IDraggable";
 import { Model } from "./Model";

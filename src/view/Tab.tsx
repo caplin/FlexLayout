@@ -1,95 +1,99 @@
 import * as React from "react";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
-import { CLASSES } from "../Types";
-import { LayoutInternal } from "./Layout";
+import { CLASSES } from "./CSSClassNames";
+import { LayoutController } from "./layout/LayoutInternal";
 import { BorderNode } from "../model/BorderNode";
 import { Actions } from "../model/Actions";
 
 /** @internal */
 export interface ITabProps {
-    layout: LayoutInternal;
-    node: TabNode;
+    controller: LayoutController;
+    tabNode: TabNode;
     selected: boolean;
-    path: string;
 }
 
 /** @internal */
 export const Tab = (props: ITabProps) => {
-    const { layout, selected, node, path } = props;
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const { controller, selected, tabNode } = props;
+    const selfRef = React.useRef<HTMLDivElement>(null);
     const firstSelect = React.useRef<boolean>(true);
 
-    const parentNode = node.getParent() as TabSetNode | BorderNode;
+    const parentNode = tabNode.getParent() as TabSetNode | BorderNode;
     const rect = parentNode.getContentRect()!;
 
     React.useLayoutEffect(() => {
-        const element = node.getMoveableElement()!;
-        selfRef.current!.appendChild(element);
-        node.setMoveableElement(element);
-
         const handleScroll = () => {
-            node.saveScrollPosition();
+            tabNode.saveScrollPosition();
         };
 
-        // keep scroll position
-        element.addEventListener('scroll', handleScroll);
+        const element = tabNode.getMoveableElement()!;
+        if (element) {
+            selfRef.current!.appendChild(element);
+
+            // keep scroll position
+            element.addEventListener('scroll', handleScroll);
+        }
 
         // listen for clicks to change active tabset
         selfRef.current!.addEventListener("pointerdown", onPointerDown);
 
         return () => {
-            element.removeEventListener('scroll', handleScroll);
             if (selfRef.current) {
                 selfRef.current.removeEventListener("pointerdown", onPointerDown);
             }
-            node.setVisible(false);
+            if (element) {
+                if (!tabNode.isEnableWindowReMount()) {
+                    controller.getMainController()?.getMoveablesDiv()?.appendChild(element);
+                }
+                element.removeEventListener('scroll', handleScroll);
+            }
+            tabNode.setVisible(false);
         }
-    }, []);
+        return;
+    }, [tabNode.getMoveableElement()]);
 
     React.useEffect(() => {
-        if (node.isSelected()) {
+        if (tabNode.isSelected()) {
             if (firstSelect.current) {
-                node.restoreScrollPosition(); // if window docked back in
+                tabNode.restoreScrollPosition(); // if window docked back in
                 firstSelect.current = false;
             }
         }
     });
 
     const onPointerDown = () => {
-        const parent = node.getParent()!; // cannot use parentNode here since will be out of date
+        const parent = tabNode.getParent()!; // cannot use parentNode here since will be out of date
         if (parent instanceof TabSetNode) {
             if (!parent.isActive()) {
-                layout.doAction(Actions.setActiveTabset(parent.getId(), layout.getWindowId()));
+                controller.doAction(Actions.setActiveTabset(parent.getId(), controller.getLayoutId()));
             }
         }
     };
 
-    node.setRect(rect); // needed for resize event
-    const cm = layout.getClassName;
-    const style: Record<string, any> = {};
+    tabNode.setRect(rect); // needed for resize event
+    const cm = controller.getClassName;
+    const style: React.CSSProperties = {};
 
     rect.styleWithPosition(style);
 
     let overlay = null;
 
     if (selected) {
-        node.setVisible(true);
-        if (document.hidden && node.isEnablePopoutOverlay()) {
-            const overlayStyle: Record<string, any> = {};
+        tabNode.setVisible(true);
+        if (document.hidden && tabNode.isEnablePopoutOverlay()) {
+            const overlayStyle: React.CSSProperties = {};
             rect.styleWithPosition(overlayStyle);
             overlay = (<div style={overlayStyle} className={cm(CLASSES.FLEXLAYOUT__TAB_OVERLAY)}></div>)
         }
     } else {
         style.display = "none";
-        node.setVisible(false);
+        tabNode.setVisible(false);
     }
 
     if (parentNode instanceof TabSetNode) {
-        if (node.getModel().getMaximizedTabset(layout.getWindowId()) !== undefined) {
-            if (parentNode.isMaximized()) {
-                style.zIndex = 10;
-            } else {
+        if (tabNode.getModel().getMaximizedTabset(controller.getLayoutId()) !== undefined) {
+            if (!parentNode.isMaximized()) {
                 style.display = "none";
             }
         }
@@ -107,10 +111,15 @@ export const Tab = (props: ITabProps) => {
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
     }
 
-    if (node.getContentClassName() !== undefined) {
-        className += " " + node.getContentClassName();
+    if (tabNode.getContentClassName() !== undefined) {
+        className += " " + tabNode.getContentClassName();
     }
 
+    /* 
+        Note: the tab content (from the factory) is rendered into a moveable div 
+        (see LayoutController.renderTabElements method)
+        the moveable div is appended to selfRef in the useEffect above
+    */
     return (
         <>
             {overlay}
@@ -119,7 +128,7 @@ export const Tab = (props: ITabProps) => {
                 ref={selfRef}
                 style={style}
                 className={className}
-                data-layout-path={path}
+                data-layout-path={tabNode.getPath()}
             />
         </>
     );

@@ -4,7 +4,8 @@
     "tabSetMinWidth": 100,
     "borderMinSize": 100,
     "borderEnableAutoHide": true,
-    "tabSetEnableClose": true
+    "tabSetEnableClose": true,
+    "tabSetEnableCloseButton": true
   },
   "borders": [
     {

@@ -1,6 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
-import { checkBorderTab, checkTab, drag, dragSplitter, dragToEdge, findAllTabSets, findPath, findTabButton, Location } from './helpers';
-import { CLASSES } from '../src/Types';
+import { checkBorderTab, checkTab, checkTabButton, drag, dragSplitter, dragToEdge, dragWithOffset, findAllTabSets, findPath, findTabButton, Location } from './helpers';
+import { CLASSES } from '../src/view/CSSClassNames';
 
 /*
 
@@ -27,6 +27,7 @@ test.describe('drag tests two tabs', () => {
     await page.goto(baseURL + '?layout=test_two_tabs');
     await expect(page).toHaveTitle(/FlexLayout Demo/);
     await page.getByRole('button', { name: 'Reload' }).click();
+    // await page.locate('select#colors').selectOption('red');
 
     const tabSets = await findAllTabSets(page);
     expect(await tabSets.count()).toEqual(2);
@@ -680,7 +681,7 @@ test.describe('Others', () => {
     await expect(textbox).toHaveValue('Two');
     await textbox.type('Renamed');
     await textbox.press('Enter');
-    await checkTab(page, "/ts1", 0, true, "Renamed");
+    await checkTabButton(page, "/ts1", 0, true, "Renamed");
   });
 
   test('rename tab cancelled with esc', async ({ page }) => {
@@ -906,7 +907,7 @@ test.describe('Extended layout2', () => {
 
     const from = findTabButton(page, '/ts0', 0);
     const to = findTabButton(page, '/ts0', 0);
-    await drag(page, from, to, Location.LEFTEDGE);
+    await dragWithOffset(page, from, to, Location.LEFTEDGE, -10, 0);
     await expect(findPath(page, '/border/left')).toBeVisible();
   });
 });

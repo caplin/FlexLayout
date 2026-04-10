@@ -1,17 +1,20 @@
 {
-    "compilerOptions": {
-      "emitDeclarationOnly": true,
-      "declaration": true,
-      "declarationDir": "types",
-      "module": "ESNext",
-      "target": "ESNext",
-      "moduleResolution": "Bundler",
-      "jsx": "react-jsx",
-      "strict": true,
-      "skipLibCheck": true,
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true
-    },
-    "include": ["src"]
-  }
-  
+  "compilerOptions": {
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "types",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "rootDir": "src",
+    "outDir": "types"
+  },
+  "include": [
+    "src"
+  ]
+}

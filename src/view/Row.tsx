@@ -1,51 +1,51 @@
 import * as React from "react";
 import { RowNode } from "../model/RowNode";
 import { TabSetNode } from "../model/TabSetNode";
-import { CLASSES } from "../Types";
-import { LayoutInternal } from "./Layout";
+import { CLASSES } from "./CSSClassNames";
+import { LayoutController } from "./layout/LayoutInternal";
 import { TabSet } from "./TabSet";
 import { Splitter } from "./Splitter";
-import { Orientation } from "../Orientation";
+import { Orientation } from "../model/Orientation";
 
 /** @internal */
 export interface IRowProps {
-    layout: LayoutInternal;
-    node: RowNode;
+    controller: LayoutController;
+    rowNode: RowNode;
 }
 
 /** @internal */
 export const Row = (props: IRowProps) => {
-    const { layout, node } = props;
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const { controller, rowNode } = props;
+    const selfRef = React.useRef<HTMLDivElement>(null);
 
-    const horizontal = node.getOrientation() === Orientation.HORZ;
+    const horizontal = rowNode.getOrientation() === Orientation.HORZ;
 
     React.useLayoutEffect(() => {
-        node.setRect(layout.getBoundingClientRect(selfRef.current!));
+        rowNode.setRect(controller.getBoundingClientRect(selfRef.current!));
     });
 
     const items: React.ReactNode[] = [];
 
     let i = 0;
 
-    for (const child of node.getChildren()) {
+    for (const child of rowNode.getChildren()) {
         if (i > 0) {
-            items.push(<Splitter key={"splitter" + i} layout={layout} node={node} index={i} horizontal={horizontal} />)
+            items.push(<Splitter key={"splitter" + i} controller={controller} node={rowNode} index={i} horizontal={horizontal} />)
         }
         if (child instanceof RowNode) {
-            items.push(<Row key={child.getId()} layout={layout} node={child} />);
+            items.push(<Row key={child.getId()} controller={controller} rowNode={child} />);
         } else if (child instanceof TabSetNode) {
-            items.push(<TabSet key={child.getId()} layout={layout} node={child} />);
+            items.push(<TabSet key={child.getId()} controller={controller} tabsetNode={child} />);
         }
         i++;
     }
 
-    const style: Record<string, any> = {
-        flexGrow: Math.max(1, node.getWeight()*1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
-        minWidth: node.getMinWidth(),
-        minHeight: node.getMinHeight(),
-        maxWidth: node.getMaxWidth(),
-        maxHeight: node.getMaxHeight(),
+    const style: React.CSSProperties = {
+        flexGrow: Math.max(1, rowNode.getWeight()*1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
+        minWidth: rowNode.getMinWidth(),
+        minHeight: rowNode.getMinHeight(),
+        maxWidth: rowNode.getMaxWidth(),
+        maxHeight: rowNode.getMaxHeight(),
     };
 
     if (horizontal) {
@@ -57,7 +57,7 @@ export const Row = (props: IRowProps) => {
      return (
         <div
             ref={selfRef}
-            className={layout.getClassName(CLASSES.FLEXLAYOUT__ROW)}
+            className={controller.getClassName(CLASSES.FLEXLAYOUT__ROW)}
             style={style}
             >
             {items}

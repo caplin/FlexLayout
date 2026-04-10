@@ -16,13 +16,13 @@ export default defineConfig([
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "react/react-in-jsx-scope": "off",
-      "react/display-name":"off"
+      // "react/display-name":"off"
     },
   },
   {
     settings: {
       react: {
-        version: 'detect', // Automatically detects the React version
+        version: '19.2.5',
       },
     },
   },

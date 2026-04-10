@@ -1,8 +1,8 @@
 {
 	"global": {
-		"splitterEnableHandle": true,
 		"tabEnablePopout": true,
-		"tabSetEnableActiveIcon": true,
+		"tabEnablePopoutFloatIcon": true,
+		"tabSetEnableCloseButton": true,
 		"tabSetMinWidth": 130,
 		"tabSetMinHeight": 100,
 		"tabSetEnableTabScrollbar": true,
@@ -11,8 +11,8 @@
 	},
 	"borders": [
 		{
-			"type": "border",
 			"location": "bottom",
+			"type": "border",
 			"children": [
 				{
 					"type": "tab",
@@ -26,9 +26,16 @@
 					"type": "tab",
 					"id": "#803a2efe-e507-4735-9c2a-46ce6042c1a2",
 					"name": "Terminal",
-					"component": "grid",
+					"subLayoutId": "sublayout2",
 					"enableClose": false,
 					"icon": "images/terminal.svg"
+				},
+				{
+					"type": "tab",
+					"id": "#71f74dc6-345d-4833-b0f3-36a5d7fb58fa",
+					"name": "Action Log",
+					"enableRenderOnDemand":false,
+					"component": "actionlog"
 				},
 				{
 					"type": "tab",
@@ -39,23 +46,24 @@
 			]
 		},
 		{
-			"type": "border",
 			"location": "left",
+			"type": "border",
 			"children": [
 				{
 					"type": "tab",
 					"id": "#21c49854-be85-4e32-96c3-61962f71bc15",
 					"name": "Navigation",
+					"component": "user sublayout",
+					"subLayoutId": "sublayout1",
 					"altName": "The Navigation Tab",
-					"component": "grid",
-					"enableClose": false,
+					"enableClose": true,
 					"icon": "images/folder.svg"
 				}
 			]
 		},
 		{
-			"type": "border",
 			"location": "right",
+			"type": "border",
 			"children": [
 				{
 					"type": "tab",
@@ -76,6 +84,8 @@
 				"type": "tabset",
 				"id": "#018c109c-20ab-4458-84c8-1817d2e7d81b",
 				"weight": 33,
+				"enableDeleteWhenEmpty": false,
+				"enableClose": false,
 				"children": [
 					{
 						"type": "tab",
@@ -95,7 +105,6 @@
 						"type": "tabset",
 						"id": "#770c0042-3776-4576-becc-90b627bb8c91",
 						"weight": 50,
-						"selected": 0,
 						"children": [
 							{
 								"type": "tab",
@@ -103,6 +112,7 @@
 								"name": "ChartJS",
 								"component": "chart",
 								"enableWindowReMount": true,
+								"enableClose": false,
 								"enablePopoutOverlay": true
 							},
 							{
@@ -182,8 +192,8 @@
 								"type": "tab",
 								"id": "#31b3af95-2fc9-4511-8d5d-1e6255b92eae",
 								"name": "MUI",
-								"enablePopout": false,
-								"component": "mui"
+								"component": "mui",
+								"enablePopout": false
 							}
 						]
 					},
@@ -196,8 +206,8 @@
 								"type": "tab",
 								"id": "#4784d2d4-24a4-4ef2-ac6e-7a3ea7b03ba3",
 								"name": "MUI Grid",
-								"enablePopout": false,
-								"component": "muigrid"
+								"component": "muigrid",
+								"enablePopout": false
 							}
 						]
 					}
@@ -205,5 +215,84 @@
 			}
 		]
 	},
-	"popouts": {}
+	"subLayouts": {
+		"sublayout1": {
+			"type": "tab",
+			"layout": {
+				"type": "row",
+				"id": "#48cd26b2-6a7c-4989-bbc7-4f388f80adb1",
+				"children": [
+					{
+						"type": "row",
+						"id": "#b814faf4-d29a-466e-8f79-dade6290ed54",
+						"children": [
+							{
+								"type": "tabset",
+								"id": "#79a74b0b-37ac-43e4-abbf-909acdbc5530",
+								"weight": 50,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#fb86ad2f-54fb-41b4-b24f-746f54fa6c99",
+										"name": "Grid 1",
+										"component": "grid"
+									}
+								],
+								"active": true
+							},
+							{
+								"type": "tabset",
+								"id": "#ed0f8c08-7c6c-46fe-a456-5eb7d3c50212",
+								"weight": 50,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#dd3416a2-8845-49d6-9337-f8ee43a252f8",
+										"name": "Grid 1",
+										"component": "grid"
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		"sublayout2": {
+			"type": "tab",
+			"layout": {
+				"type": "row",
+				"id": "#50399807-fa1a-4099-be72-ee0b10b14146",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "#bc20e3ec-6560-4e48-a390-a359d5652256",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "#ca4e189e-9e8d-4057-a940-141af42aca36",
+								"name": "Grid 1",
+								"component": "grid"
+							}
+						]
+					},
+					{
+						"type": "tabset",
+						"id": "#5d0e9bcd-7761-4777-9df9-c9a098147e51",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "#11addc10-f0e8-4481-8320-b4c33fdca042",
+								"name": "Grid 2",
+								"component": "grid"
+							}
+						],
+						"active": true
+					}
+				]
+			}
+		}
+	}
 }

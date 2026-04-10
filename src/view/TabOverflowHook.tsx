@@ -1,15 +1,15 @@
 import * as React from "react";
 import { TabSetNode } from "../model/TabSetNode";
 import { BorderNode } from "../model/BorderNode";
-import { Orientation } from "../Orientation";
-import { LayoutInternal } from "./Layout";
+import { Orientation } from "../model/Orientation";
+import { LayoutController } from "./layout/LayoutInternal";
 import { TabNode } from "../model/TabNode";
 import { startDrag } from "./Utils";
-import { Rect } from "../Rect";
+import { Rect } from "../model/Rect";
 
 /** @internal */
 export const useTabOverflow = (
-    layout: LayoutInternal,
+    controller: LayoutController,
     node: TabSetNode | BorderNode,
     orientation: Orientation,
     tabStripRef: React.RefObject<HTMLElement | null>,
@@ -20,7 +20,7 @@ export const useTabOverflow = (
     const [isShowHiddenTabs, setShowHiddenTabs] = React.useState<boolean>(false);
     const [isDockStickyButtons, setDockStickyButtons] = React.useState<boolean>(false);
 
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
+    const selfRef = React.useRef<HTMLDivElement>(null);
     const userControlledPositionRef = React.useRef<boolean>(false);
     const updateHiddenTabsTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const hiddenTabsRef = React.useRef<number[]>([]);
@@ -66,11 +66,11 @@ export const useTabOverflow = (
     function scrollIntoView() {
         const selectedTabNode = node.getSelectedNode() as TabNode;
         if (selectedTabNode && tabStripRef.current) {
-            const stripRect = layout.getBoundingClientRect(tabStripRef.current);
+            const stripRect = controller.getBoundingClientRect(tabStripRef.current);
             const selectedRect = selectedTabNode.getTabRect()!;
 
             let shift = getNear(stripRect) - getNear(selectedRect);
-            if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) { 
+            if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) {
                 setScrollPosition(getScrollPosition(tabStripRef.current) - shift);
                 repositioningRef.current = true; // prevent onScroll setting userControlledPosition
             } else {
@@ -142,8 +142,8 @@ export const useTabOverflow = (
     }
 
     const onScroll = () => {
-        if (!repositioningRef.current){
-            userControlledPositionRef.current=true;
+        if (!repositioningRef.current) {
+            userControlledPositionRef.current = true;
         }
         repositioningRef.current = false;
         updateScrollMetrics()
@@ -153,7 +153,7 @@ export const useTabOverflow = (
     const onScrollPointerDown = (event: React.PointerEvent<HTMLElement>) => {
         event.stopPropagation();
         miniScrollRef.current!.setPointerCapture(event.pointerId)
-        const r = miniScrollRef.current?.getBoundingClientRect()!;
+        const r = miniScrollRef.current!.getBoundingClientRect()!;
         if (orientation === Orientation.HORZ) {
             thumbInternalPos.current = event.clientX - r.x;
         } else {
@@ -171,7 +171,7 @@ export const useTabOverflow = (
             const thumbSize = getElementSize(s);
 
             const r = t.getBoundingClientRect()!;
-            let thumb = 0;
+            let thumb: number;
             if (orientation === Orientation.HORZ) {
                 thumb = x - r.x - thumbInternalPos.current;
             } else {
@@ -235,7 +235,7 @@ export const useTabOverflow = (
         if (tabStripRef.current) {
             if (node.getChildren().length === 0) return;
 
-            let delta = 0;
+            let delta: number;
             if (Math.abs(event.deltaY) > 0) {
                 delta = -event.deltaY;
                 if (event.deltaMode === 1) {

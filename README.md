@@ -4,93 +4,83 @@
 ![npm](https://img.shields.io/npm/dw/flexlayout-react)
 [![npm](https://img.shields.io/npm/v/flexlayout-react)](https://www.npmjs.com/package/flexlayout-react)
 
-FlexLayout is a layout manager that arranges React components in multiple tabsets, tabs can be resized and moved.
+FlexLayout is a layout manager for React that arranges components in multiple tabsets. Tabs can be resized, moved, and organized into complex layouts.
 
-![FlexLayout Demo Screenshot](screenshots/Screenshot_light.png?raw=true "FlexLayout Demo Screenshot")
+![FlexLayout Demo Screenshot](screenshots/Screenshot_v0.9.png?raw=true "FlexLayout Demo Screenshot")
 
-[Run the Demo](https://caplin.github.io/FlexLayout/demos/v0.8/demo/index.html)
+[Run the Demo](https://caplin.github.io/FlexLayout/demos/v0.9/demo/index.html)
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
-[API Doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/index.html)
-
-[Screenshot of Caplin Liberator Explorer using FlexLayout](https://caplin.github.io/FlexLayout/demos/v0.20/images/LiberatorExplorerV3_3.PNG)
+[API Doc](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/index.html)
 
 FlexLayout's only dependency is React.
 
 Features:
-*	splitters
-*	tabs (scrolling or wrapped)
-*	tab dragging and ordering
-*	tabset dragging (move all the tabs in a tabset in one operation)
-*	dock to tabset or edge of frame
-*	maximize tabset (double click tabset header or use icon)
-*	tab overflow (show menu when tabs overflow, scroll tabs using mouse wheel)
-*   border tabsets
-*   popout tabs into new browser windows
-*	submodels, allow layouts inside layouts
-*	tab renaming (double click tab text to rename)
-*	theming - light, dark, underline, gray, rounded and combined
-*	works on mobile devices (iPad, Android)
-*   add tabs using drag, add to active tabset, add to tabset by id
-*	tab and tabset attributes: enableTabStrip, enableDock, enableDrop...
-*	customizable tabs and tabset rendering
-*   component state is preserved when tabs are moved
-*   Playwright tests
-*	typescript type declarations
+* Splitters for resizing
+* Tabs (scrolling or wrapped)
+* Tab dragging and ordering
+* Tabset dragging (move all tabs in a tabset in one operation)
+* Docking to tabsets or edges of the frame
+* Maximizing tabsets (double-click tabset header or use icon)
+* Tab overflow (menu for hidden tabs, mouse wheel scrolling)
+* Border tabsets
+* Popout tabs into floating panels or new browser windows
+* Submodels (layouts inside layouts)
+* Tab renaming (double-click tab text)
+* Theming (light, dark, underline, etc., and combined)
+* Mobile support (iPad, Android)
+* Multiple ways to add tabs (drag, active tabset, by ID)
+* Comprehensive tab and tabset attributes (`enableTabStrip`, `enableDock`, `enableDrop`, etc.)
+* Customizable tab and tabset rendering
+* Preservation of component state when tabs are moved
+* Playwright tests
+* TypeScript type declarations
+
+## Example Interaction
+![FlexLayout Animation](screenshots/Animation.gif?raw=true "FlexLayout Animation")
 
 ## Installation
 
-FlexLayout is in the npm repository. install using:
+FlexLayout is available on npm. Install it using:
 
-```
+```bash
 npm install flexlayout-react
 ```
 
-Import FlexLayout in your modules:
+Import FlexLayout and its model in your modules:
 
-```
-import {Layout, Model} from 'flexlayout-react';
-```
-
-Include the light, dark, underline, gray, rounded or combined theme by either:
-
-Adding an import in your js code:
-
-```
-import 'flexlayout-react/style/light.css';  
+```javascript
+import { Layout, Model } from 'flexlayout-react';
 ```
 
-or by copying the relevant css from the node_modules/flexlayout-react/style directory to your 
- public assets folder (e.g. public/style) and linking the css in your html:
+Include a theme. Choose from `alpha_light`, `alpha_dark`, `alpha_rounded`, `light`, `dark`, `underline`, `gray`, `rounded`, or `combined` (see the demo for examples):
 
-```
-<link rel="stylesheet" href="/style/light.css" />
+```css
+import 'flexlayout-react/style/alpha_light.css';  
 ```
 
-[How to change the theme dynamically in code](#dynamically-changing-the-theme)
+[Learn how to change the theme dynamically in code](#dynamically-changing-the-theme)
 
 
 ## Usage
 
-The `<Layout>` component renders the tabsets and splitters, it takes the following props:
-
+The `<Layout>` component renders the tabsets and splitters. It takes the following props:
 
 #### Required props:
 
-
-| Prop            | Description       |
-| --------------- | ----------------- |
-| model           | the layout model  |
-| factory         | a factory function for creating React components |
+| Prop    | Description                                      |
+| ------- | ------------------------------------------------ |
+| `model` | The layout model                                 |
+| `factory` | A factory function for creating React components |
 
 Additional [optional props](#optional-layout-props)
 
-The model is tree of Node objects that define the structure of the layout.
+The model is a tree of `Node` objects that define the structure of the layout.
 
-The factory is a function that takes a Node object and returns a React component that should be hosted by a tab in the layout.
+The factory is a function that takes a `Node` object and returns a React component to be hosted within a tab.
 
-The model can be created using the Model.fromJson(jsonObject) static method, and can be saved using the model.toJson() method.
+Models can be created using the `Model.fromJson(jsonObject)` static method and saved using the `model.toJson()` method.
 
 ## Example Configuration:
 
@@ -152,57 +142,51 @@ function App() {
 }
 ```		
 
-The above code would render two tabsets horizontally each containing a single tab that hosts a div component (returned from the factory). The tabs could be moved and resized by dragging and dropping. Additional tabs could be added to the layout by sending actions to the model.
+The above code renders two tabsets horizontally, each containing a single tab that hosts a `div` component (returned from the factory). Tabs can be moved and resized by dragging and dropping. Additional tabs can be added to the layout by sending actions to the model.
 
 <img src="screenshots/Screenshot_two_tabs.png?raw=true" alt="Simple layout" title="Generated Layout"/>
+
+Note: The `<Layout>` component must be hosted in a container element (with CSS `position: absolute` or `relative`). The layout will fill the containing element.
 
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
-A simple Typescript example can be found here:
+A simple TypeScript example can be found here:
 
 https://github.com/nealus/flexlayout-vite-example
 
-The model json contains 4 top level elements:
+The model JSON contains four top-level elements:
 
-* global - (optional) where global options are defined
-* layout - where the main row/tabset/tabs layout hierarchy is defined
-* borders - (optional) where up to 4 borders are defined ("top", "bottom", "left", "right").
-* popouts - (optional) where the popout windows are defined
+* `global` - (optional) Global options.
+* `layout` - The main row/tabset/tabs layout hierarchy.
+* `borders` - (optional) Up to four borders ("top", "bottom", "left", "right").
+* `subLayouts` - (optional) Where sub layouts for popout windows, floating panels and tabs are defined.
 
-The layout element is built up using 3 types of 'node':
+The `layout` element is built using three types of nodes:
 
-* row - rows contains a list of tabsets and child rows, the top level 'row' will render horizontally (unless the global attribute rootOrientationVertical is set)
-, child 'rows' will render in the opposite orientation to their parent row.
-
-* tabset - tabsets contain a list of tabs and the index of the selected tab
-
-* tab - tabs specify the name of the component that they should host (that will be loaded via the factory) and the text of the actual tab.
+* `row` - Rows contain a list of tabsets and child rows. The top-level `row` renders horizontally by default (unless the global attribute `rootOrientationVertical` is set). Child rows render in the opposite orientation to their parent row.
+* `tabset` - Tabsets contain a list of tabs and the index of the selected tab.
+* `tab` - Tabs specify the component to host (loaded via the factory) and the tab's display text.
 
 The layout structure is defined with rows within rows that contain tabsets that themselves contain tabs.
 
-Within the demo app you can show the layout structure by ticking the 'Show layout' checkbox, rows are shown in blue, tabsets in orange.
+Within the demo app, you can view the layout structure by checking the 'Show layout' box. Rows are shown in blue, and tabsets in orange.
 
 ![FlexLayout Demo Showing Layout](screenshots/Screenshot_layout.png?raw=true "Demo showing layout")
 
-The optional borders element is made up of border nodes
+The optional `borders` element is made up of border nodes:
 
-* border - borders contain a list of tabs and the index of the selected tab, they can only be used in the borders
-top level element.
+* `border` - Borders contain a list of tabs and the index of the selected tab. They can only be used within the `borders` top-level element.
 
-The tree structure for the JSON model is well defined as Typescript interfaces, see  [JSON Model](#json-model-definition)
+The JSON model tree structure is defined as TypeScript interfaces; see [JSON Model](#json-model-definition).
 
-Each type of node has a defined set of requires/optional attributes.
+Each node type has a defined set of required and optional attributes.
 
-Weights on rows and tabsets specify the relative weight of these nodes within the parent row, the actual values do not matter just their relative values (ie two tabsets of weights 30,70 would render the same if they had weights of 3,7).
+Weights on rows and tabsets specify their relative size within the parent row. The absolute values do not matter, only their proportions (e.g., two tabsets with weights 30 and 70 would render the same as if they had weights 3 and 7).
 
-NOTE: the easiest way to create your initial layout JSON is to use the [demo](https://caplin.github.io/FlexLayout/demos/v0.8/demo/index.html) app, modify one of the
-existing layouts by dragging/dropping and adding nodes then press the 'Show Layout JSON in console' button to print the JSON to the browser developer console.
+NOTE: The easiest way to create your initial layout JSON is to use the [demo](https://caplin.github.io/FlexLayout/demos/v0.9/demo/index.html) app. Modify an existing layout by dragging, dropping, and adding nodes, then press the 'print' button to print the JSON to the browser's developer console.
 
-By changing global or node attributes you can change the layout appearance and functionality, for example:
-
-Setting tabSetEnableTabStrip:false in the global options would change the layout into a multi-splitter (without
-tabs or drag and drop).
+By changing global or node attributes, you can modify the layout's appearance and functionality. For example, setting `tabSetEnableTabStrip: false` in the global options would change the layout into a multi-splitter (without tabs or drag-and-drop):
 
 ```
  global: {tabSetEnableTabStrip:false},
@@ -210,13 +194,13 @@ tabs or drag and drop).
 
 ## Dynamically Changing the Theme
 
-The 'combined.css' theme contains all the other themes and can be used for theme switching.
+The `combined.css` theme includes all other themes and supports dynamic theme switching.
 
-When using combined.css, add a className (of the form "flexlayout__theme_[theme name]") to the div containing the `<Layout>` to select the applied theme.
+When using `combined.css`, add a `className` (in the form `flexlayout__theme_[theme-name]`) to the `div` containing the `<Layout>` to select the desired theme.
 
 For example: 
 ```
-    <div ref={containerRef} className="flexlayout__theme_light">
+    <div ref={containerRef} className="flexlayout__theme_alpha_light">
         <Layout model={model} factory={factory} />
     </div>
 ```
@@ -225,25 +209,24 @@ Change the theme in code by changing the className on the containing div.
 
 For example:
 ```
-    containerRef.current!.className = "flexlayout__theme_dark"
+    containerRef.current!.className = "flexlayout__theme_alpha_dark"
 ```
 
 ## Customizing Tabs
 
-You can use the `<Layout>` prop onRenderTab to customize the tab rendering:
-
+You can use the `<Layout>` prop `onRenderTab` to customize tab rendering:
 
 <img src="screenshots/Screenshot_customize_tab.png?raw=true"
      alt="FlexLayout Tab structure"
      title="Tab structure"/>
 
-Update the renderValues parameter as needed:
+Update the `renderValues` parameter as needed:
 
-renderValues.leading : the red block
+`renderValues.leading`: The area shown in red.
 
-renderValues.content : the green block
+`renderValues.content`: The area shown in green.
 
-renderValues.buttons : the yellow block
+`renderValues.buttons`: The area shown in yellow.
 
 For example:
 
@@ -257,20 +240,19 @@ onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
 
 ## Customizing Tabsets
 
-You can use the `<Layout>` prop onRenderTabSet to customize the tabset rendering:
-
+You can use the `<Layout>` prop `onRenderTabSet` to customize tabset rendering:
 
 <img src="screenshots/Screenshot_customize_tabset.png?raw=true"
      alt="FlexLayout Tab structure"
      title="Tabset structure" />
 
-Update the renderValues parameter as needed:
+Update the `renderValues` parameter as needed:
 
-renderValues.leading : the blue block
+`renderValues.leading`: The area shown in blue.
 
-renderValues.stickyButtons : the red block
+`renderValues.stickyButtons`: The area shown in red.
 
-renderValues.buttons : the green block
+`renderValues.buttons`: The area shown in green.
 
 
 For example:
@@ -296,16 +278,17 @@ onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderVa
 
 ## Model Actions
 
-Once the model json has been loaded all changes to the model are applied through actions.
+Once the model JSON has been loaded, all changes are applied through actions. In the Demo app, you can view these actions in the 'Action Log':
 
-You apply actions using the `Model.doAction()` method.
+<img src="screenshots/Screenshot_action_log.png?raw=true"
+     alt="Action Log"
+     title="Action Log" />
 
-This method takes a single argument, created by one of the action
-generators (accessed as `FlexLayout.Actions.<actionName>`):
+Apply actions using the `model.doAction()` method. This method takes a single argument created by one of the action generators (accessible via `FlexLayout.Actions.<actionName>`):
 
-[Actions doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/classes/Actions.html)
+[Actions Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/classes/Actions.html)
 
-### Examples
+### Example
 
 ```js
 model.doAction(FlexLayout.Actions.addNode(
@@ -313,178 +296,133 @@ model.doAction(FlexLayout.Actions.addNode(
     "1", FlexLayout.DockLocation.CENTER, 0));
 ```
 
-This example adds a new grid component to the center of tabset with id "1" and at the 0'th tab position (use value -1 to add to the end of the tabs).
+This example adds a new grid component to the center of the tabset with ID "1" at the first position (0). Use `-1` to add to the end of the tabs.
 
+Note: You can retrieve the ID of a node (e.g., the node returned by the `addNode` action) using `node.getId()`. If an ID wasn't assigned when the node was created, one will be generated for you in the form `#<uuid>` (e.g., `#0c459064-8dee-444e-8636-eb9ab910fb27`).
 
-```js
-model.doAction(FlexLayout.Actions.updateModelAttributes({
-    splitterSize:40
-}));
-```
-
-The above example would increase the size of the splitters, this could be used to make
-adjusting the layout easier on a small device.
-
-Note: you can get the id of a node (e.g., the node returned by the `addNode`
-action) using the method `node.getId()`.
-If an id wasn't assigned when the node was created, then one will be created for you of the form `#<uuid>` (e.g. `#0c459064-8dee-444e-8636-eb9ab910fb27`).
-
-Note: You can intercept actions resulting from GUI changes before they are applied by
-implementing the `onAction` callback property of the `Layout`.
+Note: You can intercept actions resulting from GUI changes before they are applied by implementing the `onAction` callback property of the `Layout`.
 
 ## Optional Layout Props
 
-There are many optional properties that can be applied to the layout:
+Many optional properties can be applied to the layout:
 
-[Layout Properties doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/ILayoutProps.html)
+[Layout Properties Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ILayoutProps.html)
 
 
 ## JSON Model Definition
 
-The JSON model is well defined as a set of TypeScript interfaces, see the doc for details of all the attributes allowed:
+The JSON model is defined as a set of TypeScript interfaces. See the documentation for details on allowed attributes:
 
-## Model Config Attributes
+[Model Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonModel.html)
 
-[Model Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonModel.html)
+[Global Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IGlobalAttributes.html)
 
-## Global Config Attributes
+[Row Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonRowNode.html)
 
-[Global Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IGlobalAttributes.html)
+[Tabset Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonTabSetNode.html)
 
-## Row Config Attributes
+Note: Tabsets are dynamically created as tabs are moved and deleted when their last tab is removed (unless `enableDeleteWhenEmpty` is set to `false`).
 
-[Row Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonRowNode.html)
+[Tab Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonTabNode.html)
 
-## TabSet Config Attributes
-
-[Tabset Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonTabSetNode.html)
-
-Note: tabsets will be dynamically created as tabs are moved, and deleted when all their tabs are removed (unless enableDeleteWhenEmpty is false).
-
-## Tab Config attributes
-
-[Tab Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonTabNode.html)
-
-## Border Config attributes
-
-[Border Attributes doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/interfaces/IJsonBorderNode.html)
+[Border Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonBorderNode.html)
 
 
 
 
+## Layout API Methods to Create New Tabs
 
-## Layout Component Methods to Create New Tabs
+The Layout Ref provides methods for adding tabs:
 
-There are methods on the Layout Component for adding tabs:
-
-[Layout Methods doc](https://caplin.github.io/FlexLayout/demos/v0.8/typedoc/classes/Layout.html)
+[Layout Methods Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ILayoutApi.html)
 
 Example:
 
+```javascript
+layoutRef.current.addTabToTabSet("NAVIGATION", { type: "tab", component: "grid", name: "a grid" });
 ```
-layoutRef.current.addTabToTabSet("NAVIGATION", {type:"tab", component:"grid", name:"a grid"});
-```
-This would add a new grid component to the tabset with id "NAVIGATION" (where layoutRef is a ref to the Layout element, see https://reactjs.org/docs/refs-and-the-dom.html ).
-
+This adds a new grid component to the tabset with ID "NAVIGATION". (where `layoutRef` is a React ref to the `Layout` element; see [React Refs](https://reactjs.org/docs/refs-and-the-dom.html)).
 
 
 ## Tab Node Events
 
-You can handle events on nodes by adding a listener, this would typically be done
-when the component is mounted in a useEffect method:
+You can handle node events by adding a listener, typically within a component's `useEffect` hook:
 
 Example:
-```
-    function MyComponent({node}) {
-
-      useEffect(() => {
-        // save subject in flexlayout node tree
-        node.setEventListener("save", () => {
-             node.getConfig().subject = subject;
-           };
-        }, []);
-    }
-
+```javascript
+function MyComponent({ node }) {
+  useEffect(() => {
+    const listenerId = node.setEventListener("save", () => {
+      node.getConfig().subject = subject;
+    });
+    return () => node.removeEventListener(listenerId);
+  }, [subject]);
+}
 ```
 
-| Event        | parameters          | Description  |
-| ------------- |:-------------:| -----|
-| resize |  {rect}    |  called when tab is resized during layout, called before it is rendered with the new size|
-| close |   none   |  called when a tab is closed |
-| visibility |  {visible}    | called when the visibility of a tab changes |
-| save |   none   | called before a tabnode is serialized to json, use to save node config by adding data to the object returned by node.getConfig()|
+| Event      | Parameters | Description |
+| ---------- | ---------- | ----------- |
+| resize     | `{rect}`   | Called when the tab is resized during layout, before it is rendered with the new size. |
+| close      | None       | Called when the tab is closed. |
+| visibility | `{visible}`| Called when the tab's visibility changes. |
+| save       | None       | Called before a `TabNode` is serialized to JSON. Use this to save node configuration by adding data to the object returned by `node.getConfig()`. |
 
 ## Popout Windows
 
-Tabs can be rendered into external browser windows (for use in multi-monitor setups)
-by configuring them with the enablePopout attribute. When this attribute is present
-an additional icon is shown in the tab header bar allowing the tab to be popped out
-into an external window.
+Tabs can be rendered into external browser windows (useful for multi-monitor setups) by using the `enablePopout` attribute. When enabled, a popout icon appears in the tab header.
 
-For popouts to work there needs to be an additional html page 'popout.html' hosted
-at the same location as the main page (copy the one from the demo app). The popout.html is the host page for the
-popped out tab, the styles from the main page will be copied into it at runtime.
+Popout windows require an additional HTML page, `popout.html`, hosted at the same location as the main page (you can copy this from the demo app). The `popout.html` acts as the host for the popped-out tab, and the main page's styles are copied into it at runtime.
 
-Because popouts are rendering into a different document to the main layout any code in the popped out
-tab that uses the global document or window objects for event listeners will not work correctly (for example custom popup menus where the code uses document.addEventListener(...)),
-they need to instead use the document/window of the popout. To get the document/window of the popout use the
-following method on one of the elements rendered in the popout (for example a ref or target in an event handler):
+Because popout windows render into a different document, any code using global `document` or `window` objects (e.g., for event listeners) will not function correctly. Instead, you must use the `document` or `window` of the popout. To obtain these, use the following methods on an element rendered within the popout (such as a ref):
 
+```javascript
+const currentDocument = selfRef.current.ownerDocument;
+const currentWindow = currentDocument.defaultView!;
 ```
-    const currentDocument = selfRef.current.ownerDocument;
-    const currentWindow = currentDocument.defaultView!;
-```
+In this example, `selfRef` is a React ref to the top-level element in the tab being rendered.
 
-In the above code selfRef is a React ref to the toplevel element in the tab being rendered.
+Note: Libraries may support popout windows by allowing you to specify the document to use; for example, see the `getDocument()` callback in ag-Grid at https://www.ag-grid.com/javascript-grid-callbacks/
 
-Note: libraries may support popout windows by allowing you to specify the document to use,
-for example see the getDocument() callback in agGrid at https://www.ag-grid.com/javascript-grid-callbacks/
+### Limitations of Popout Windows
 
-### Limitations of Popouts
-* FlexLayout uses React Portals to draw the popout window content,
-    this means all the code runs in the main Window's JS context, so effectively the popout windows are just extensions of the area on which the main window can render panels.
+Note this section only applies to window based popouts, not floating panels.
 
-* Your code must use the popout window/document in popout windows when adding event listeners (e.g popoutDocument.addEventListener(...)).
-
-* Timers throttle when main window is in the background
-    you could implement a webworker timer replacement if needed (which will not throttle)
-* Many third party controls will use the global document for some event listeners,
-    these will not work correctly without modification
-* Some third party controls will suspend when the global document is hidden
-    you can use the tab overlay attribute to 'gray out' these tabs when the main window is hidden
-* Resize observers may be throttled (or stay attached to the main window), so you may need to use some other way to resize the component when in a popout.
-* Popouts will not size and position correctly when the browser is zoomed (ie set to 50% zoom)
-* Popouts cannot reload in maximized or minimized states
-* by default flexlayout will maintain react state when moving tabs between windows, but you can use the 
-enableWindowReMount tab attribute to force the component to re-mount.
+* **React Portals**: FlexLayout uses React Portals for popout content. Code runs in the main window's JS context, effectively extending the rendering area.
+* **Event Listeners**: You must use the popout's window/document when adding listeners (e.g., `popoutDocument.addEventListener(...)`).
+* **Timer Throttling**: Timers may throttle when the main window is in the background. Use web workers for high-precision timing if needed.
+* **Third-Party Libraries**: Controls that rely on the global `document` for event listeners or visibility tracking may require modification.
+* **Resize Observers**: May stay attached to the main window; alternative resize handling might be necessary.
+* **Browser Zoom**: Popouts may not size or position correctly when the browser is zoomed (e.g., at 50% zoom).
+* **States**: Popouts cannot reload in maximized or minimized states.
+* **State Preservation**: While FlexLayout maintains React state when moving tabs between windows, you can use the `enableWindowReMount` attribute to force a component to re-mount.
 
 See this article about using React portals in this way: https://dev.to/noriste/the-challenges-of-rendering-an-openlayers-map-in-a-popup-through-react-2elh
 
 ## Running the Demo and Building the Project
 
-First install dependencies:
+First, install the dependencies:
 
 ```
 pnpm install
 ```
 
-Run the Demo app:
+Run the demo app:
 
 ```
 pnpm dev
 ```
 
-The 'pnpm dev' command will watch for changes to FlexLayout and the Demo, so you can make changes to the FlexLayout code and see the changes in your browser.
+The `pnpm dev` command watches for changes in both FlexLayout and the Demo app, allowing you to see updates in your browser immediately.
 
-Once the demo is running you can run the Playwright tests by running (in another terminal window)
+Once the demo is running, you can execute the Playwright tests in a separate terminal window:
 
-```
+```bash
 pnpm playwright
 ```
 
 <img src="screenshots/PlaywrightUI.png?raw=true" alt="PlaywrightUI" title="PlaywrightUI screenshot"/>
 
-To build the npm distribution run 'pnpm build'.
+To build the npm distribution, run `pnpm build`.
 
 ## Alternative Layout Managers
 

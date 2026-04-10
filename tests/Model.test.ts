@@ -484,9 +484,8 @@ describe("Tree", function () {
             });
 
             it("set model attributes", () => {
-                expect(model.getSplitterSize()).equals(8);
-                doAction(Actions.updateModelAttributes({ splitterSize: 10 }));
-                expect(model.getSplitterSize()).equals(10);
+                doAction(Actions.updateModelAttributes({ borderSize: 10 }));
+                expect(model.getAttribute("borderSize")).equals(10);
             });
 
         });
@@ -554,7 +553,7 @@ function textRender(model: Model) {
     pathMap = {};
     tabsArray = [];
     textRenderInner(pathMap, "", model.getBorderSet().getBorders());
-    textRenderInner(pathMap, "", model.getRoot().getChildren());
+    textRenderInner(pathMap, "", model.getRootRow().getChildren());
     tabs = tabsArray.join(",");
 }
 

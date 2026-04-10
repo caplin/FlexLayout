@@ -23,6 +23,14 @@
         await expect(tabContent).toBeVisible({ visible: selected });
         await expect(tabContent).toContainText(text);
     };
+
+    export const checkTabButton = async (page: Page, path: string, index: number, selected: boolean, text: string) => {
+        const tabButton = findTabButton(page, path, index);
+    
+        await expect(tabButton).toBeVisible();
+        await expect(tabButton).toHaveClass(new RegExp(selected ? 'flexlayout__tab_button--selected' : 'flexlayout__tab_button--unselected'));
+        await expect(tabButton.locator('.flexlayout__tab_button_content')).toContainText(text);
+    };
     
     export const checkBorderTab = async (page: Page, path: string, index: number, selected: boolean, text: string) => {
         const tabButton = findTabButton(page, path, index);
@@ -78,6 +86,21 @@
         await page.mouse.move(cf.x, cf.y);
         await page.mouse.down();
         await page.mouse.move(ct.x, ct.y, { steps: 10 });
+        await page.mouse.up();
+    }
+
+    export async function dragWithOffset(page: Page, from: Locator, to: Locator, loc: Location, offsetX: number, offsetY: number) {
+        const fr = await from.boundingBox();
+        const tr = await to.boundingBox();
+    
+        if (!fr || !tr) throw new Error('Could not get bounding boxes');
+    
+        const cf = getLocation(fr, Location.CENTER);
+        const ct = getLocation(tr, loc);
+    
+        await page.mouse.move(cf.x, cf.y);
+        await page.mouse.down();
+        await page.mouse.move(ct.x+offsetX, ct.y+offsetY, { steps: 10 });
         await page.mouse.up();
     }
     

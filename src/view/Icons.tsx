@@ -44,6 +44,17 @@ export const PopoutIcon = () => {
     );
 }
 
+export const PopoutFloatIcon = () => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" style={style} viewBox="0 0 20 20" fill="var(--color-icon)">
+            <rect x="3" y="10" width="7" height="7" rx="1" fill="none" stroke="var(--color-icon)" strokeWidth="1.5" />
+            <rect x="10" y="3" width="7" height="7" rx="1" fill="none" stroke="var(--color-icon)" strokeWidth="1.5" />
+            <path d="M6 14 L14 6" stroke="var(--color-icon)" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M10 6 h4 v4" fill="none" stroke="var(--color-icon)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
 export const RestoreIcon = () => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" style={style} viewBox="0 0 24 24" fill="var(--color-icon)"><path d="M0 0h24v24H0z" fill="none" /><path stroke="var(--color-icon)" d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" /></svg>

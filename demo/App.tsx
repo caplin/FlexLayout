@@ -1,24 +1,25 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon } from "../src/index";
+import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon, ILayoutApi } from "../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { showPopup } from "./PopupMenu";
 import { SimpleForm } from "./SimpleForm";
 import { Utils } from "./Utils";
 import { AGGridExample } from "./aggrid";
 import { JsonView } from "./JsonView";
-import MapComponent from "./openlayter";
+import { ActionLog } from "./ActionLog";
+import MapComponent from "./openlayer";
 import MUIComponent from "./MUIComponent";
 import MUIDataGrid from "./MUIDataGrid";
 import BarChart from "./chart";
 import * as Prism from "prismjs";
 
-// import 'ag-grid-community/styles/ag-grid.css';
-// import 'ag-grid-community/styles/ag-theme-alpine.css';
 import "prismjs/themes/prism-coy.css";
 import '../style/combined.scss';
 import './styles.css';
 import './popupmenu.css';
+import { Attributes } from "./Attributes";
+import { TabLayout } from "../src/view/TabLayout";
 
 const fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
@@ -29,18 +30,21 @@ function App() {
     const [model, setModel] = React.useState<Model | null>(null);
     const [, setJson] = React.useState<string>("");
     const [, setFontSize] = React.useState<string>("medium");
-    const [realtimeResize, setRealtimeResize] = React.useState<boolean>(false);
+    const [realtimeResize, setRealtimeResize] = React.useState<boolean>(true);
     const [showLayout, setShowLayout] = React.useState<boolean>(false);
-    const [popoutClassName, setPopoutClassName] = React.useState<string>("flexlayout__theme_light");
+    const [attrs, setAttrs] = React.useState<boolean>(false);
+
+    const [popoutClassName, setPopoutClassName] = React.useState<string>("flexlayout__theme_alpha_light");
 
     const loadingLayoutName = React.useRef<string | null>(null);
     const nextGridIndex = React.useRef<number>(1);
+
     const showingPopupMenu = React.useRef<boolean>(false);
-    const layoutRef = React.useRef<Layout | null>(null);
+    const layoutRef = React.useRef<ILayoutApi | null>(null);
 
     // latest values to prevent closure problems
-    const latestModel = React.useRef<Model>(model);
-    const latestLayoutFile = React.useRef<string>(layoutFile);
+    const latestModel = React.useRef<Model | null>(model);
+    const latestLayoutFile = React.useRef<string | null>(layoutFile);
 
     latestModel.current = model;
     latestLayoutFile.current = layoutFile;
@@ -53,6 +57,11 @@ function App() {
     const load = (jsonText: string) => {
         const json = JSON.parse(jsonText);
         const model = Model.fromJson(json);
+
+        // model.addChangeListener((action:Action) => {
+        //     console.log(JSON.stringify(action));
+        // });
+
         // model.setOnCreateTabSet((tabNode?: TabNode) => {
         //     console.log("onCreateTabSet " + tabNode);
         //     // return { type: "tabset", name: "Header Text" };
@@ -125,12 +134,12 @@ function App() {
     const onAddActiveClick = (event: React.MouseEvent) => {
 
         if (layoutFile?.startsWith("test_")) {
-            (layoutRef!.current as Layout).addTabToActiveTabSet({
+            layoutRef!.current!.addTabToActiveTabSet({
                 component: "testing",
                 name: "Text" + nextGridIndex.current++
             });
         } else {
-            (layoutRef!.current!).addTabToActiveTabSet({
+            layoutRef!.current!.addTabToActiveTabSet({
                 component: "grid",
                 icon: "images/article.svg",
                 name: "Grid " + nextGridIndex.current++
@@ -139,11 +148,41 @@ function App() {
     }
 
     const onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
-        const addedTab = (layoutRef!.current!).addTabToTabSet(node.getId(), {
+        const addedTab = layoutRef!.current!.addTabToTabSet(node.getId(), {
             component: "grid",
             name: "Grid " + nextGridIndex.current++
         });
         console.log("Added tab", addedTab);
+    }
+
+    const onAddPopoutClick = (event: React.MouseEvent) => {
+        const rootDiv = layoutRef.current?.getRootDiv();
+        if (rootDiv && model) {
+            const rootRect = rootDiv.getBoundingClientRect();
+            const width = Math.round(rootRect.width / 3);
+            const height = Math.round(rootRect.height / 3);
+            const x = Math.round((rootRect.width - width) / 2);
+            const y = Math.round((rootRect.height - height) / 2);
+
+            model.doAction(Actions.createPopout(
+                {
+                    type: "row",
+                    children: [
+                        {
+                            type: "tabset",
+                            children: [
+                                {
+                                    component: "grid",
+                                    name: "Grid " + nextGridIndex.current++
+                                }
+                            ]
+                        }
+                    ]
+                },
+                { x, y, width, height },
+                "float"
+            ));
+        }
     }
 
     const onRealtimeResize = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,6 +191,10 @@ function App() {
 
     const onShowLayout = (event: React.ChangeEvent<HTMLInputElement>) => {
         setShowLayout(event.target.checked);
+    }
+
+    const onAttrs = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setAttrs(event.target.checked);
     }
 
     const onRenderDragRect = (content: React.ReactNode | undefined, node?: Node, json?: IJsonTabNode) => {
@@ -177,7 +220,7 @@ function App() {
             // console.log(node, event);
             showPopup(
                 "Menu for " + (node instanceof TabNode ? "Tab: " + node.getName() : node.getType()),
-                (layoutRef!.current!).getRootDiv()!,
+                layoutRef!.current!.getRootDiv()!,
                 event.clientX, event.clientY,
                 ["Option 1", "Option 2"],
                 (item: string | undefined) => {
@@ -249,20 +292,6 @@ function App() {
         console.log(JSON.stringify(model!.toJson(), null, "\t"));
     }
 
-    // const onNewWindow = (event: React.MouseEvent) => {
-    //     model!.doAction(Actions.createWindow( {
-    //             "type": "row",
-    //             "children": [
-    //                 {
-    //                     "type": "tabset",
-    //                     "weight": 100,
-    //                     "active": true,
-    //                     "children": []
-    //                 }
-    //             ]
-    //     }, {x:100, y:100, width:600, height:400}));
-    // }
-
     const onAction = (action: Action) => {
         return action;
     }
@@ -273,10 +302,33 @@ function App() {
         // node.setEventListener("visibility", function(p){console.log("visibility", node.getName(), p.visible);});
         // node.setEventListener("close", function(p){console.log("close", node.getName());});
 
+        if (attrs) {
+            return <Attributes node={node} />
+        }
+
         const component = node.getComponent();
 
         if (component === "json") {
             return (<JsonView model={latestModel.current!} />);
+        }
+        else if (component === "user sublayout") {
+            /*
+                If you define both a component and a subLayoutId in the tab then you must
+                render the sublayout here by wrapping the <TabLayout> component.
+            */
+            return (<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                <div title="Header rendered in factory method"
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "var(--color-tab-unselected)",
+                    backgroundColor: "var(--color-tabset-background)",
+                    marginBottom: 5,
+                    fontWeight: 500,
+                }}>User Defined Header</div>
+                <TabLayout tabNode={node} />
+            </div>);
         }
         else if (component === "simpleform") {
             return <SimpleForm />
@@ -285,13 +337,16 @@ function App() {
             return <MUIComponent />
         }
         else if (component === "muigrid") {
-            return <MUIDataGrid />
+            return <MUIDataGrid theme={popoutClassName} />
         }
         else if (component === "aggrid") {
-            return <AGGridExample />
+            return <AGGridExample theme={popoutClassName} />
         }
         else if (component === "chart") {
             return <BarChart />
+        }
+        else if (component === "actionlog") {
+            return <ActionLog model={model!} />;
         }
         else if (component === "map") {
             return <MapComponent />
@@ -561,6 +616,12 @@ function App() {
                             type="checkbox"
                             checked={showLayout}
                             onChange={onShowLayout} />
+                        <span style={{ marginLeft: 5, fontSize: "14px" }}>Attributes</span>
+                        <input
+                            name="attrs"
+                            type="checkbox"
+                            checked={attrs}
+                            onChange={onAttrs} />
                         <select className="toolbar_control" style={{ marginLeft: 5 }}
                             onChange={onFontSizeChange}
                             defaultValue="medium">
@@ -579,15 +640,17 @@ function App() {
                             <option value="25px">Size 25px</option>
                             <option value="30px">Size 30px</option>
                         </select>
-                        <select className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="light" onChange={onThemeChange}>
+                        <select className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="alpha_light" onChange={onThemeChange}>
+                            <option value="alpha_light">Alpha Light</option>
+                            <option value="alpha_dark">Alpha Dark</option>
+                            <option value="alpha_rounded">Alpha Rounded</option>
                             <option value="light">Light</option>
-                            <option value="underline">Underline</option>
-                            <option value="gray">Gray</option>
                             <option value="dark">Dark</option>
                             <option value="rounded">Rounded</option>
+                            <option value="underline">Underline</option>
+                            <option value="gray">Gray</option>
                         </select>
-                        {/* <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={onNewWindow}>New Window</button> */}
-                        <button className="toolbar_control" style={{ marginLeft: 5 }} onClick={onShowLayoutClick}>Show Layout JSON in Console</button>
+                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="print layout json to the developer console" onClick={onShowLayoutClick}>{"Print"}</button>
                         <button className="toolbar_control drag-from" data-id="add-drag" draggable={true}
                             style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                             title="Add tab by starting a drag on a draggable element"
@@ -595,6 +658,7 @@ function App() {
                             Add Drag
                         </button>
                         <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={onAddActiveClick}>Add Active</button>
+                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="Add using Actions.createPopout" onClick={onAddPopoutClick}>Add Float</button>
                     </div>
                     <div className={"contents" + (showLayout ? " showLayout" : "")}>
                         {contents}

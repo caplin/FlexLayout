@@ -1,7 +1,6 @@
-import { Attribute } from "./Attribute";
 
 /** @internal */
-export class AttributeDefinitions {
+export class Attributes {
     attributes: Attribute[];
     nameToAttribute: Map<string, Attribute>;
 
@@ -79,7 +78,7 @@ export class AttributeDefinitions {
         }
     }
 
-    pairAttributes(type: string, childAttributes: AttributeDefinitions) {
+    pairAttributes(type: string, childAttributes: Attributes) {
         for (const attr of childAttributes.attributes) {
             if (attr.modelName && this.nameToAttribute.has(attr.modelName)) {
                 const pairedAttr = this.nameToAttribute.get(attr.modelName)!;
@@ -90,10 +89,9 @@ export class AttributeDefinitions {
         }
     }
 
-    toTypescriptInterface(name: string, parentAttributes: AttributeDefinitions | undefined) {
+    toTypescriptInterface(name: string, parentAttributes: Attributes | undefined) {
         const lines = [];
         const sorted = this.attributes.sort((a, b) => a.name.localeCompare(b.name));
-        // const sorted = this.attributes;
         lines.push("export interface I" + name + "Attributes {");
         for (let i = 0; i < sorted.length; i++) {
             const c = sorted[i];
@@ -142,3 +140,68 @@ export class AttributeDefinitions {
         return lines.join("\n");
     }
 }
+/** @internal */
+export class Attribute {
+    static NUMBER = "number";
+    static STRING = "string";
+    static BOOLEAN = "boolean";
+
+    name: string;
+    alias: string | undefined;
+    modelName?: string;
+    pairedAttr?: Attribute;
+    pairedType?: string;
+    defaultValue: any;
+    alwaysWriteJson?: boolean;
+    type?: string;
+    required: boolean;
+    fixed: boolean;
+    description?: string;
+
+    constructor(name: string, modelName: string | undefined, defaultValue: any, alwaysWriteJson?: boolean) {
+        this.name = name;
+        this.alias = undefined;
+        this.modelName = modelName;
+        this.defaultValue = defaultValue;
+        this.alwaysWriteJson = alwaysWriteJson;
+        this.required = false;
+        this.fixed = false;
+
+        this.type = "any";
+    }
+
+    setType(value: string) {
+        this.type = value;
+        return this;
+    }
+
+    setAlias(value: string) {
+        this.alias = value;
+        return this;
+    }
+
+    setDescription(value: string) {
+        this.description = value;
+    }
+
+    setRequired() {
+        this.required = true;
+        return this;
+    }
+
+    setFixed() {
+        this.fixed = true;
+        return this;
+    }
+
+    // sets modelAttr for nodes, and nodeAttr for model
+    setpairedAttr(value: Attribute) {
+        this.pairedAttr = value;
+    }
+
+    setPairedType(value: string) {
+        this.pairedType = value;
+    }
+
+}
+

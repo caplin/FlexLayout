@@ -1,98 +1,86 @@
 import * as React from "react";
-import { I18nLabel } from "../I18nLabel";
+import { I18nLabel } from "./I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
 import { showPopup } from "./PopupMenu";
-import { LayoutInternal, ITabSetRenderValues } from "./Layout";
+import { ITabSetRenderValues } from "./layout/LayoutTypes";
+import { LayoutController } from "./layout/LayoutInternal";
 import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
-import { Orientation } from "../Orientation";
-import { CLASSES } from "../Types";
+import { Orientation } from "../model/Orientation";
+import { CLASSES } from "./CSSClassNames";
 import { isAuxMouseEvent } from "./Utils";
 import { createPortal } from "react-dom";
-import { splitterDragging } from "./Splitter";
 
 /** @internal */
 export interface ITabSetProps {
-    layout: LayoutInternal;
-    node: TabSetNode;
+    controller: LayoutController;
+    tabsetNode: TabSetNode;
 }
 
 /** @internal */
 export const TabSet = (props: ITabSetProps) => {
-    const { node, layout } = props;
+    const { tabsetNode, controller } = props;
 
-    const tabStripRef = React.useRef<HTMLDivElement | null>(null);
-    const miniScrollRef = React.useRef<HTMLDivElement | null>(null);
-    const tabStripInnerRef = React.useRef<HTMLDivElement | null>(null);
-    const contentRef = React.useRef<HTMLDivElement | null>(null);
-    const buttonBarRef = React.useRef<HTMLDivElement | null>(null);
-    const overflowbuttonRef = React.useRef<HTMLButtonElement | null>(null);
-    const stickyButtonsRef = React.useRef<HTMLDivElement | null>(null);
-    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const tabStripRef = React.useRef<HTMLDivElement>(null);
+    const miniScrollRef = React.useRef<HTMLDivElement>(null);
+    const tabStripInnerRef = React.useRef<HTMLDivElement>(null);
+    const contentRef = React.useRef<HTMLDivElement>(null);
+    const buttonBarRef = React.useRef<HTMLDivElement>(null);
+    const overflowbuttonRef = React.useRef<HTMLButtonElement>(null);
+    const stickyButtonsRef = React.useRef<HTMLDivElement>(null);
+    // const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-    const icons = layout.getIcons();
+    const icons = controller.getIcons();
 
     React.useLayoutEffect(() => {
-        node.setRect(layout.getBoundingClientRect(selfRef.current!));
+        tabsetNode.setRect(controller.getBoundingClientRect(selfRef.current!));
 
         if (tabStripRef.current) {
-            node.setTabStripRect(layout.getBoundingClientRect(tabStripRef.current!));
+            tabsetNode.setTabStripRect(controller.getBoundingClientRect(tabStripRef.current!));
         }
 
-        const newContentRect = layout.getBoundingClientRect(contentRef.current!);
-        if (!node.getContentRect().aboutEquals(newContentRect) && !isNaN(newContentRect.x)) {
-            node.setContentRect(newContentRect);
-            if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
-                if (timer.current) {
-                    clearTimeout(timer.current);
-                }
-                timer.current = setTimeout(() => {
-                    layout.redrawInternal("border content rect " + newContentRect);
-                    timer.current = undefined;
-                }, 50);
-            } else {
-                requestAnimationFrame(() => {
-                    layout.redrawInternal("border content rect " + newContentRect);
-                });
-            }
+        const newContentRect = controller.getBoundingClientRect(contentRef.current!);
+        if (!tabsetNode.getContentRect().equalsWhenRounded(newContentRect) && !isNaN(newContentRect.x)) {
+            tabsetNode.setContentRect(newContentRect);
+            controller.setReLayout(true);
         }
     });
 
     // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
     const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
-        useTabOverflow(layout, node, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
-            layout.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
+        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
+            controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        const callback = layout.getShowOverflowMenu();
-        const items = hiddenTabs.map(h => { return { index: h, node: (node.getChildren()[h] as TabNode) }; });
+        const callback = controller.getShowOverflowMenu();
+        const items = hiddenTabs.map(h => { return { index: h, node: (tabsetNode.getChildren()[h] as TabNode) }; });
         if (callback !== undefined) {
-            callback(node, event, items, onOverflowItemSelect);
+            callback(tabsetNode, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             showPopup(
                 element,
-                node,
+                tabsetNode,
                 items,
                 onOverflowItemSelect,
-                layout
+                controller
             );
         }
         event.stopPropagation();
     };
 
     const onOverflowItemSelect = (item: { node: TabNode; index: number }) => {
-        layout.doAction(Actions.selectTab(item.node.getId()));
+        controller.doAction(Actions.selectTab(item.node.getId()));
         userControlledPositionRef.current = false;
     };
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
-        if (!layout.getEditingTab()) {
-            if (node.isEnableDrag()) {
+        if (!controller.getEditingTab()) {
+            if (tabsetNode.isEnableDrag()) {
                 event.stopPropagation();
-                layout.setDragNode(event.nativeEvent, node as TabSetNode);
+                controller.getDragDropManager().setDragNode(event.nativeEvent, tabsetNode as TabSetNode);
             } else {
                 event.preventDefault();
             }
@@ -103,18 +91,18 @@ export const TabSet = (props: ITabSetProps) => {
 
     const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
         if (!isAuxMouseEvent(event)) {
-            layout.doAction(Actions.setActiveTabset(node.getId(), layout.getWindowId()));
+            controller.doAction(Actions.setActiveTabset(tabsetNode.getId(), controller.getLayoutId()));
         }
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
-            layout.auxMouseClick(node, event);
+            controller.auxMouseClick(tabsetNode, event);
         }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        layout.showContextMenu(node, event);
+        controller.showContextMenu(tabsetNode, event);
     };
 
     const onInterceptPointerDown = (event: React.PointerEvent) => {
@@ -122,333 +110,411 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onMaximizeToggle = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        if (node.canMaximize()) {
-            layout.maximize(node);
+        if (tabsetNode.canMaximize()) {
+            controller.maximize(tabsetNode);
         }
         event.stopPropagation();
     };
 
     const onClose = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        layout.doAction(Actions.deleteTabset(node.getId()));
+        controller.doAction(Actions.deleteTabset(tabsetNode.getId()));
         event.stopPropagation();
     };
 
     const onCloseTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        layout.doAction(Actions.deleteTab(node.getChildren()[0].getId()));
+        controller.doAction(Actions.deleteTab(tabsetNode.getChildren()[0].getId()));
         event.stopPropagation();
     };
 
-    const onPopoutTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const onPopoutWindow = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (selectedTabNode !== undefined) {
-            layout.doAction(Actions.popoutTab(selectedTabNode.getId()));
-            // layout.doAction(Actions.popoutTabset(node.getId()));
+            controller.doAction(Actions.popoutTab(selectedTabNode.getId(), "window"));
+            //  controller.doAction(Actions.popoutTabset(selectedTabNode.getParent()!.getId(), "window"));
+        }
+        event.stopPropagation();
+    };
+
+    const onPopoutFloat = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+        if (selectedTabNode !== undefined) {
+            controller.doAction(Actions.popoutTab(selectedTabNode.getId(), "float"));
+            //  controller.doAction(Actions.popoutTabset(selectedTabNode.getParent()!.getId(), "float"));
         }
         event.stopPropagation();
     };
 
     const onDoubleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        if (node.canMaximize()) {
-            layout.maximize(node);
+        if (tabsetNode.canMaximize()) {
+            controller.maximize(tabsetNode);
         }
     };
 
     // Start Render
 
-    const cm = layout.getClassName;
-    const selectedTabNode: TabNode = node.getSelectedNode() as TabNode;
-    const path = node.getPath();
+    const cm = controller.getClassName;
+    const selectedTabNode: TabNode = tabsetNode.getSelectedNode() as TabNode;
+    const path = tabsetNode.getPath();
 
-    const tabs = [];
-    if (node.isEnableTabStrip()) {
-        for (let i = 0; i < node.getChildren().length; i++) {
-            const child = node.getChildren()[i] as TabNode;
-            const isSelected = node.getSelected() === i;
-            tabs.push(
-                <TabButton
-                    layout={layout}
-                    node={child}
-                    path={path + "/tb" + i}
-                    key={child.getId()}
-                    selected={isSelected}
-                />);
-            if (i < node.getChildren().length - 1) {
+
+    const renderTabs = () => {
+        const tabs = [];
+        let lastOneSelected = false;
+        if (tabsetNode.isEnableTabStrip()) {
+            const isSingleTabStretched = tabsetNode.isEnableSingleTabStretch() && tabsetNode.getChildren().length === 1;
+            for (let i = 0; i < tabsetNode.getChildren().length; i++) {
+                const child = tabsetNode.getChildren()[i] as TabNode;
+                const isSelected = tabsetNode.getSelected() === i;
+
+                let cns = cm(CLASSES.FLEXLAYOUT__TABSET_TAB_SPACER);
+                if (i !== 0) {
+                    cns += " " + cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER);
+                }
+                if (!tabsetNode.isEnableTabWrap() && !isSingleTabStretched) {
+                    if (isSelected) {
+                        cns += " " + cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_SELECTED_BEFORE);
+                    } else if (lastOneSelected) {
+                        cns += " " + cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_SELECTED_AFTER);
+                    }
+                }
+
+                // tab spacer
                 tabs.push(
-                    <div key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER)}></div>
+                    <div key={"divider" + i} className={cns}>
+                        <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_INNER)}></div>
+                    </div>
+                );
+
+                tabs.push(
+                    <TabButton
+                        controller={controller}
+                        tabNode={child}
+                        path={path + "/tb" + i}
+                        key={child.getId()}
+                        selected={isSelected}
+                    />);
+
+                // last spacer
+                if (i === tabsetNode.getChildren().length - 1) {
+                    cns = cm(CLASSES.FLEXLAYOUT__TABSET_TAB_SPACER);
+                    if (!tabsetNode.isEnableTabWrap() && !isSingleTabStretched && isSelected) {
+                        cns += " " + cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_SELECTED_AFTER);
+                    }
+                    tabs.push(
+                        <div key={"divider" + (i + 1)} className={cns}>
+                            <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_INNER)}></div>
+                        </div>
+                    );
+                }
+
+
+                lastOneSelected = isSelected;
+            }
+        }
+        return tabs;
+    };
+
+    const renderButtons = (tabs: React.ReactNode[]) => {
+        let leading: React.ReactNode = undefined;
+        let stickyButtons: React.ReactNode[] = [];
+        let buttons: React.ReactNode[] = [];
+
+        // allow customization of header contents and buttons
+        const renderState: ITabSetRenderValues = { leading, stickyButtons, buttons, overflowPosition: undefined };
+        controller.customizeTabSet(tabsetNode, renderState);
+        leading = renderState.leading;
+        stickyButtons = renderState.stickyButtons;
+        buttons = renderState.buttons;
+
+        const isTabStretch = tabsetNode.isEnableSingleTabStretch() && tabsetNode.getChildren().length === 1;
+        let showClose = (isTabStretch && ((tabsetNode.getChildren()[0] as TabNode).isCloseable())) || tabsetNode.isCloseable();
+        showClose = showClose && tabsetNode.isEnableCloseButton()
+
+
+        if (renderState.overflowPosition === undefined) {
+            renderState.overflowPosition = stickyButtons.length;
+        }
+
+        if (stickyButtons.length > 0) {
+            if (!tabsetNode.isEnableTabWrap() && (isDockStickyButtons || isTabStretch)) {
+                buttons = [...stickyButtons, ...buttons];
+            } else {
+                tabs.push(<div
+                    ref={stickyButtonsRef}
+                    key="sticky_buttons_container"
+                    onPointerDown={onInterceptPointerDown}
+                    onDragStart={(e) => { e.preventDefault() }}
+                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+                >
+                    {stickyButtons}
+                </div>);
+            }
+        }
+
+        if (!tabsetNode.isEnableTabWrap()) {
+            if (isShowHiddenTabs) {
+                const overflowTitle = controller.i18nName(I18nLabel.Overflow_Menu_Tooltip);
+                let overflowContent;
+                if (typeof icons.more === "function") {
+                    const items = hiddenTabs.map(h => { return { index: h, node: (tabsetNode.getChildren()[h] as TabNode) }; });
+                    overflowContent = icons.more(tabsetNode, items);
+                } else {
+                    overflowContent = (<>
+                        {icons.more}
+                        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
+                    </>);
+                }
+                buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+                    <button
+                        key="overflowbutton"
+                        data-layout-path={path + "/button/overflow"}
+
+                        ref={overflowbuttonRef}
+                        className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
+                        title={overflowTitle}
+                        onClick={onOverflowClick}
+                        onPointerDown={onInterceptPointerDown}
+                    >
+                        {overflowContent}
+                    </button>
                 );
             }
         }
-    }
 
-    let leading : React.ReactNode = undefined;
-    let stickyButtons: React.ReactNode[] = [];
-    let buttons: React.ReactNode[] = [];
-
-    // allow customization of header contents and buttons
-    const renderState: ITabSetRenderValues = { leading, stickyButtons, buttons, overflowPosition: undefined };
-    layout.customizeTabSet(node, renderState);
-    leading = renderState.leading;
-    stickyButtons = renderState.stickyButtons;
-    buttons = renderState.buttons;
-
-    const isTabStretch = node.isEnableSingleTabStretch() && node.getChildren().length === 1;
-    const showClose = (isTabStretch && ((node.getChildren()[0] as TabNode).isEnableClose())) || node.isEnableClose();
-
-    if (renderState.overflowPosition === undefined) {
-        renderState.overflowPosition = stickyButtons.length;
-    }
-
-    if (stickyButtons.length > 0) {
-        if (!node.isEnableTabWrap() && (isDockStickyButtons || isTabStretch)) {
-            buttons = [...stickyButtons, ...buttons];
-        } else {
-            tabs.push(<div
-                ref={stickyButtonsRef}
-                key="sticky_buttons_container"
-                onPointerDown={onInterceptPointerDown}
-                onDragStart={(e) => { e.preventDefault() }}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
-            >
-                {stickyButtons}
-            </div>);
-        }
-    }
-
-    if (!node.isEnableTabWrap()) {
-        if (isShowHiddenTabs) {
-            const overflowTitle = layout.i18nName(I18nLabel.Overflow_Menu_Tooltip);
-            let overflowContent;
-            if (typeof icons.more === "function") {
-                const items = hiddenTabs.map(h => { return { index: h, node: (node.getChildren()[h] as TabNode) }; });
-                overflowContent = icons.more(node, items);
-            } else {
-                overflowContent = (<>
-                    {icons.more}
-                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
-                </>);
+        if (selectedTabNode !== undefined) {
+            if (selectedTabNode.isEnablePopoutFloatIcon()) {
+                const popoutFloatTitle = controller.i18nName(I18nLabel.Popout_Tab_Float);
+                buttons.push(
+                    <button
+                        key="popout-float"
+                        data-layout-path={path + "/button/popout-float"}
+                        title={popoutFloatTitle}
+                        className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
+                        onClick={onPopoutFloat}
+                        onPointerDown={onInterceptPointerDown}
+                    >
+                        {(typeof icons.popoutFloat === "function") ? icons.popoutFloat(selectedTabNode) : icons.popoutFloat}
+                    </button>
+                );
             }
-            buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
-                <button
-                    key="overflowbutton"
-                    data-layout-path={path + "/button/overflow"}
 
-                    ref={overflowbuttonRef}
-                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
-                    title={overflowTitle}
-                    onClick={onOverflowClick}
+            if (controller.isSupportsPopout() && selectedTabNode.isAllowedInWindow() && selectedTabNode.isEnablePopout()) {
+                const popoutTitle = controller.i18nName(I18nLabel.Popout_Tab);
+                buttons.push(
+                    <button
+                        key="popout"
+                        data-layout-path={path + "/button/popout"}
+                        title={popoutTitle}
+                        className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
+                        onClick={onPopoutWindow}
+                        onPointerDown={onInterceptPointerDown}
+                    >
+                        {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
+                    </button>
+                );
+            }
+
+        }
+
+        if (tabsetNode.canMaximize()) {
+            const minTitle = controller.i18nName(I18nLabel.Restore);
+            const maxTitle = controller.i18nName(I18nLabel.Maximize);
+            buttons.push(
+                <button
+                    key="max"
+                    data-layout-path={path + "/button/max"}
+                    title={tabsetNode.isMaximized() ? minTitle : maxTitle}
+                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (tabsetNode.isMaximized() ? "max" : "min"))}
+                    onClick={onMaximizeToggle}
                     onPointerDown={onInterceptPointerDown}
                 >
-                    {overflowContent}
+                    {tabsetNode.isMaximized() ?
+                        (typeof icons.restore === "function") ? icons.restore(tabsetNode) : icons.restore :
+                        (typeof icons.maximize === "function") ? icons.maximize(tabsetNode) : icons.maximize}
                 </button>
             );
         }
-    }
 
-    if (selectedTabNode !== undefined &&
-        layout.isSupportsPopout() &&
-        selectedTabNode.isEnablePopout() &&
-        selectedTabNode.isEnablePopoutIcon()) {
-
-        const popoutTitle = layout.i18nName(I18nLabel.Popout_Tab);
-        buttons.push(
-            <button
-                key="popout"
-                data-layout-path={path + "/button/popout"}
-                title={popoutTitle}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
-                onClick={onPopoutTab}
-                onPointerDown={onInterceptPointerDown}
-            >
-                {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
-            </button>
-        );
-    }
-
-    if (node.canMaximize()) {
-        const minTitle = layout.i18nName(I18nLabel.Restore);
-        const maxTitle = layout.i18nName(I18nLabel.Maximize);
-        buttons.push(
-            <button
-                key="max"
-                data-layout-path={path + "/button/max"}
-                title={node.isMaximized() ? minTitle : maxTitle}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (node.isMaximized() ? "max" : "min"))}
-                onClick={onMaximizeToggle}
-                onPointerDown={onInterceptPointerDown}
-            >
-                {node.isMaximized() ?
-                    (typeof icons.restore === "function") ? icons.restore(node) : icons.restore :
-                    (typeof icons.maximize === "function") ? icons.maximize(node) : icons.maximize}
-            </button>
-        );
-    }
-
-    if (!node.isMaximized() && showClose) {
-        const title = isTabStretch ? layout.i18nName(I18nLabel.Close_Tab) : layout.i18nName(I18nLabel.Close_Tabset);
-        buttons.push(
-            <button
-                key="close"
-                data-layout-path={path + "/button/close"}
-                title={title}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
-                onClick={isTabStretch ? onCloseTab : onClose}
-                onPointerDown={onInterceptPointerDown}
-            >
-                {(typeof icons.closeTabset === "function") ? icons.closeTabset(node) : icons.closeTabset}
-            </button>
-        );
-    }
-
-    if (node.isActive() && node.isEnableActiveIcon()) {
-        const title = layout.i18nName(I18nLabel.Active_Tabset);
-        buttons.push(
-            <div
-                key="active"
-                data-layout-path={path + "/button/active"}
-                title={title}
-                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}
-            >
-                {(typeof icons.activeTabset === "function") ? icons.activeTabset(node) : icons.activeTabset}
-            </div>
-        );
-    }
-
-    const buttonbar = (
-        <div key="buttonbar" ref={buttonBarRef}
-            className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
-            onPointerDown={onInterceptPointerDown}
-            onDragStart={(e) => { e.preventDefault() }}
-        >
-            {buttons}
-        </div>
-    );
-
-    let tabStrip;
-
-    let tabStripClasses = cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
-    if (node.getClassNameTabStrip() !== undefined) {
-        tabStripClasses += " " + node.getClassNameTabStrip();
-    }
-    tabStripClasses += " " + CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER_ + node.getTabLocation();
-
-    if (node.isActive()) {
-        tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_SELECTED);
-    }
-
-    if (node.isMaximized()) {
-        tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
-    }
-
-    if (isTabStretch) {
-        const tabNode = node.getChildren()[0] as TabNode;
-        if (tabNode.getTabSetClassName() !== undefined) {
-            tabStripClasses += " " + tabNode.getTabSetClassName();
-        }
-    }
-
-    let leadingContainer: React.ReactNode = undefined;
-    if (leading) {
-        leadingContainer = (
-            <div className={cm(CLASSES.FLEXLAYOUT__TABSET_LEADING)}>
-                {leading}
-            </div>
-        );
-    }
-
-    if (node.isEnableTabWrap()) {
-        if (node.isEnableTabStrip()) {
-            tabStrip = (
-                <div className={tabStripClasses}
-                    style={{ flexWrap: "wrap", gap: "1px", marginTop: "2px" }}
-                    ref={tabStripRef}
-                    data-layout-path={path + "/tabstrip"}
-                    onPointerDown={onPointerDown}
-                    onDoubleClick={onDoubleClick}
-                    onContextMenu={onContextMenu}
-                    onClick={onAuxMouseClick}
-                    onAuxClick={onAuxMouseClick}
-                    draggable={true}
-                    onDragStart={onDragStart}
+        if (!tabsetNode.isMaximized() && showClose) {
+            const title = isTabStretch ? controller.i18nName(I18nLabel.Close_Tab) : controller.i18nName(I18nLabel.Close_Tabset);
+            buttons.push(
+                <button
+                    key="close"
+                    data-layout-path={path + "/button/close"}
+                    title={title}
+                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
+                    onClick={isTabStretch ? onCloseTab : onClose}
+                    onPointerDown={onInterceptPointerDown}
                 >
-                    {leadingContainer}
-                    {tabs}
-                    <div style={{ flexGrow: 1 }} />
-                    {buttonbar}
+                    {(typeof icons.closeTabset === "function") ? icons.closeTabset(tabsetNode) : icons.closeTabset}
+                </button>
+            );
+        }
+
+        if (tabsetNode.isActive() && tabsetNode.isEnableActiveIcon()) {
+            const title = controller.i18nName(I18nLabel.Active_Tabset);
+            buttons.push(
+                <div
+                    key="active"
+                    data-layout-path={path + "/button/active"}
+                    title={title}
+                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}
+                >
+                    {(typeof icons.activeTabset === "function") ? icons.activeTabset(tabsetNode) : icons.activeTabset}
                 </div>
             );
         }
-    } else {
-        if (node.isEnableTabStrip()) {
-            let miniScrollbar = undefined;
-            if (node.isEnableTabScrollbar()) {
-                miniScrollbar = (
-                    <div ref={miniScrollRef}
-                        className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)}
-                        onPointerDown={onScrollPointerDown}
-                    />
-                );
-            }
-            tabStrip = (
-                <div className={tabStripClasses}
-                    ref={tabStripRef}
-                    data-layout-path={path + "/tabstrip"}
-                    onPointerDown={onPointerDown}
-                    onDoubleClick={onDoubleClick}
-                    onContextMenu={onContextMenu}
-                    onClick={onAuxMouseClick}
-                    onAuxClick={onAuxMouseClick}
-                    draggable={true}
-                    onWheel={onMouseWheel}
-                    onDragStart={onDragStart}
-                >
-                    {leadingContainer}
-                    <div className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER)}>
-                        <div ref={tabStripInnerRef}
-                            className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + node.getTabLocation())}
-                            style={{ overflowX: 'auto', overflowY: "hidden" }}
-                            onScroll={onScroll}
-                        >
-                            <div
-                                style={{ width: (isTabStretch ? "100%" : "none") }}
-                                className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + node.getTabLocation())}
-                            >
-                                {tabs}
-                            </div>
-                        </div>
-                        {miniScrollbar}
-                    </div>
-                    {buttonbar}
-                </div>
-            );
-        }
-    }
 
-    let emptyTabset: React.ReactNode;
-    if (node.getChildren().length === 0) {
-        const placeHolderCallback = layout.getTabSetPlaceHolderCallback();
-        if (placeHolderCallback) {
-            emptyTabset = placeHolderCallback(node);
-        }
-    }
+        const buttonbar = (
+            <div key="buttonbar" ref={buttonBarRef}
+                className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
+                onPointerDown={onInterceptPointerDown}
+                onDragStart={(e) => { e.preventDefault() }}
+            >
+                {buttons}
+            </div>
+        );
 
-    let content = <div ref={contentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
-        {emptyTabset}
-    </div>
-
-    if (node.getTabLocation() === "top") {
-        content = <>{tabStrip}{content}</>;
-    } else {
-        content = <>{content}{tabStrip}</>;
-    }
-
-    const style: Record<string, any> = {
-        flexGrow: Math.max(1, node.getWeight() * 1000),
-        minWidth: node.getMinWidth(),
-        minHeight: node.getMinHeight(),
-        maxWidth: node.getMaxWidth(),
-        maxHeight: node.getMaxHeight()
+        return { leading, buttonbar };
     };
 
-    if (node.getModel().getMaximizedTabset(layout.getWindowId()) !== undefined && !node.isMaximized()) {
+    const renderTabBar = (tabs: React.ReactNode[], leading: React.ReactNode, buttonbar: React.ReactNode) => {
+        let tabStrip;
+
+        let tabStripClasses = cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
+        if (tabsetNode.getClassNameTabStrip() !== undefined) {
+            tabStripClasses += " " + tabsetNode.getClassNameTabStrip();
+        }
+        tabStripClasses += " " + CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER_ + tabsetNode.getTabLocation();
+
+        if (tabsetNode.isActive()) {
+            tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_SELECTED);
+        }
+
+        if (tabsetNode.isMaximized()) {
+            tabStripClasses += " " + cm(CLASSES.FLEXLAYOUT__TABSET_MAXIMIZED);
+        }
+
+        const isTabStretch = tabsetNode.isEnableSingleTabStretch() && tabsetNode.getChildren().length === 1;
+        if (isTabStretch) {
+            const tabNode = tabsetNode.getChildren()[0] as TabNode;
+            if (tabNode.getTabSetClassName() !== undefined) {
+                tabStripClasses += " " + tabNode.getTabSetClassName();
+            }
+        }
+
+        let leadingContainer: React.ReactNode = undefined;
+        if (leading) {
+            leadingContainer = (
+                <div className={cm(CLASSES.FLEXLAYOUT__TABSET_LEADING)}>
+                    {leading}
+                </div>
+            );
+        }
+
+        if (tabsetNode.isEnableTabWrap()) {
+            if (tabsetNode.isEnableTabStrip()) {
+                tabStrip = (
+                    <div className={tabStripClasses}
+                        style={{ flexWrap: "wrap", gap: "1px", marginTop: "2px" }}
+                        ref={tabStripRef}
+                        data-layout-path={path + "/tabstrip"}
+                        onPointerDown={onPointerDown}
+                        onDoubleClick={onDoubleClick}
+                        onContextMenu={onContextMenu}
+                        onClick={onAuxMouseClick}
+                        onAuxClick={onAuxMouseClick}
+                        draggable={true}
+                        onDragStart={onDragStart}
+                    >
+                        {leadingContainer}
+                        {tabs}
+                        <div style={{ flexGrow: 1 }} />
+                        {buttonbar}
+                    </div>
+                );
+            }
+        } else {
+            if (tabsetNode.isEnableTabStrip()) {
+                let miniScrollbar = undefined;
+                if (tabsetNode.isEnableTabScrollbar()) {
+                    miniScrollbar = (
+                        <div ref={miniScrollRef}
+                            className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)}
+                            onPointerDown={onScrollPointerDown}
+                        />
+                    );
+                }
+                tabStrip = (
+                    <div className={tabStripClasses}
+                        ref={tabStripRef}
+                        data-layout-path={path + "/tabstrip"}
+                        onPointerDown={onPointerDown}
+                        onDoubleClick={onDoubleClick}
+                        onContextMenu={onContextMenu}
+                        onClick={onAuxMouseClick}
+                        onAuxClick={onAuxMouseClick}
+                        draggable={true}
+                        onWheel={onMouseWheel}
+                        onDragStart={onDragStart}
+                    >
+                        {leadingContainer}
+                        <div className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER)}>
+                            <div ref={tabStripInnerRef}
+                                className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + tabsetNode.getTabLocation())}
+                                style={{ overflowX: 'auto', overflowY: "hidden" }}
+                                onScroll={onScroll}
+                            >
+                                <div
+                                    style={{ width: (isTabStretch ? "100%" : "none") }}
+                                    className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + tabsetNode.getTabLocation())}
+                                >
+                                    {tabs}
+                                </div>
+                            </div>
+                            {miniScrollbar}
+                        </div>
+                        {buttonbar}
+                    </div>
+                );
+            }
+        }
+        return tabStrip;
+    }
+
+    const renderContent = (tabStrip: React.ReactNode) => {
+        let emptyTabset: React.ReactNode;
+        if (tabsetNode.getChildren().length === 0) {
+            const placeHolderCallback = controller.getTabSetPlaceHolderCallback();
+            if (placeHolderCallback) {
+                emptyTabset = placeHolderCallback(tabsetNode);
+            }
+        }
+
+        let content = <div ref={contentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
+            {emptyTabset}
+        </div>
+
+        if (tabsetNode.getTabLocation() === "top") {
+            content = <>{tabStrip}{content}</>;
+        } else {
+            content = <>{content}{tabStrip}</>;
+        }
+        return content;
+    }
+
+    const tabs = renderTabs();
+    const { leading, buttonbar } = renderButtons(tabs);
+    const tabStrip = renderTabBar(tabs, leading, buttonbar);
+    const content = renderContent(tabStrip);
+
+    const style: React.CSSProperties = {
+        flexGrow: Math.max(1, tabsetNode.getWeight() * 1000),
+        minWidth: tabsetNode.getMinWidth(),
+        minHeight: tabsetNode.getMinHeight(),
+        maxWidth: tabsetNode.getMaxWidth(),
+        maxHeight: tabsetNode.getMaxHeight()
+    };
+
+    if (tabsetNode.getModel().getMaximizedTabset(controller.getLayoutId()) !== undefined && !tabsetNode.isMaximized()) {
         style.display = "none";
     }
 
@@ -467,8 +533,8 @@ export const TabSet = (props: ITabSetProps) => {
         </div>
     );
 
-    if (node.isMaximized()) {
-        if (layout.getMainElement()) {
+    if (tabsetNode.isMaximized()) {
+        if (controller.getMainElement()) {
             return createPortal(
                 <div style={{
                     position: "absolute",
@@ -476,7 +542,7 @@ export const TabSet = (props: ITabSetProps) => {
                     top: 0, left: 0, bottom: 0, right: 0
                 }}>
                     {tabset}
-                </div>, layout.getMainElement()!);
+                </div>, controller.getMainElement()!);
         } else {
             return tabset;
         }

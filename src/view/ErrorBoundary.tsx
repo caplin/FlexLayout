@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ErrorInfo } from "react";
-import { CLASSES } from "../Types";
+import { CLASSES } from "./CSSClassNames";
 
 /** @internal */
 export interface IErrorBoundaryProps {

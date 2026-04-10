@@ -1,32 +1,41 @@
 import * as React from "react";
 import { TabNode } from "../model/TabNode";
-import { LayoutInternal } from "./Layout";
-import { CLASSES } from "../Types";
+import { CLASSES } from "./CSSClassNames";
 import { TabButtonStamp } from "./TabButtonStamp";
+import { LayoutController } from "./layout/LayoutInternal";
 
 /** @internal */
 export interface IDragContainerProps {
-    node: TabNode;
-    layout: LayoutInternal;
+    tabNode: TabNode;
+    controller: LayoutController;
+    dragging: boolean;
 }
 
 /** @internal */
-export const DragContainer = (props: IDragContainerProps) => {
-    const { layout, node} = props;
+export const DragContainer = React.memo((props: IDragContainerProps) => {
+    
+    DragContainer.displayName = 'DragContainer'; // name in react dev tools
+
+    const { controller, tabNode} = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     React.useEffect(()=> {
-        node.setTabStamp(selfRef.current);
-    }, [node, selfRef.current]);
+        tabNode.setTabStamp(selfRef.current);
+    }, [tabNode, selfRef.current]);
 
-    const cm = layout.getClassName;
+    const cm = controller.getClassName;
 
     const classNames = cm(CLASSES.FLEXLAYOUT__DRAG_RECT);
 
     return (<div
             ref={selfRef}
             className={classNames}>
-            <TabButtonStamp key={node.getId()} layout={layout} node={node} />
+            <TabButtonStamp key={tabNode.getId()} controller={controller} tabNode={tabNode} />
         </div>
     );
-};
+}, arePropsEqual);
+
+// pause rendering while dragging
+function arePropsEqual(prevProps: IDragContainerProps, nextProps: IDragContainerProps) {
+    return nextProps.dragging;
+}

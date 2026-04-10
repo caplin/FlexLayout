@@ -1,9 +1,9 @@
-import { Attribute } from "../Attribute";
-import { AttributeDefinitions } from "../AttributeDefinitions";
-import { Rect } from "../Rect";
+import { Attribute } from "./Attributes";
+import { Attributes } from "./Attributes";
+import { Rect } from "./Rect";
 import { BorderNode } from "./BorderNode";
 import { IDraggable } from "./IDraggable";
-import { IJsonTabNode } from "./IJsonModel";
+import { IJsonTabNode, ITabAttributes } from "./IJsonModel";
 import { Model } from "./Model";
 import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
@@ -12,32 +12,23 @@ export class TabNode extends Node implements IDraggable {
     static readonly TYPE = "tab";
 
     /** @internal */
-    static fromJson(json: any, model: Model, addToModel: boolean = true) {
+    static fromJson(json: IJsonTabNode, model: Model, addToModel: boolean = true) {
         const newLayoutNode = new TabNode(model, json, addToModel);
         return newLayoutNode;
     }
 
-    /** @internal */
     private tabRect: Rect = Rect.empty();
-    /** @internal */
     private moveableElement: HTMLElement | null;
-    /** @internal */
-    private tabStamp: HTMLElement | null;
-    /** @internal */
     private renderedName?: string;
-    /** @internal */
     private extra: Record<string, any>;
-    /** @internal */
     private visible: boolean;
-    /** @internal */
     private rendered: boolean;
-    /** @internal */
     private scrollTop?: number;
-    /** @internal */
     private scrollLeft?: number;
+    private tabStamp: HTMLElement | null;
 
     /** @internal */
-    constructor(model: Model, json: any, addToModel: boolean = true) {
+    constructor(model: Model, json: IJsonTabNode, addToModel: boolean = true) {
         super(model);
 
         this.extra = {}; // extra data added to node not saved in json
@@ -55,6 +46,14 @@ export class TabNode extends Node implements IDraggable {
     getName() {
         return this.getAttr("name") as string;
     }
+    
+    getIcon() {
+        return this.getAttr("icon") as string | undefined;
+    }
+
+    getSubLayoutId() {
+        return this.getAttr("subLayoutId") as string | undefined;
+    }
 
     getHelpText() {
         return this.getAttr("helpText") as string | undefined;
@@ -64,17 +63,10 @@ export class TabNode extends Node implements IDraggable {
         return this.getAttr("component") as string | undefined;
     }
 
-    getWindowId() {
-        if (this.parent instanceof TabSetNode) {
-            return this.parent.getWindowId();
-        }
-        return Model.MAIN_WINDOW_ID;
-    }
-
-    getWindow() : Window | undefined {
-        const layoutWindow = this.model.getwindowsMap().get(this.getWindowId());
-        if (layoutWindow) {
-            return layoutWindow.window;
+    getWindowId(): string | undefined {
+        const layout = this.getLayout();
+        if (layout) {
+            return layout.getWindowId();
         }
         return undefined;
     }
@@ -99,17 +91,31 @@ export class TabNode extends Node implements IDraggable {
     }
 
     isPoppedOut() {
-        return this.getWindowId() !== Model.MAIN_WINDOW_ID;
+        return this.getLayoutId() !== Model.MAIN_LAYOUT_ID;
     }
 
     isSelected() {
         return (this.getParent() as TabSetNode | BorderNode).getSelectedNode() === this;
     }
-
-    getIcon() {
-        return this.getAttr("icon") as string | undefined;
+    
+    isCloseable() {
+        let closeable = this.isEnableClose();
+        if (closeable && this.getSubLayoutId()) {
+            const layout = this.model.getLayouts().get(this.getSubLayoutId()!);
+            closeable = layout!.getRootRow()!.isCloseable();
+        }
+        return closeable;
     }
 
+    isAllowedInWindow() {
+        let allowed = this.isEnablePopout();
+        if (allowed && this.getSubLayoutId()) {
+            const layout = this.model.getLayouts().get(this.getSubLayoutId()!);
+            allowed = layout!.getRootRow()!.isAllowedInWindow();
+        }
+        return allowed;
+    }
+    
     isEnableClose() {
         return this.getAttr("enableClose") as boolean;
     }
@@ -124,6 +130,10 @@ export class TabNode extends Node implements IDraggable {
 
     isEnablePopoutIcon() {
         return this.getAttr("enablePopoutIcon") as boolean;
+    }
+
+    isEnablePopoutFloatIcon() {
+        return this.getAttr("enablePopoutFloatIcon") as boolean;
     }
 
     isEnablePopoutOverlay() {
@@ -211,7 +221,7 @@ export class TabNode extends Node implements IDraggable {
     /** @internal */
     setRect(rect: Rect) {
         if (!rect.equals(this.rect)) {
-            this.fireEvent("resize", {rect});
+            this.fireEvent("resize", { rect });
             this.rect = rect;
         }
     }
@@ -304,11 +314,14 @@ export class TabNode extends Node implements IDraggable {
     /** @internal */
     delete() {
         (this.parent as TabSetNode | BorderNode).remove(this);
+        if (this.getSubLayoutId()) {
+            this.model.getLayouts().delete(this.getSubLayoutId()!);
+        }
         this.fireEvent("close", {});
     }
 
     /** @internal */
-    updateAttrs(json: any) {
+    updateAttrs(json: ITabAttributes) {
         TabNode.attributeDefinitions.update(json, this.attributes);
     }
 
@@ -333,27 +346,30 @@ export class TabNode extends Node implements IDraggable {
     }
 
     /** @internal */
-    private static attributeDefinitions: AttributeDefinitions = TabNode.createAttributeDefinitions();
+    private static attributeDefinitions: Attributes = TabNode.createAttributeDefinitions();
 
     /** @internal */
-    private static createAttributeDefinitions(): AttributeDefinitions {
-        const attributeDefinitions = new AttributeDefinitions();
+    private static createAttributeDefinitions(): Attributes {
+        const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", TabNode.TYPE, true).setType(Attribute.STRING).setFixed();
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(
             `the unique id of the tab, if left undefined a uuid will be assigned`
         );
-
         attributeDefinitions.add("name", "[Unnamed Tab]").setType(Attribute.STRING).setDescription(
             `name of tab to be displayed in the tab button`
+        );
+        attributeDefinitions.add("component", undefined).setType(Attribute.STRING).setDescription(
+            `string identifying which component to render in this tab (used in the layout factory function)`
+        );
+        attributeDefinitions.add("subLayoutId", undefined).setType(Attribute.STRING).setDescription(
+            `the Id of the sub layout to render in this tab, defined in the subLayouts section of the model json (if
+            component is also defined then use the <TabLayout> component in the factory to render the sublayout)`
         );
         attributeDefinitions.add("altName", undefined).setType(Attribute.STRING).setDescription(
             `if there is no name specifed then this value will be used in the overflow menu`
         );
         attributeDefinitions.add("helpText", undefined).setType(Attribute.STRING).setDescription(
-            `An optional help text for the tab to be displayed upon tab hover.`
-        );
-        attributeDefinitions.add("component", undefined).setType(Attribute.STRING).setDescription(
-            `string identifying which component to run (for factory)`
+            `help text for the tab to be displayed upon tab hover.`
         );
         attributeDefinitions.add("config", undefined).setType("any").setDescription(
             `a place to hold json config for the hosted component`
@@ -364,7 +380,6 @@ export class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("enableWindowReMount", false).setType(Attribute.BOOLEAN).setDescription(
             `if enabled the tab will re-mount when popped out/in`
         );
-
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN).setDescription(
             `allow user to close tab via close button`
         );
@@ -394,6 +409,9 @@ export class TabNode extends Node implements IDraggable {
         );
         attributeDefinitions.addInherited("enablePopoutIcon", "tabEnablePopoutIcon").setType(Attribute.BOOLEAN).setDescription(
             `whether to show the popout icon in the tabset header if this tab enables popouts`
+        );
+        attributeDefinitions.addInherited("enablePopoutFloatIcon", "tabEnablePopoutFloatIcon").setType(Attribute.BOOLEAN).setDescription(
+            `whether to show the popout float icon in the tabset header if this tab enables floating popouts`
         );
         attributeDefinitions.addInherited("enablePopoutOverlay", "tabEnablePopoutOverlay").setType(Attribute.BOOLEAN).setDescription(
             `if this tab will not work correctly in a popout window when the main window is backgrounded (inactive)

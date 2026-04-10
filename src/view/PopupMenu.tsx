@@ -1,7 +1,7 @@
 import * as React from "react";
 import { TabNode } from "../model/TabNode";
-import { CLASSES } from "../Types";
-import { LayoutInternal } from "./Layout";
+import { CLASSES } from "./CSSClassNames";
+import { LayoutController } from "./layout/LayoutInternal";
 import { TabButtonStamp } from "./TabButtonStamp";
 import { TabSetNode } from "../model/TabSetNode";
 import { BorderNode } from "../model/BorderNode";
@@ -13,10 +13,10 @@ export function showPopup(
     parentNode: TabSetNode | BorderNode,
     items: { index: number; node: TabNode }[],
     onSelect: (item: { index: number; node: TabNode }) => void,
-    layout: LayoutInternal,
+    controller: LayoutController,
 ) {
-    const layoutDiv = layout.getRootDiv();
-    const classNameMapper = layout.getClassName;
+    const layoutDiv = controller.getRootDiv();
+    const classNameMapper = controller.getClassName;
     const currentDocument = triggerElement.ownerDocument;
     const triggerRect = triggerElement.getBoundingClientRect();
     const layoutRect = layoutDiv?.getBoundingClientRect() ?? new DOMRect(0, 0, 100, 100);
@@ -35,15 +35,15 @@ export function showPopup(
         elm.style.bottom = layoutRect.bottom - triggerRect.bottom + "px";
     }
 
-    layout.showOverlay(true);
+    controller.showOverlayOnAllWindows(true);
 
     if (layoutDiv) {
         layoutDiv.appendChild(elm);
     }
 
     const onHide = () => {
-        layout.hideControlInPortal();
-        layout.showOverlay(false);
+        controller.hideControlInPortal();
+        controller.showOverlayOnAllWindows(false);
         if (layoutDiv) {
             layoutDiv.removeChild(elm);
         }
@@ -62,14 +62,14 @@ export function showPopup(
     elm.addEventListener("pointerdown", onElementPointerDown);
     currentDocument.addEventListener("pointerdown", onDocPointerDown);
 
-    layout.showControlInPortal(<PopupMenu
+    controller.showControlInPortal(<PopupMenu
         currentDocument={currentDocument}
         parentNode={parentNode}
         onSelect={onSelect}
         onHide={onHide}
         items={items}
         classNameMapper={classNameMapper}
-        layout={layout}
+        controller={controller}
     />, elm);
 }
 
@@ -81,12 +81,12 @@ interface IPopupMenuProps {
     onHide: () => void;
     onSelect: (item: { index: number; node: TabNode }) => void;
     classNameMapper: (defaultClassName: string) => string;
-    layout: LayoutInternal;
+    controller: LayoutController;
 }
 
 /** @internal */
 const PopupMenu = (props: IPopupMenuProps) => {
-    const { parentNode, items, onHide, onSelect, classNameMapper, layout } = props;
+    const { parentNode, items, onHide, onSelect, classNameMapper, controller } = props;
     const divRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -104,15 +104,15 @@ const PopupMenu = (props: IPopupMenuProps) => {
 
     const onDragStart = (event: React.DragEvent<HTMLElement>, node: TabNode) => {
         event.stopPropagation(); // prevent starting a tabset drag as well
-        layout.setDragNode(event.nativeEvent, node as TabNode);
+        controller.getDragDropManager().setDragNode(event.nativeEvent, node as TabNode);
         setTimeout(() => {
             onHide();
         }, 0);
 
     };
 
-    const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
-        layout.clearDragMain();
+    const onDragEnd = (_event: React.DragEvent<HTMLElement>) => {
+        controller.getDragDropManager().clearDragMain();
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -136,8 +136,8 @@ const PopupMenu = (props: IPopupMenuProps) => {
                 onDragEnd={onDragEnd}
                 title={item.node.getHelpText()} >
                 <TabButtonStamp
-                    node={item.node}
-                    layout={layout}
+                    tabNode={item.node}
+                    controller={controller}
                 />
             </div>
         )

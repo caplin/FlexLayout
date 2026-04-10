@@ -1,36 +1,37 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { CLASSES } from "../Types";
-import { LayoutInternal } from "./Layout";
-import { LayoutWindow } from "../model/LayoutWindow";
+import { CLASSES } from "./CSSClassNames";
+import { LayoutController } from "./layout/LayoutInternal";
+import { Layout } from "../model/Layout";
 
 /** @internal */
 export interface IPopoutWindowProps {
     title: string;
-    layout: LayoutInternal;
-    layoutWindow: LayoutWindow;
+    controller: LayoutController;
+    layout: Layout;
     url: string;
-    onCloseWindow: (layoutWindow: LayoutWindow) => void;
-    onSetWindow: (layoutWindow: LayoutWindow, window: Window) => void;
+    onCloseLayout: (layout: Layout) => void;
+    onSetWindow: (layout: Layout, window: Window) => void;
 }
 
 /** @internal */
 export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>) => {
-    const { title, layout, layoutWindow, url, onCloseWindow, onSetWindow, children } = props; const popoutWindow = React.useRef<Window | null>(null);
+    const { title, controller, layout, url, onCloseLayout, onSetWindow: onSetLayout, children } = props; 
+    const popoutWindow = React.useRef<Window>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
+    const [firstRender, setFirstRender] = React.useState<boolean>(true);
     // map from main docs style -> this docs equivalent style
     const styleMap = new Map<HTMLElement, HTMLElement>();       
 
     React.useLayoutEffect(() => {
         if (!popoutWindow.current) { // only create window once, even in strict mode
-            const windowId = layoutWindow.windowId;
-            const rect = layoutWindow.rect;
+            const layoutId = layout.getLayoutId();
+            const rect = layout.getRect();
             
-            popoutWindow.current = window.open(url, windowId, `left=${rect.x},top=${rect.y},width=${rect.width},height=${rect.height}`);
+            popoutWindow.current = window.open(url, layoutId, `left=${rect.x},top=${rect.y},width=${rect.width},height=${rect.height}`);
 
             if (popoutWindow.current) {
-                layoutWindow.window = popoutWindow.current;
-                onSetWindow(layoutWindow, popoutWindow.current);
+                onSetLayout(layout, popoutWindow.current);
 
                 // listen for parent unloading to remove all popouts
                 window.addEventListener("beforeunload", () => {
@@ -59,13 +60,13 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
                         });
 
                         // listen for style mutations
-                        const observer = new MutationObserver((mutationsList: any) => handleStyleMutations(mutationsList, popoutDocument, styleMap));
+                        const observer = new MutationObserver((mutationsList: MutationRecord[]) => handleStyleMutations(mutationsList, popoutDocument, styleMap));
                         observer.observe(document.head, { childList: true });
 
                         // listen for popout unloading (needs to be after load for safari)
                         popoutWindow.current.addEventListener("beforeunload", () => {
                             if (popoutWindow.current) {
-                                onCloseWindow(layoutWindow); // remove the layoutWindow in the model
+                                onCloseLayout(layout); // remove the layout in the model
                                 popoutWindow.current = null;
                                 observer.disconnect();
                             }
@@ -74,17 +75,24 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
                 });
             } else {
                 console.warn(`Unable to open window ${url}`);
-                onCloseWindow(layoutWindow); // remove the layoutWindow in the model
+                onCloseLayout(layout); // remove the layout in the model
             }
         }
         return () => {
-            // only close popoutWindow if windowId has been removed from the model (ie this was due to model change)
-            if (!layout.getModel().getwindowsMap().has(layoutWindow.windowId)) {
+            // only close popoutWindow if layoutId has been removed from the model (ie this was due to model change)
+            if (!controller.getModel().getLayouts().has(layout.getLayoutId())) {
                 popoutWindow.current?.close();
                 popoutWindow.current = null;
             }
         }
     }, []);
+
+    React.useEffect(() => {
+        if (content !== undefined && firstRender) {
+            controller.redrawLayout();
+            setFirstRender(false);
+        }
+    }, [content, firstRender, controller]);
 
     if (content !== undefined) {
         return createPortal(children, content!);
@@ -93,7 +101,7 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
     }
 };
 
-function handleStyleMutations(mutationsList: any, popoutDocument: Document, styleMap: Map<HTMLElement, HTMLElement>) {
+function handleStyleMutations(mutationsList: MutationRecord[], popoutDocument: Document, styleMap: Map<HTMLElement, HTMLElement>) {
     for (const mutation of mutationsList) {
         if (mutation.type === 'childList') {
             for (const addition of mutation.addedNodes) {
@@ -148,5 +156,3 @@ function copyStyle(popoutDoc: Document, element: HTMLElement, styleMap: Map<HTML
         }
     }
 }
-
-

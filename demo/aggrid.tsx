@@ -15,7 +15,7 @@ interface IRow {
     electric: boolean;
 }
 
-export const AGGridExample = () => {
+export const AGGridExample = (props: { theme?: string }) => {
 
     // Row Data: The data to be displayed.
     const [rowData] = React.useState<IRow[]>([
@@ -35,8 +35,11 @@ export const AGGridExample = () => {
         { field: 'electric' },
     ]);
 
+    const isDark = props.theme?.includes("dark") || props.theme?.includes("gray");
+    const gridTheme = isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine";
+
     return (
-        <div className={"ag-theme-alpine"} style={{ height: '100%' }}>
+        <div className={gridTheme} style={{ height: '100%' }}>
             <AgGridReact rowData={rowData} columnDefs={colDefs} />
         </div>
     );

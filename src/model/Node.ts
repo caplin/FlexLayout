@@ -1,11 +1,13 @@
-import { AttributeDefinitions } from "../AttributeDefinitions";
-import { DockLocation } from "../DockLocation";
-import { DropInfo } from "../DropInfo";
-import { Orientation } from "../Orientation";
-import { Rect } from "../Rect";
+import type * as React from "react";
+import { Attributes } from "./Attributes";
+import { DockLocation } from "./DockLocation";
+import { DropInfo } from "./DropInfo";
+import { Orientation } from "./Orientation";
+import { Rect } from "./Rect";
 import { IDraggable } from "./IDraggable";
 import { IJsonBorderNode, IJsonRowNode, IJsonTabNode, IJsonTabSetNode } from "./IJsonModel";
 import { Model } from "./Model";
+import { Layout } from "./Layout";
 
 export abstract class Node {
     /** @internal */
@@ -69,6 +71,26 @@ export abstract class Node {
         return this.path;
     }
 
+    isCloseable() {
+        for (let i=0; i<this.children.length; i++) {
+            const child = this.children[i];
+            if (!child.isCloseable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    isAllowedInWindow() {
+        for (let i=0; i<this.children.length; i++) {
+            const child = this.children[i];
+            if (!child.isAllowedInWindow()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     getOrientation(): Orientation {
         if (this.parent === undefined) {
             return this.model.isRootOrientationVertical() ? Orientation.VERT : Orientation.HORZ;
@@ -76,13 +98,24 @@ export abstract class Node {
             return Orientation.flip(this.parent.getOrientation());
         }
     }
+     
+    getLayoutId() : string {
+        return this.getLayout().getLayoutId();
+    }
+     
+    /** @internal */
+    getLayout() : Layout {
+        if (this.parent) {
+            return this.parent.getLayout();
+        }
+        return this.model.getMainLayout();
+    }
 
-    // event can be: resize, visibility, maximize (on tabset), close
-    setEventListener(event: string, callback: (params: any) => void) {
+    setEventListener(event: NodeEventType, callback: (params: any) => void) {
         this.listeners.set(event, callback);
     }
 
-    removeEventListener(event: string) {
+    removeEventListener(event: NodeEventType) {
         this.listeners.delete(event);
     }
 
@@ -94,7 +127,7 @@ export abstract class Node {
     }
 
     /** @internal */
-    fireEvent(event: string, params: any) {
+    fireEvent(event: NodeEventType, params: any) {
         // console.log(this._type, " fireEvent " + event + " " + JSON.stringify(params));
         if (this.listeners.has(event)) {
             this.listeners.get(event)!(params);
@@ -150,6 +183,7 @@ export abstract class Node {
     setParent(parent: Node) {
         this.parent = parent;
     }
+   
 
     /** @internal */
     setRect(rect: Rect) {
@@ -172,17 +206,17 @@ export abstract class Node {
     }
 
     /** @internal */
-    findDropTargetNode(windowId: string, dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
+    findDropTargetNode(layoutId: string, dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         let rtn: DropInfo | undefined;
         if (this.rect.contains(x, y)) {
-            if (this.model.getMaximizedTabset(windowId) !== undefined) {
-                rtn = this.model.getMaximizedTabset(windowId)!.canDrop(dragNode, x, y);
+            if (this.model.getMaximizedTabset(layoutId) !== undefined) {
+                rtn = this.model.getMaximizedTabset(layoutId)!.canDrop(dragNode, x, y);
             } else {
                 rtn = this.canDrop(dragNode, x, y);
                 if (rtn === undefined) {
                     if (this.children.length !== 0) {
                         for (const child of this.children) {
-                            rtn = child.findDropTargetNode(windowId, dragNode, x, y);
+                            rtn = child.findDropTargetNode(layoutId, dragNode, x, y);
                             if (rtn !== undefined) {
                                 break;
                             }
@@ -207,8 +241,8 @@ export abstract class Node {
                 return false;
             }
 
-            // prevent named tabset docking into another tabset, since this would lose the header
-            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && dragNode.getName() !== undefined) {
+            // prevent tabset with enableClose set to false docking into another tabset
+            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && (dragNode as any).isEnableClose() === false) {
                 return false;
             }
 
@@ -251,7 +285,7 @@ export abstract class Node {
     }
 
     /** @internal */
-    styleWithPosition(style?: Record<string, any>) {
+    styleWithPosition(style?: React.CSSProperties) {
         if (style == null) {
             style = {};
         }
@@ -272,5 +306,7 @@ export abstract class Node {
     /** @internal */
     abstract updateAttrs(json: any): void;
     /** @internal */
-    abstract getAttributeDefinitions(): AttributeDefinitions;
+    abstract getAttributeDefinitions(): Attributes;
 }
+
+export type NodeEventType = "save" | "resize" | "visibility" | "close";

@@ -1,76 +1,62 @@
 import * as React from "react";
-import { Orientation } from "../Orientation";
-import { LayoutInternal } from "./Layout";
+import { Orientation } from "../model/Orientation";
+import { LayoutController } from "./layout/LayoutInternal";
 import { BorderNode } from "../model/BorderNode";
-import { Splitter, splitterDragging } from "./Splitter";
-import { DockLocation } from "../DockLocation";
-import { CLASSES } from "../Types";
+import { Splitter } from "./Splitter";
+import { DockLocation } from "../model/DockLocation";
+import { CLASSES } from "./CSSClassNames";
 
 /** @internal */
 export interface IBorderTabProps {
-    layout: LayoutInternal;
-    border: BorderNode;
+    controller: LayoutController;
+    borderNode: BorderNode;
     show: boolean;
 }
 
 export function BorderTab(props: IBorderTabProps) {
-    const { layout, border, show } = props;
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
-    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const { controller, borderNode, show } = props;
+    const selfRef = React.useRef<HTMLDivElement>(null);
 
     React.useLayoutEffect(() => {
-        const contentRect = layout.getBoundingClientRect(selfRef.current!);
+        const contentRect = controller.getBoundingClientRect(selfRef.current!);
         if (!isNaN(contentRect.x) && contentRect.width > 0) {
-            if (!border.getContentRect().aboutEquals(contentRect)) {
-                border.setContentRect(contentRect);
-                if (splitterDragging) { // next movement will draw tabs again, only redraw after pause/end
-                    if (timer.current) {
-                        clearTimeout(timer.current);
-                    }
-                    timer.current = setTimeout(() => {
-                        layout.redrawInternal("border content rect " + contentRect);
-                        timer.current = undefined;
-                    }, 50);
-                } else {
-                    requestAnimationFrame(() => {
-                        layout.redrawInternal("border content rect " + contentRect);
-                    });
-                }
+            if (!borderNode.getContentRect().equalsWhenRounded(contentRect)) {
+                borderNode.setContentRect(contentRect);
+                controller.setReLayout(true);
             }
         }
-
     });
 
     let horizontal = true;
-    const style: Record<string, any> = {};
+    const style: React.CSSProperties = {};
 
-    if (border.getOrientation() === Orientation.HORZ) {
-        style.width = border.getSize();
-        style.minWidth = border.getMinSize();
-        style.maxWidth = border.getMaxSize();
+    if (borderNode.getOrientation() === Orientation.HORZ) {
+        style.width = borderNode.getSize();
+        style.minWidth = borderNode.getMinSize();
+        style.maxWidth = borderNode.getMaxSize();
     } else {
-        style.height = border.getSize();
-        style.minHeight = border.getMinSize();
-        style.maxHeight = border.getMaxSize();
+        style.height = borderNode.getSize();
+        style.minHeight = borderNode.getMinSize();
+        style.maxHeight = borderNode.getMaxSize();
         horizontal = false;
     }
 
     style.display = show ? "flex" : "none";
 
-    const className = layout.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_CONTENTS);
+    const className = controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_CONTENTS);
 
-    if (border.getLocation() === DockLocation.LEFT || border.getLocation() === DockLocation.TOP) {
+    if (borderNode.getLocation() === DockLocation.LEFT || borderNode.getLocation() === DockLocation.TOP) {
         return (
             <>
                 <div ref={selfRef} style={style} className={className}>
                 </div>
-                {show && <Splitter layout={layout} node={border} index={0} horizontal={horizontal} />}
+                {show && <Splitter controller={controller} node={borderNode} index={0} horizontal={horizontal} />}
             </>
         );
     } else {
         return (
             <>
-                {show && <Splitter layout={layout} node={border} index={0} horizontal={horizontal} />}
+                {show && <Splitter controller={controller} node={borderNode} index={0} horizontal={horizontal} />}
                 <div ref={selfRef} style={style} className={className}>
                 </div>
             </>

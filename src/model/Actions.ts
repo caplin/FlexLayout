@@ -1,27 +1,31 @@
-import { DockLocation } from "../DockLocation";
-import { Action } from "./Action";
-import { IJsonRect, IJsonRowNode } from "./IJsonModel";
+import { DockLocation } from "./DockLocation";
+import { IGlobalAttributes, IJsonRect, IJsonRowNode, IJsonTabNode, IRowAttributes, ITabAttributes, ITabSetAttributes } from "./IJsonModel";
+import { ILayoutType } from "./IJsonModel";
 
 /**
  * The Action creator class for FlexLayout model actions
  */
 export class Actions {
-    static ADD_NODE = "FlexLayout_AddNode";
-    static MOVE_NODE = "FlexLayout_MoveNode";
+    
+    static ADD_TAB = "FlexLayout_AddTab";
     static DELETE_TAB = "FlexLayout_DeleteTab";
-    static DELETE_TABSET = "FlexLayout_DeleteTabset";
     static RENAME_TAB = "FlexLayout_RenameTab";
     static SELECT_TAB = "FlexLayout_SelectTab";
+    static MOVE_NODE = "FlexLayout_MoveNode";
+    static DELETE_TABSET = "FlexLayout_DeleteTabset";
     static SET_ACTIVE_TABSET = "FlexLayout_SetActiveTabset";
     static ADJUST_WEIGHTS = "FlexLayout_AdjustWeights";
     static ADJUST_BORDER_SPLIT = "FlexLayout_AdjustBorderSplit";
     static MAXIMIZE_TOGGLE = "FlexLayout_MaximizeToggle";
     static UPDATE_MODEL_ATTRIBUTES = "FlexLayout_UpdateModelAttributes";
     static UPDATE_NODE_ATTRIBUTES = "FlexLayout_UpdateNodeAttributes";
+
     static POPOUT_TAB = "FlexLayout_PopoutTab";
     static POPOUT_TABSET = "FlexLayout_PopoutTabset";
-    static CLOSE_WINDOW = "FlexLayout_CloseWindow";
-    static CREATE_WINDOW = "FlexLayout_CreateWindow";
+    static CLOSE_POPOUT = "FlexLayout_ClosePopout";
+    static MOVE_POPOUT_TO_FRONT = "FlexLayout_MoveFloatToFront";
+    
+    static CREATE_SUBLAYOUT = "FlexLayout_CreateSubLayout";
 
     /**
      * Adds a tab node to the given tabset node
@@ -32,8 +36,8 @@ export class Actions {
      * @param select (optional) whether to select the new tab, overriding autoSelectTab
      * @returns {Action} the action
      */
-    static addNode(json: any, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
-        return new Action(Actions.ADD_NODE, {
+    static addTab(json: IJsonTabNode, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
+        return new Action(Actions.ADD_TAB, {
             json,
             toNode: toNodeId,
             location: location.getName(),
@@ -41,6 +45,12 @@ export class Actions {
             select,
         });
     }
+
+    /** @deprecated use 'addTab' instead */
+    static addNode(json: IJsonTabNode, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
+        return this.addTab(json, toNodeId, location, index, select);
+    }
+
 
     /**
      * Moves a node (tab or tabset) from one location to another
@@ -81,7 +91,7 @@ export class Actions {
 
     /**
      * Change the given nodes tab text
-     * @param tabNodeId the id of the node to rename
+     * @param tabNodeId the id of the tab node to rename
      * @param text the test of the tab
      * @returns {Action} the action
      */
@@ -91,7 +101,7 @@ export class Actions {
 
     /**
      * Selects the given tab in its parent tabset
-     * @param tabNodeId the id of the node to set selected
+     * @param tabNodeId the id of the tab node to set selected
      * @returns {Action} the action
      */
     static selectTab(tabNodeId: string): Action {
@@ -103,22 +113,28 @@ export class Actions {
      * @param tabsetNodeId the id of the tabset node to set as active
      * @returns {Action} the action
      */
-    static setActiveTabset(tabsetNodeId: string | undefined, windowId?: string | undefined): Action {
-        return new Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId, windowId: windowId });
+    static setActiveTabset(tabsetNodeId: string | undefined, layoutId?: string | undefined): Action {
+        return new Action(Actions.SET_ACTIVE_TABSET, { tabsetNode: tabsetNodeId, layoutId: layoutId });
     }
 
     /**
      * Adjust the weights of a row, used when the splitter is moved
-     * @param nodeId the row node whose childrens weights are being adjusted
+     * @param nodeId the id of the row node whose childrens weights are being adjusted
      * @param weights an array of weights to be applied to the children 
      * @returns {Action} the action
      */
     static adjustWeights(nodeId: string, weights: number[]): Action {
-        return new Action(Actions.ADJUST_WEIGHTS, {nodeId, weights});
+        return new Action(Actions.ADJUST_WEIGHTS, { nodeId, weights });
     }
 
-    static adjustBorderSplit(nodeId: string, pos: number): Action {
-        return new Action(Actions.ADJUST_BORDER_SPLIT, { node: nodeId, pos });
+    /**
+     * Adjust the size of the border
+     * @param nodeId the id of the border node to adjust
+     * @param size the new border size 
+     * @returns {Action} the action
+     */
+    static adjustBorderSplit(nodeId: string, size: number): Action {
+        return new Action(Actions.ADJUST_BORDER_SPLIT, { node: nodeId, size });
     }
 
     /**
@@ -126,8 +142,8 @@ export class Actions {
      * @param tabsetNodeId the id of the tabset to maximize
      * @returns {Action} the action
      */
-    static maximizeToggle(tabsetNodeId: string, windowId?: string | undefined): Action {
-        return new Action(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId, windowId: windowId });
+    static maximizeToggle(tabsetNodeId: string, layoutId?: string | undefined): Action {
+        return new Action(Actions.MAXIMIZE_TOGGLE, { node: tabsetNodeId, layoutId: layoutId });
     }
 
     /**
@@ -135,7 +151,7 @@ export class Actions {
      * @param attributes the json for the model attributes to update (merge into the existing attributes)
      * @returns {Action} the action
      */
-    static updateModelAttributes(attributes: any): Action {
+    static updateModelAttributes(attributes: IGlobalAttributes): Action {
         return new Action(Actions.UPDATE_MODEL_ATTRIBUTES, { json: attributes });
     }
 
@@ -145,44 +161,80 @@ export class Actions {
      * @param attributes the json attributes to update (merge with the existing attributes)
      * @returns {Action} the action
      */
-    static updateNodeAttributes(nodeId: string, attributes: any): Action {
+    static updateNodeAttributes(nodeId: string, attributes: IRowAttributes | ITabSetAttributes | ITabAttributes): Action {
         return new Action(Actions.UPDATE_NODE_ATTRIBUTES, { node: nodeId, json: attributes });
     }
 
     /**
-     * Pops out the given tab node into a new browser window
+     * Pops out the given tab node into a new browser window or floating panel
      * @param nodeId the tab node to popout
-     * @returns 
+     * @param type the type of window to create, either "window" (native browser window) or "float" (simulated div based window)
+     * @returns {Action} the action
      */
-    static popoutTab(nodeId: string): Action {
-        return new Action(Actions.POPOUT_TAB, { node: nodeId });
+    static popoutTab(nodeId: string, type: ILayoutType = "window"): Action {
+        return new Action(Actions.POPOUT_TAB, { node: nodeId, type });
     }
 
     /**
-     * Pops out the given tab set node into a new browser window
-     * @param nodeId the tab set node to popout
-     * @returns 
+     * Pops out the given tabset node into a new browser window or floating panel
+     * @param nodeId the tabset node to popout
+     * @param type the type of window to create, either "window" (native browser window) or "float" (simulated div based window)
+     * @returns {Action} the action
      */
-    static popoutTabset(nodeId: string): Action {
-        return new Action(Actions.POPOUT_TABSET, { node: nodeId });
+    static popoutTabset(nodeId: string, type: ILayoutType = "window"): Action {
+        return new Action(Actions.POPOUT_TABSET, { node: nodeId, type });
     }
 
     /**
-     * Closes the popout window
-     * @param windowId the id of the popout window to close
-     * @returns 
+     * Closes the popout
+     * @param layoutId the id of the popout to close
+     * @returns {Action} the action
      */
-    static closeWindow(windowId: string): Action {
-        return new Action(Actions.CLOSE_WINDOW, { windowId });
+    static closePopout(layoutId: string): Action {
+        return new Action(Actions.CLOSE_POPOUT, { layoutId: layoutId });
     }
 
     /**
-     * Creates a new empty popout window with the given layout
+     * Moves a floating panel popout to the front of the display
+     * @param layoutId the id of the floating panel popout to move
+     * @returns {Action} the action
+     */
+    static movePopoutToFront(layoutId: string): Action {
+        return new Action(Actions.MOVE_POPOUT_TO_FRONT, { layoutId: layoutId });
+    }
+
+    /**
+     * Creates a new empty popout window with the given layout (alias for createSubLayout)
      * @param layout the json layout for the new window
      * @param rect the window rectangle in screen coordinates
-     * @returns 
+     * @param type the type of the popout either "window", "float"
+     * @returns {Action} the action
      */
-    static createWindow(layout: IJsonRowNode, rect: IJsonRect): Action {
-        return new Action(Actions.CREATE_WINDOW, { layout, rect});
+    static createPopout(layout: IJsonRowNode, rect: IJsonRect, type: ILayoutType): Action {
+        return this.createSubLayout(layout, rect, type);
+    }
+
+    /**
+     * Creates a new sublayout with the given layout
+     * @param layout the json layout for the new window
+     * @param rect the window rectangle in screen coordinates
+     * @param type the type of the sublayout either "window", "float" or "tab"
+     * @returns {Action} the action
+     */
+    static createSubLayout(layout: IJsonRowNode, rect: IJsonRect, type: ILayoutType): Action {
+        return new Action(Actions.CREATE_SUBLAYOUT, { layout, rect, type });
+    }
+
+
+
+}
+
+export class Action {
+    type: string;
+    data: Record<string, any>;
+
+    constructor(type: string, data: Record<string, any>) {
+        this.type = type;
+        this.data = data;
     }
 }

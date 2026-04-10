@@ -1,13 +1,13 @@
-import { Attribute } from "../Attribute";
-import { AttributeDefinitions } from "../AttributeDefinitions";
-import { DockLocation } from "../DockLocation";
-import { DropInfo } from "../DropInfo";
-import { Orientation } from "../Orientation";
-import { Rect } from "../Rect";
-import { CLASSES } from "../Types";
+import { Attribute } from "./Attributes";
+import { Attributes } from "./Attributes";
+import { DockLocation } from "./DockLocation";
+import { DropInfo } from "./DropInfo";
+import { Orientation } from "./Orientation";
+import { Rect } from "./Rect";
+import { CLASSES } from "../view/CSSClassNames";
 import { IDraggable } from "./IDraggable";
 import { IDropTarget } from "./IDropTarget";
-import { IJsonBorderNode } from "./IJsonModel";
+import { IBorderAttributes, IBorderLocation, IJsonBorderNode } from "./IJsonModel";
 import { Model } from "./Model";
 import { Node } from "./Node";
 import { TabNode } from "./TabNode";
@@ -18,7 +18,7 @@ export class BorderNode extends Node implements IDropTarget {
     static readonly TYPE = "border";
 
     /** @internal */
-    static fromJson(json: any, model: Model) {
+    static fromJson(json: IJsonBorderNode, model: Model) {
         const location = DockLocation.getByName(json.location);
         const border = new BorderNode(location, json, model);
         if (json.children) {
@@ -32,7 +32,7 @@ export class BorderNode extends Node implements IDropTarget {
         return border;
     }
     /** @internal */
-    private static attributeDefinitions: AttributeDefinitions = BorderNode.createAttributeDefinitions();
+    private static attributeDefinitions: Attributes = BorderNode.createAttributeDefinitions();
 
     /** @internal */
     private contentRect: Rect = Rect.empty();
@@ -42,7 +42,7 @@ export class BorderNode extends Node implements IDropTarget {
     private location: DockLocation;
 
     /** @internal */
-    constructor(location: DockLocation, json: any, model: Model) {
+    constructor(location: DockLocation, json: IJsonBorderNode, model: Model) {
         super(model);
 
         this.location = location;
@@ -138,9 +138,9 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
     toJson(): IJsonBorderNode {
-        const json: any = {};
+        const json: IJsonBorderNode = {location: "bottom"};
         BorderNode.attributeDefinitions.toJson(json, this.attributes);
-        json.location = this.location.getName();
+        json.location = this.location.getName() as IBorderLocation;
         json.children = this.children.map((child) => (child as TabNode).toJson());
         return json;
     }
@@ -217,7 +217,7 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
     /** @internal */
-    updateAttrs(json: any) {
+    updateAttrs(json: IBorderAttributes) {
         BorderNode.attributeDefinitions.update(json, this.attributes);
     }
 
@@ -248,11 +248,10 @@ export class BorderNode extends Node implements IDropTarget {
                     const childHeight = childRect.height;
 
                     let pos = this.tabHeaderRect!.x;
-                    let childCenter = 0;
                     for (let i = 0; i < this.children.length; i++) {
                         child = this.children[i];
                         childRect = (child as TabNode).getTabRect()!;
-                        childCenter = childRect.x + childRect.width / 2;
+                        const childCenter = childRect.x + childRect.width / 2;
                         if (x >= pos && x < childCenter) {
                             const outlineRect = new Rect(childRect.x - 2, childY, 3, childHeight);
                             dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
@@ -276,11 +275,10 @@ export class BorderNode extends Node implements IDropTarget {
                     const childWidth = childRect.width;
 
                     let pos = this.tabHeaderRect!.y;
-                    let childCenter = 0;
                     for (let i = 0; i < this.children.length; i++) {
                         child = this.children[i];
                         childRect = (child as TabNode).getTabRect()!;
-                        childCenter = childRect.y + childRect.height / 2;
+                        const childCenter = childRect.y + childRect.height / 2;
                         if (y >= pos && y < childCenter) {
                             const outlineRect = new Rect(childX, childRect.y - 2, childWidth, 3);
                             dropInfo = new DropInfo(this, outlineRect, dockLocation, i, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
@@ -352,9 +350,9 @@ export class BorderNode extends Node implements IDropTarget {
         const pBounds = [0, 0];
         const minSize = useMinSize ? this.getMinSize() : 0;
         const maxSize = useMinSize ? this.getMaxSize() : 99999;
-        const rootRow = this.model.getRoot(Model.MAIN_WINDOW_ID);
+        const rootRow = this.model.getRootRow(Model.MAIN_LAYOUT_ID);
         const innerRect = rootRow.getRect();
-        const splitterSize = this.model.getSplitterSize()
+        const splitterSize = this.model.getSplitterSize()!;
         if (this.location === DockLocation.TOP) {
             pBounds[0] = this.tabHeaderRect!.getBottom() + minSize;
             const maxPos = this.tabHeaderRect!.getBottom() + maxSize;
@@ -400,8 +398,8 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
     /** @internal */
-    private static createAttributeDefinitions(): AttributeDefinitions {
-        const attributeDefinitions = new AttributeDefinitions();
+    private static createAttributeDefinitions(): Attributes {
+        const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute.STRING).setFixed();
 
         attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER).setDescription(

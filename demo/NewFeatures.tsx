@@ -22,11 +22,7 @@ export function NewFeatures() {
             Action to close tab set:<br/>
             <small>See added x button in this tab set</small>
         </li>
-        <li>
-            Allow narrow splitters with extended hit test areas:<br/>
-            <small>Uses the splitterExtra global attribute</small>
-        </li>
-        <li>
+         <li>
             Tab attributes: borderWidth, borderHeight to allow tabs to have individual sizes in borders:<br/>
             <small>Try the &apos;With border sizes&apos; tab</small>
         </li>

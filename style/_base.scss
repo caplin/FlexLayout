@@ -14,6 +14,7 @@
 }
 
 @mixin baseMixin {
+
     /*
         base classes
     */
@@ -21,7 +22,7 @@
         &__layout {
             @include absoluteFill;
             display: flex;
-            overflow:hidden;
+            overflow: hidden;
             background-color: var(--color-background);
 
             &_overlay {
@@ -35,7 +36,7 @@
                 z-index: 100;
                 display: flex;
                 flex-direction: column;
-                align-items: start;
+                align-items: flex-start;
             }
 
             &_moveables {
@@ -70,6 +71,41 @@
             background-color: var(--color-splitter);
             touch-action: none;
             z-index: 10;
+            position: relative;
+
+            &_horz {
+                width: var(--splitter-size);
+                min-width: var(--splitter-size);
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    /* Center the hit area over the thin line */
+                    left: 50%;
+                    width: var(--splitter-active-size);
+                    transform: translateX(-50%);
+                    z-index: 1;
+                }
+            }
+
+            &_vert {
+                height: var(--splitter-size);
+                min-height: var(--splitter-size);
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    /* Center the hit area over the thin line */
+                    top: 50%;
+                    height: var(--splitter-active-size);
+                    transform: translateY(-50%);
+                    z-index: 1;
+                }
+            }
 
             @media (hover: hover) {
                 &:hover {
@@ -80,8 +116,7 @@
                 }
             }
 
-            &_border {
-            }
+            &_border {}
 
             &_drag {
                 position: absolute;
@@ -94,8 +129,9 @@
             }
 
             &_handle {
-                background-color: #ccc;
+                background-color: var(--color-splitter-handle);
                 border-radius: 3px;
+                visibility: var(--splitter-handle-visibility);
 
                 &_horz {
                     width: 3px;
@@ -197,23 +233,7 @@
             }
 
             &_leading {
-                display:flex;
-            }
-
-            &_header {
-                // tabset header bar
                 display: flex;
-                align-items: center;
-                padding: 3px 3px 3px 5px;
-                box-sizing: border-box;
-                border-bottom: 1px solid var(--color-tabset-divider-line);
-                color: var(--color-tabset-header);
-                background-color: var(--color-tabset-header-background);
-                font-size: var(--font-size);
-
-                &_content {
-                    flex-grow: 1;
-                }
             }
 
             &_tabbar {
@@ -223,7 +243,10 @@
                     background-color: var(--color-tabset-background);
                     overflow: hidden;
                     display: flex;
+                    align-items: center;
+                    min-height: 1.5em;
                     font-size: var(--font-size);
+                    font-weight: var(--font-weight);
                 }
 
                 &_outer_top {
@@ -255,6 +278,7 @@
                         padding-right: 4px;
                         box-sizing: border-box;
                         white-space: nowrap;
+                        align-items: center;
 
                         &_top {
                             border-top: 2px solid transparent;
@@ -310,12 +334,26 @@
                 background-color: #0000003d;
             }
 
+            &_layout_container {
+                // @include absoluteFill;
+                position:relative;
+                height: 100%;
+                box-sizing: border-box;
+            }
+
+            &_layout_container_user {
+                position:relative;
+                flex-grow: 1;
+                box-sizing: border-box;
+            }
+
             &_button {
                 display: flex;
                 gap: 0.3em;
                 align-items: center;
                 box-sizing: border-box;
-                padding: 3px 0.5em; // if you change top or bottom update the tabset_sizer above
+                padding: 3px 0.5em;
+                font-weight: var(--font-weight);
 
                 cursor: pointer;
 
@@ -354,11 +392,9 @@
                     color: var(--color-tab-unselected);
                 }
 
-                &_top {
-                }
+                &_top {}
 
-                &_bottom {
-                }
+                &_bottom {}
 
                 &_leading {
                     display: flex;
@@ -373,6 +409,7 @@
                     border: none;
                     font-family: var(--font-family);
                     font-size: var(--font-size);
+                    font-weight: var(--font-weight);
                     color: var(--color-tab-textbox);
                     background-color: var(--color-tab-textbox-background);
                     border: 1px inset var(--color-1);
@@ -473,8 +510,9 @@
             box-sizing: border-box;
             overflow: hidden;
             display: flex;
-            font-size: var(--font-size);
             font-family: var(--font-family);
+            font-size: var(--font-size);
+            font-weight: var(--font-weight);
             color: var(--color-border);
             background-color: var(--color-border-background);
 
@@ -483,9 +521,9 @@
                 overflow: hidden;
                 background-color: var(--color-border-tab-content);
             }
-            
+
             &_leading {
-                display:flex;
+                display: flex;
             }
 
             &_top {
@@ -525,6 +563,7 @@
                 &_tab_container {
                     white-space: nowrap;
                     display: flex;
+                    align-items: center;
                     padding-left: 2px;
                     padding-right: 2px;
                     box-sizing: border-box;
@@ -556,6 +595,7 @@
                 margin: 2px 0px;
                 box-sizing: border-box;
                 white-space: nowrap;
+                font-weight: var(--font-weight);
 
                 &--selected {
                     background-color: var(--color-border-tab-selected-background);
@@ -587,8 +627,7 @@
                     border-radius: 4px;
                     visibility: hidden;
 
-                    &:hover {
-                    }
+                    &:hover {}
                 }
 
                 @media (pointer: coarse) {
@@ -662,6 +701,7 @@
         &__popup_menu {
             font-size: var(--font-size);
             font-family: var(--font-family);
+            font-weight: var(--font-weight);
 
             &_item {
                 padding: 2px 0.5em;
@@ -689,11 +729,45 @@
                 background: var(--color-popup-unselected-background);
                 border-radius: 3px;
                 position: absolute;
-                z-index: 1000;
+                z-index: 3000;
                 max-height: 50%;
                 min-width: 100px;
                 overflow: auto;
                 padding: 2px;
+            }
+        }
+
+        &__float_window {
+            box-sizing: border-box;
+            background-color: var(--color-tabset-background);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 2000;
+
+            &_header {
+                display: flex;
+                align-items: center;
+                padding: 2px 8px;
+                background-color: var(--color-float-window-header-background);
+                border-bottom: 1px solid var(--color-tabset-divider-line);
+                cursor: move;
+                user-select: none;
+                font-family: var(--font-family);
+                font-size: .8em;
+                min-height: 15px;
+            }
+
+            &_content {
+                position: relative;
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                min-width: 0;
+                margin: 5px;
             }
         }
 
@@ -729,6 +803,7 @@
             padding-bottom: 5px;
             font-size: var(--font-size);
             font-family: var(--font-family);
+            font-weight: var(--font-weight);
         }
 
         &__mini_scrollbar {
@@ -762,6 +837,6 @@
         }
     }
 
-/* ======================== End of Base Classes =========================== */
+    /* ======================== End of Base Classes =========================== */
 
 }

@@ -1,4 +1,6 @@
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useMemo } from 'react';
 
 const columns: GridColDef<(typeof rows)[number]>[] = [
   { field: 'id', headerName: 'ID', width: 90 },
@@ -43,8 +45,21 @@ const rows = [
   { id: 9, lastName: 'Roxie', firstName: 'Harvey', age: 65 },
 ];
 
-export default function DataGridDemo() {
+export default function DataGridDemo(props: { theme?: string }) {
+  const isDark = props.theme?.includes("dark") || props.theme?.includes("gray");
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: isDark ? 'dark' : 'light',
+        },
+      }),
+    [isDark],
+  );
+
   return (
+    <ThemeProvider theme={theme}>
       <DataGrid
         rows={rows}
         columns={columns}
@@ -59,5 +74,6 @@ export default function DataGridDemo() {
         checkboxSelection
         disableRowSelectionOnClick
       />
+    </ThemeProvider>
   );
 }

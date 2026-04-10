@@ -21,6 +21,18 @@
     @include themes.rounded_theme;
 }
 
+.flexlayout__theme_alpha_light {
+    @include themes.alpha_light_theme;
+}
+
+.flexlayout__theme_alpha_dark {
+    @include themes.alpha_dark_theme;
+}
+
+.flexlayout__theme_alpha_rounded {
+    @include themes.alpha_rounded_theme;
+}
+
 
 @include base.baseMixin;
 
@@ -43,4 +55,16 @@
 
 .flexlayout__theme_rounded {
     @include themes.rounded_theme_overrides;
+}
+
+.flexlayout__theme_alpha_light {
+    @include themes.alpha_light_theme_overrides;
+}
+
+.flexlayout__theme_alpha_dark {
+    @include themes.alpha_dark_theme_overrides;
+}
+
+.flexlayout__theme_alpha_rounded {
+    @include themes.alpha_rounded_theme_overrides;
 }

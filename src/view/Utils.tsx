@@ -1,8 +1,9 @@
 import * as React from "react";
 import { Node } from "../model/Node";
 import { TabNode } from "../model/TabNode";
-import { LayoutInternal } from "./Layout";
+import { LayoutController } from "./layout/LayoutInternal";
 import { TabSetNode } from "../model/TabSetNode";
+import { Layout } from "../model/Layout";
 
 /** @internal */
 export function isDesktop() {
@@ -11,32 +12,32 @@ export function isDesktop() {
 }
 /** @internal */
 export function getRenderStateEx(
-    layout: LayoutInternal,
-    node: TabNode,
+    controller: LayoutController,
+    tabNode: TabNode,
     iconAngle?: number
 ) {
     let leadingContent = undefined;
-    const titleContent: React.ReactNode = node.getName();
-    const name = node.getName();
+    const titleContent: React.ReactNode = tabNode.getName();
+    const name = tabNode.getName();
     if (iconAngle === undefined) {
         iconAngle = 0;
     }
 
-    if (leadingContent === undefined && node.getIcon() !== undefined) {
+    if (leadingContent === undefined && tabNode.getIcon() !== undefined) {
         if (iconAngle !== 0) {
-            leadingContent = <img style={{ width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }} src={node.getIcon()} alt="leadingContent" />;
+            leadingContent = <img style={{ width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }} src={tabNode.getIcon()} alt="leadingContent" />;
         } else {
-            leadingContent = <img style={{ width: "1em", height: "1em" }} src={node.getIcon()} alt="leadingContent" />;
+            leadingContent = <img style={{ width: "1em", height: "1em" }} src={tabNode.getIcon()} alt="leadingContent" />;
         }
     }
 
-    const buttons: any[] = [];
+    const buttons: React.ReactNode[] = [];
 
     // allow customization of leading contents (icon) and contents
     const renderState = { leading: leadingContent, content: titleContent, name, buttons };
-    layout.customizeTab(node, renderState);
+    controller.customizeTab(tabNode, renderState);
 
-    node.setRenderedName(renderState.name);
+    tabNode.setRenderedName(renderState.name);
 
     return renderState;
 }
@@ -67,6 +68,8 @@ export function getElementsByTagName(tag: string, currentDocument: Document): El
     return [...currentDocument.getElementsByTagName(tag)];
 }
 
+export let Utils_dragging: boolean = false;
+
 export function startDrag(
     doc: Document,
     event: React.PointerEvent<HTMLElement>,
@@ -74,6 +77,7 @@ export function startDrag(
     dragEnd: () => void,
     dragCancel: () => void) {
 
+    Utils_dragging = true;
     event.preventDefault();
 
     const pointerMove = (ev: PointerEvent) => {
@@ -83,12 +87,14 @@ export function startDrag(
 
     const pointerCancel = (ev: PointerEvent) => {
         ev.preventDefault();
+        Utils_dragging = false;
         dragCancel();
     };
     const pointerUp = () => {
         doc.removeEventListener("pointermove", pointerMove);
         doc.removeEventListener("pointerup", pointerUp);
         doc.removeEventListener("pointercancel", pointerCancel);
+        Utils_dragging = false;
         dragEnd();
     };
 
@@ -97,17 +103,63 @@ export function startDrag(
     doc.addEventListener('pointercancel', pointerCancel);
 }
 
-export function canDockToWindow(node: Node) {
-    if (node instanceof TabNode) {
-        return node.isEnablePopout();
-    } else if (node instanceof TabSetNode) {
-        for (const child of node.getChildren()) {
-            if ((child as TabNode).isEnablePopout() === false) {
+export function findParentLayout(layout: Layout): Layout | undefined {
+    let parentLayout: Layout | undefined = undefined;
+    const model = layout.getController()!.getModel();
+    model.visitNodes( node => {
+        if (node instanceof TabNode && node.getSubLayoutId() === layout.getLayoutId()){
+            parentLayout = node.getLayout();
+        }
+    });
+    return parentLayout;
+}
+
+export function canDockToLayout(node: Node, layout: Layout) {
+    const type = layout.getType()
+    if (type === "window") {
+        return node.isAllowedInWindow();
+    } else if (type === "float") {
+        return true;
+    } else if (type === "tab") {
+        const parentLayout = findParentLayout(layout);
+        if (parentLayout && parentLayout.getType() === "window" && !parentLayout.isMainLayout() && !node.isAllowedInWindow()) {
+            return false;
+        }
+        if (node instanceof TabNode) {
+            if (node.getSubLayoutId() !== undefined) {
                 return false;
+            }
+        } else if (node instanceof TabSetNode) {
+            for (const child of node.getChildren()) {
+                if ((child as TabNode).getSubLayoutId() !== undefined) {
+                    return false;
+                }
             }
         }
         return true;
     }
+        // if (node instanceof TabNode) {
+        //     return node.isEnablePopout();
+        // } else if (node instanceof TabSetNode) {
+        //     for (const child of node.getChildren()) {
+        //         if ((child as TabNode).isEnablePopout() === false) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
+    // } else { // float or tab
+        // if (node instanceof TabNode) {
+        //     return node.isEnablePopoutFloat();
+        // } else if (node instanceof TabSetNode) {
+        //     for (const child of node.getChildren()) {
+        //         if ((child as TabNode).isEnablePopoutFloat() === false) {
+        //             return false;
+        //         }
+        //     }
+        //     return true;
+        // }
+    // }
     return false;
 }
 
@@ -118,7 +170,7 @@ export function copyInlineStyles(source: HTMLElement, target: HTMLElement): bool
     if (sourceStyle === targetStyle) return false;
 
     // console.log("copyInlineStyles", sourceStyle);
-    
+
     if (sourceStyle) {
         // Set the style attribute on the target element
         target.setAttribute('style', sourceStyle);
@@ -132,4 +184,4 @@ export function copyInlineStyles(source: HTMLElement, target: HTMLElement): bool
 export function isSafari() {
     const userAgent = navigator.userAgent;
     return userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Chromium");
-  }
+}

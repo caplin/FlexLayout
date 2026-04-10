@@ -12,7 +12,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BarChart: React.FC = () => {
+const BarChart = () => {
     const chartData = {
         labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
         datasets: [
@@ -40,24 +40,32 @@ const BarChart: React.FC = () => {
         },
     };
 
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
-    const [showBar, setShowBar] = React.useState<boolean>(false);
+    const chartRef = React.useRef<any>(null);
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
 
     React.useEffect(() => {
-        const rect = selfRef.current!.getBoundingClientRect();
-        if (!showBar && rect.width > 0 && rect.height > 0 && rect.x >=0 && rect.y>=0) {
-            setShowBar(true);
-        }
-    });
+        const target = containerRef.current;
+        if (!target) return;
 
-    let bar = null;
-    if (showBar) {
-        bar = <Bar data={chartData} options={options} />;
-    }
+        const win = target.ownerDocument.defaultView || window;
+        const Observer = win.ResizeObserver || ResizeObserver;
+
+        const resizeObserver = new Observer(() => {
+            if (chartRef.current) {
+                chartRef.current.resize();
+            }
+        });
+
+        resizeObserver.observe(target);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     return (
-        <div ref={selfRef} style={{height:"100%", overflow:"hidden"}}>
-            {bar}
+        <div ref={containerRef} style={{ height: "100%", overflow: "hidden" }}>
+            <Bar ref={chartRef} data={chartData} options={options} />
         </div>
     )
 };

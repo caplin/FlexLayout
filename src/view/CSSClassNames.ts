@@ -38,6 +38,10 @@ export enum CLASSES {
     FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER = "flexlayout__error_boundary_container",
     FLEXLAYOUT__ERROR_BOUNDARY_CONTENT = "flexlayout__error_boundary_content",
 
+    FLEXLAYOUT__FLOAT_WINDOW = "flexlayout__float_window",
+    FLEXLAYOUT__FLOAT_WINDOW_HEADER = "flexlayout__float_window_header",
+    FLEXLAYOUT__FLOAT_WINDOW_CONTENT = "flexlayout__float_window_content",
+
     FLEXLAYOUT__FLOATING_WINDOW_CONTENT = "flexlayout__floating_window_content",
 
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
@@ -65,14 +69,18 @@ export enum CLASSES {
     FLEXLAYOUT__TAB_POSITION = "flexlayout__tab_position",
     FLEXLAYOUT__TAB_MOVEABLE = "flexlayout__tab_moveable",
     FLEXLAYOUT__TAB_OVERLAY = "flexlayout__tab_overlay",
+    FLEXLAYOUT__TAB_LAYOUT_CONTAINER = "flexlayout__tab_layout_container",
+    FLEXLAYOUT__TAB_LAYOUT_CONTAINER_USER = "flexlayout__tab_layout_container_user",
 
     FLEXLAYOUT__TABSET = "flexlayout__tabset",
     FLEXLAYOUT__TABSET_CONTAINER = "flexlayout__tabset_container",
-    FLEXLAYOUT__TABSET_HEADER = "flexlayout__tabset_header",
-    FLEXLAYOUT__TABSET_HEADER_CONTENT = "flexlayout__tabset_header_content",
     FLEXLAYOUT__TABSET_MAXIMIZED = "flexlayout__tabset-maximized",
     FLEXLAYOUT__TABSET_SELECTED = "flexlayout__tabset-selected",
+    FLEXLAYOUT__TABSET_TAB_SPACER = "flexlayout__tabset_tab_spacer",
     FLEXLAYOUT__TABSET_TAB_DIVIDER = "flexlayout__tabset_tab_divider",
+    FLEXLAYOUT__TABSET_TAB_DIVIDER_SELECTED_BEFORE = "flexlayout__tabset_tab_divider_selected_before",
+    FLEXLAYOUT__TABSET_TAB_DIVIDER_SELECTED_AFTER = "flexlayout__tabset_tab_divider_selected_after",
+    FLEXLAYOUT__TABSET_TAB_DIVIDER_INNER = "flexlayout__tabset_tab_divider_inner",
     FLEXLAYOUT__TABSET_CONTENT = "flexlayout__tabset_content",
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
     FLEXLAYOUT__TABSET_TABBAR_INNER_ = "flexlayout__tabset_tabbar_inner_",
@@ -111,4 +119,6 @@ export enum CLASSES {
 
     FLEXLAYOUT__MINI_SCROLLBAR = "flexlayout__mini_scrollbar",
     FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER = "flexlayout__mini_scrollbar_container",
+
+
 }

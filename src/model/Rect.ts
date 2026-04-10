@@ -1,4 +1,5 @@
-import { IJsonRect } from "./model/IJsonModel";
+import type * as React from "react";
+import { IJsonRect } from "./IJsonModel";
 import { Orientation } from "./Orientation";
 
 export class Rect {
@@ -78,7 +79,7 @@ export class Rect {
         return this.x === rect?.x && this.y === rect?.y && this.width === rect?.width && this.height === rect?.height
     }
 
-    aboutEquals(rect: Rect | null | undefined) {
+    equalsWhenRounded(rect: Rect | null | undefined) {
         if (!rect) return false;
         const epsilon = 0.5;
         return (
@@ -113,11 +114,11 @@ export class Rect {
         return { x: this.x + this.width / 2, y: this.y + this.height / 2 };
     }
 
-    positionElement(element: HTMLElement, position?: string) {
-        this.styleWithPosition(element.style, position);
+    positionElement(element: HTMLElement, position?: React.CSSProperties["position"]) {
+        this.styleWithPosition(element.style as any, position);
     }
 
-    styleWithPosition(style: Record<string, any>, position: string = "absolute") {
+    styleWithPosition(style: React.CSSProperties, position: React.CSSProperties["position"] = "absolute") {
         style.left = this.x + "px";
         style.top = this.y + "px";
         style.width = Math.max(0, this.width) + "px"; // need Math.max to prevent -ve, cause error in IE
@@ -141,6 +142,34 @@ export class Rect {
     centerInRect(outerRect: Rect) {
         this.x = (outerRect.width - this.width) / 2;
         this.y = (outerRect.height - this.height) / 2;
+    }
+
+    clamp(outerRect: Rect) {
+        if (this.width > outerRect.width) {
+            this.width = outerRect.width;
+        }
+        if (this.height > outerRect.height) {
+            this.height = outerRect.height;
+        }
+        if (this.x < outerRect.x) {
+            this.x = outerRect.x;
+        }
+        if (this.y < outerRect.y) {
+            this.y = outerRect.y;
+        }
+        if (this.getRight() > outerRect.getRight()) {
+            this.x = outerRect.getRight() - this.width;
+        }
+        if (this.getBottom() > outerRect.getBottom()) {
+            this.y = outerRect.getBottom() - this.height;
+        }
+
+        if (this.x < outerRect.x) {
+            this.x = outerRect.x;
+        }
+        if (this.y < outerRect.y) {
+            this.y = outerRect.y;
+        }
     }
 
     /** @internal */

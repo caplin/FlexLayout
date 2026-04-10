@@ -1,6 +1,31 @@
+## 0.9.0 - 2026-04-25
+
+### Features
+* **Floating Panels**: Added support for 'float' type popouts that stay within the main window (simulated popouts).
+* **Layout Tabs**: Add a sub layout to a tab, supports drag and drop from the main layout.
+* **Themes**: Added three new themes.
+* **Demo Improvements**:
+    * Added an **Actions panel** to visualize FlexLayout actions in real-time.
+    * Added an **'Attributes' option** to view a tab's JSON configuration.
+
+### Breaking Changes
+* **Functional Component Refactor**: The `Layout` component has been refactored from a class to a functional component. Any `ref` targeting `Layout` must now be typed as `ILayoutApi` instead of `Layout` in typescript.
+    * **Example**: `const layoutRef = React.useRef<ILayoutApi | null>(null);`
+* **CSS Variable Migration**: Removed global attributes `splitterSize`, `splitterExtra`, and `splitterEnableHandle`. These are now controlled via CSS variables:
+    * `--splitter-size`
+    * `--splitter-active-size`
+    * `--splitter-handle-visibility`
+* **Size Updates**: Previously tabs re-rendered when their size changed, this no longer happens, use a 
+ResizeObserver to listen for size changes.  
+* **Tab Drag Speed**: Removed the `tabDragSpeed` global attribute. Use the `tabDragSpeed` prop on the `Layout` component instead.
+* **Action Renaming**: Standardized naming by renaming "Window" actions to "Popout" (e.g., `closePopout`, `movePopoutToFront`).
+* **TabSet Enable Close**: The Global `tabSetEnableClose` attribute has changed its meaning, it used to enable/disable the tabset close button, this is now `tabSetEnableCloseButton`.  The `tabSetEnableClose` attribute now  defines whether the tabset can be closed (if a tabset cannot be closed it will always remain in the layout).
+* **Popouts Attribute**: The 'popouts' attribute in the JSON has been renamed 'subLayouts', layouts with 'popouts' will still load, but will be saved with 'subLayout' and have a 'type' attribute set to 'window'. 
+
+
 ## 0.8.19 - 2026-03-06
 
-* **Fixed:** Fixed Maximum update depth exceeded error due to size jitter
+* **Fixed:** Maximum update depth exceeded error due to size jitter
 * **Fixed:** Double model changed callbacks
 * **Updated:** Dependencies.
 

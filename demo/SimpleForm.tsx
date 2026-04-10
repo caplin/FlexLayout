@@ -1,41 +1,39 @@
 import * as React from "react";
 
 export function SimpleForm() {
+  const [value, setValue] = React.useState<number>(0);
 
-    const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const [value, setValue] = React.useState<number>(0);
+  const [formData, setFormData] = React.useState({
+    username: "",
+    password: ""
+  });
 
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setValue(v => v = v + 1);
+    }, 1000);
+    return () => {
+      clearInterval(timer);
+    }
+  }, [])
 
-    const [formData, setFormData] = React.useState({
-      username: "",
-      password: ""
-    });
+  const handleChange = (event: { target: { name: any; value: any; }; }) => {
+    const { name, value } = event.target;
+    setFormData((prevState) => ({ ...prevState, [name]: value }));
+  };
 
-    React.useEffect(()=> {
-      timer.current = setInterval(()=> {
-        setValue(v=> v=v+1);
-      }, 1000);
-      return () => {
-        clearInterval(timer.current);
-      }
-    })
-  
-    const handleChange = (event: { target: { name: any; value: any; }; }) => {
-      const { name, value } = event.target;
-      setFormData((prevState) => ({ ...prevState, [name]: value }));
-    };
-  
-  
-    const handleSubmit = (event: { preventDefault: () => void; }) => {
-      event.preventDefault();
-    };
-  
-    return (
-      <div style={{padding:10, display:"flex", 
-      flexDirection:"column", gap:10, overflow:"auto", 
-      height:"100%", boxSizing:"border-box"}}>
+  const handleSubmit = (event: { preventDefault: () => void; }) => {
+    event.preventDefault();
+  };
+
+  return (
+    <div style={{
+      padding: 10, display: "flex",
+      flexDirection: "column", gap: 10, overflow: "auto",
+      height: "100%", boxSizing: "border-box"
+    }}>
       <p>See that the form keeps state when popped out</p>
-      <form style={{display:"flex", flexDirection:"column", gap:10}} onSubmit={handleSubmit}>
+      <form style={{ display: "flex", flexDirection: "column", gap: 10 }} onSubmit={handleSubmit}>
         <label>
           Username:
           <input
@@ -57,6 +55,6 @@ export function SimpleForm() {
         <div>{value}</div>
         <input type="submit" value="Submit" />
       </form>
-      </div>
-    );
-  }
+    </div>
+  );
+}

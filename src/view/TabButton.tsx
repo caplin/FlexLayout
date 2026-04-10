@@ -1,83 +1,83 @@
 import * as React from "react";
-import { I18nLabel } from "../I18nLabel";
+import { I18nLabel } from "./I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
-import { LayoutInternal } from "./Layout";
+import { LayoutController } from "./layout/LayoutInternal";
 import { ICloseType } from "../model/ICloseType";
-import { CLASSES } from "../Types";
+import { CLASSES } from "./CSSClassNames";
 import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
 
 /** @internal */
 export interface ITabButtonProps {
-    layout: LayoutInternal;
-    node: TabNode;
+    controller: LayoutController;
+    tabNode: TabNode;
     selected: boolean;
     path: string;
 }
 
 /** @internal */
 export const TabButton = (props: ITabButtonProps) => {
-    const { layout, node, selected, path } = props;
-    const selfRef = React.useRef<HTMLDivElement | null>(null);
-    const contentRef = React.useRef<HTMLInputElement | null>(null);
-    const icons = layout.getIcons();
+    const { controller, tabNode, selected, path } = props;
+    const selfRef = React.useRef<HTMLDivElement>(null);
+    const contentRef = React.useRef<HTMLInputElement>(null);
+    const icons = controller.getIcons();
 
     React.useLayoutEffect(() => {
-        node.setTabRect(layout.getBoundingClientRect(selfRef.current!));
-        if (layout.getEditingTab() === node) {
+        tabNode.setTabRect(controller.getBoundingClientRect(selfRef.current!));
+        if (controller.getEditingTab() === tabNode) {
             (contentRef.current! as HTMLInputElement).select();
         }
     });
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
-        if (node.isEnableDrag()) {
+        if (tabNode.isEnableDrag()) {
             event.stopPropagation(); // prevent starting a tabset drag as well
-            layout.setDragNode(event.nativeEvent, node as TabNode);
+            controller.getDragDropManager().setDragNode(event.nativeEvent, tabNode as TabNode);
         } else {
             event.preventDefault();
         }
     };
 
-    const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
-        layout.clearDragMain();
+    const onDragEnd = (_event: React.DragEvent<HTMLElement>) => {
+        controller.getDragDropManager().clearDragMain();
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
-            layout.auxMouseClick(node, event);
+            controller.auxMouseClick(tabNode, event);
         } 
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        layout.showContextMenu(node, event);
+        controller.showContextMenu(tabNode, event);
     };
 
     const onClick = () => {
-        layout.doAction(Actions.selectTab(node.getId()));
+        controller.doAction(Actions.selectTab(tabNode.getId()));
     };
 
     const onDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
-        if (node.isEnableRename()) {
+        if (tabNode.isEnableRename()) {
             onRename();
             event.stopPropagation();
         }
     };
 
     const onRename = () => {
-        layout.setEditingTab(node);
-        layout.getCurrentDocument()!.body.addEventListener("pointerdown", onEndEdit);
+        controller.setEditingTab(tabNode);
+        controller.getCurrentDocument()!.body.addEventListener("pointerdown", onEndEdit);
     };
 
     const onEndEdit = (event: Event) => {
         if (event.target !== contentRef.current!) {
-            layout.getCurrentDocument()!.body.removeEventListener("pointerdown", onEndEdit);
-            layout.setEditingTab(undefined);
+            controller.getCurrentDocument()!.body.removeEventListener("pointerdown", onEndEdit);
+            controller.setEditingTab(undefined);
         }
     };
 
     const isClosable = () => {
-        const closeType = node.getCloseType();
+        const closeType = tabNode.getCloseType();
         if (selected || closeType === ICloseType.Always) {
             return true;
         }
@@ -92,7 +92,7 @@ export const TabButton = (props: ITabButtonProps) => {
 
     const onClose = (event: React.MouseEvent<HTMLElement>) => {
         if (isClosable()) {
-            layout.doAction(Actions.deleteTab(node.getId()));
+            controller.doAction(Actions.deleteTab(tabNode.getId()));
             event.stopPropagation();
         }
     };
@@ -108,16 +108,16 @@ export const TabButton = (props: ITabButtonProps) => {
     const onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.code === 'Escape') {
             // esc
-            layout.setEditingTab(undefined);
+            controller.setEditingTab(undefined);
         } else if (event.code === 'Enter' || event.code === 'NumpadEnter') {
             // enter
-            layout.setEditingTab(undefined);
-            layout.doAction(Actions.renameTab(node.getId(), (event.target as HTMLInputElement).value));
+            controller.setEditingTab(undefined);
+            controller.doAction(Actions.renameTab(tabNode.getId(), (event.target as HTMLInputElement).value));
         }
     };
 
-    const cm = layout.getClassName;
-    const parentNode = node.getParent() as TabSetNode;
+    const cm = controller.getClassName;
+    const parentNode = tabNode.getParent() as TabSetNode;
 
     const isStretch = parentNode.isEnableSingleTabStretch() && parentNode.getChildren().length === 1;
     const baseClassName = isStretch ? CLASSES.FLEXLAYOUT__TAB_BUTTON_STRETCH : CLASSES.FLEXLAYOUT__TAB_BUTTON;
@@ -132,11 +132,11 @@ export const TabButton = (props: ITabButtonProps) => {
         }
     }
 
-    if (node.getClassName() !== undefined) {
-        classNames += " " + node.getClassName();
+    if (tabNode.getClassName() !== undefined) {
+        classNames += " " + tabNode.getClassName();
     }
 
-    const renderState = getRenderStateEx(layout, node);
+    const renderState = getRenderStateEx(controller, tabNode);
 
     let content = renderState.content ? (
         <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
@@ -148,7 +148,7 @@ export const TabButton = (props: ITabButtonProps) => {
             {renderState.leading}
         </div>) : null;
 
-    if (layout.getEditingTab() === node) {
+    if (controller.getEditingTab() === tabNode) {
         content = (
             <input
                 ref={contentRef}
@@ -156,15 +156,15 @@ export const TabButton = (props: ITabButtonProps) => {
                 data-layout-path={path + "/textbox"}
                 type="text"
                 autoFocus={true}
-                defaultValue={node.getName()}
+                defaultValue={tabNode.getName()}
                 onKeyDown={onTextBoxKeyPress}
                 onPointerDown={onTextBoxPointerDown}
             />
         );
     }
 
-    if (node.isEnableClose() && !isStretch) {
-        const closeTitle = layout.i18nName(I18nLabel.Close_Tab);
+    if (tabNode.isCloseable() && !isStretch) {
+        const closeTitle = controller.i18nName(I18nLabel.Close_Tab);
         renderState.buttons.push(
             <div
                 key="close"
@@ -173,7 +173,7 @@ export const TabButton = (props: ITabButtonProps) => {
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
                 onPointerDown={onClosePointerDown}
                 onClick={onClose}>
-                {(typeof icons.close === "function") ? icons.close(node) : icons.close}
+                {(typeof icons.close === "function") ? icons.close(tabNode) : icons.close}
             </div>
         );
     }
@@ -186,7 +186,7 @@ export const TabButton = (props: ITabButtonProps) => {
             onClick={onClick}
             onAuxClick={onAuxMouseClick}
             onContextMenu={onContextMenu}
-            title={node.getHelpText()}
+            title={tabNode.getHelpText()}
             draggable={true}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
