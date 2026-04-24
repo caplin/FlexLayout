@@ -263,8 +263,11 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         this.layoutWindow.window = this.currentWindow;
         this.layoutWindow.toScreenRectFunction = (r) => this.getScreenRect(r);
 
-        this.resizeObserver = new ResizeObserver(entries => {
-            requestAnimationFrame(() => {
+        // Spec says ResizeObserver triggers callback in the same window as the observed element,
+        // but it's just not true in Chrome, so, use ResizeObserver from PARENT window
+        const parentWindow = (this.currentDocument.defaultView ?? window);
+        this.resizeObserver = new parentWindow.ResizeObserver(entries => {
+            parentWindow.requestAnimationFrame(() => {
                 this.updateRect();
             });
         });
@@ -279,7 +282,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
             this.currentWindow.addEventListener("resize", () => {
                 this.updateRect();
             });
-
+            this.resizeObserver.observe(this.currentWindow.document.documentElement);
             const sourceElement = this.props.mainLayout!.getRootDiv()!;
             const targetElement = this.selfRef.current!;
 
