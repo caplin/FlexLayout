@@ -1,0 +1,56 @@
+{
+	"global": {
+		"tabSetEnableDrop": false,
+		"tabSetEnableSingleTabStretch": true,
+		"tabSetMinWidth": 100,
+		"tabSetMinHeight": 100
+	},
+	"borders": [],
+	"layout": {
+		"type": "row",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "2",
+				"weight": 25,
+				"children": [
+					{
+						"type": "tab",
+						"id": "3",
+						"tabsetClassName": "greenClass",
+						"name": "Layout JSON",
+						"component": "json"
+					}
+				],
+				"active": true
+			},
+			{
+				"type": "tabset",
+				"weight": 50,
+				"children": [
+					{
+						"type": "tab",
+						"name": "Wikipedia",
+						"component": "multitype",
+						"config": {
+							"type": "url",
+							"data": "https://en.wikipedia.org/wiki/Main_Page"
+						}
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"weight": 25,
+				"children": [
+					{
+						"type": "tab",
+						"name": "One",
+						"tabsetClassName": "blueClass",
+						"component": "grid"
+					}
+				]
+			}
+		]
+	}
+}

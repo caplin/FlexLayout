@@ -1,0 +1,90 @@
+{
+  "global": {},
+  "borders": [
+    {
+      "type": "border",
+      "location": "top",
+      "children": [
+        {
+          "type": "tab",
+          "name": "top1",
+          "component": "testing"
+        }
+      ]
+    },
+    {
+      "type": "border",
+      "location": "bottom",
+      "children": [
+        {
+          "type": "tab",
+          "name": "bottom1",
+          "component": "testing"
+        }
+
+      ]
+    },
+    {
+      "type": "border",
+      "location": "left",
+      "children": [
+        {
+          "type": "tab",
+          "name": "left1",
+          "component": "testing"
+        }
+      ]
+    },
+    {
+      "type": "border",
+      "location": "right",
+      "children": [
+        {
+          "type": "tab",
+          "name": "right1",
+          "component": "testing"
+        }
+      ]
+    }
+  ],
+  "layout": {
+    "type": "row",
+    "weight": 100,
+    "children": [
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "One",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "weight": 50,
+        "id": "#1",
+        "children": [
+          {
+            "type": "tab",
+            "name": "Two",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "Three",
+            "component": "testing"
+          }
+        ]
+      }
+    ]
+  }
+}
