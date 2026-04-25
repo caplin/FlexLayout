@@ -19,39 +19,47 @@ export const Tab = (props: ITabProps) => {
     const selfRef = React.useRef<HTMLDivElement>(null);
     const firstSelect = React.useRef<boolean>(true);
 
+    const onPointerDown = React.useCallback(() => {
+        const parent = tabNode.getParent()!; // cannot use parentNode here since will be out of date
+        if (parent instanceof TabSetNode) {
+            if (!parent.isActive()) {
+                controller.doAction(Actions.setActiveTabset(parent.getId(), controller.getLayoutId()));
+            }
+        }
+    }, [tabNode, controller]);
+
     const parentNode = tabNode.getParent() as TabSetNode | BorderNode;
     const rect = parentNode.getContentRect()!;
 
     React.useLayoutEffect(() => {
+        const element = tabNode.getMoveableElement();
+        selfRef.current!.appendChild(element);
+        
+        // keep scroll position
         const handleScroll = () => {
             tabNode.saveScrollPosition();
         };
-
-        const element = tabNode.getMoveableElement()!;
-        if (element) {
-            selfRef.current!.appendChild(element);
-
-            // keep scroll position
-            element.addEventListener('scroll', handleScroll);
-        }
+        element.addEventListener('scroll', handleScroll);
 
         // listen for clicks to change active tabset
-        selfRef.current!.addEventListener("pointerdown", onPointerDown);
+        const self = selfRef.current;
+        if (self) {
+            self.addEventListener("pointerdown", onPointerDown);
+        }
 
         return () => {
-            if (selfRef.current) {
-                selfRef.current.removeEventListener("pointerdown", onPointerDown);
+            if (self) {
+                self.removeEventListener("pointerdown", onPointerDown);
             }
-            if (element) {
+            if (controller.getModel().getNodeById(tabNode.getId())) { // check node still in model
                 if (!tabNode.isEnableWindowReMount()) {
-                    controller.getMainController()?.getMoveablesDiv()?.appendChild(element);
+                    controller.getMainController()?.getMoveablesHome()?.appendChild(element); // keep element parented for open layers etc
                 }
-                element.removeEventListener('scroll', handleScroll);
             }
+            element.removeEventListener('scroll', handleScroll);
             tabNode.setVisible(false);
         }
-        return;
-    }, [tabNode.getMoveableElement()]);
+    }, [tabNode, controller, onPointerDown]);
 
     React.useEffect(() => {
         if (tabNode.isSelected()) {
@@ -61,15 +69,6 @@ export const Tab = (props: ITabProps) => {
             }
         }
     });
-
-    const onPointerDown = () => {
-        const parent = tabNode.getParent()!; // cannot use parentNode here since will be out of date
-        if (parent instanceof TabSetNode) {
-            if (!parent.isActive()) {
-                controller.doAction(Actions.setActiveTabset(parent.getId(), controller.getLayoutId()));
-            }
-        }
-    };
 
     tabNode.setRect(rect); // needed for resize event
     const cm = controller.getClassName;
@@ -116,9 +115,9 @@ export const Tab = (props: ITabProps) => {
     }
 
     /* 
-        Note: the tab content (from the factory) is rendered into a moveable div 
+        Note: the tab content (from the factory) is rendered into a moveable element 
         (see LayoutController.renderTabElements method)
-        the moveable div is appended to selfRef in the useEffect above
+        the moveable element is appended to selfRef in the useEffect above
     */
     return (
         <>

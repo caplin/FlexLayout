@@ -30,20 +30,23 @@ export const Splitter = (props: ISplitterProps) => {
     const dragStartY = React.useRef<number>(0);
     const initalSizes = React.useRef<{ initialSizes: number[], sum: number, startPosition: number }>({ initialSizes: [], sum: 0, startPosition: 0 })
 
-    React.useEffect(() => {
-        // Android fix: must have passive touchstart handler to prevent default handling
-        selfRef.current?.addEventListener("touchstart", onTouchStart, { passive: false });
-        extendedRef.current?.addEventListener("touchstart", onTouchStart, { passive: false });
-        return () => {
-            selfRef.current?.removeEventListener("touchstart", onTouchStart);
-            extendedRef.current?.removeEventListener("touchstart", onTouchStart);
-        }
-    }, []);
-
-    const onTouchStart = (event: TouchEvent) => {
+    const onTouchStart = React.useCallback((event: TouchEvent) => {
         event.preventDefault();
         event.stopImmediatePropagation();
-    }
+    }, []);
+
+    React.useEffect(() => {
+        const self = selfRef.current;
+        const extended = extendedRef.current;
+        // Android fix: must have passive touchstart handler to prevent default handling
+        self?.addEventListener("touchstart", onTouchStart, { passive: false });
+        extended?.addEventListener("touchstart", onTouchStart, { passive: false });
+        return () => {
+            self?.removeEventListener("touchstart", onTouchStart);
+            extended?.removeEventListener("touchstart", onTouchStart);
+        }
+    }, [onTouchStart]);
+
 
     const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
         event.stopPropagation();

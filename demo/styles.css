@@ -1,9 +1,7 @@
 html,
 body {
-    height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden;
     font-size: medium;
     font-family: system-ui, -apple-system, Arial, sans-serif;
     scrollbar-width: thin;
@@ -21,6 +19,7 @@ body {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    font-size:14px;
 }
 
 .toolbar_control {
@@ -41,7 +40,7 @@ body {
     bottom: 10px;
     position: absolute;
     display: flex;
-    overflow: hidden;
+    /* overflow: hidden; */
     background-color: white;
 }
 

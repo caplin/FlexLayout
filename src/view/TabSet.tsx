@@ -23,6 +23,8 @@ export interface ITabSetProps {
 export const TabSet = (props: ITabSetProps) => {
     const { tabsetNode, controller } = props;
 
+    // Must define `selfRef` before it is used in `useLayoutEffect`
+    const selfRef = React.useRef<HTMLDivElement>(null);
     const tabStripRef = React.useRef<HTMLDivElement>(null);
     const miniScrollRef = React.useRef<HTMLDivElement>(null);
     const tabStripInnerRef = React.useRef<HTMLDivElement>(null);
@@ -30,28 +32,32 @@ export const TabSet = (props: ITabSetProps) => {
     const buttonBarRef = React.useRef<HTMLDivElement>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement>(null);
     const stickyButtonsRef = React.useRef<HTMLDivElement>(null);
-    // const timer = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     const icons = controller.getIcons();
 
-    React.useLayoutEffect(() => {
-        tabsetNode.setRect(controller.getBoundingClientRect(selfRef.current!));
+    // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
+    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
+        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
+            controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
-        if (tabStripRef.current) {
-            tabsetNode.setTabStripRect(controller.getBoundingClientRect(tabStripRef.current!));
+    React.useLayoutEffect(() => {
+        if (selfRef.current) {
+            tabsetNode.setRect(controller.getBoundingClientRect(selfRef.current));
         }
 
-        const newContentRect = controller.getBoundingClientRect(contentRef.current!);
-        if (!tabsetNode.getContentRect().equalsWhenRounded(newContentRect) && !isNaN(newContentRect.x)) {
-            tabsetNode.setContentRect(newContentRect);
-            controller.setReLayout(true);
+        if (tabStripRef.current) {
+            tabsetNode.setTabStripRect(controller.getBoundingClientRect(tabStripRef.current));
+        }
+
+        if (contentRef.current) {
+            const newContentRect = controller.getBoundingClientRect(contentRef.current);
+            if (!tabsetNode.getContentRect().equalsWhenRounded(newContentRect) && !isNaN(newContentRect.x)) {
+                tabsetNode.setContentRect(newContentRect);
+                controller.setReLayout(true);
+            }
         }
     });
 
-    // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
-    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
-        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
-            controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = controller.getShowOverflowMenu();
@@ -296,7 +302,7 @@ export const TabSet = (props: ITabSetProps) => {
                 );
             }
 
-            if (controller.isSupportsPopout() && selectedTabNode.isAllowedInWindow() && selectedTabNode.isEnablePopout()) {
+            if (controller.isSupportsPopout() && selectedTabNode.isAllowedInWindow() && selectedTabNode.isEnablePopoutIcon()) {
                 const popoutTitle = controller.i18nName(I18nLabel.Popout_Tab);
                 buttons.push(
                     <button

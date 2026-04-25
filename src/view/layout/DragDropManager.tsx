@@ -14,7 +14,8 @@ import { CLASSES } from "../CSSClassNames";
 import { I18nLabel } from "../I18nLabel";
 import { TabButtonStamp } from "../TabButtonStamp";
 import { LayoutController } from "./LayoutInternal";
-import { isSafari } from "../Utils";
+import { findParentLayout, isSafari } from "../Utils";
+import { Layout } from "../../model/Layout";
 
 export class DragDropManager {
     private static dragState: DragState | undefined = undefined;
@@ -49,6 +50,8 @@ export class DragDropManager {
 
         this._dragEnterCount = 0;
 
+        this._controller.getModel().sortLayouts(); // must have order windows, tabs, floats
+
         if (node instanceof TabSetNode) {
             let rendered = false;
             let content = this._controller.i18nName(I18nLabel.Move_Tabset);
@@ -66,7 +69,7 @@ export class DragDropManager {
                 this.setDragComponent(event, content, 10, 10);
             }
         } else {
-            const element = event.target as HTMLElement; 
+            const element = event.target as HTMLElement;
             if (element && typeof element.getBoundingClientRect === 'function') { // incase its not actually a htmlelement at runtime
                 const rect = element.getBoundingClientRect();
                 const offsetX = event.clientX - rect.left;
@@ -104,7 +107,6 @@ export class DragDropManager {
             </div>
         );
 
-        this._controller.getModel().sortLayouts(); // must have order windows, tabs, floats
 
         const currentDocument = this._controller.getCurrentDocument();
         const tempDiv = currentDocument!.createElement('div');
@@ -123,16 +125,35 @@ export class DragDropManager {
 
     updateActive(event: React.DragEvent<HTMLElement>) {
         const layouts = Array.from(this._controller.getModel().getLayouts().values());
-        let foundActive = false;
+        let found: Layout | undefined = undefined;
+        let foundTab: Layout | undefined = undefined;
         for (let i = layouts.length - 1; i >= 0; i--) {
             const layout = layouts[i];
-            const manager = layout.getController()?.getDragDropManager();
-            if (manager) {
-                const newActive = !foundActive && manager.getDragEnterCount() > 0;
-                if (newActive) {
-                    foundActive = true;
+            const dragDropManager = layout.getController()?.getDragDropManager();
+            if (dragDropManager) {
+                if (dragDropManager.getDragEnterCount() > 0) {
+                    if (layout.getType() === "tab") {
+                        foundTab = layout;
+                    } else if (!found && !foundTab) {
+                        found = layout;
+                    }
                 }
-                manager.setActive(newActive, event);
+            }
+        }
+
+        if (foundTab) {
+            const parentLayout = findParentLayout(foundTab);
+            if (found === parentLayout || !found ) {
+                found = foundTab;
+            }
+        }
+
+        if (found) {
+            found.getController()!.getDragDropManager().setActive(true, event);
+        }
+        for (const layout of layouts) {
+            if (layout !== found) {
+                layout.getController()?.getDragDropManager().setActive(false, event);
             }
         }
     }
@@ -186,7 +207,7 @@ export class DragDropManager {
     }
 
     onDragEnter = (event: React.DragEvent<HTMLElement>) => {
-         // console.log("onDragEnter", this._controller.getLayoutId());
+        // console.log("onDragEnter", this._controller.getLayoutId());
 
         if (!DragDropManager.dragState && this._controller.getProps().onExternalDrag) {
             const externalDrag = this._controller.getProps().onExternalDrag!(event);
@@ -216,7 +237,7 @@ export class DragDropManager {
 
             this._dragging = true;
             this._controller.showOverlayOnAllWindows(true);
-            
+
             if (this._controller.getModel().getMaximizedTabset(this._controller.getLayoutId()) === undefined) {
                 this._controller.setState({ showEdges: this._controller.getModel().isEnableEdgeDock() });
             }
@@ -253,11 +274,11 @@ export class DragDropManager {
                     this._outlineDiv.className = this._controller.getClassName(dropInfo.className);
                     dropInfo.rect.positionElement(this._outlineDiv);
                     this._outlineDiv.style.visibility = "visible";
-                } 
-            // } else {
-            //     if (this._outlineDiv) {
-            //         this._outlineDiv.style.visibility = "hidden";
-            //     }
+                }
+                // } else {
+                //     if (this._outlineDiv) {
+                //         this._outlineDiv.style.visibility = "hidden";
+                //     }
             }
         }
     }
@@ -295,7 +316,7 @@ export class DragDropManager {
             const dragState = DragDropManager.dragState!;
             if (this._dropInfo) {
                 if (dragState.dragJson !== undefined) {
-                    const newNode = this._controller.doAction(Actions.addNode(dragState.dragJson, this._dropInfo.node.getId(), this._dropInfo.location, this._dropInfo.index));
+                    const newNode = this._controller.doAction(Actions.addTab(dragState.dragJson, this._dropInfo.node.getId(), this._dropInfo.location, this._dropInfo.index));
                     if (dragState.fnNewNodeDropped !== undefined) {
                         dragState.fnNewNodeDropped(newNode, event);
                     }

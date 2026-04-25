@@ -185,3 +185,35 @@ export function isSafari() {
     const userAgent = navigator.userAgent;
     return userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Chromium");
 }
+
+export function getPageMetrics() {
+  return {
+    // How far the user has scrolled from the top/left
+    scrollTop: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
+    scrollLeft: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
+
+    // The total height and width of the entire document
+    fullHeight: Math.max(
+      document.body.scrollHeight, 
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight, 
+      document.documentElement.offsetHeight,
+      document.body.clientHeight, 
+      document.documentElement.clientHeight
+    ),
+    
+    fullWidth: Math.max(
+      document.body.scrollWidth, 
+      document.documentElement.scrollWidth,
+      document.body.offsetWidth, 
+      document.documentElement.offsetWidth,
+      document.body.clientWidth, 
+      document.documentElement.clientWidth
+    ),
+
+    viewportHeight: window.innerHeight || document.documentElement.clientHeight,
+    viewportWidth: window.innerWidth || document.documentElement.clientWidth
+  };
+}
+
+

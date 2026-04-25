@@ -45,7 +45,8 @@ export enum CLASSES {
     FLEXLAYOUT__FLOATING_WINDOW_CONTENT = "flexlayout__floating_window_content",
 
     FLEXLAYOUT__LAYOUT = "flexlayout__layout",
-    FLEXLAYOUT__LAYOUT_MOVEABLES = "flexlayout__layout_moveables",
+    FLEXLAYOUT__LAYOUT_METRICS = "flexlayout__layout_metrics",
+    FLEXLAYOUT__LAYOUT_MOVEABLES_HOME = "flexlayout__layout_moveables_home",
     FLEXLAYOUT__LAYOUT_OVERLAY = "flexlayout__layout_overlay",
     FLEXLAYOUT__LAYOUT_TAB_STAMPS = "flexlayout__layout_tab_stamps",
     FLEXLAYOUT__LAYOUT_MAIN = "flexlayout__layout_main",

@@ -7,6 +7,7 @@ import { IJsonTabNode, ITabAttributes } from "./IJsonModel";
 import { Model } from "./Model";
 import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
+import { CLASSES } from "../view/CSSClassNames";
 
 export class TabNode extends Node implements IDraggable {
     static readonly TYPE = "tab";
@@ -18,21 +19,23 @@ export class TabNode extends Node implements IDraggable {
     }
 
     private tabRect: Rect = Rect.empty();
-    private moveableElement: HTMLElement | null;
     private renderedName?: string;
     private extra: Record<string, any>;
     private visible: boolean;
     private rendered: boolean;
+
+    private moveableElement: HTMLElement;
+    private tabStamp: HTMLElement | null;
     private scrollTop?: number;
     private scrollLeft?: number;
-    private tabStamp: HTMLElement | null;
 
     /** @internal */
     constructor(model: Model, json: IJsonTabNode, addToModel: boolean = true) {
         super(model);
 
         this.extra = {}; // extra data added to node not saved in json
-        this.moveableElement = null;
+        this.moveableElement = document.createElement("div");
+        this.moveableElement.className = CLASSES.FLEXLAYOUT__TAB_MOVEABLE;
         this.tabStamp = null;
         this.rendered = false;
         this.visible = false;
@@ -288,11 +291,6 @@ export class TabNode extends Node implements IDraggable {
     }
 
     /** @internal */
-    setMoveableElement(element: HTMLElement | null) {
-        this.moveableElement = element;
-    }
-
-    /** @internal */
     setRenderedName(name: string) {
         this.renderedName = name;
     }
@@ -405,7 +403,7 @@ export class TabNode extends Node implements IDraggable {
             `whether to avoid rendering component until tab is visible`
         );
         attributeDefinitions.addInherited("enablePopout", "tabEnablePopout").setType(Attribute.BOOLEAN).setAlias("enableFloat").setDescription(
-            `enable popout (in popout capable browser)`
+            `enable window popout (in popout capable browser), to show an icon in the tabset header also set the enablePopoutIcon attribute`
         );
         attributeDefinitions.addInherited("enablePopoutIcon", "tabEnablePopoutIcon").setType(Attribute.BOOLEAN).setDescription(
             `whether to show the popout icon in the tabset header if this tab enables popouts`

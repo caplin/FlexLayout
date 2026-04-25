@@ -71,8 +71,11 @@
   bottom: 0;
   position: absolute;
   display: flex;
-  overflow: hidden;
   background-color: var(--color-background);
+}
+.flexlayout__layout_metrics {
+  position: absolute;
+  top: -30000px;
 }
 .flexlayout__layout_overlay {
   left: 0;
@@ -90,7 +93,7 @@
   flex-direction: column;
   align-items: flex-start;
 }
-.flexlayout__layout_moveables {
+.flexlayout__layout_moveables_home {
   visibility: hidden;
   position: absolute;
   width: 100px;
@@ -692,6 +695,7 @@
 }
 .flexlayout__float_window_content {
   position: relative;
+  overflow: auto;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -724,7 +728,6 @@
 }
 .flexlayout__border_sizer {
   position: absolute;
-  top: -30000px;
   padding-top: 6px;
   padding-bottom: 5px;
   font-size: var(--font-size);

@@ -84,8 +84,6 @@
 				"type": "tabset",
 				"id": "#018c109c-20ab-4458-84c8-1817d2e7d81b",
 				"weight": 33,
-				"enableDeleteWhenEmpty": false,
-				"enableClose": false,
 				"children": [
 					{
 						"type": "tab",

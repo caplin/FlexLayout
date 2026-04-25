@@ -26,64 +26,94 @@ export const useTabOverflow = (
     const hiddenTabsRef = React.useRef<number[]>([]);
     const thumbInternalPos = React.useRef<number>(0);
     const repositioningRef = React.useRef<boolean>(false);
-    hiddenTabsRef.current = hiddenTabs;
-
-    // if node id changes (new model) then reset scroll to 0
-    React.useLayoutEffect(() => {
-        if (tabStripRef.current) {
-            setScrollPosition(0);
-        }
-    }, [node.getId()]);
-
-    // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
-    React.useLayoutEffect(() => {
-        userControlledPositionRef.current = false;
-    }, [node.getSelectedNode(), node.getRect().width, node.getRect().height]);
 
     React.useLayoutEffect(() => {
-        checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
-
-        if (userControlledPositionRef.current === false) {
-            scrollIntoView();
-        }
-
-        updateScrollMetrics();
-        updateHiddenTabs();
+        hiddenTabsRef.current = hiddenTabs;
     });
 
-    React.useEffect(() => {
-        selfRef.current?.addEventListener("wheel", onWheel, { passive: false });
-        return () => {
-            selfRef.current?.removeEventListener("wheel", onWheel);
-        };
-    }, [selfRef.current]);
-
-    // needed to prevent default mouse wheel over tabset/border when page scrolled (cannot do with react event?)
-    const onWheel = (event: Event) => {
-        event.preventDefault();
-    };
-
-    function scrollIntoView() {
-        const selectedTabNode = node.getSelectedNode() as TabNode;
-        if (selectedTabNode && tabStripRef.current) {
-            const stripRect = controller.getBoundingClientRect(tabStripRef.current);
-            const selectedRect = selectedTabNode.getTabRect()!;
-
-            let shift = getNear(stripRect) - getNear(selectedRect);
-            if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) {
-                setScrollPosition(getScrollPosition(tabStripRef.current) - shift);
-                repositioningRef.current = true; // prevent onScroll setting userControlledPosition
-            } else {
-                shift = getFar(selectedRect) - getFar(stripRect);
-                if (shift > 0) {
-                    setScrollPosition(getScrollPosition(tabStripRef.current) + shift);
-                    repositioningRef.current = true;
-                }
-            }
+    const setScrollPosition = React.useCallback((p: number) => {
+        if (orientation === Orientation.HORZ) {
+            tabStripRef.current!.scrollLeft = p;
+        } else {
+            tabStripRef.current!.scrollTop = p;
         }
-    }
+    }, [orientation, tabStripRef]);
 
-    const updateScrollMetrics = () => {
+    const getScrollPosition = React.useCallback((elm: Element) => {
+        if (orientation === Orientation.HORZ) {
+            return elm.scrollLeft;
+        } else {
+            return elm.scrollTop;
+        }
+    }, [orientation]);
+
+    const getElementSize = React.useCallback((elm: Element) => {
+        if (orientation === Orientation.HORZ) {
+            return elm.clientWidth;
+        } else {
+            return elm.clientHeight;
+        }
+    }, [orientation]);
+
+    const getScrollSize = React.useCallback((elm: Element) => {
+        if (orientation === Orientation.HORZ) {
+            return elm.scrollWidth;
+        } else {
+            return elm.scrollHeight;
+        }
+    }, [orientation]);
+
+    const getSize = React.useCallback((rect: DOMRect | Rect) => {
+        if (orientation === Orientation.HORZ) {
+            return rect.width;
+        } else {
+            return rect.height;
+        }
+    }, [orientation]);
+
+    const getNear = React.useCallback((rect: DOMRect | Rect) => {
+        if (orientation === Orientation.HORZ) {
+            return rect.x;
+        } else {
+            return rect.y;
+        }
+    }, [orientation]);
+
+    const getFar = React.useCallback((rect: DOMRect | Rect) => {
+        if (orientation === Orientation.HORZ) {
+            return rect.right;
+        } else {
+            return rect.bottom;
+        }
+    }, [orientation]);
+
+    const findHiddenTabs = React.useCallback((): number[] => {
+        const hidden: number[] = [];
+        if (tabStripRef.current) {
+            const strip = tabStripRef.current;
+            const stripRect = strip.getBoundingClientRect();
+            const visibleNear = getNear(stripRect) - 1;
+            const visibleFar = getFar(stripRect) + 1;
+
+            const tabContainer = strip.firstElementChild!;
+
+            let i = 0;
+            Array.from(tabContainer.children).forEach((child) => {
+                const tabRect = child.getBoundingClientRect();
+
+                if (child.classList.contains(tabClassName)) {
+                    if (getNear(tabRect) < visibleNear || getFar(tabRect) > visibleFar) {
+                        hidden.push(i);
+                    }
+                    i++;
+                }
+            });
+        }
+
+        return hidden;
+    }, [tabClassName, tabStripRef, getNear, getFar]);
+
+    const updateScrollMetrics = React.useCallback(() => {
         if (tabStripRef.current && miniScrollRef.current) {
             const t = tabStripRef.current;
             const s = miniScrollRef.current;
@@ -118,9 +148,9 @@ export const useTabOverflow = (
                 s.style.right = "0px";
             }
         }
-    }
+    }, [orientation, tabStripRef, miniScrollRef, getElementSize, getScrollSize, getScrollPosition]);
 
-    const updateHiddenTabs = () => {
+    const updateHiddenTabs = React.useCallback((isInitial = false) => {
         const newHiddenTabs = findHiddenTabs();
         const showHidden = newHiddenTabs.length > 0;
 
@@ -128,41 +158,64 @@ export const useTabOverflow = (
             setShowHiddenTabs(showHidden);
         }
 
-        if (updateHiddenTabsTimerRef.current === undefined) {
+        if (isInitial) {
+            setHiddenTabs(newHiddenTabs);
+        } else if (updateHiddenTabsTimerRef.current === undefined) {
             // throttle updates to prevent Maximum update depth exceeded error
             updateHiddenTabsTimerRef.current = setTimeout(() => {
-                const newHiddenTabs = findHiddenTabs();
-                if (!arraysEqual(newHiddenTabs, hiddenTabsRef.current)) {
-                    setHiddenTabs(newHiddenTabs);
+                const currentHiddenTabs = findHiddenTabs();
+                if (!arraysEqual(currentHiddenTabs, hiddenTabsRef.current)) {
+                    setHiddenTabs(currentHiddenTabs);
                 }
 
                 updateHiddenTabsTimerRef.current = undefined;
             }, 100);
         }
-    }
+    }, [findHiddenTabs, isShowHiddenTabs]);
 
-    const onScroll = () => {
+    const scrollIntoView = React.useCallback(() => {
+        const selectedTabNode = node.getSelectedNode() as TabNode;
+        if (selectedTabNode && tabStripRef.current) {
+            const stripRect = controller.getBoundingClientRect(tabStripRef.current);
+            const selectedRect = selectedTabNode.getTabRect()!;
+
+            let shift = getNear(stripRect) - getNear(selectedRect);
+            if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) {
+                setScrollPosition(getScrollPosition(tabStripRef.current) - shift);
+                repositioningRef.current = true; // prevent onScroll setting userControlledPosition
+            } else {
+                shift = getFar(selectedRect) - getFar(stripRect);
+                if (shift > 0) {
+                    setScrollPosition(getScrollPosition(tabStripRef.current) + shift);
+                    repositioningRef.current = true;
+                }
+            }
+        }
+    }, [node, controller, tabStripRef, getNear, getFar, getSize, getScrollPosition, setScrollPosition]);
+
+    const checkForOverflow = React.useCallback(() => {
+        if (tabStripRef.current) {
+            const strip = tabStripRef.current;
+            const tabContainer = strip.firstElementChild!;
+
+            const offset = isDockStickyButtons ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
+            const dock = (getElementSize(tabContainer) + offset) > getElementSize(tabStripRef.current);
+            if (dock !== isDockStickyButtons) {
+                setDockStickyButtons(dock);
+            }
+        }
+    }, [tabStripRef, isDockStickyButtons, getElementSize]);
+
+    const onScroll = React.useCallback(() => {
         if (!repositioningRef.current) {
             userControlledPositionRef.current = true;
         }
         repositioningRef.current = false;
-        updateScrollMetrics()
+        updateScrollMetrics();
         updateHiddenTabs();
-    };
+    }, [updateScrollMetrics, updateHiddenTabs]);
 
-    const onScrollPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-        event.stopPropagation();
-        miniScrollRef.current!.setPointerCapture(event.pointerId)
-        const r = miniScrollRef.current!.getBoundingClientRect()!;
-        if (orientation === Orientation.HORZ) {
-            thumbInternalPos.current = event.clientX - r.x;
-        } else {
-            thumbInternalPos.current = event.clientY - r.y;
-        }
-        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
-    }
-
-    const onDragMove = (x: number, y: number) => {
+    const onDragMove = React.useCallback((x: number, y: number) => {
         if (tabStripRef.current && miniScrollRef.current) {
             const t = tabStripRef.current;
             const s = miniScrollRef.current;
@@ -175,7 +228,7 @@ export const useTabOverflow = (
             if (orientation === Orientation.HORZ) {
                 thumb = x - r.x - thumbInternalPos.current;
             } else {
-                thumb = y - r.y - thumbInternalPos.current
+                thumb = y - r.y - thumbInternalPos.current;
             }
 
             thumb = Math.max(0, Math.min(scrollSize - thumbSize, thumb));
@@ -184,54 +237,24 @@ export const useTabOverflow = (
                 setScrollPosition(scrollPos);
             }
         }
-    }
+    }, [tabStripRef, miniScrollRef, orientation, getElementSize, getScrollSize, setScrollPosition]);
 
-    const onDragEnd = () => {
-    }
+    const onDragEnd = React.useCallback(() => { }, []);
+    const onDragCancel = React.useCallback(() => { }, []);
 
-    const onDragCancel = () => {
-    }
-
-    const checkForOverflow = () => {
-        if (tabStripRef.current) {
-            const strip = tabStripRef.current;
-            const tabContainer = strip.firstElementChild!;
-
-            const offset = isDockStickyButtons ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
-            const dock = (getElementSize(tabContainer) + offset) > getElementSize(tabStripRef.current);
-            if (dock !== isDockStickyButtons) {
-                setDockStickyButtons(dock);
-            }
+    const onScrollPointerDown = React.useCallback((event: React.PointerEvent<HTMLElement>) => {
+        event.stopPropagation();
+        miniScrollRef.current!.setPointerCapture(event.pointerId);
+        const r = miniScrollRef.current!.getBoundingClientRect()!;
+        if (orientation === Orientation.HORZ) {
+            thumbInternalPos.current = event.clientX - r.x;
+        } else {
+            thumbInternalPos.current = event.clientY - r.y;
         }
-    }
+        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
+    }, [miniScrollRef, orientation, onDragMove, onDragEnd, onDragCancel]);
 
-    const findHiddenTabs: () => number[] = () => {
-        const hidden: number[] = [];
-        if (tabStripRef.current) {
-            const strip = tabStripRef.current;
-            const stripRect = strip.getBoundingClientRect();
-            const visibleNear = getNear(stripRect) - 1;
-            const visibleFar = getFar(stripRect) + 1;
-
-            const tabContainer = strip.firstElementChild!;
-
-            let i = 0;
-            Array.from(tabContainer.children).forEach((child) => {
-                const tabRect = child.getBoundingClientRect();
-
-                if (child.classList.contains(tabClassName)) {
-                    if (getNear(tabRect) < visibleNear || getFar(tabRect) > visibleFar) {
-                        hidden.push(i);
-                    }
-                    i++;
-                }
-            });
-        }
-
-        return hidden;
-    };
-
-    const onMouseWheel = (event: React.WheelEvent<HTMLElement>) => {
+    const onMouseWheel = React.useCallback((event: React.WheelEvent<HTMLElement>) => {
         if (tabStripRef.current) {
             if (node.getChildren().length === 0) return;
 
@@ -249,65 +272,54 @@ export const useTabOverflow = (
                 event.stopPropagation();
             }
         }
-    };
+    }, [node, tabStripRef, getScrollPosition, getScrollSize, getElementSize, setScrollPosition]);
 
-    // orientation helpers:
+    const onWheel = React.useCallback((event: Event) => {
+        event.preventDefault();
+    }, []);
 
-    const getNear = (rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.x;
-        } else {
-            return rect.y;
+    const nodeId = node.getId();
+    const selectedNode = node.getSelectedNode();
+    const rectWidth = node.getRect().width;
+    const rectHeight = node.getRect().height;
+
+    // if node id changes (new model) then reset scroll to 0
+    React.useLayoutEffect(() => {
+        if (tabStripRef.current) {
+            setScrollPosition(0);
         }
-    };
+    }, [nodeId, tabStripRef, setScrollPosition]);
 
-    const getFar = (rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.right;
-        } else {
-            return rect.bottom;
-        }
-    };
+    // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
+    React.useLayoutEffect(() => {
+        userControlledPositionRef.current = false;
+    }, [selectedNode, rectWidth, rectHeight]);
 
-    const getElementSize = (elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.clientWidth;
-        } else {
-            return elm.clientHeight;
-        }
-    }
+    React.useLayoutEffect(() => {
+        checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
 
-    const getSize = (rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.width;
-        } else {
-            return rect.height;
+        if (userControlledPositionRef.current === false) {
+            scrollIntoView();
         }
-    }
 
-    const getScrollSize = (elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.scrollWidth;
-        } else {
-            return elm.scrollHeight;
-        }
-    }
+        updateScrollMetrics();
 
-    const setScrollPosition = (p: number) => {
-        if (orientation === Orientation.HORZ) {
-            tabStripRef.current!.scrollLeft = p;
-        } else {
-            tabStripRef.current!.scrollTop = p;
-        }
-    }
+        // Initial calculation to prevent flash
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        updateHiddenTabs(true);
 
-    const getScrollPosition = (elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.scrollLeft;
-        } else {
-            return elm.scrollTop;
-        }
-    }
+        requestAnimationFrame(() => {
+            updateHiddenTabs();
+        });
+    }, [checkForOverflow, scrollIntoView, updateScrollMetrics, updateHiddenTabs, rectWidth, rectHeight, orientation, selectedNode]);
+
+    React.useEffect(() => {
+        const strip = selfRef.current;
+        strip?.addEventListener("wheel", onWheel, { passive: false });
+        return () => {
+            strip?.removeEventListener("wheel", onWheel);
+        };
+    }, [onWheel]);
 
     return { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs };
 };

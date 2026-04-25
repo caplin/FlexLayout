@@ -3,7 +3,7 @@ export enum I18nLabel {
     Close_Tabset = "Close tab set",
     Active_Tabset = "Active tab set",
     Move_Tabset = "Move tab set",
-    Move_Tabs = "Move tabs(?)",
+    Move_Tabs = "Move tabs (?)",
     Maximize = "Maximize tab set",
     Restore = "Restore tab set",
     Popout_Tab = "Popout selected tab",

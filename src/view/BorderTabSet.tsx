@@ -24,6 +24,8 @@ export interface IBorderTabSetProps {
 export const BorderTabSet = (props: IBorderTabSetProps) => {
     const { borderNode, controller, size } = props;
 
+    // Must define `selfRef` before it is used in `useLayoutEffect`
+    const selfRef = React.useRef<HTMLDivElement>(null);
     const toolbarRef = React.useRef<HTMLDivElement>(null);
     const miniScrollRef = React.useRef<HTMLDivElement>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement>(null);
@@ -32,14 +34,17 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const icons = controller.getIcons();
 
-    React.useLayoutEffect(() => {
-        borderNode.setTabHeaderRect(controller.getBoundingClientRect(selfRef.current!));
-    });
-
-    const { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
+    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
         useTabOverflow(controller, borderNode, Orientation.flip(borderNode.getOrientation()), tabStripInnerRef, miniScrollRef,
             controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_BUTTON)
         );
+
+    React.useLayoutEffect(() => {
+        if (selfRef.current) {
+            borderNode.setTabHeaderRect(controller.getBoundingClientRect(selfRef.current));
+        }
+    });
+
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {

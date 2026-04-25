@@ -1,3 +1,4 @@
+/** @jest-environment jsdom */
 import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, RowNode, TabNode, TabSetNode } from "../src";
 
 /*
@@ -34,7 +35,7 @@ describe("Tree", function () {
                     }
                 );
 
-                doAction(Actions.addNode({ id: "2", name: "newtab1", component: "grid" }, "1", DockLocation.CENTER, -1));
+                doAction(Actions.addTab({ id: "2", name: "newtab1", component: "grid" }, "1", DockLocation.CENTER, -1));
 
                 expect(tabs).equal("/ts0/t0[newtab1]*");
                 expect(tab("/ts0/t0").getId()).equal("2");
@@ -51,75 +52,75 @@ describe("Tree", function () {
 
                 it("add to tabset center", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
 
                     expect(tabs).equal("/ts0/t0[One],/ts0/t1[newtab1]*,/ts1/t0[Two]*");
 
                     const id1 = tabset("/ts1").getId();
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id1, DockLocation.CENTER, -1));
 
                     expect(tabs).equal("/ts0/t0[One],/ts0/t1[newtab1]*,/ts1/t0[Two],/ts1/t1[newtab2]*");
                 });
 
                 it("add to tabset at position", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, 0));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, 0));
 
                     expect(tabs).equal("/ts0/t0[newtab1]*,/ts0/t1[One],/ts1/t0[Two]*");
 
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 1));
 
                     expect(tabs).equal("/ts0/t0[newtab1],/ts0/t1[newtab2]*,/ts0/t2[One],/ts1/t0[Two]*");
 
-                    doAction(Actions.addNode({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 3));
+                    doAction(Actions.addTab({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 3));
 
                     expect(tabs).equal("/ts0/t0[newtab1],/ts0/t1[newtab2],/ts0/t2[One],/ts0/t3[newtab3]*,/ts1/t0[Two]*");
                 });
 
                 it("add to tabset top", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.TOP, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.TOP, -1));
 
                     expect(tabs).equal("/r0/ts0/t0[newtab1]*,/r0/ts1/t0[One]*,/ts1/t0[Two]*");
 
                     const id1 = tabset("/ts1").getId();
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.TOP, -1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id1, DockLocation.TOP, -1));
 
                     expect(tabs).equal("/r0/ts0/t0[newtab1]*,/r0/ts1/t0[One]*,/r1/ts0/t0[newtab2]*,/r1/ts1/t0[Two]*");
                 });
 
                 it("add to tabset bottom", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.BOTTOM, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.BOTTOM, -1));
 
                     expect(tabs).equal("/r0/ts0/t0[One]*,/r0/ts1/t0[newtab1]*,/ts1/t0[Two]*");
 
                     const id1 = tabset("/ts1").getId();
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.BOTTOM, -1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id1, DockLocation.BOTTOM, -1));
 
                     expect(tabs).equal("/r0/ts0/t0[One]*,/r0/ts1/t0[newtab1]*,/r1/ts0/t0[Two]*,/r1/ts1/t0[newtab2]*");
                 });
 
                 it("add to tabset left", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.LEFT, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.LEFT, -1));
 
                     expect(tabs).equal("/ts0/t0[newtab1]*,/ts1/t0[One]*,/ts2/t0[Two]*");
 
                     const id1 = tabset("/ts2").getId();
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.LEFT, -1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id1, DockLocation.LEFT, -1));
 
                     expect(tabs).equal("/ts0/t0[newtab1]*,/ts1/t0[One]*,/ts2/t0[newtab2]*,/ts3/t0[Two]*");
                 });
 
                 it("add to tabset right", () => {
                     const id0 = tabset("/ts0").getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.RIGHT, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.RIGHT, -1));
 
                     expect(tabs).equal("/ts0/t0[One]*,/ts1/t0[newtab1]*,/ts2/t0[Two]*");
 
                     const id1 = tabset("/ts2").getId();
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id1, DockLocation.RIGHT, -1));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id1, DockLocation.RIGHT, -1));
 
                     expect(tabs).equal("/ts0/t0[One]*,/ts1/t0[newtab1]*,/ts2/t0[Two]*,/ts3/t0[newtab2]*");
                 });
@@ -137,19 +138,19 @@ describe("Tree", function () {
                     const path = "/b/top";
                     const others = tabsDontMatch(path);
                     const id0 = border(path).getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
 
                     expect(tabsMatch(path)).equal("/b/top/t0[top1],/b/top/t1[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 0
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
 
                     expect(tabsMatch(path)).equal("/b/top/t0[newtab2],/b/top/t1[top1],/b/top/t2[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 1
-                    doAction(Actions.addNode({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
+                    doAction(Actions.addTab({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
 
                     expect(tabsMatch(path)).equal("/b/top/t0[newtab2],/b/top/t1[newtab3],/b/top/t2[top1],/b/top/t3[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
@@ -159,19 +160,19 @@ describe("Tree", function () {
                     const path = "/b/bottom";
                     const others = tabsDontMatch(path);
                     const id0 = border(path).getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
 
                     expect(tabsMatch(path)).equal("/b/bottom/t0[bottom1],/b/bottom/t1[bottom2],/b/bottom/t2[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 0
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
 
                     expect(tabsMatch(path)).equal("/b/bottom/t0[newtab2],/b/bottom/t1[bottom1],/b/bottom/t2[bottom2],/b/bottom/t3[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 1
-                    doAction(Actions.addNode({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
+                    doAction(Actions.addTab({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
 
                     expect(tabsMatch(path)).equal("/b/bottom/t0[newtab2],/b/bottom/t1[newtab3],/b/bottom/t2[bottom1],/b/bottom/t3[bottom2],/b/bottom/t4[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
@@ -181,19 +182,19 @@ describe("Tree", function () {
                     const path = "/b/left";
                     const others = tabsDontMatch(path);
                     const id0 = border(path).getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
 
                     expect(tabsMatch(path)).equal("/b/left/t0[left1],/b/left/t1[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 0
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
 
                     expect(tabsMatch(path)).equal("/b/left/t0[newtab2],/b/left/t1[left1],/b/left/t2[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 1
-                    doAction(Actions.addNode({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
+                    doAction(Actions.addTab({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
 
                     expect(tabsMatch(path)).equal("/b/left/t0[newtab2],/b/left/t1[newtab3],/b/left/t2[left1],/b/left/t3[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
@@ -203,19 +204,19 @@ describe("Tree", function () {
                     const path = "/b/right";
                     const others = tabsDontMatch(path);
                     const id0 = border(path).getId();
-                    doAction(Actions.addNode({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
+                    doAction(Actions.addTab({ name: "newtab1", component: "grid" }, id0, DockLocation.CENTER, -1));
 
                     expect(tabsMatch(path)).equal("/b/right/t0[right1],/b/right/t1[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 0
-                    doAction(Actions.addNode({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
+                    doAction(Actions.addTab({ name: "newtab2", component: "grid" }, id0, DockLocation.CENTER, 0));
 
                     expect(tabsMatch(path)).equal("/b/right/t0[newtab2],/b/right/t1[right1],/b/right/t2[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
 
                     // add tab at position 1
-                    doAction(Actions.addNode({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
+                    doAction(Actions.addTab({ name: "newtab3", component: "grid" }, id0, DockLocation.CENTER, 1));
 
                     expect(tabsMatch(path)).equal("/b/right/t0[newtab2],/b/right/t1[newtab3],/b/right/t2[right1],/b/right/t3[newtab1]");
                     expect(tabsDontMatch(path)).equal(others);
@@ -425,7 +426,7 @@ describe("Tree", function () {
             });
 
             it("select tab", () => {
-                doAction(Actions.addNode({ name: "newtab1", component: "grid" }, tabset("/ts0").getId(), DockLocation.CENTER, -1));
+                doAction(Actions.addTab({ name: "newtab1", component: "grid" }, tabset("/ts0").getId(), DockLocation.CENTER, -1));
                 expect(tabs).equal("/ts0/t0[One],/ts0/t1[newtab1]*,/ts1/t0[Two]*");
 
                 doAction(Actions.selectTab(tab("/ts0/t0").getId()));

@@ -22,8 +22,13 @@
         &__layout {
             @include absoluteFill;
             display: flex;
-            overflow: hidden;
+            // overflow: hidden;
             background-color: var(--color-background);
+
+            &_metrics {
+                position: absolute;
+                top: -30000px; // offscreen
+            } 
 
             &_overlay {
                 @include absoluteFill;
@@ -39,7 +44,7 @@
                 align-items: flex-start;
             }
 
-            &_moveables {
+            &_moveables_home {
                 visibility: hidden;
                 position: absolute;
                 width: 100px; // size is needed to tabs have something to draw into
@@ -762,6 +767,7 @@
 
             &_content {
                 position: relative;
+                overflow: auto;
                 flex-grow: 1;
                 display: flex;
                 flex-direction: column;
@@ -798,7 +804,6 @@
 
         &__border_sizer {
             position: absolute;
-            top: -30000px; // offscreen
             padding-top: 6px;
             padding-bottom: 5px;
             font-size: var(--font-size);

@@ -27,7 +27,7 @@ import { BorderContainer } from "./BorderContainer";
 import { ITabSetRenderValues, ITabRenderValues, IIcons } from "./LayoutTypes";
 import { ILayoutProps } from "../Layout";
 import { randomUUID } from "../../model/Utils";
-import { DragContainer } from "../DragContainer";
+import { DragTabButton } from "../DragTabButton";
 
 /** @internal */
 export interface ILayoutInternalProps extends ILayoutProps {
@@ -46,10 +46,10 @@ export interface ILayoutInternalState {
     showEdges: boolean;
     showOverlay: boolean;
     calculatedBorderBarSize: number;
+    calculatedSplitterSize: number;
     layoutRedrawRevision: number;
     fullRedrawRevision: number;
     showHiddenBorder: DockLocation;
-    splitterSize: number;
 }
 
 /** @internal */
@@ -63,10 +63,10 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         showEdges: false,
         showOverlay: false,
         calculatedBorderBarSize: 29,
+        calculatedSplitterSize: 8,
         layoutRedrawRevision: 0,
         fullRedrawRevision: 0,
-        showHiddenBorder: DockLocation.CENTER, // using center indicates no hidden border
-        splitterSize: 8
+        showHiddenBorder: DockLocation.CENTER // using center indicates no hidden border
     });
 
     const setState = React.useCallback(
@@ -80,10 +80,12 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     );
 
     const layoutRef = React.useRef<HTMLDivElement>(null); // ref of layout container
-    const moveablesRef = React.useRef<HTMLDivElement>(null);
+    const moveablesHomeRef = React.useRef<HTMLDivElement>(null);
     const findBorderBarSizeRef = React.useRef<HTMLDivElement>(null);
+    const findSplitterSizeRef = React.useRef<HTMLDivElement>(null);
     const mainRef = React.useRef<HTMLDivElement>(null); // ref of border container
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const controller = React.useMemo(() => new LayoutController(props, state, setState), []);
 
     // keep controller in sync with latest props/state/refs
@@ -91,8 +93,9 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     controller.setStateRaw(state);
     controller.setSetState(setState);
     controller.setLayoutRef(layoutRef);
-    controller.setMoveablesRef(moveablesRef);
+    controller.setMoveablesHomeRef(moveablesHomeRef);
     controller.setFindBorderBarSizeRef(findBorderBarSizeRef);
+    controller.setFindSplitterSizeRef(findSplitterSizeRef);
     controller.setMainRef(mainRef);
 
     React.useImperativeHandle(ref, () => controller, [controller]);
@@ -182,7 +185,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         };
     }, [controller]);
 
-    // handle model changes
+    // use model
     React.useEffect(() => {
         const currentModel = props.model;
 
@@ -196,37 +199,26 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
         if (controller.isMainLayout()) {
             currentModel.addChangeListener(controller.onModelChange);
-
-            const updateFromCSSVars = () => {
-                // note getComputedStyle is slow
-                const size = parseInt(getComputedStyle(layoutRef.current!).getPropertyValue('--splitter-size'));
-                if (Number.isFinite(size)) {
-                    props.model.setSplitterSize(size);
-                    if (state.splitterSize !== size) {
-                        setState({ splitterSize: size });
-                    }
-                }
-            }
-
-            updateFromCSSVars();
-            const cssVarUpdater = setInterval(updateFromCSSVars, 1000);
-
             return () => {
                 currentModel.removeChangeListener(controller.onModelChange);
-                clearInterval(cssVarUpdater);
-                controller.tidyMoveablesMap();
             }
         }
         return;
     }, [props.model, controller]);
 
+    const metrics = (
+        <div className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_METRICS)}>
+            <div key="findBorderBarSize" ref={findBorderBarSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
+                FindBorderBarSize
+            </div>
+            <div key="findSplitterSize" ref={findSplitterSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_ + "horz")} />
+        </div>);
+
+    // first render just gets the metrics and layoutRef
     if (!layoutRef.current) {
         return (
             <div ref={layoutRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT)}>
-                <div ref={moveablesRef} key="__moveables__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES)}></div>
-                <div key="findBorderBarSize" ref={findBorderBarSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
-                    FindBorderBarSize
-                </div>
+                {metrics}
             </div>
         );
     }
@@ -238,28 +230,27 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
     if (controller.isMainLayout()) {
         model.getBorderSet().setPaths();
-        controller.createMoveableDivs();
     }
 
+    const overlay = <Overlay key="__overlay__" controller={controller} show={state.showOverlay} />;
     const inner = controller.renderLayout();
     const outer = <BorderContainer controller={controller} inner={inner} />;
     const tabs = controller.renderTabContainers();
     const reorderedTabs = controller.reorderComponents(tabs, controller.getOrderedTabIds());
 
-    let metricElements = null;
     let floatingWindows = null;
     let reorderedTabContents = null;
-    let tabStamps = null;
+    let dragTabButtons = null;
+    let moveablesHome = null; // only contains moveable elements temporarily when moving from window to window
 
     // the main controller handles rendering the tab contents and floating windows
     if (controller.isMainLayout()) {
-        metricElements = controller.renderMetricsElements();
         floatingWindows = <FloatingWindowContainer controller={controller} />;
-        const tabContents = controller.renderTabContents();
-        reorderedTabContents = controller.reorderComponents(tabContents, controller.getOrderedTabMoveableIds());
-        tabStamps = <div key="__tabStamps__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
-            {controller.renderTabStamps()}
+        reorderedTabContents = controller.reorderComponents(controller.renderTabContents(), controller.getOrderedTabMoveableIds());
+        dragTabButtons = <div key="__dragTabButtons__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
+            {controller.renderDragTabButtons()}
         </div>;
+        moveablesHome = <div ref={moveablesHomeRef} key="__moveables_home__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES_HOME)}></div>;
     }
 
     return (
@@ -271,15 +262,15 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
             onDragOver={controller.getDragDropManager().onDragOver}
             onDrop={controller.getDragDropManager().onDrop}
         >
-            <div ref={moveablesRef} key="__moveables__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES)}></div>
-            {metricElements}
-            <Overlay key="__overlay__" controller={controller} show={state.showOverlay} />
+            {metrics}
+            {moveablesHome}
+            {overlay}
             {outer}
             {reorderedTabs}
             {reorderedTabContents}
             {state.portal}
             {floatingWindows}
-            {tabStamps}
+            {dragTabButtons}
         </div>
     );
 });
@@ -292,12 +283,12 @@ export class LayoutController {
     private _setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void;
 
     private _layoutRef!: React.RefObject<HTMLDivElement | null>;
-    private _moveablesRef!: React.RefObject<HTMLDivElement | null>;
+    private _moveablesHomeRef!: React.RefObject<HTMLDivElement | null>;
     private _findBorderBarSizeRef!: React.RefObject<HTMLDivElement | null>;
+    private _findSplitterSizeRef!: React.RefObject<HTMLDivElement | null>;
     private _mainRef!: React.RefObject<HTMLDivElement | null>;
     private _orderedTabIds: string[];
     private _orderedTabMoveableIds: string[];
-    private _moveableElementMap = new Map<string, HTMLElement>();
     private _currentDocument?: Document;
     private _currentWindow?: Window;
     private _supportsPopout: boolean;
@@ -310,7 +301,6 @@ export class LayoutController {
     private _popoutWindowName: string;
     private _cachedLayoutDOMRect: Rect | undefined;
     private _reLayout: boolean;
-
 
     constructor(props: ILayoutInternalProps, state: ILayoutInternalState, setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void) {
         this._props = props;
@@ -385,11 +375,11 @@ export class LayoutController {
                     const renderTabContent = isRendered || (visible && rect.width > 0 && rect.height > 0);
 
                     if (renderTabContent) {
-                        const element = tabNode.getMoveableElement()!;
+                        const element = tabNode.getMoveableElement();
                         const windowId = layout.getWindowId() || "";
                         const key = tabNode.getId() + (tabNode.isEnableWindowReMount() ? windowId : "");
 
-                        // Render tab content into moveable div using portal
+                        // Render tab content into moveable element using portal
                         // Note: TabContentRenderer calls the factory to render the contents
                         tabContents.set(tabNode.getId(), createPortal(
                             <TabContentRenderer
@@ -414,75 +404,24 @@ export class LayoutController {
         return tabContents;
     }
 
-    renderMetricsElements() {
-        return (
-            <div key="findBorderBarSize" ref={this._findBorderBarSizeRef} className={this.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
-                FindBorderBarSize
-            </div>
-        );
-    }
-
-    renderTabStamps() {
-        const tabStamps: React.ReactNode[] = [];
+    renderDragTabButtons() {
+        const dragTabButtons: React.ReactNode[] = [];
 
         this._props.model.visitNodes((node) => {
             if (node instanceof TabNode) {
                 const child = node as TabNode;
 
                 // what the tab should look like when dragged (since images need to have been loaded before drag image can be taken)
-                tabStamps.push(<DragContainer key={child.getId()} controller={this} tabNode={child} dragging={Utils_dragging} />)
+                dragTabButtons.push(<DragTabButton key={child.getId()} controller={this} tabNode={child} dragging={Utils_dragging} />)
             }
         });
 
-        return tabStamps;
+        return dragTabButtons;
     }
 
     // *********************************************************************************
     // Logic
     // *********************************************************************************
-
-    createMoveableDivs() {
-        this._props.model.visitNodes((node) => {
-            if (node instanceof TabNode) {
-                const tabNode = node as TabNode;
-                const element = this.getMoveableElement(tabNode.getId());
-                tabNode.setMoveableElement(element);
-            }
-        });
-    }
-
-    getMoveablesDiv() {
-        return this._moveablesRef.current;
-    }
-
-    getMoveableElement(id: string) {
-        let moveableElement = this._moveableElementMap.get(id);
-        if (moveableElement === undefined) {
-            moveableElement = document.createElement("div");
-            this._moveablesRef.current!.appendChild(moveableElement);
-            moveableElement.className = CLASSES.FLEXLAYOUT__TAB_MOVEABLE;
-            this._moveableElementMap.set(id, moveableElement);
-        }
-        return moveableElement;
-    }
-
-    tidyMoveablesMap() {
-        // console.log("tidyMoveablesMap");
-        const tabs = new Map<string, TabNode>();
-        this._props.model.visitNodes((node, _) => {
-            if (node instanceof TabNode) {
-                tabs.set(node.getId(), node);
-            }
-        });
-
-        for (const [nodeId, element] of this._moveableElementMap) {
-            if (!tabs.has(nodeId)) {
-                // console.log("delete", nodeId);
-                element.remove(); // remove from dom
-                this._moveableElementMap.delete(nodeId); // remove map entry 
-            }
-        }
-    }
 
     redrawLayout() {
         this._mainController?.setState((state) => {
@@ -598,8 +537,15 @@ export class LayoutController {
     updateLayoutMetrics = () => {
         if (this._findBorderBarSizeRef.current) {
             const borderBarSize = this._findBorderBarSizeRef.current.getBoundingClientRect().height;
-            if (borderBarSize !== this._state.calculatedBorderBarSize) {
+            if (Math.abs(borderBarSize - this._state.calculatedBorderBarSize) > 0.5) {
                 this.setState({ calculatedBorderBarSize: borderBarSize });
+            }
+        }
+        if (this._findSplitterSizeRef.current) {
+            const splitterBarSize = this._findSplitterSizeRef.current.getBoundingClientRect().width;
+            if (Math.abs(splitterBarSize - this._state.calculatedSplitterSize) > 0.5) {
+                this._props.model.setSplitterSize(splitterBarSize);
+                this.setState({ calculatedSplitterSize: splitterBarSize });
             }
         }
     };
@@ -622,6 +568,10 @@ export class LayoutController {
     // Getters, Setters, and Utilities
     // *********************************************************************************
 
+    getMoveablesHome() {
+        return this._moveablesHomeRef.current;
+    }
+
     getProps() { return this._props; }
     setProps(value: ILayoutInternalProps) { this._props = value; }
 
@@ -638,11 +588,13 @@ export class LayoutController {
     getLayoutRef() { return this._layoutRef; }
     setLayoutRef(value: React.RefObject<HTMLDivElement | null>) { this._layoutRef = value; }
 
-    getMoveablesRef() { return this._moveablesRef; }
-    setMoveablesRef(value: React.RefObject<HTMLDivElement | null>) { this._moveablesRef = value; }
+    setMoveablesHomeRef(value: React.RefObject<HTMLDivElement | null>) { this._moveablesHomeRef = value; }
 
     getFindBorderBarSizeRef() { return this._findBorderBarSizeRef; }
     setFindBorderBarSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findBorderBarSizeRef = value; }
+
+    getFindSplitterSizeRef() { return this._findBorderBarSizeRef; }
+    setFindSplitterSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findSplitterSizeRef = value; }
 
     getMainRef() { return this._mainRef; }
     setMainRef(value: React.RefObject<HTMLDivElement | null>) { this._mainRef = value; }
@@ -692,10 +644,6 @@ export class LayoutController {
             return Rect.getBoundingClientRect(div).relativeTo(layoutRect);
         }
         return Rect.empty();
-    }
-
-    getMoveableContainer() {
-        return this._moveablesRef.current;
     }
 
     getClassName = (defaultClassName: string) => {
@@ -792,7 +740,7 @@ export class LayoutController {
     addTabToTabSet(tabsetId: string, json: IJsonTabNode): TabNode | undefined {
         const tabsetNode = this._props.model.getNodeById(tabsetId);
         if (tabsetNode !== undefined) {
-            const node = this.doAction(Actions.addNode(json, tabsetId, DockLocation.CENTER, -1));
+            const node = this.doAction(Actions.addTab(json, tabsetId, DockLocation.CENTER, -1));
             return node as TabNode;
         }
         return undefined;
@@ -801,7 +749,7 @@ export class LayoutController {
     addTabToActiveTabSet(json: IJsonTabNode): TabNode | undefined {
         const tabsetNode = this._props.model.getActiveTabset(this._layoutId);
         if (tabsetNode !== undefined) {
-            const node = this.doAction(Actions.addNode(json, tabsetNode.getId(), DockLocation.CENTER, -1));
+            const node = this.doAction(Actions.addTab(json, tabsetNode.getId(), DockLocation.CENTER, -1));
             return node as TabNode;
         }
         return undefined;

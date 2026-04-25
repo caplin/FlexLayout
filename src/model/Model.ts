@@ -69,7 +69,7 @@ export class Model {
      * Update the node tree by performing the given action,
      * Actions should be generated via static methods on the Actions class
      * @param action the action to perform
-     * @returns added Node for Actions.addNode, layoutId for createPopout
+     * @returns added Node for Actions.addTab, layoutId for createPopout
      */
     doAction(action: Action): any {
         let returnVal = undefined;

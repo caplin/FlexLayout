@@ -229,7 +229,7 @@ export interface IGlobalAttributes {
 	/**
 	  Value for TabNode attribute enablePopout if not overridden
 
-	  enable popout (in popout capable browser)
+	  enable window popout (in popout capable browser), to show an icon in the tabset header also set the enablePopoutIcon attribute
 
 	  Default: false
 	 */
@@ -770,7 +770,7 @@ export interface ITabAttributes {
 	enableDrag?: boolean;
 
 	/**
-	  enable popout (in popout capable browser)
+	  enable window popout (in popout capable browser), to show an icon in the tabset header also set the enablePopoutIcon attribute
 
 	  Default: inherited from Global attribute tabEnablePopout (default false)
 	 */

@@ -63,18 +63,21 @@ export interface ILayoutProps {
     popoutWindowName?: string;
     /** the transition speed of the drag rectangle from one position to another, default is 0.3 secs */
     tabDragSpeed?: number;
+    /** set to constrain floating panels to within the layout control */
+    constrainFloatPanels?: boolean;
 }
 
 export interface ILayoutApi {
+
      /** re-render the layout */
     redraw(): void;
-        /**
+
+    /**
      * Adds a new tab to the given tabset
      * @param tabsetId the id of the tabset where the new tab will be added
      * @param json the json for the new tab node
      * @returns the added tab node or undefined
      */
-
     addTabToTabSet(tabsetId: string, json: IJsonTabNode): TabNode | undefined;
 
     /**
@@ -95,14 +98,14 @@ export interface ILayoutApi {
      */
     moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)): void;
 
-        /**
+    /**
      * Adds a new tab to the active tabset (if there is one)
      * @param json the json for the new tab node
      * @returns the added tab node or undefined
      */
     addTabToActiveTabSet(json: IJsonTabNode): TabNode | undefined;
 
-        /**
+    /**
      * Sets the drag image from a react component for a drag event
      * @param event the drag event
      * @param component the react component to be used for the drag image
@@ -123,6 +126,13 @@ export interface ILayoutApi {
 const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
     const controllerRef = useRef<LayoutController>(null);
     const renderRevision = useRef<number>(0);
+    const lastModel = useRef<Model>(props.model);
+    const key = useRef<number>(0);
+
+    if (lastModel.current !== props.model) {
+        key.current++;
+        lastModel.current = props.model;
+    }
 
     Layout.displayName = 'Layout'; // name in react dev tools
 
@@ -150,7 +160,7 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
         },
     }));
 
-    return (<LayoutInternal ref={controllerRef} {...props}  parentRedrawRevision={renderRevision.current++} />);
+    return (<LayoutInternal key={key.current} ref={controllerRef} {...props}  parentRedrawRevision={renderRevision.current++} />);
 });
 
 export { Layout };

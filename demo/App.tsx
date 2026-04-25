@@ -46,8 +46,26 @@ function App() {
     const latestModel = React.useRef<Model | null>(model);
     const latestLayoutFile = React.useRef<string | null>(layoutFile);
 
-    latestModel.current = model;
-    latestLayoutFile.current = layoutFile;
+     React.useEffect(() => {
+        latestModel.current = model;
+        latestLayoutFile.current = layoutFile;
+     });
+
+    React.useEffect(() => {
+        // save layout when unloading page
+        window.onbeforeunload = (event: Event) => {
+            save();
+        };
+
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const layout = params.get('layout') || "default";
+
+        loadLayout(layout, false);
+
+        // use to generate json typescript interfaces 
+        // Model.toTypescriptInterfaces();
+    }, []);
 
     const save = () => {
         const jsonStr = JSON.stringify(latestModel.current!.toJson(), null, "\t");
@@ -96,22 +114,6 @@ function App() {
             Utils.downloadFile("layouts/" + layoutName + ".layout", load, error);
         }
     }
-
-    React.useEffect(() => {
-        // save layout when unloading page
-        window.onbeforeunload = (event: Event) => {
-            save();
-        };
-
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-        const layout = params.get('layout') || "default";
-
-        loadLayout(layout, false);
-
-        // use to generate json typescript interfaces 
-        // Model.toTypescriptInterfaces();
-    }, []);
 
     // const allowDrop = (dragNode: (TabNode | TabSetNode), dropInfo: DropInfo) => {
     //     let dropNode = dropInfo.node;
@@ -318,15 +320,15 @@ function App() {
             */
             return (<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
                 <div title="Header rendered in factory method"
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--color-tab-unselected)",
-                    backgroundColor: "var(--color-tabset-background)",
-                    marginBottom: 5,
-                    fontWeight: 500,
-                }}>User Defined Header</div>
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "var(--color-tab-unselected)",
+                        backgroundColor: "var(--color-tabset-background)",
+                        marginBottom: 5,
+                        fontWeight: 500,
+                    }}>User Defined Header</div>
                 <TabLayout tabNode={node} />
             </div>);
         }
@@ -604,19 +606,19 @@ function App() {
                         </select>
                         <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                         <div style={{ flexGrow: 1 }}></div>
-                        <span style={{ fontSize: "14px" }}>Realtime resize</span>
+                        <span style={{ marginLeft: 5 }}>Realtime resize</span>
                         <input
                             name="realtimeResize"
                             type="checkbox"
                             checked={realtimeResize}
                             onChange={onRealtimeResize} />
-                        <span style={{ marginLeft: 5, fontSize: "14px" }}>Show layout</span>
+                        <span style={{ marginLeft: 5 }}>Show layout</span>
                         <input
                             name="show layout"
                             type="checkbox"
                             checked={showLayout}
                             onChange={onShowLayout} />
-                        <span style={{ marginLeft: 5, fontSize: "14px" }}>Attributes</span>
+                        <span style={{ marginLeft: 5 }}>Attributes</span>
                         <input
                             name="attrs"
                             type="checkbox"

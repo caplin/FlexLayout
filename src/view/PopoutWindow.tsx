@@ -19,9 +19,18 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
     const { title, controller, layout, url, onCloseLayout, onSetWindow: onSetLayout, children } = props; 
     const popoutWindow = React.useRef<Window>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
-    const [firstRender, setFirstRender] = React.useState<boolean>(true);
     // map from main docs style -> this docs equivalent style
-    const styleMap = new Map<HTMLElement, HTMLElement>();       
+    const styleMap = React.useMemo(() => new Map<HTMLElement, HTMLElement>(), []);
+
+    const initializedRef = React.useRef(false);
+
+
+    React.useLayoutEffect(() => {
+        if (!initializedRef.current && content) {
+            initializedRef.current = true;
+            controller.redrawLayout();
+        }
+    }, [content, controller]);
 
     React.useLayoutEffect(() => {
         if (!popoutWindow.current) { // only create window once, even in strict mode
@@ -79,20 +88,11 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
             }
         }
         return () => {
-            // only close popoutWindow if layoutId has been removed from the model (ie this was due to model change)
-            if (!controller.getModel().getLayouts().has(layout.getLayoutId())) {
-                popoutWindow.current?.close();
-                popoutWindow.current = null;
-            }
+            popoutWindow.current?.close();
+            popoutWindow.current = null;
         }
-    }, []);
+    }, [controller, layout, url, title, onCloseLayout, onSetLayout, styleMap]);
 
-    React.useEffect(() => {
-        if (content !== undefined && firstRender) {
-            controller.redrawLayout();
-            setFirstRender(false);
-        }
-    }, [content, firstRender, controller]);
 
     if (content !== undefined) {
         return createPortal(children, content!);

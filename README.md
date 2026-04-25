@@ -265,7 +265,7 @@ onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderVa
             title="Add"
             className="flexlayout__tab_toolbar_button"
             onClick={() => {
-                model.doAction(Actions.addNode({
+                model.doAction(Actions.addTab({
                     component: "placeholder",
                     name: "Added " + nextAddIndex.current++
                 }, node.getId(), DockLocation.CENTER, -1, true));
@@ -291,14 +291,14 @@ Apply actions using the `model.doAction()` method. This method takes a single ar
 ### Example
 
 ```js
-model.doAction(FlexLayout.Actions.addNode(
+model.doAction(FlexLayout.Actions.addTab(
     {type:"tab", component:"grid", name:"a grid", id:"5"},
     "1", FlexLayout.DockLocation.CENTER, 0));
 ```
 
 This example adds a new grid component to the center of the tabset with ID "1" at the first position (0). Use `-1` to add to the end of the tabs.
 
-Note: You can retrieve the ID of a node (e.g., the node returned by the `addNode` action) using `node.getId()`. If an ID wasn't assigned when the node was created, one will be generated for you in the form `#<uuid>` (e.g., `#0c459064-8dee-444e-8636-eb9ab910fb27`).
+Note: You can retrieve the ID of a node (e.g., the node returned by the `addTab` action) using `node.getId()`. If an ID wasn't assigned when the node was created, one will be generated for you in the form `#<uuid>` (e.g., `#0c459064-8dee-444e-8636-eb9ab910fb27`).
 
 Note: You can intercept actions resulting from GUI changes before they are applied by implementing the `onAction` callback property of the `Layout`.
 
@@ -323,7 +323,7 @@ The JSON model is defined as a set of TypeScript interfaces. See the documentati
 
 Note: Tabsets are dynamically created as tabs are moved and deleted when their last tab is removed (unless `enableDeleteWhenEmpty` is set to `false`).
 
-[Tab Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonTabNode.html)
+[Tab Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ITabAttributes.html)
 
 [Border Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonBorderNode.html)
 
@@ -369,7 +369,7 @@ function MyComponent({ node }) {
 
 ## Popout Windows
 
-Tabs can be rendered into external browser windows (useful for multi-monitor setups) by using the `enablePopout` attribute. When enabled, a popout icon appears in the tab header.
+Tabs can be rendered into external browser windows (useful for multi-monitor setups) by using the `enablePopout` and `enablePopoutIcon` attributes. When enabled, a popout icon appears in the tab header.
 
 Popout windows require an additional HTML page, `popout.html`, hosted at the same location as the main page (you can copy this from the demo app). The `popout.html` acts as the host for the popped-out tab, and the main page's styles are copied into it at runtime.
 

@@ -5,23 +5,23 @@ import { TabButtonStamp } from "./TabButtonStamp";
 import { LayoutController } from "./layout/LayoutInternal";
 
 /** @internal */
-export interface IDragContainerProps {
+export interface IDragTabButton {
     tabNode: TabNode;
     controller: LayoutController;
     dragging: boolean;
 }
 
 /** @internal */
-export const DragContainer = React.memo((props: IDragContainerProps) => {
+export const DragTabButton = React.memo((props: IDragTabButton) => {
     
-    DragContainer.displayName = 'DragContainer'; // name in react dev tools
+    DragTabButton.displayName = 'DragTabButton'; // name in react dev tools
 
     const { controller, tabNode} = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
     React.useEffect(()=> {
         tabNode.setTabStamp(selfRef.current);
-    }, [tabNode, selfRef.current]);
+    }, [tabNode]);
 
     const cm = controller.getClassName;
 
@@ -36,6 +36,6 @@ export const DragContainer = React.memo((props: IDragContainerProps) => {
 }, arePropsEqual);
 
 // pause rendering while dragging
-function arePropsEqual(prevProps: IDragContainerProps, nextProps: IDragContainerProps) {
+function arePropsEqual(prevProps: IDragTabButton, nextProps: IDragTabButton) {
     return nextProps.dragging;
 }

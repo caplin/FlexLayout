@@ -1,3 +1,9 @@
+## 0.9.1 - 2026-05-01
+* **Changed:** Float panels can now move outside the bounds of the main layout.
+* **Added:** New Layout prop `constrainFloatPanels`, setting this to true will constrain floating panels to the main layout. 
+* **Fixed:** [#520](https://github.com/caplin/FlexLayout/issues/520) Actions.addNode causing duplicate lifecycle flow in web components
+* **Updated:** Dev Dependencies.
+
 ## 0.9.0 - 2026-04-25
 
 ### Features
