@@ -19,18 +19,23 @@ export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
 
     /** @internal */
-    static fromJson(json: IJsonRowNode, model: Model, layout: Layout) {
-        const newLayoutNode = new RowNode(model, json);
+    static fromJson(json: IJsonRowNode, model: Model, layout: Layout, extant?: RowNode) {
+        const newLayoutNode = new RowNode(model, json, extant);
 
         if (json.children != null) {
+            let index = 0;
             for (const jsonChild of json.children) {
+                const extantChildUnknown = extant?.children.at(index);
                 if (jsonChild.type === TabSetNode.TYPE) {
-                    const child = TabSetNode.fromJson(jsonChild as IJsonTabSetNode, model, layout);
+                    const extantChild = extantChildUnknown?.getType() === TabSetNode.TYPE ? (extantChildUnknown as TabSetNode) : undefined;
+                    const child = TabSetNode.fromJson(jsonChild as IJsonTabSetNode, model, layout, extantChild);
                     newLayoutNode.addChild(child);
                 } else if (jsonChild.type === RowNode.TYPE) {
-                    const child = RowNode.fromJson(jsonChild as IJsonRowNode, model, layout);
+                    const extantChild = extantChildUnknown?.getType() === RowNode.TYPE ? (extantChildUnknown as RowNode) : undefined;
+                    const child = RowNode.fromJson(jsonChild as IJsonRowNode, model, layout, extantChild);
                     newLayoutNode.addChild(child);
                 }
+                index++;
             }
         }
 
@@ -52,13 +57,21 @@ export class RowNode extends Node implements IDropTarget {
     private maxWidth: number;
 
     /** @internal */
-    constructor(model: Model, json: IJsonRowNode) {
+    constructor(model: Model, json: IJsonRowNode, extant?: RowNode) {
         super(model);
 
-        this.minHeight = DefaultMin;
-        this.minWidth = DefaultMin;
-        this.maxHeight = DefaultMax;
-        this.maxWidth = DefaultMax;
+        if (extant) {
+            this.minHeight = extant.minHeight;
+            this.minWidth = extant.minWidth;
+            this.maxHeight = extant.maxHeight;
+            this.maxWidth = extant.maxWidth;
+        } else {
+            this.minHeight = DefaultMin;
+            this.minWidth = DefaultMin;
+            this.maxHeight = DefaultMax;
+            this.maxWidth = DefaultMax;
+        }
+
         RowNode.attributeDefinitions.fromJson(json, this.attributes);
         this.normalizeWeights();
         model.addNode(this);
@@ -74,7 +87,7 @@ export class RowNode extends Node implements IDropTarget {
 
         json.children = [];
         for (const child of this.children) {
-            json.children.push((child as (RowNode | TabSetNode)).toJson());
+            json.children.push((child as RowNode | TabSetNode).toJson());
         }
 
         return json;
@@ -101,7 +114,7 @@ export class RowNode extends Node implements IDropTarget {
     /** @internal */
     getSplitterBounds(index: number) {
         const h = this.getOrientation() === Orientation.HORZ;
-        const c = this.getChildren()
+        const c = this.getChildren();
         const ss = this.model.getSplitterSize()!;
         const fr = c[0].getRect();
         const lr = c[c.length - 1].getRect();
@@ -146,7 +159,7 @@ export class RowNode extends Node implements IDropTarget {
             sum += s;
         }
 
-        const startRect = c[index].getRect()
+        const startRect = c[index].getRect();
         const startPosition = (h ? startRect.x : startRect.y) - ss;
 
         return { initialSizes, sum, startPosition };
@@ -161,7 +174,8 @@ export class RowNode extends Node implements IDropTarget {
 
         const sizes = [...initialSizes];
 
-        if (splitterPos < startPosition) { // moved left
+        if (splitterPos < startPosition) {
+            // moved left
             let shift = startPosition - splitterPos;
             let altShift = 0;
             if (sizes[index] + shift > smax) {
@@ -194,8 +208,6 @@ export class RowNode extends Node implements IDropTarget {
                     sizes[i] = m;
                 }
             }
-
-
         } else {
             let shift = splitterPos - startPosition;
             let altShift = 0;
@@ -232,7 +244,7 @@ export class RowNode extends Node implements IDropTarget {
         }
 
         // 0.1 is to prevent weight ever going to zero
-        const weights = sizes.map(s => Math.max(0.1, s) * 100 / sum);
+        const weights = sizes.map((s) => (Math.max(0.1, s) * 100) / sum);
 
         // console.log(splitterPos, startPosition, "sizes", sizes);
         // console.log("weights",weights);
@@ -372,7 +384,6 @@ export class RowNode extends Node implements IDropTarget {
                 this.addChild(child);
             }
         }
-
     }
 
     /** @internal */
@@ -448,14 +459,13 @@ export class RowNode extends Node implements IDropTarget {
         if (dragNode instanceof TabSetNode || dragNode instanceof RowNode) {
             node = dragNode;
             // need to turn round if same orientation unless docking oposite direction
-            if (node instanceof RowNode && node.getOrientation() === this.getOrientation() &&
-                (location.getOrientation() === this.getOrientation() || location === DockLocation.CENTER)) {
+            if (node instanceof RowNode && node.getOrientation() === this.getOrientation() && (location.getOrientation() === this.getOrientation() || location === DockLocation.CENTER)) {
                 node = new RowNode(this.model, {});
                 node.addChild(dragNode);
             }
         } else {
             const callback = this.model.getOnCreateTabSet();
-            const json : ITabAttributes = callback ? callback(dragNode as TabNode) : {};
+            const json: ITabAttributes = callback ? callback(dragNode as TabNode) : {};
             node = new TabSetNode(this.model, json);
             node.addChild(dragNode);
         }
@@ -476,11 +486,11 @@ export class RowNode extends Node implements IDropTarget {
             } else {
                 this.addChild(node, index);
             }
-        } else if (horz && dockLocation === DockLocation.LEFT || !horz && dockLocation === DockLocation.TOP) {
+        } else if ((horz && dockLocation === DockLocation.LEFT) || (!horz && dockLocation === DockLocation.TOP)) {
             this.addChild(node, 0);
-        } else if (horz && dockLocation === DockLocation.RIGHT || !horz && dockLocation === DockLocation.BOTTOM) {
+        } else if ((horz && dockLocation === DockLocation.RIGHT) || (!horz && dockLocation === DockLocation.BOTTOM)) {
             this.addChild(node);
-        } else if (horz && dockLocation === DockLocation.TOP || !horz && dockLocation === DockLocation.LEFT) {
+        } else if ((horz && dockLocation === DockLocation.TOP) || (!horz && dockLocation === DockLocation.LEFT)) {
             const vrow = new RowNode(this.model, {});
             const hrow = new RowNode(this.model, {});
             hrow.setWeight(75);
@@ -492,7 +502,7 @@ export class RowNode extends Node implements IDropTarget {
             vrow.addChild(node);
             vrow.addChild(hrow);
             this.addChild(vrow);
-        } else if (horz && dockLocation === DockLocation.BOTTOM || !horz && dockLocation === DockLocation.RIGHT) {
+        } else if ((horz && dockLocation === DockLocation.BOTTOM) || (!horz && dockLocation === DockLocation.RIGHT)) {
             const vrow = new RowNode(this.model, {});
             const hrow = new RowNode(this.model, {});
             hrow.setWeight(75);
@@ -512,8 +522,6 @@ export class RowNode extends Node implements IDropTarget {
 
         this.model.tidy();
     }
-
-
 
     /** @internal */
     isEnableDrop() {
@@ -535,12 +543,11 @@ export class RowNode extends Node implements IDropTarget {
         return RowNode.attributeDefinitions;
     }
 
-
-    // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
+    // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize
     normalizeWeights() {
         let sum = 0;
         for (const n of this.children) {
-            const node = (n as TabSetNode | RowNode);
+            const node = n as TabSetNode | RowNode;
             sum += node.getWeight();
         }
 
@@ -549,8 +556,8 @@ export class RowNode extends Node implements IDropTarget {
         }
 
         for (const n of this.children) {
-            const node = (n as TabSetNode | RowNode);
-            node.setWeight(Math.max(0.001, 100 * node.getWeight() / sum));
+            const node = n as TabSetNode | RowNode;
+            node.setWeight(Math.max(0.001, (100 * node.getWeight()) / sum));
         }
     }
 
@@ -558,12 +565,8 @@ export class RowNode extends Node implements IDropTarget {
     private static createAttributeDefinitions(): Attributes {
         const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
-        attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(
-            `the unique id of the row, if left undefined a uuid will be assigned`
-        );
-        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(
-            `relative weight for sizing of this row in parent row`
-        );
+        attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(`the unique id of the row, if left undefined a uuid will be assigned`);
+        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(`relative weight for sizing of this row in parent row`);
 
         return attributeDefinitions;
     }

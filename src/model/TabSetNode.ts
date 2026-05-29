@@ -21,25 +21,51 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
 
     /** @internal */
-    static fromJson(json: IJsonTabSetNode, model: Model, layout: Layout) {
-        const newLayoutNode = new TabSetNode(model, json);
+    static fromJson(json: IJsonTabSetNode, model: Model, layout: Layout, extant?: TabSetNode) {
+        const newLayoutNode = new TabSetNode(model, json, extant);
 
         if (json.children != null) {
+            let index = 0;
             for (const jsonChild of json.children) {
+                const prevChildUnknown = extant?.children.at(index);
+                let prevChild: TabNode | undefined;
+                if (
+                    prevChildUnknown !== undefined &&
+                    prevChildUnknown.getType() === TabNode.TYPE
+                ) {
+                    // Do the cast here so we can verify the component matches the previous component
+                    // mounted in the child node for re-use.
+                    const prevChildAsTabNode = prevChildUnknown as TabNode;
+                    if (prevChildAsTabNode.getComponent() === jsonChild.component) {
+                        prevChild = prevChildAsTabNode;
+                    }
+                }
                 const child = TabNode.fromJson(jsonChild, model);
                 newLayoutNode.addChild(child);
+                index++;
             }
         }
-        if (newLayoutNode.children.length === 0) {
-            newLayoutNode.setSelected(-1);
-        }
 
-        if (json.maximized && json.maximized === true) {
-            layout.setMaximizedTabSet(newLayoutNode);
-        }
+        if (extant === undefined) {
+            if (newLayoutNode.children.length === 0) {
+                newLayoutNode.setSelected(-1);
+            }
+            
+            if (json.maximized && json.maximized === true) {
+                layout.setMaximizedTabSet(newLayoutNode);
+            }
 
-        if (json.active && json.active === true) {
-            layout.setActiveTabSet(newLayoutNode);
+            if (json.active && json.active === true) {
+                layout.setActiveTabSet(newLayoutNode);
+            }
+        } else {
+            newLayoutNode.setSelected(extant.getSelected());
+            if (layout.getMaximizedTabSet() === extant) {
+                layout.setMaximizedTabSet(newLayoutNode);
+            }
+            if (layout.getMaximizedTabSet() === extant) {
+                layout.setMaximizedTabSet(newLayoutNode);
+            }
         }
 
         return newLayoutNode;
@@ -54,12 +80,20 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     private calculatedMaxWidth: number;
 
     /** @internal */
-    constructor(model: Model, json: IJsonTabSetNode) {
+    constructor(model: Model, json: IJsonTabSetNode, extant?: TabSetNode) {
         super(model);
-        this.calculatedMinHeight = 0;
-        this.calculatedMinWidth = 0;
-        this.calculatedMaxHeight = 0;
-        this.calculatedMaxWidth = 0;
+
+        if (extant === undefined) {
+            this.calculatedMinHeight = 0;
+            this.calculatedMinWidth = 0;
+            this.calculatedMaxHeight = 0;
+            this.calculatedMaxWidth = 0;
+        } else {
+            this.calculatedMinHeight = extant.calculatedMinHeight;
+            this.calculatedMinWidth = extant.calculatedMinWidth;
+            this.calculatedMaxHeight = extant.calculatedMaxHeight;
+            this.calculatedMaxWidth = extant.calculatedMaxWidth;
+        }
 
         TabSetNode.attributeDefinitions.fromJson(json, this.attributes);
         model.addNode(this);

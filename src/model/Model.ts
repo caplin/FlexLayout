@@ -136,13 +136,13 @@ export class Model {
 
                     const layout = new Layout(layoutId, type, oldLayout.getToExportRectFunction()(node.getRect(), type));
                     const json = {
-                        type: "row"
-                    }
+                        type: "row",
+                    };
                     const row = RowNode.fromJson(json, this, layout);
                     layout.setRootRow(row);
                     this.layouts.set(layoutId, layout);
                     row.drop(node, DockLocation.CENTER, 0);
-                    
+
                     if (isMaximized) {
                         this.mainLayout.setMaximizedTabSet(undefined);
                     }
@@ -152,9 +152,9 @@ export class Model {
             case Actions.POPOUT_TAB: {
                 const node = this.idMap.get(action.data.node);
                 if (node instanceof TabNode) {
-                    const layoutId = randomUUID()
+                    const layoutId = randomUUID();
 
-                    const parent = node.getParent() as (TabSetNode | BorderNode);
+                    const parent = node.getParent() as TabSetNode | BorderNode;
                     const popoutRect = parent.getContentRect();
                     const oldLayout = node.getLayout()!;
                     const type = action.data.type || "window";
@@ -162,14 +162,12 @@ export class Model {
                     const tabsetId = randomUUID();
                     const json: IJsonRowNode = {
                         type: "row",
-                        children: [
-                            { type: "tabset", id: tabsetId }
-                        ]
-                    }
+                        children: [{ type: "tabset", id: tabsetId }],
+                    };
                     const row = RowNode.fromJson(json, this, layout);
                     layout.setRootRow(row);
                     this.layouts.set(layoutId, layout);
-                    
+
                     const tabset = this.idMap.get(tabsetId) as TabSetNode & IDropTarget;
                     tabset.drop(node, DockLocation.CENTER, 0, true);
                 }
@@ -311,7 +309,6 @@ export class Model {
         return returnVal;
     }
 
-
     /**
      * Get the currently active tabset node
      */
@@ -392,23 +389,22 @@ export class Model {
         const child = node.getChildren()[0];
         if (child instanceof TabSetNode) {
             return child;
-        }
-        else {
+        } else {
             return this.getFirstTabSet(child);
         }
     }
 
     /**
- * Loads the model from the given json object
- * @param json the json model to load
- * @returns {Model} a new Model object
- */
-    static fromJson(json: IJsonModel) {
+     * Loads the model from the given json object
+     * @param json the json model to load
+     * @returns {Model} a new Model object
+     */
+    static fromJson(json: IJsonModel, extant?: Model) {
         const model = new Model();
         Model.attributeDefinitions.fromJson(json.global, model.attributes);
 
         if (json.borders) {
-            model.borders = BorderSet.fromJson(json.borders, model);
+            model.borders = BorderSet.fromJson(json.borders, model, extant?.borders);
         }
 
         const subLayouts = json.subLayouts || json.popouts;
@@ -420,7 +416,7 @@ export class Model {
                 model.layouts.set(layoutId, layout);
             }
         }
-        model.mainLayout.setRootRow(RowNode.fromJson(json.layout, model, model.mainLayout));
+        model.mainLayout.setRootRow(RowNode.fromJson(json.layout, model, model.mainLayout, extant?.mainLayout.getRootRow()));
         model.tidy(); // initial tidy of node tree
         return model;
     }
@@ -449,7 +445,7 @@ export class Model {
             global,
             borders: this.borders.toJson(),
             layout: this.mainLayout.getRootRow()!.toJson(),
-            subLayouts: subLayouts
+            subLayouts: subLayouts,
         };
     }
 
@@ -481,18 +477,18 @@ export class Model {
      * set callback called when a new TabSet is created.
      * The tabNode can be undefined if it's the auto created first tabset in the root row (when the last
      * tab is deleted, the root tabset can be recreated)
-     * @param onCreateTabSet 
+     * @param onCreateTabSet
      */
     setOnCreateTabSet(onCreateTabSet: (tabNode?: TabNode) => ITabSetAttributes) {
         this.onCreateTabSet = onCreateTabSet;
     }
 
-    addChangeListener(listener: ((action: Action) => void)) {
+    addChangeListener(listener: (action: Action) => void) {
         this.changeListeners.push(listener);
     }
 
-    removeChangeListener(listener: ((action: Action) => void)) {
-        const pos = this.changeListeners.findIndex(l => l === listener);
+    removeChangeListener(listener: (action: Action) => void) {
+        const pos = this.changeListeners.findIndex((l) => l === listener);
         if (pos !== -1) {
             this.changeListeners.splice(pos, 1);
         }
@@ -522,7 +518,7 @@ export class Model {
             return priority[a.getType()] - priority[b.getType()];
         });
         this.layouts.clear();
-        sorted.forEach(layout => this.layouts.set(layout.getLayoutId(), layout));
+        sorted.forEach((layout) => this.layouts.set(layout.getLayoutId(), layout));
     }
 
     /** @internal */
@@ -538,7 +534,7 @@ export class Model {
     }
 
     /** @internal */
-    setMaximizedTabset(tabsetNode: (TabSetNode | undefined), layoutId: string) {
+    setMaximizedTabset(tabsetNode: TabSetNode | undefined, layoutId: string) {
         const layout = this.layouts.get(layoutId);
         if (layout) {
             if (tabsetNode) {
@@ -554,7 +550,7 @@ export class Model {
         // regenerate idMap to stop it building up
         this.idMap.clear();
         this.visitNodes((node) => {
-            this.idMap.set(node.getId(), node)
+            this.idMap.set(node.getId(), node);
             // if (node instanceof RowNode) {
             //     node.normalizeWeights();
             // }
@@ -597,7 +593,7 @@ export class Model {
 
     /** @internal */
     nextUniqueId() {
-        return '#' + randomUUID();
+        return "#" + randomUUID();
     }
 
     /** @internal */
@@ -634,18 +630,16 @@ export class Model {
     private static createAttributeDefinitions(): Attributes {
         const attributeDefinitions = new Attributes();
 
-        attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN).setDescription(
-            `enable docking to the edges of the layout`
-        );
-        attributeDefinitions.add("enableEdgeDockIndicators", true).setType(Attribute.BOOLEAN).setDescription(
-            `show the edge indicators when dragging`
-        );
-        attributeDefinitions.add("rootOrientationVertical", false).setType(Attribute.BOOLEAN).setDescription(
-            `the top level 'row' will layout horizontally by default, set this option true to make it layout vertically`
-        );
-        attributeDefinitions.add("enableRotateBorderIcons", true).setType(Attribute.BOOLEAN).setDescription(
-            `boolean indicating if tab icons should rotate with the text in the left and right borders`
-        );
+        attributeDefinitions.add("enableEdgeDock", true).setType(Attribute.BOOLEAN).setDescription(`enable docking to the edges of the layout`);
+        attributeDefinitions.add("enableEdgeDockIndicators", true).setType(Attribute.BOOLEAN).setDescription(`show the edge indicators when dragging`);
+        attributeDefinitions
+            .add("rootOrientationVertical", false)
+            .setType(Attribute.BOOLEAN)
+            .setDescription(`the top level 'row' will layout horizontally by default, set this option true to make it layout vertically`);
+        attributeDefinitions
+            .add("enableRotateBorderIcons", true)
+            .setType(Attribute.BOOLEAN)
+            .setDescription(`boolean indicating if tab icons should rotate with the text in the left and right borders`);
 
         // tab
         attributeDefinitions.add("tabEnableClose", true).setType(Attribute.BOOLEAN);
