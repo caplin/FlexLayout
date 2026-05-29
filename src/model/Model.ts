@@ -397,6 +397,7 @@ export class Model {
     /**
      * Loads the model from the given json object
      * @param json the json model to load
+     * @param extant an optional previous model instance
      * @returns {Model} a new Model object
      */
     static fromJson(json: IJsonModel, extant?: Model) {
