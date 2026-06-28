@@ -91,7 +91,8 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
             popoutWindow.current?.close();
             popoutWindow.current = null;
         }
-    }, [controller, layout, url, title, onCloseLayout, onSetLayout, styleMap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
 
     if (content !== undefined) {

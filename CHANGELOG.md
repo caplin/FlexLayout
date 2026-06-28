@@ -1,3 +1,8 @@
+## 0.9.2 - 2026-06-28
+* **Fixed:** #525 - Popout title id causes close/reopen cascade.
+* Exposed TabNode.setMoveableElement to allow workround for issue #524
+* **Updated:** Dev Dependencies.
+
 ## 0.9.1 - 2026-05-01
 * **Changed:** Float panels can now move outside the bounds of the main layout.
 * **Added:** New Layout prop `constrainFloatPanels`, setting this to true will constrain floating panels to the main layout. 

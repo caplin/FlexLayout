@@ -289,6 +289,14 @@ export class TabNode extends Node implements IDraggable {
     getMoveableElement() {
         return this.moveableElement;
     }
+    
+    /** 
+     * @internal
+     * This method is exposed to allow the workaround for issue: #524  
+    */
+    setMoveableElement(element: HTMLElement) {
+        this.moveableElement = element;
+    }
 
     /** @internal */
     setRenderedName(name: string) {
