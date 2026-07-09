@@ -18,7 +18,7 @@ export class BorderNode extends Node implements IDropTarget {
     static readonly TYPE = "border";
 
     /** @internal */
-    static fromJson(json: IJsonBorderNode, model: Model) {
+    static fromJson(json: IJsonBorderNode, model: Model, extant?: BorderNode) {
         const location = DockLocation.getByName(json.location);
         const border = new BorderNode(location, json, model);
         if (json.children) {
@@ -42,9 +42,12 @@ export class BorderNode extends Node implements IDropTarget {
     private location: DockLocation;
 
     /** @internal */
-    constructor(location: DockLocation, json: IJsonBorderNode, model: Model) {
+    constructor(location: DockLocation, json: IJsonBorderNode, model: Model, extant?: BorderNode) {
         super(model);
-
+        if (extant) {
+            this.contentRect = extant.contentRect.clone();
+            this.tabHeaderRect = extant.tabHeaderRect.clone();
+        }
         this.location = location;
         this.attributes.id = `border_${location.getName()}`;
         BorderNode.attributeDefinitions.fromJson(json, this.attributes);

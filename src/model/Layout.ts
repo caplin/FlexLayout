@@ -19,7 +19,7 @@ export class Layout {
     private _activeTabSet?: TabSetNode | undefined;
     private _toExportRectFunction: (rect: Rect, type: ILayoutType) => Rect;
 
-    constructor(layoutId: string, type: ILayoutType, rect: Rect) {
+    constructor(layoutId: string, type: ILayoutType, rect: Rect, extant?: Layout) {
         this._layoutId = layoutId;
         this._type = type;
         this._rect = rect;
@@ -122,13 +122,13 @@ export class Layout {
         return json;
     }
 
-    static fromJson(layoutJson: IJsonSubLayout, model: Model, layoutId: string): Layout {
+    static fromJson(layoutJson: IJsonSubLayout, model: Model, layoutId: string, extant?: Layout): Layout {
         const count = model.getLayouts().size;
         const rect = layoutJson.rect ? Rect.fromJson(layoutJson.rect) : new Rect(50 + 50 * count, 50 + 50 * count, 600, 400);
         rect.snap(10); // snapping prevents issue where window moves 1 pixel per save/restore on Chrome
 
-        const layout = new Layout(layoutId, layoutJson.type || "window", rect);
-        layout.setRootRow(RowNode.fromJson(layoutJson.layout, model, layout));
+        const layout = new Layout(layoutId, layoutJson.type || "window", rect, extant);
+        layout.setRootRow(RowNode.fromJson(layoutJson.layout, model, layout, extant?.getRootRow()));
 
         return layout;
     }

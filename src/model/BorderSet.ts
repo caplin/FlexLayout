@@ -7,9 +7,9 @@ import { Node } from "./Node";
 
 export class BorderSet {
     /** @internal */
-    static fromJson(json: any, model: Model) {
+    static fromJson(json: any, model: Model, extant?: BorderSet) {
         const borderSet = new BorderSet(model);
-        borderSet.borders = json.map((borderJson: any) => BorderNode.fromJson(borderJson, model));
+        borderSet.borders = json.map((borderJson: any, index: number) => BorderNode.fromJson(borderJson, model, extant?.borders.at(index)));
         for (const border of borderSet.borders) {
             borderSet.borderMap.set(border.getLocation(), border);
         }
@@ -34,7 +34,7 @@ export class BorderSet {
     }
 
     /** @internal */
-    getLayoutHorizontal () {
+    getLayoutHorizontal() {
         return this.layoutHorizontal;
     }
 
@@ -58,19 +58,18 @@ export class BorderSet {
         }
     }
 
-        /** @internal */
-        setPaths() {
-            for (const borderNode of this.borders) {
-                const path = "/border/" + borderNode.getLocation().getName();
-                borderNode.setPath(path);
-                let i = 0;
-                for (const node of borderNode.getChildren()) {
-                    node.setPath( path + "/t" + i);
-                    i++;
-                }
+    /** @internal */
+    setPaths() {
+        for (const borderNode of this.borders) {
+            const path = "/border/" + borderNode.getLocation().getName();
+            borderNode.setPath(path);
+            let i = 0;
+            for (const node of borderNode.getChildren()) {
+                node.setPath(path + "/t" + i);
+                i++;
             }
         }
-
+    }
 
     /** @internal */
     findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
