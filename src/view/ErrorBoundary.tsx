@@ -20,7 +20,7 @@ export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBo
         this.state = { hasError: false };
     }
 
-    static getDerivedStateFromError(error: Error) {
+    static getDerivedStateFromError(_error: Error) {
         return { hasError: true };
     }
 
@@ -37,10 +37,11 @@ export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBo
         if (this.state.hasError) {
             return (
                 <div className={CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER}>
-                    <div className={CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTENT}>
+                    <div role="alert" className={CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTENT}>
                         <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
                             {this.props.message}
-                            <p><button onClick={this.retry}>{this.props.retryText}</button></p>
+                            {/* explicit tabindex: Safari only tabs to elements with an explicit tabindex */}
+                            <p><button tabIndex={0} onClick={this.retry}>{this.props.retryText}</button></p>
                         </div>
                     </div>
                     

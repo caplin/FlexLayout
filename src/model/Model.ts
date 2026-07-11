@@ -44,6 +44,8 @@ export class Model {
     /** @internal */
     private mainLayout: Layout;
     /** @internal */
+    private adoptedFromModel?: Model;
+    /** @internal */
     private splitterSize?: number;
     /** @internal */
     private onAllowDrop?: (dragNode: Node, dropInfo: DropInfo) => boolean;
@@ -73,7 +75,6 @@ export class Model {
      */
     doAction(action: Action): any {
         let returnVal = undefined;
-        // console.log(action);
         switch (action.type) {
             case Actions.ADD_TAB: {
                 const newNode = new TabNode(this, action.data.json, true);
@@ -110,11 +111,13 @@ export class Model {
                 const node = this.idMap.get(action.data.node);
 
                 if (node instanceof TabSetNode) {
-                    // first delete all child tabs that are closeable
+                    // first delete all child tabs that are closeable. isCloseable (not isEnableClose)
+                    // so a tab hosting a non-closeable sublayout is not force-closed - matching the
+                    // deleteTab / drag close paths
                     const children = [...node.getChildren()];
                     for (let i = 0; i < children.length; i++) {
                         const child = children[i];
-                        if ((child as TabNode).isEnableClose()) {
+                        if ((child as TabNode).isCloseable()) {
                             (child as TabNode).delete();
                         }
                     }
@@ -144,7 +147,7 @@ export class Model {
                     row.drop(node, DockLocation.CENTER, 0);
                     
                     if (isMaximized) {
-                        this.mainLayout.setMaximizedTabSet(undefined);
+                        oldLayout.setMaximizedTabSet(undefined);
                     }
                 }
                 break;
@@ -200,23 +203,30 @@ export class Model {
             }
             case Actions.SET_ACTIVE_TABSET: {
                 const layoutId = action.data.layoutId ? action.data.layoutId : Model.MAIN_LAYOUT_ID;
-                const layout = this.layouts.get(layoutId)!;
-                if (action.data.tabsetNode === undefined) {
-                    layout.setActiveTabSet(undefined);
-                } else {
-                    const tabsetNode = this.idMap.get(action.data.tabsetNode);
-                    if (tabsetNode instanceof TabSetNode) {
-                        layout.setActiveTabSet(tabsetNode);
+                const layout = this.layouts.get(layoutId);
+                if (layout !== undefined) { // ignore unknown layout ids rather than throwing
+                    if (action.data.tabsetNode === undefined) {
+                        layout.setActiveTabSet(undefined);
+                    } else {
+                        const tabsetNode = this.idMap.get(action.data.tabsetNode);
+                        if (tabsetNode instanceof TabSetNode) {
+                            layout.setActiveTabSet(tabsetNode);
+                        }
                     }
                 }
                 break;
             }
             case Actions.ADJUST_WEIGHTS: {
-                const row = this.idMap.get(action.data.nodeId) as RowNode;
-                const c = row.getChildren();
-                for (let i = 0; i < c.length; i++) {
-                    const n = c[i] as TabSetNode | RowNode;
-                    n.setWeight(action.data.weights[i]);
+                const row = this.idMap.get(action.data.nodeId);
+                if (row instanceof RowNode) {
+                    const weights = action.data.weights as number[] | undefined;
+                    const c = row.getChildren();
+                    for (let i = 0; i < c.length; i++) {
+                        const n = c[i] as TabSetNode | RowNode;
+                        if (typeof weights?.[i] === "number") { // ignore missing weights rather than poisoning the layout with undefined
+                            n.setWeight(weights[i]);
+                        }
+                    }
                 }
                 break;
             }
@@ -229,9 +239,9 @@ export class Model {
             }
             case Actions.MAXIMIZE_TOGGLE: {
                 const layoutId = action.data.layoutId ? action.data.layoutId : Model.MAIN_LAYOUT_ID;
-                const layout = this.layouts.get(layoutId)!;
+                const layout = this.layouts.get(layoutId);
                 const node = this.idMap.get(action.data.node);
-                if (node instanceof TabSetNode) {
+                if (layout !== undefined && node instanceof TabSetNode) {
                     if (node === layout.getMaximizedTabSet()) {
                         layout.setMaximizedTabSet(undefined);
                     } else {
@@ -248,8 +258,10 @@ export class Model {
             }
 
             case Actions.UPDATE_NODE_ATTRIBUTES: {
-                const node = this.idMap.get(action.data.node)!;
-                node.updateAttrs(action.data.json);
+                const node = this.idMap.get(action.data.node);
+                if (node !== undefined) { // ignore unknown node ids rather than throwing
+                    node.updateAttrs(action.data.json);
+                }
                 break;
             }
 
@@ -257,6 +269,34 @@ export class Model {
                 const node = this.idMap.get(action.data.node);
                 if (node instanceof TabNode) {
                     node.setName(action.data.text);
+                }
+                break;
+            }
+
+            case Actions.SET_TAB_PINNED: {
+                const node = this.idMap.get(action.data.node);
+                if (node instanceof TabNode && node.getParent() instanceof TabSetNode) {
+                    const parent = node.getParent() as TabSetNode;
+                    const pinned = action.data.pinned === true;
+                    if (node.isPinned() !== pinned) {
+                        const selectedNode = parent.getSelectedNode(); // restore by identity after the move
+                        node.setPinned(pinned);
+                        parent.removeChild(node);
+                        // with the node removed, the leading pinned run length is both the "end of pinned
+                        // group" (pin) and the "start of unpinned group" (unpin) insertion point
+                        parent.addChild(node, parent.getPinnedRunLength());
+                        if (selectedNode !== undefined) {
+                            parent.setSelected(parent.getChildren().indexOf(selectedNode));
+                        }
+                    }
+                }
+                break;
+            }
+
+            case Actions.SET_BORDER_TYPE: {
+                const node = this.idMap.get(action.data.node);
+                if (node instanceof BorderNode && (action.data.borderType === "split" || action.data.borderType === "overlay")) {
+                    node.setBorderType(action.data.borderType);
                 }
                 break;
             }
@@ -274,13 +314,6 @@ export class Model {
             case Actions.CLOSE_POPOUT: {
                 const oldLayout = this.layouts.get(action.data.layoutId);
                 if (oldLayout) {
-                    // this.layouts.delete(action.data.layoutId);
-                    // const layoutId = randomUUID();
-                    // const r = this.mainLayout.getController()!.getDomRect()!;
-                    // const newLayout = new Layout(layoutId, "float", new Rect(r.width / 4, r.height / 4, r.width / 2, r.height / 2));
-                    // newLayout.setRootRow(oldLayout.getRootRow()!);
-                    // this.layouts.set(layoutId, newLayout);
-
                     oldLayout.setType("float");
                     const r = this.mainLayout.getController()!.getDomRect()!;
                     oldLayout.setRect(new Rect(r.width / 4, r.height / 4, r.width / 2, r.height / 2));
@@ -304,7 +337,9 @@ export class Model {
 
         this.updateIdMap();
 
-        for (const listener of this.changeListeners) {
+        // iterate a copy: a listener may remove itself (or others) during dispatch (common on
+        // React unmount), which would otherwise splice the live array mid-loop and skip a listener
+        for (const listener of [...this.changeListeners]) {
             listener(action);
         }
 
@@ -328,7 +363,7 @@ export class Model {
      * Get the currently maximized tabset node
      */
     getMaximizedTabset(layoutId: string = Model.MAIN_LAYOUT_ID) {
-        return this.layouts.get(layoutId)!.getMaximizedTabSet();
+        return this.layouts.get(layoutId)?.getMaximizedTabSet();
     }
 
     /**
@@ -336,7 +371,7 @@ export class Model {
      * @returns {RowNode}
      */
     getRootRow(layoutId: string = Model.MAIN_LAYOUT_ID) {
-        return this.layouts.get(layoutId)!.getRootRow()!;
+        return this.layouts.get(layoutId)?.getRootRow();
     }
 
     isRootOrientationVertical() {
@@ -388,24 +423,34 @@ export class Model {
      * @param node The top node you want to begin searching from, deafults to the root node
      * @returns The first Tab Set
      */
-    getFirstTabSet(node = this.layouts.get(Model.MAIN_LAYOUT_ID)!.getRootRow() as Node): TabSetNode {
+    getFirstTabSet(node = this.layouts.get(Model.MAIN_LAYOUT_ID)!.getRootRow() as Node): TabSetNode | undefined {
         const child = node.getChildren()[0];
         if (child instanceof TabSetNode) {
             return child;
-        }
-        else {
+        } else if (child instanceof RowNode) {
             return this.getFirstTabSet(child);
         }
+        // degenerate/empty row (e.g. hand edited json or a fresh empty sublayout): no tabset to
+        // find - return undefined rather than recursing into undefined and throwing
+        return undefined;
     }
 
     /**
- * Loads the model from the given json object
- * @param json the json model to load
- * @returns {Model} a new Model object
- */
-    static fromJson(json: IJsonModel) {
+     * Loads the model from the given json object.
+     *
+     * Note: the recommended way to change an existing layout is to mutate the current model via
+     * actions (`model.doAction(...)`), which updates the layout incrementally and preserves view
+     * state.
+     * @param json the json model to load
+     * @param previousModel optional model currently in use by the layout; when given, tabs with
+     * matching ids adopt the previous model's view state (mounted tab contents, scroll positions),
+     * so the layout updates in place without remounting the tab contents. Use when replacing an
+     * existing layout's model with a modified copy of its json.
+     * @returns {Model} a new Model object
+     */
+    static fromJson(json: IJsonModel, previousModel?: Model) {
         const model = new Model();
-        Model.attributeDefinitions.fromJson(json.global, model.attributes);
+        Model.attributeDefinitions.fromJson(json.global ?? {}, model.attributes);
 
         if (json.borders) {
             model.borders = BorderSet.fromJson(json.borders, model);
@@ -422,7 +467,26 @@ export class Model {
         }
         model.mainLayout.setRootRow(RowNode.fromJson(json.layout, model, model.mainLayout));
         model.tidy(); // initial tidy of node tree
+
+        if (previousModel) {
+            model.adoptedFromModel = previousModel;
+            previousModel.adoptedFromModel = undefined; // only retain the immediately previous model
+            model.visitNodes((node) => {
+                if (node instanceof TabNode) {
+                    const oldNode = previousModel.getNodeById(node.getId());
+                    if (oldNode instanceof TabNode) {
+                        node.adoptViewState(oldNode);
+                    }
+                }
+            });
+        }
+
         return model;
+    }
+
+    /** @internal */
+    getAdoptedFromModel() {
+        return this.adoptedFromModel;
     }
 
     /**
@@ -555,11 +619,7 @@ export class Model {
         this.idMap.clear();
         this.visitNodes((node) => {
             this.idMap.set(node.getId(), node)
-            // if (node instanceof RowNode) {
-            //     node.normalizeWeights();
-            // }
         });
-        // console.log(JSON.stringify(Object.keys(this._idMap)));
     }
 
     /** @internal */
@@ -574,6 +634,19 @@ export class Model {
 
     /** @internal */
     findDropTargetNode(layoutId: string, dragNode: Node & IDraggable, x: number, y: number) {
+        // an open overlay border panel overlays the main layout, so it must take drop
+        // precedence over the tabsets underneath it
+        if (layoutId === Model.MAIN_LAYOUT_ID) {
+            for (const border of this.borders.getBorders()) {
+                if (border.isShowing() && border.isOverlay() && border.getSelected() !== -1 &&
+                    border.getContentRect()?.contains(x, y)) {
+                    const dropInfo = border.canDrop(dragNode, x, y);
+                    if (dropInfo !== undefined) {
+                        return dropInfo;
+                    }
+                }
+            }
+        }
         let node = (this.layouts.get(layoutId)!.getRootRow() as RowNode).findDropTargetNode(layoutId, dragNode, x, y);
         if (node === undefined && layoutId === Model.MAIN_LAYOUT_ID) {
             node = this.borders.findDropTargetNode(dragNode, x, y);
@@ -583,11 +656,9 @@ export class Model {
 
     /** @internal */
     tidy() {
-        // console.log("before _tidy", this.toString());
         for (const [_, layout] of this.layouts) {
             layout.getRootRow()!.tidy();
         }
-        // console.log("after _tidy", this.toString());
     }
 
     /** @internal */
@@ -662,6 +733,7 @@ export class Model {
         attributeDefinitions.add("tabEnableRenderOnDemand", true).setType(Attribute.BOOLEAN);
         attributeDefinitions.add("tabBorderWidth", -1).setType(Attribute.NUMBER);
         attributeDefinitions.add("tabBorderHeight", -1).setType(Attribute.NUMBER);
+        attributeDefinitions.add("tabEnableScrollbars", true).setType(Attribute.BOOLEAN);
 
         // tabset
         attributeDefinitions.add("tabSetEnableDeleteWhenEmpty", true).setType(Attribute.BOOLEAN);

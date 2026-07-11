@@ -24,7 +24,7 @@ export class TabNode extends Node implements IDraggable {
     private visible: boolean;
     private rendered: boolean;
 
-    private moveableElement: HTMLElement;
+    private moveableElement: HTMLElement | null;
     private tabStamp: HTMLElement | null;
     private scrollTop?: number;
     private scrollLeft?: number;
@@ -34,8 +34,7 @@ export class TabNode extends Node implements IDraggable {
         super(model);
 
         this.extra = {}; // extra data added to node not saved in json
-        this.moveableElement = document.createElement("div");
-        this.moveableElement.className = CLASSES.FLEXLAYOUT__TAB_MOVEABLE;
+        this.moveableElement = null;
         this.tabStamp = null;
         this.rendered = false;
         this.visible = false;
@@ -100,12 +99,21 @@ export class TabNode extends Node implements IDraggable {
     isSelected() {
         return (this.getParent() as TabSetNode | BorderNode).getSelectedNode() === this;
     }
+
+    isPinned() {
+        return this.getAttr("pinned") as boolean;
+    }
     
     isCloseable() {
+        if (this.isPinned()) {
+            return false;
+        }
         let closeable = this.isEnableClose();
         if (closeable && this.getSubLayoutId()) {
             const layout = this.model.getLayouts().get(this.getSubLayoutId()!);
-            closeable = layout!.getRootRow()!.isCloseable();
+            if (layout) { // the subLayoutId may be dangling (e.g. hand edited json)
+                closeable = layout.getRootRow()!.isCloseable();
+            }
         }
         return closeable;
     }
@@ -114,13 +122,19 @@ export class TabNode extends Node implements IDraggable {
         let allowed = this.isEnablePopout();
         if (allowed && this.getSubLayoutId()) {
             const layout = this.model.getLayouts().get(this.getSubLayoutId()!);
-            allowed = layout!.getRootRow()!.isAllowedInWindow();
+            if (layout) { // the subLayoutId may be dangling (e.g. hand edited json)
+                allowed = layout.getRootRow()!.isAllowedInWindow();
+            }
         }
         return allowed;
     }
     
     isEnableClose() {
         return this.getAttr("enableClose") as boolean;
+    }
+    
+    isEnableScrollbars() {
+        return this.getAttr("enableScrollbars") as boolean;
     }
 
     getCloseType() {
@@ -202,20 +216,16 @@ export class TabNode extends Node implements IDraggable {
         if (this.moveableElement) {
             this.scrollLeft = this.moveableElement.scrollLeft;
             this.scrollTop = this.moveableElement.scrollTop;
-            // console.log("save", this.getName(), this.scrollTop);
         }
     }
 
     /** @internal */
     restoreScrollPosition() {
-        if (this.scrollTop) {
+        if (this.scrollTop || this.scrollLeft) {
             requestAnimationFrame(() => {
                 if (this.moveableElement) {
-                    if (this.scrollTop) {
-                        // console.log("restore", this.getName(), this.scrollTop);
-                        this.moveableElement.scrollTop = this.scrollTop;
-                        this.moveableElement.scrollLeft = this.scrollLeft!;
-                    }
+                    this.moveableElement.scrollTop = this.scrollTop ?? 0;
+                    this.moveableElement.scrollLeft = this.scrollLeft ?? 0;
                 }
             });
         }
@@ -223,10 +233,14 @@ export class TabNode extends Node implements IDraggable {
 
     /** @internal */
     setRect(rect: Rect) {
-        if (!rect.equals(this.rect)) {
+        // fire "resize" only on a rounded (whole-pixel) change: positionTabPanels re-applies the
+        // content rect every measure pass, and syncLayoutMetrics keeps a rounded-equal rect object,
+        // so gating on exact equality would let sub-pixel jitter fire resize on every pass. the
+        // exact rect is still stored so element positioning stays pixel accurate.
+        if (!rect.equalsWhenRounded(this.rect)) {
             this.fireEvent("resize", { rect });
-            this.rect = rect;
         }
+        this.rect = rect;
     }
 
     /** @internal */
@@ -238,19 +252,9 @@ export class TabNode extends Node implements IDraggable {
     }
 
     /** @internal */
-    getScrollTop() {
-        return this.scrollTop;
-    }
-
-    /** @internal */
     setScrollTop(scrollTop: number | undefined) {
         this.scrollTop = scrollTop;
     }
-    /** @internal */
-    getScrollLeft() {
-        return this.scrollLeft;
-    }
-
     /** @internal */
     setScrollLeft(scrollLeft: number | undefined) {
         this.scrollLeft = scrollLeft;
@@ -287,6 +291,11 @@ export class TabNode extends Node implements IDraggable {
 
     /** @internal */
     getMoveableElement() {
+        if (this.moveableElement === null) {
+            // created lazily so the model can be loaded without a DOM (e.g. server side)
+            this.moveableElement = document.createElement("div");
+            this.moveableElement.className = CLASSES.FLEXLAYOUT__TAB_MOVEABLE;
+        }
         return this.moveableElement;
     }
     
@@ -318,12 +327,49 @@ export class TabNode extends Node implements IDraggable {
     }
 
     /** @internal */
+    setPinned(pinned: boolean) {
+        this.attributes.pinned = pinned;
+    }
+
+    /** @internal */
     delete() {
         (this.parent as TabSetNode | BorderNode).remove(this);
-        if (this.getSubLayoutId()) {
-            this.model.getLayouts().delete(this.getSubLayoutId()!);
-        }
+        this.deleteSubLayout();
         this.fireEvent("close", {});
+    }
+
+    /** @internal */
+    adoptViewState(old: TabNode) {
+        // carry over the view state so the mounted tab content is kept when a model is replaced
+        // via Model.fromJson with a previous model
+        this.moveableElement = old.moveableElement;
+        old.moveableElement = null;
+        this.tabStamp = old.tabStamp;
+        this.scrollTop = old.scrollTop;
+        this.scrollLeft = old.scrollLeft;
+        this.rendered = old.rendered;
+        this.visible = old.visible;
+        this.rect = old.rect;
+        this.tabRect = old.tabRect;
+        this.extra = old.extra;
+    }
+
+    /** @internal */
+    deleteSubLayout() {
+        const subLayoutId = this.getSubLayoutId();
+        if (subLayoutId) {
+            const layout = this.model.getLayouts().get(subLayoutId);
+            this.model.getLayouts().delete(subLayoutId);
+            if (layout) {
+                // remove nested sublayouts as well and notify their tabs, so they are not leaked in the layouts map
+                layout.getRootRow()?.forEachNode((node) => {
+                    if (node instanceof TabNode) {
+                        node.deleteSubLayout();
+                        node.fireEvent("close", {});
+                    }
+                }, 0);
+            }
+        }
     }
 
     /** @internal */
@@ -386,6 +432,12 @@ export class TabNode extends Node implements IDraggable {
         attributeDefinitions.add("enableWindowReMount", false).setType(Attribute.BOOLEAN).setDescription(
             `if enabled the tab will re-mount when popped out/in`
         );
+        attributeDefinitions.add("pinned", false).setType(Attribute.BOOLEAN).setDescription(
+            `whether the tab is pinned; pinned tabs are grouped at the start of the tabstrip, cannot be closed
+            via the ui, and cannot be dragged out of their tabset (they can be reordered within the pinned group).
+            Set via Actions.setTabPinned. Only applies to tabs in tabsets (not borders); pinned tabs should be
+            listed first in the json`
+        );
         attributeDefinitions.addInherited("enableClose", "tabEnableClose").setType(Attribute.BOOLEAN).setDescription(
             `allow user to close tab via close button`
         );
@@ -441,6 +493,9 @@ export class TabNode extends Node implements IDraggable {
         );
         attributeDefinitions.addInherited("maxHeight", "tabMaxHeight").setType(Attribute.NUMBER).setDescription(
             `the max height of this tab`
+        );
+        attributeDefinitions.addInherited("enableScrollbars", "tabEnableScrollbars").setType(Attribute.BOOLEAN).setDescription(
+            `whether the tab will be hosted in a scrollable container`
         );
 
         return attributeDefinitions;

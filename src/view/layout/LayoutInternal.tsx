@@ -10,28 +10,32 @@ import { BorderNode } from "../../model/BorderNode";
 import { IJsonTabNode } from "../../model/IJsonModel";
 import { Model } from "../../model/Model";
 import { Node } from "../../model/Node";
+import { RowNode } from "../../model/RowNode";
 import { ILayoutType } from "../../model/IJsonModel";
 import { TabNode } from "../../model/TabNode";
 import { TabSetNode } from "../../model/TabSetNode";
-import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PopoutIcon, PopoutFloatIcon, RestoreIcon } from "../Icons";
+import { AsterickIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PinIcon, PopoutIcon, PopoutFloatIcon, RestoreIcon } from "../Icons";
 import { Overlay } from "../Overlay";
 import { Row } from "../Row";
 import { Tab } from "../Tab";
-import { enablePointerOnIFrames, isDesktop, copyInlineStyles, Utils_dragging } from "../Utils";
+import { domId, enablePointerOnIFrames, isDesktop, copyInlineStyles, matchesKey, resolveKeyMap, Utils_dragging } from "../Utils";
 import { Layout as ModelLayout } from "../../model/Layout";
 import { TabContentRenderer } from "../TabContentRenderer";
 import { DragDropManager } from "./DragDropManager";
 import { EdgeIndicators } from "./EdgeIndicators";
 import { FloatingWindowContainer } from "./FloatingWindowContainer";
 import { BorderContainer } from "./BorderContainer";
-import { ITabSetRenderValues, ITabRenderValues, IIcons } from "./LayoutTypes";
+import { ITabSetRenderValues, ITabRenderValues, IIcons, IKeyMap } from "./LayoutTypes";
 import { ILayoutProps } from "../Layout";
 import { randomUUID } from "../../model/Utils";
 import { DragTabButton } from "../DragTabButton";
 
 /** @internal */
+export type MeasurableKind = "row" | "tabset" | "tabstrip" | "tabsetcontent" | "tabbutton" | "borderheader" | "bordercontent";
+
+/** @internal */
 export interface ILayoutInternalProps extends ILayoutProps {
-    parentRedrawRevision: number;
+    parentRedrawRevision: object;
 
     // used only for sublayouts:
     layoutId?: string;
@@ -40,13 +44,13 @@ export interface ILayoutInternalProps extends ILayoutProps {
 
 /** @internal */
 export interface ILayoutInternalState {
-    rect: Rect;
     editingTab?: TabNode;
-    portal?: React.ReactPortal;
     showEdges: boolean;
     showOverlay: boolean;
     calculatedBorderBarSize: number;
-    calculatedSplitterSize: number;
+    // trigger only - its value is never read; bumping it re-renders the layout structure
+    // (memoized tab contents are NOT invalidated, unlike fullRedrawRevision, whose value is
+    // compared in TabContentRenderer's memo)
     layoutRedrawRevision: number;
     fullRedrawRevision: number;
     showHiddenBorder: DockLocation;
@@ -58,12 +62,10 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     LayoutInternal.displayName = 'LayoutInternal'; // name in react dev tools
 
     const [state, setStateRaw] = React.useState<ILayoutInternalState>({
-        rect: Rect.empty(),
         editingTab: undefined,
         showEdges: false,
         showOverlay: false,
         calculatedBorderBarSize: 29,
-        calculatedSplitterSize: 8,
         layoutRedrawRevision: 0,
         fullRedrawRevision: 0,
         showHiddenBorder: DockLocation.CENTER // using center indicates no hidden border
@@ -80,6 +82,9 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     );
 
     const layoutRef = React.useRef<HTMLDivElement>(null); // ref of layout container
+    // bumped when this layout's element is adopted into a different document (tab moved between
+    // windows), so the document-scoped listeners below re-run against the new document
+    const [documentVersion, setDocumentVersion] = React.useState(0);
     const moveablesHomeRef = React.useRef<HTMLDivElement>(null);
     const findBorderBarSizeRef = React.useRef<HTMLDivElement>(null);
     const findSplitterSizeRef = React.useRef<HTMLDivElement>(null);
@@ -100,17 +105,51 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
     React.useImperativeHandle(ref, () => controller, [controller]);
 
-    // rerender if tabs have changed size
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     React.useLayoutEffect(() => {
+        // measure all registered elements in one batched pass and write the rects into the model,
+        // then position the tab panels imperatively (no re-render needed for geometry changes)
+        const changed = controller.syncLayoutMetrics();
+        controller.positionTabPanels();
+
         if (controller.isMainLayout()) {
             controller.updateLayoutMetrics();
         }
 
-        // if tab rects have changed then need to rerender to adjust the tab absolute positions
+        // rerender only when a content area first gains a size (mounts the gated tab content)
         if (controller.isReLayout()) {
             controller.redrawLayout();
             controller.setReLayout(false);
         }
+
+        // if this layout's element was adopted into a different document during this commit (a tab
+        // containing a sublayout moved between windows), the document-scoped listeners are still
+        // bound to the old document (its resize observer dies with a closed popout window, leaving
+        // this layout blind to container resizes) - re-run them against the new document
+        if (layoutRef.current && controller.getCurrentDocument() !== undefined &&
+            controller.getCurrentDocument() !== layoutRef.current.ownerDocument) {
+            setDocumentVersion((v) => v + 1);
+        }
+
+        // verify after paint: css applied late in the commit (fonts, transitions, newly mounted
+        // elements) can skew the measurements above; re-measure and re-position imperatively so
+        // any difference heals on the next frame rather than waiting for the next render.
+        // Only needed when this commit's measure saw geometry movement - when nothing moved the
+        // css was already stable, and the second full dom read/write pass would be wasted (the
+        // common case for non-geometry renders such as tab selection or button state changes)
+        if (changed) {
+            const win = layoutRef.current?.ownerDocument.defaultView ?? window;
+            const raf = win.requestAnimationFrame(() => {
+                controller.syncLayoutMetrics();
+                controller.positionTabPanels();
+                if (controller.isReLayout()) {
+                    controller.redrawLayout();
+                    controller.setReLayout(false);
+                }
+            });
+            return () => win.cancelAnimationFrame(raf);
+        }
+        return undefined;
     });
 
     // add resize and visibility listeners
@@ -122,10 +161,21 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         controller.setCurrentWindow(currentWindow);
 
         // Resize Observer
+        // runs synchronously: ResizeObserver fires after browser layout but before paint, so
+        // re-measuring and re-positioning the tab panels here keeps them consistent with the
+        // flex-resized rows/tabsets in the same frame. deferring this behind rAF/render would
+        // paint a frame with the panels at their old geometry (visible as jitter/scrollbar
+        // flashes in sublayouts, whose only resize signal is this observer). the render that
+        // updateRect schedules can safely land later - the geometry is already correct.
+        // only deeper elements are written, so this cannot re-trigger this observer's target
         const resizeObserver = new currentWindow.ResizeObserver(() => {
-            currentWindow.requestAnimationFrame(() => {
-                controller.updateRect();
-            });
+            controller.updateRect();
+            controller.syncLayoutMetrics();
+            controller.positionTabPanels();
+            if (controller.isReLayout()) {
+                controller.redrawLayout();
+                controller.setReLayout(false);
+            }
         });
         resizeObserver.observe(layoutRef.current!);
 
@@ -136,24 +186,43 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
         currentWindow.addEventListener("resize", resizeListener);
 
-        // visibility listener on main document
+        // visibility listener on main document; registered once (by the main layout) and redraws all layouts
         const visibilityChange = () => {
             for (const [_, modelLayout] of controller.getProps().model.getLayouts()) {
                 const layout = modelLayout.getController();
                 if (layout) {
-                    controller.redrawLayout();
+                    layout.redrawLayout();
                 }
             }
         };
 
-        document.addEventListener('visibilitychange', visibilityChange);
+        if (controller.isMainLayout()) {
+            document.addEventListener('visibilitychange', visibilityChange);
+            // close open overlay border panels on a pointer down in the main layout area
+            // (capture phase, since splitters and toolbar buttons stop propagation)
+            currentDocument.addEventListener("pointerdown", controller.onOverlayBorderPointerDown, true);
+            // Escape closes an open overlay border panel (bubble phase, so content that handles
+            // Escape itself can stop propagation and keep the panel open)
+            currentDocument.addEventListener("keydown", controller.onOverlayBorderKeyDown);
+        }
+
+        // tabset cycling keys work document-wide within each layout window (bubble phase, so
+        // content that handles the key itself keeps it)
+        if (controller.isMainLayout() || controller.getLayout()?.getType() === "window") {
+            currentDocument.addEventListener("keydown", controller.onTabsetNavKeyDown);
+        }
 
         return () => {
             resizeObserver.disconnect();
             currentWindow.removeEventListener("resize", resizeListener);
             document.removeEventListener('visibilitychange', visibilityChange);
+            currentDocument.removeEventListener("pointerdown", controller.onOverlayBorderPointerDown, true);
+            currentDocument.removeEventListener("keydown", controller.onOverlayBorderKeyDown);
+            currentDocument.removeEventListener("keydown", controller.onTabsetNavKeyDown);
         };
-    }, [controller, layoutRef.current?.ownerDocument]);
+        // documentVersion (not the render-time ownerDocument, which misses adoption during this
+        // commit's effects) re-runs this when the element moves to another document
+    }, [controller, documentVersion]);
 
     // keep window popouts styles updated
     React.useEffect(() => {
@@ -206,13 +275,15 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         return;
     }, [props.model, controller]);
 
-    const metrics = (
+    // offscreen probes measured by updateLayoutMetrics; only the main layout measures them,
+    // so only the main layout renders them
+    const metrics = controller.isMainLayout() ? (
         <div className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_METRICS)}>
             <div key="findBorderBarSize" ref={findBorderBarSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_SIZER)}>
                 FindBorderBarSize
             </div>
             <div key="findSplitterSize" ref={findSplitterSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_ + "horz")} />
-        </div>);
+        </div>) : null;
 
     // first render just gets the metrics and layoutRef
     if (!layoutRef.current) {
@@ -225,8 +296,8 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
     const model = props.model;
     const layoutId = controller.getLayoutId();
-    model.getRootRow(layoutId).calcMinMaxSize();
-    model.getRootRow(layoutId).setPaths("");
+    model.getRootRow(layoutId)!.calcMinMaxSize();
+    model.getRootRow(layoutId)!.setPaths("");
 
     if (controller.isMainLayout()) {
         model.getBorderSet().setPaths();
@@ -247,7 +318,9 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     if (controller.isMainLayout()) {
         floatingWindows = <FloatingWindowContainer controller={controller} />;
         reorderedTabContents = controller.reorderComponents(controller.renderTabContents(), controller.getOrderedTabMoveableIds());
-        dragTabButtons = <div key="__dragTabButtons__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
+        // aria-hidden: the offscreen stamps duplicate every tab's name (they exist only to
+        // provide drag images), so they must not be exposed to assistive technology
+        dragTabButtons = <div key="__dragTabButtons__" aria-hidden="true" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
             {controller.renderDragTabButtons()}
         </div>;
         moveablesHome = <div ref={moveablesHomeRef} key="__moveables_home__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES_HOME)}></div>;
@@ -268,7 +341,6 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
             {outer}
             {reorderedTabs}
             {reorderedTabContents}
-            {state.portal}
             {floatingWindows}
             {dragTabButtons}
         </div>
@@ -277,7 +349,8 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
 
 /** @internal */
 export class LayoutController {
-    private static Windows: Map<Window, string> = new Map();
+    // WeakMap so closed popout windows can be garbage collected
+    private static Windows: WeakMap<Window, string> = new WeakMap();
     private _props: ILayoutInternalProps;
     private _state: ILayoutInternalState;
     private _setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void;
@@ -291,6 +364,7 @@ export class LayoutController {
     private _orderedTabMoveableIds: string[];
     private _currentDocument?: Document;
     private _currentWindow?: Window;
+    private _showOverlay: boolean = false;
     private _supportsPopout: boolean;
     private _popoutURL: string;
     private _icons: IIcons;
@@ -301,6 +375,13 @@ export class LayoutController {
     private _popoutWindowName: string;
     private _cachedLayoutDOMRect: Rect | undefined;
     private _reLayout: boolean;
+    // intentionally separate maps: _measurables holds the elements whose geometry is measured
+    // INTO the model (syncLayoutMetrics); _tabPanels holds the tab panel elements positioned
+    // FROM those measured rects (positionTabPanels) - a panel is never itself measured
+    private _measurables: Map<string, { kind: MeasurableKind; node: Node; element: HTMLElement }> = new Map();
+    private _tabPanels: Map<string, { node: TabNode; element: HTMLElement }> = new Map();
+    private _lastRect: Rect = Rect.empty();
+    private _lastSplitterSize: number = 8;
 
     constructor(props: ILayoutInternalProps, state: ILayoutInternalState, setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void) {
         this._props = props;
@@ -328,7 +409,7 @@ export class LayoutController {
         this._cachedLayoutDOMRect = undefined;
         return (
             <>
-                <Row key="__row__" controller={this} rowNode={this._props.model.getRootRow(this._layoutId)} />
+                <Row key="__row__" controller={this} rowNode={this._props.model.getRootRow(this._layoutId)!} />
                 <EdgeIndicators controller={this} />
             </>
         );
@@ -376,6 +457,7 @@ export class LayoutController {
 
                     if (renderTabContent) {
                         const element = tabNode.getMoveableElement();
+                        element.style.overflow = tabNode.isEnableScrollbars() ? "auto":"hidden";
                         const windowId = layout.getWindowId() || "";
                         const key = tabNode.getId() + (tabNode.isEnableWindowReMount() ? windowId : "");
 
@@ -386,7 +468,6 @@ export class LayoutController {
                                 key={key}
                                 controller={this}
                                 tabNode={tabNode}
-                                rect={rect}
                                 windowId={windowId}
                                 visible={visible}
                                 fullRedrawRevision={this._state.fullRedrawRevision}
@@ -429,7 +510,7 @@ export class LayoutController {
         });
     }
 
-    redrawLayoutAndTabContent(isLayoutRevision: boolean = true) {
+    redrawLayoutAndTabContent() {
         this._mainController?.setState((state) => {
             return { fullRedrawRevision: state.fullRedrawRevision + 1 };
         });
@@ -463,13 +544,10 @@ export class LayoutController {
                 rect = rect.relativeTo(rootRect);
             }
 
-            if (!rect.equalsWhenRounded(this._state.rect) && rect.width !== 0 && rect.height !== 0) {
-                // console.log("updateRect", rect.floor());
-                this.setState({ rect });
+            if (!rect.equalsWhenRounded(this._lastRect) && rect.width !== 0 && rect.height !== 0) {
+                this._lastRect = rect;
                 this._layout.setRect(rect);
-                if (!this._layout.isMainLayout()) {
-                    this.redrawLayout();
-                }
+                this.redrawLayout();
             }
         }
     };
@@ -534,6 +612,279 @@ export class LayoutController {
         }
     }
 
+    // closes any open overlay border panel on a pointer down in the main layout area (outside the
+    // panel itself); registered on the current document by the main layout only. Registered in the
+    // capture phase: splitters and toolbar buttons stop propagation in their own pointer down
+    // handlers, which would prevent a bubble phase listener from ever seeing the event
+    onOverlayBorderPointerDown = (event: PointerEvent) => {
+        const openOverlays = this._props.model.getBorderSet().getBorders()
+            .filter((border) => border.isOverlay() && border.getSelected() !== -1);
+        if (openOverlays.length === 0) {
+            return;
+        }
+
+        // ignore interactions with popup menus, floating windows and the overlay panels
+        // themselves (the overlay wrapper holds the panel host and its splitter - resizing a
+        // overlay must not close it)
+        const target = event.target as Element | null;
+        if (target?.closest?.(
+            "." + this.getClassName(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER) + "," +
+            "." + this.getClassName(CLASSES.FLEXLAYOUT__FLOAT_WINDOW) + "," +
+            "." + this.getClassName(CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT) + "," +
+            "." + this.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY))) {
+            return;
+        }
+
+        // geometric test: the main area tab panels are root level DOM siblings of layout_main
+        // (not children), so a DOM contains() test on the main element would miss them
+        const domRect = this.getDomRect();
+        if (!domRect) {
+            return;
+        }
+        const x = event.clientX - domRect.x;
+        const y = event.clientY - domRect.y;
+        const mainRect = this._props.model.getRootRow(Model.MAIN_LAYOUT_ID)?.getRect();
+        if (!mainRect || !mainRect.contains(x, y)) {
+            return; // border strips and toolbars are outside the root row rect
+        }
+
+        for (const border of openOverlays) {
+            if (!border.getContentRect()?.contains(x, y)) {
+                this.closeOverlayBorder(border);
+            }
+        }
+    };
+
+    // closes the given overlay border's panel (via the select toggle path: re-selecting the
+    // selected border tab closes it), restoring focus to the border tab button if focus was
+    // inside the panel (else it would be dropped to the body when the panel hides)
+    closeOverlayBorder(border: BorderNode) {
+        const selectedNode = border.getSelectedNode();
+        if (selectedNode === undefined) {
+            return;
+        }
+        const doc = this._currentDocument;
+        const panelElement = doc?.getElementById(domId("flexlayout-tab-", selectedNode.getId()));
+        const panelHadFocus = !!doc && !!panelElement && panelElement.contains(doc.activeElement);
+        this.doAction(Actions.selectTab(selectedNode.getId()));
+        if (panelHadFocus) {
+            doc!.getElementById(domId("flexlayout-tabbutton-", selectedNode.getId()))?.focus();
+        }
+    }
+
+    // the closeOverlayBorder key (Escape by default) closes an open overlay border panel when
+    // focus is inside it (or on its tab button)
+    onOverlayBorderKeyDown = (event: KeyboardEvent) => {
+        if (!matchesKey(event, this.getKeyMap().closeOverlayBorder)) {
+            return;
+        }
+        const active = this._currentDocument?.activeElement;
+        if (!active) {
+            return;
+        }
+        const openOverlays = this._props.model.getBorderSet().getBorders()
+            .filter((border) => border.isOverlay() && border.getSelected() !== -1);
+        for (const border of openOverlays) {
+            const selectedNode = border.getSelectedNode()!;
+            const panelElement = this._currentDocument!.getElementById(domId("flexlayout-tab-", selectedNode.getId()));
+            const buttonElement = this._currentDocument!.getElementById(domId("flexlayout-tabbutton-", selectedNode.getId()));
+            if ((panelElement && panelElement.contains(active)) || active === buttonElement) {
+                this.closeOverlayBorder(border);
+                event.preventDefault();
+                break;
+            }
+        }
+    };
+
+    // the focusNextTabset/focusPreviousTabset keys move focus between the tabsets of this layout
+    onTabsetNavKeyDown = (event: KeyboardEvent) => {
+        if (event.defaultPrevented) {
+            return; // content that handled the key keeps it
+        }
+        const keyMap = this.getKeyMap();
+        let delta: number;
+        if (matchesKey(event, keyMap.focusNextTabset)) {
+            delta = 1;
+        } else if (matchesKey(event, keyMap.focusPreviousTabset)) {
+            delta = -1;
+        } else {
+            return;
+        }
+        if (this.focusAdjacentTabset(delta)) {
+            event.preventDefault();
+        }
+    };
+
+    // moves focus to the selected tab button of the next/previous tabset in this layout
+    // (wrapping), starting from the tabset containing focus (its strip or its selected tab's
+    // panel) and falling back to the active tabset; the target also becomes the active tabset
+    focusAdjacentTabset(delta: number): boolean {
+        const doc = this._currentDocument;
+        const active = doc?.activeElement;
+        if (!doc || !active || !this.getRootDiv()?.contains(active)) {
+            return false;
+        }
+        // leave text editing contexts alone (the rename textbox, inputs and editors in tab
+        // content, where modified arrow keys typically navigate within the text)
+        const tag = active.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || (active as HTMLElement).isContentEditable || active.closest('[role="menu"]')) {
+            return false;
+        }
+        if (this._props.model.getMaximizedTabset(this._layoutId) !== undefined) {
+            return false; // only the maximized tabset is visible
+        }
+        const tabsets: TabSetNode[] = [];
+        this._props.model.visitLayoutNodes(this._layoutId, (node) => {
+            if (node instanceof TabSetNode && node.getSelectedNode() !== undefined) {
+                tabsets.push(node);
+            }
+        });
+        if (tabsets.length < 2) {
+            return false;
+        }
+        const containsFocus = (tabset: TabSetNode) => {
+            if (this._measurables.get("tabset:" + tabset.getId())?.element.contains(active)) {
+                return true; // focus in the tabstrip or on a toolbar button
+            }
+            const panelElement = doc.getElementById(domId("flexlayout-tab-", tabset.getSelectedNode()!.getId()));
+            return !!panelElement?.contains(active); // focus inside the selected tab's content
+        };
+        let index = tabsets.findIndex(containsFocus);
+        if (index === -1) {
+            const activeTabset = this._props.model.getActiveTabset(this._layoutId);
+            index = activeTabset !== undefined ? tabsets.indexOf(activeTabset) : 0;
+            if (index === -1) {
+                index = 0;
+            }
+        }
+        const target = tabsets[(index + delta + tabsets.length) % tabsets.length];
+        doc.getElementById(domId("flexlayout-tabbutton-", target.getSelectedNode()!.getId()))?.focus();
+        this.doAction(Actions.setActiveTabset(target.getId(), this._layoutId));
+        return true;
+    }
+
+    // components register the elements whose geometry feeds the model (measured centrally in syncLayoutMetrics)
+    registerMeasurable(node: Node, kind: MeasurableKind, element: HTMLElement | null) {
+        const key = kind + ":" + node.getId();
+        if (element) {
+            this._measurables.set(key, { kind, node, element });
+        } else {
+            this._measurables.delete(key);
+        }
+    }
+
+
+    // measure all registered elements in one batched pass (all reads, no dom writes between them)
+    // and write the results into the model; runs in the layout effect after every commit
+    // returns true when any measured rect changed in this pass (used to skip the post-paint
+    // heal pass when the css was already stable at commit time)
+    syncLayoutMetrics(): boolean {
+        // drop the cached layout-origin rect so this pass reads a fresh one: getBoundingClientRect
+        // below subtracts it, and the origin can move between passes (e.g. the page scrolls between
+        // the commit and the deferred raf re-measure). it still caches across children within this
+        // one pass. previously the cache was only invalidated during render, so the raf pass reused
+        // a stale origin and mispositioned the panels by the scroll delta for a frame.
+        this._cachedLayoutDOMRect = undefined;
+        let changed = false;
+        for (const { kind, node, element } of this._measurables.values()) {
+            if (!element.isConnected) {
+                continue;
+            }
+            const rect = this.getBoundingClientRect(element);
+            switch (kind) {
+                case "row":
+                case "tabset":
+                    if (!rect.equalsWhenRounded(node.getRect())) {
+                        (node as RowNode | TabSetNode).setRect(rect);
+                        changed = true;
+                    }
+                    break;
+                case "tabstrip":
+                    if (!rect.equalsWhenRounded((node as TabSetNode).getTabStripRect())) {
+                        (node as TabSetNode).setTabStripRect(rect);
+                        changed = true;
+                    }
+                    break;
+                case "tabsetcontent": {
+                    const tabsetNode = node as TabSetNode;
+                    if (!isNaN(rect.x) && !tabsetNode.getContentRect().equalsWhenRounded(rect)) {
+                        const hadSize = tabsetNode.getContentRect().width > 0 && tabsetNode.getContentRect().height > 0;
+                        tabsetNode.setContentRect(rect);
+                        changed = true;
+                        if (!hadSize && rect.width > 0 && rect.height > 0) {
+                            // the tab content render is gated on a non empty rect, so the first time a
+                            // content area gains a size a re-render is needed to mount the content;
+                            // recurring geometry changes are applied imperatively in positionTabPanels
+                            this.setReLayout(true);
+                        }
+                    }
+                    break;
+                }
+                case "tabbutton":
+                    if (!rect.equalsWhenRounded((node as TabNode).getTabRect())) {
+                        (node as TabNode).setTabRect(rect);
+                        changed = true;
+                    }
+                    break;
+                case "borderheader":
+                    // note: BorderNode.getRect() returns the tab header rect
+                    if (!rect.equalsWhenRounded((node as BorderNode).getRect())) {
+                        (node as BorderNode).setTabHeaderRect(rect);
+                        changed = true;
+                    }
+                    break;
+                case "bordercontent": {
+                    const borderNode = node as BorderNode;
+                    if (!isNaN(rect.x) && rect.width > 0 && !borderNode.getContentRect().equalsWhenRounded(rect)) {
+                        const hadSize = borderNode.getContentRect().width > 0 && borderNode.getContentRect().height > 0;
+                        borderNode.setContentRect(rect);
+                        changed = true;
+                        if (!hadSize && rect.height > 0) {
+                            this.setReLayout(true); // see tabsetcontent note
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return changed;
+    }
+
+    registerTabPanel(node: TabNode, element: HTMLElement | null) {
+        if (element) {
+            this._tabPanels.set(node.getId(), { node, element });
+        } else {
+            this._tabPanels.delete(node.getId());
+        }
+    }
+
+    // position the tab panels over their parents content areas and set their visibility; runs after
+    // syncLayoutMetrics in the layout effect, replacing the second render that previously applied the
+    // measured rects to the panels
+    positionTabPanels() {
+        for (const { node, element } of this._tabPanels.values()) {
+            const parent = node.getParent() as TabSetNode | BorderNode;
+            const rect = parent.getContentRect();
+
+            let visible = node.isSelected();
+            if (parent instanceof TabSetNode) {
+                if (this._props.model.getMaximizedTabset(this._layoutId) !== undefined && !parent.isMaximized()) {
+                    visible = false;
+                }
+            } else if (parent instanceof BorderNode) {
+                if (!parent.isShowing()) {
+                    visible = false;
+                }
+            }
+
+            rect.positionElement(element);
+            element.style.display = visible ? "" : "none";
+
+            node.setRect(rect); // fires the resize event to user code when changed
+            node.setVisible(visible); // fires the visibility event to user code when changed
+        }
+    }
+
     updateLayoutMetrics = () => {
         if (this._findBorderBarSizeRef.current) {
             const borderBarSize = this._findBorderBarSizeRef.current.getBoundingClientRect().height;
@@ -543,9 +894,10 @@ export class LayoutController {
         }
         if (this._findSplitterSizeRef.current) {
             const splitterBarSize = this._findSplitterSizeRef.current.getBoundingClientRect().width;
-            if (Math.abs(splitterBarSize - this._state.calculatedSplitterSize) > 0.5) {
+            if (Math.abs(splitterBarSize - this._lastSplitterSize) > 0.5) {
+                this._lastSplitterSize = splitterBarSize;
                 this._props.model.setSplitterSize(splitterBarSize);
-                this.setState({ calculatedSplitterSize: splitterBarSize });
+                this.redrawLayout();
             }
         }
     };
@@ -573,6 +925,12 @@ export class LayoutController {
     }
 
     getProps() { return this._props; }
+
+    // the keyboard bindings for the command shortcuts: the keyMap prop merged over the defaults
+    getKeyMap(): IKeyMap {
+        return resolveKeyMap(this._props.keyMap);
+    }
+
     setProps(value: ILayoutInternalProps) { this._props = value; }
 
     getState() { return this._state; }
@@ -584,16 +942,10 @@ export class LayoutController {
     setSetState(value: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void) {
         this._setState = value;
     }
-
-    getLayoutRef() { return this._layoutRef; }
     setLayoutRef(value: React.RefObject<HTMLDivElement | null>) { this._layoutRef = value; }
 
     setMoveablesHomeRef(value: React.RefObject<HTMLDivElement | null>) { this._moveablesHomeRef = value; }
-
-    getFindBorderBarSizeRef() { return this._findBorderBarSizeRef; }
     setFindBorderBarSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findBorderBarSizeRef = value; }
-
-    getFindSplitterSizeRef() { return this._findBorderBarSizeRef; }
     setFindSplitterSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findSplitterSizeRef = value; }
 
     getMainRef() { return this._mainRef; }
@@ -704,18 +1056,16 @@ export class LayoutController {
         this.doAction(Actions.closePopout(layout.getLayoutId()));
     };
 
-    onSetWindow = (layout: ModelLayout, window: Window) => {
-    };
 
     getScreenRect(inRect: Rect) {
         const rect = inRect.clone();
         const layoutRect = this.getDomRect();
-        // Note: outerHeight can be less than innerHeight when window is zoomed, so cannot use
-        // const navHeight = Math.min(65, this.currentWindow!.outerHeight - this.currentWindow!.innerHeight);
-        // const navWidth = Math.min(65, this.currentWindow!.outerWidth - this.currentWindow!.innerWidth);
-        const navHeight = 60;
-        const navWidth = 2;
-        // console.log(rect.y, this.currentWindow!.screenX,layoutRect.y);
+        // measure the window chrome so the popout opens over the tab's screen position; under zoom
+        // outer can be less than inner (or otherwise implausible), fall back to typical sizes
+        const measuredNavHeight = this._currentWindow!.outerHeight - this._currentWindow!.innerHeight;
+        const measuredNavWidth = this._currentWindow!.outerWidth - this._currentWindow!.innerWidth;
+        const navHeight = (measuredNavHeight >= 0 && measuredNavHeight <= 200) ? measuredNavHeight : 60;
+        const navWidth = (measuredNavWidth >= 0 && measuredNavWidth <= 100) ? measuredNavWidth : 2;
         rect.x = this._currentWindow!.screenX + this._currentWindow!.scrollX + navWidth / 2 + layoutRect.x + rect.x;
         rect.y = this._currentWindow!.screenY + this._currentWindow!.scrollY + (navHeight - navWidth / 2) + layoutRect.y + rect.y;
         rect.height += navHeight;
@@ -754,15 +1104,6 @@ export class LayoutController {
         }
         return undefined;
     }
-
-    showControlInPortal = (control: React.ReactNode, element: HTMLElement) => {
-        const portal = createPortal(control, element) as React.ReactPortal;
-        this.setState({ portal });
-    };
-
-    hideControlInPortal = () => {
-        this.setState({ portal: undefined });
-    };
 
     maximize(tabsetNode: TabSetNode) {
         this.doAction(Actions.maximizeToggle(tabsetNode.getId(), this.getLayoutId()));
@@ -818,12 +1159,15 @@ export class LayoutController {
     }
 
     showOverlay(show: boolean) {
+        if (this._showOverlay === show) {
+            return; // avoid a re-render and a full-document iframe sweep per call (called on every pointermove during drags)
+        }
+        this._showOverlay = show;
         this.setState({ showOverlay: show });
         enablePointerOnIFrames(!show, this._currentDocument!);
     }
 
     showOverlayOnAllWindows(show: boolean) {
-        // console.log("showOverlayOnAllWindows", show);
         for (const [, layout] of this._props.model.getLayouts()) {
             if (layout.getController()) {
                 layout.getController()!.showOverlay(show);
@@ -836,6 +1180,7 @@ export class LayoutController {
 
 const defaultIcons = {
     close: <CloseIcon />,
+    pin: <PinIcon />,
     closeTabset: <CloseIcon />,
     closeFloatPopout: <CloseIcon />,
     popout: <PopoutIcon />,

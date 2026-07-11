@@ -20,6 +20,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: var(--color-4);
   --color-icon: var(--color-4);
+  --color-focus: #3b7de7;
   --color-tabset-background: white;
   --color-tabset-background-selected: white;
   --color-tabset-background-maximized: white;
@@ -122,6 +123,7 @@
   min-width: 0;
   min-height: 0;
   flex-grow: 1;
+  position: relative;
 }
 .flexlayout__splitter {
   display: flex;
@@ -131,6 +133,10 @@
   touch-action: none;
   z-index: 10;
   position: relative;
+}
+.flexlayout__splitter:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 .flexlayout__splitter_horz {
   width: var(--splitter-size);
@@ -191,10 +197,6 @@
 .flexlayout__splitter_handle_vert {
   width: 30px;
   height: 3px;
-}
-.flexlayout__splitter_extra {
-  touch-action: none;
-  background-color: transparent;
 }
 .flexlayout__outline_rect {
   position: absolute;
@@ -341,7 +343,7 @@
   box-sizing: border-box;
   background-color: var(--color-tab-content);
   color: var(--color-text);
-  position: relative;
+  position: absolute;
 }
 .flexlayout__tab_moveable {
   position: relative;
@@ -360,6 +362,12 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.2392156863);
 }
+.flexlayout__tab_border_overlay {
+  z-index: 1000;
+}
+.flexlayout__tab_overlay_raised {
+  z-index: 1001;
+}
 .flexlayout__tab_layout_container {
   position: relative;
   height: 100%;
@@ -377,6 +385,12 @@
   box-sizing: border-box;
   padding: 3px 0.5em;
   font-weight: var(--font-weight);
+}
+.flexlayout__tab_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.flexlayout__tab_button {
   cursor: pointer;
 }
 .flexlayout__tab_button_stretch {
@@ -412,6 +426,10 @@
 .flexlayout__tab_button_leading {
   display: flex;
 }
+.flexlayout__tab_button_pin {
+  display: flex;
+  pointer-events: none;
+}
 .flexlayout__tab_button_content {
   display: flex;
   text-wrap: nowrap;
@@ -428,7 +446,8 @@
   width: 10em;
 }
 .flexlayout__tab_button_textbox:focus {
-  outline: none;
+  outline: 2px solid var(--color-focus);
+  outline-offset: -1px;
 }
 .flexlayout__tab_button_trailing {
   display: flex;
@@ -471,6 +490,10 @@
   background-color: transparent;
   padding: 1px;
 }
+.flexlayout__tab_toolbar_icon:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__tab_toolbar_button {
   border: none;
   outline: none;
@@ -479,6 +502,10 @@
   background-color: transparent;
   border-radius: 4px;
   padding: 1px;
+}
+.flexlayout__tab_toolbar_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 @media (hover: hover) {
   .flexlayout__tab_toolbar_button:hover {
@@ -505,6 +532,34 @@
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--color-border-tab-content);
+}
+.flexlayout__border_tab_overlay {
+  position: absolute;
+  z-index: 100;
+}
+.flexlayout__border_tab_overlay_top {
+  top: 0;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+}
+.flexlayout__border_tab_overlay_bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+}
+.flexlayout__border_tab_overlay_left {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  flex-direction: row;
+}
+.flexlayout__border_tab_overlay_right {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  flex-direction: row;
 }
 .flexlayout__border_leading {
   display: flex;
@@ -570,6 +625,10 @@
   white-space: nowrap;
   font-weight: var(--font-weight);
 }
+.flexlayout__border_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__border_button--selected {
   background-color: var(--color-border-tab-selected-background);
   color: var(--color-border-tab-selected);
@@ -624,6 +683,10 @@
   border-radius: 4px;
   padding: 1px;
 }
+.flexlayout__border_toolbar_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 @media (hover: hover) {
   .flexlayout__border_toolbar_button:hover {
     background-color: var(--color-toolbar-button-hover);
@@ -649,6 +712,10 @@
   cursor: pointer;
   border-radius: 2px;
 }
+.flexlayout__popup_menu_item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__popup_menu_item--selected {
   font-weight: 500;
   background-color: var(--color-tab-selected-background);
@@ -658,6 +725,11 @@
   .flexlayout__popup_menu_item:hover {
     background-color: var(--color-6);
   }
+}
+.flexlayout__popup_menu_divider {
+  height: 1px;
+  margin: 4px 2px;
+  background-color: var(--color-popup-border);
 }
 .flexlayout__popup_menu_container {
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);

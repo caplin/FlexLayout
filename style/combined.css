@@ -20,6 +20,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: gray;
   --color-icon: gray;
+  --color-focus: #3b7de7;
   --color-tabset-background: var(--color-background);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-2);
@@ -81,6 +82,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: gray;
   --color-icon: gray;
+  --color-focus: #93c5fd;
   --color-tabset-background: var(--color-1);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-6);
@@ -142,6 +144,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: gray;
   --color-icon: gray;
+  --color-focus: #3b7de7;
   --color-tabset-background: var(--color-1);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-6);
@@ -203,6 +206,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: gray;
   --color-icon: gray;
+  --color-focus: #3b7de7;
   --color-tabset-background: var(--color-background);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-6);
@@ -267,6 +271,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: #999db2;
   --color-icon: #999db2;
+  --color-focus: #3b7de7;
   --color-tabset-background: white;
   --color-tabset-background-selected: white;
   --color-tabset-background-maximized: white;
@@ -330,6 +335,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: var(--color-5);
   --color-icon: var(--color-5);
+  --color-focus: #3b7de7;
   --color-tabset-background: var(--color-1);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-1);
@@ -393,6 +399,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: gray;
   --color-icon: gray;
+  --color-focus: #93c5fd;
   --color-tabset-background: var(--color-1);
   --color-tabset-background-selected: var(--color-1);
   --color-tabset-background-maximized: var(--color-1);
@@ -456,6 +463,7 @@
   --splitter-handle-visibility: hidden;
   --color-overflow: var(--color-4);
   --color-icon: var(--color-4);
+  --color-focus: #3b7de7;
   --color-tabset-background: white;
   --color-tabset-background-selected: white;
   --color-tabset-background-maximized: white;
@@ -496,6 +504,76 @@
   --tab-button-radius: 16px;
   --border-button-radius: 16px;
   --color-float-window-header-background: var(--color-tabset-background);
+}
+
+.flexlayout__theme_aria .flexlayout__layout {
+  --color-text: black;
+  --color-background: #ffffff;
+  --color-base: #f9fafb;
+  --color-1: #ededee;
+  --color-2: #e5e7eb;
+  --color-3: #d1d5db;
+  --color-4: #9ca3af;
+  --color-5: #6b7280;
+  --color-6: #4b5563;
+  --color-drag1: rgb(95, 134, 196);
+  --color-drag2: rgb(119, 166, 119);
+  --color-drag1-background: rgba(59, 130, 246, 0.1);
+  --color-drag2-background: rgba(16, 185, 129, 0.075);
+  --font-size: medium;
+  --font-family: system-ui, -apple-system, Arial, sans-serif;
+  --font-weight: 500;
+  --splitter-size: 8px;
+  --splitter-active-size: 8px;
+  --splitter-handle-visibility: hidden;
+  --color-overflow: var(--color-5);
+  --color-icon: var(--color-5);
+  --color-focus: #3b7de7;
+  --color-tabset-background: var(--color-1);
+  --color-tabset-background-selected: var(--color-1);
+  --color-tabset-background-maximized: var(--color-1);
+  --color-tabset-divider-line: var(--color-2);
+  --color-border-tab-content: var(--color-1);
+  --color-border-background: var(--color-1);
+  --color-border-divider-line: var(--color-2);
+  --color-tab-content: var(--color-background);
+  --color-tab-selected: #3b7de7;
+  --color-tab-selected-background: var(--color-background);
+  --color-tab-unselected: var(--color-5);
+  --color-tab-unselected-background: transparent;
+  --color-tab-textbox: var(--color-text);
+  --color-tab-textbox-background: var(--color-background);
+  --color-border-tab-selected: #3b7de7;
+  --color-border-tab-selected-background: var(--color-background);
+  --color-border-tab-unselected: var(--color-5);
+  --color-border-tab-unselected-background: var(--color-1);
+  --color-splitter: var(--color-1);
+  --color-splitter-hover: var(--color-4);
+  --color-splitter-drag: var(--color-4);
+  --color-splitter-handle: var(--color-3);
+  --color-drag-rect-border: var(--color-3);
+  --color-drag-rect-background: var(--color-background);
+  --color-drag-rect: var(--color-text);
+  --color-popup-border: var(--color-2);
+  --color-popup-unselected: var(--color-text);
+  --color-popup-unselected-background: var(--color-background);
+  --color-popup-selected: var(--color-drag1);
+  --color-popup-selected-background: var(--color-1);
+  --color-edge-marker: var(--color-3);
+  --color-edge-icon: var(--color-6);
+  --color-mini-scroll-indicator: rgba(0, 0, 0, 0.1);
+  --color-mini-scroll-indicator-hovered: rgba(0, 0, 0, 0.3);
+  --size-mini-scroll-indicator: 4px;
+  --color-toolbar-button-hover: var(--color-2);
+  --tab-button-radius: 10px;
+  --border-button-radius: 5px;
+  --color-float-window-header-background: var(--color-tabset-background);
+}
+.flexlayout__theme_aria .flexlayout__layout {
+  --color-tab-selected: #2563eb;
+  --color-border-tab-selected: #2563eb;
+  --color-tab-unselected: var(--color-6);
+  --color-border-tab-unselected: var(--color-6);
 }
 
 /*
@@ -558,6 +636,7 @@
   min-width: 0;
   min-height: 0;
   flex-grow: 1;
+  position: relative;
 }
 .flexlayout__splitter {
   display: flex;
@@ -567,6 +646,10 @@
   touch-action: none;
   z-index: 10;
   position: relative;
+}
+.flexlayout__splitter:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 .flexlayout__splitter_horz {
   width: var(--splitter-size);
@@ -627,10 +710,6 @@
 .flexlayout__splitter_handle_vert {
   width: 30px;
   height: 3px;
-}
-.flexlayout__splitter_extra {
-  touch-action: none;
-  background-color: transparent;
 }
 .flexlayout__outline_rect {
   position: absolute;
@@ -777,7 +856,7 @@
   box-sizing: border-box;
   background-color: var(--color-tab-content);
   color: var(--color-text);
-  position: relative;
+  position: absolute;
 }
 .flexlayout__tab_moveable {
   position: relative;
@@ -796,6 +875,12 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.2392156863);
 }
+.flexlayout__tab_border_overlay {
+  z-index: 1000;
+}
+.flexlayout__tab_overlay_raised {
+  z-index: 1001;
+}
 .flexlayout__tab_layout_container {
   position: relative;
   height: 100%;
@@ -813,6 +898,12 @@
   box-sizing: border-box;
   padding: 3px 0.5em;
   font-weight: var(--font-weight);
+}
+.flexlayout__tab_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.flexlayout__tab_button {
   cursor: pointer;
 }
 .flexlayout__tab_button_stretch {
@@ -848,6 +939,10 @@
 .flexlayout__tab_button_leading {
   display: flex;
 }
+.flexlayout__tab_button_pin {
+  display: flex;
+  pointer-events: none;
+}
 .flexlayout__tab_button_content {
   display: flex;
   text-wrap: nowrap;
@@ -864,7 +959,8 @@
   width: 10em;
 }
 .flexlayout__tab_button_textbox:focus {
-  outline: none;
+  outline: 2px solid var(--color-focus);
+  outline-offset: -1px;
 }
 .flexlayout__tab_button_trailing {
   display: flex;
@@ -907,6 +1003,10 @@
   background-color: transparent;
   padding: 1px;
 }
+.flexlayout__tab_toolbar_icon:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__tab_toolbar_button {
   border: none;
   outline: none;
@@ -915,6 +1015,10 @@
   background-color: transparent;
   border-radius: 4px;
   padding: 1px;
+}
+.flexlayout__tab_toolbar_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 @media (hover: hover) {
   .flexlayout__tab_toolbar_button:hover {
@@ -941,6 +1045,34 @@
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--color-border-tab-content);
+}
+.flexlayout__border_tab_overlay {
+  position: absolute;
+  z-index: 100;
+}
+.flexlayout__border_tab_overlay_top {
+  top: 0;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+}
+.flexlayout__border_tab_overlay_bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  flex-direction: column;
+}
+.flexlayout__border_tab_overlay_left {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  flex-direction: row;
+}
+.flexlayout__border_tab_overlay_right {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  flex-direction: row;
 }
 .flexlayout__border_leading {
   display: flex;
@@ -1006,6 +1138,10 @@
   white-space: nowrap;
   font-weight: var(--font-weight);
 }
+.flexlayout__border_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__border_button--selected {
   background-color: var(--color-border-tab-selected-background);
   color: var(--color-border-tab-selected);
@@ -1060,6 +1196,10 @@
   border-radius: 4px;
   padding: 1px;
 }
+.flexlayout__border_toolbar_button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 @media (hover: hover) {
   .flexlayout__border_toolbar_button:hover {
     background-color: var(--color-toolbar-button-hover);
@@ -1085,6 +1225,10 @@
   cursor: pointer;
   border-radius: 2px;
 }
+.flexlayout__popup_menu_item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
 .flexlayout__popup_menu_item--selected {
   font-weight: 500;
   background-color: var(--color-tab-selected-background);
@@ -1094,6 +1238,11 @@
   .flexlayout__popup_menu_item:hover {
     background-color: var(--color-6);
   }
+}
+.flexlayout__popup_menu_divider {
+  height: 1px;
+  margin: 4px 2px;
+  background-color: var(--color-popup-border);
 }
 .flexlayout__popup_menu_container {
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.15);
@@ -1580,6 +1729,100 @@
   padding: 8px 12px;
 }
 .flexlayout__theme_alpha_rounded .flexlayout__popup_menu_item:hover {
+  background-color: var(--color-1);
+}
+
+.flexlayout__theme_aria .flexlayout__tab {
+  border: 5px solid var(--color-background);
+  border-radius: 5px;
+}
+.flexlayout__theme_aria .flexlayout__splitter_border .flexlayout__splitter_handle {
+  visibility: visible;
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_top {
+  border-bottom: unset;
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_bottom {
+  border-top: unset;
+}
+.flexlayout__theme_aria .flexlayout__tab_button {
+  border-bottom: 2px solid transparent;
+  padding: 4px 12px;
+}
+.flexlayout__theme_aria .flexlayout__tab_button--selected:hover {
+  background-color: var(--color-background);
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_top .flexlayout__tab_button--selected {
+  border-top-left-radius: var(--tab-button-radius);
+  border-top-right-radius: var(--tab-button-radius);
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_bottom .flexlayout__tab_button--selected {
+  border-bottom-left-radius: var(--tab-button-radius);
+  border-bottom-right-radius: var(--tab-button-radius);
+}
+.flexlayout__theme_aria .flexlayout__tabset_tab_spacer {
+  width: 12px;
+}
+.flexlayout__theme_aria .flexlayout__tabset_tab_divider, .flexlayout__theme_aria .flexlayout__border_tab_divider {
+  width: 2px;
+  border-radius: 2px;
+  height: 0.8em;
+  margin: 0px 5px 0px 5px;
+  background-color: #ddd;
+}
+.flexlayout__theme_aria .flexlayout__tabset_tab_divider_selected_before, .flexlayout__theme_aria .flexlayout__tabset_tab_divider_selected_after {
+  width: 12px;
+  height: 100%;
+  margin: unset;
+  border-radius: unset;
+  background-color: var(--color-tab-selected-background);
+}
+.flexlayout__theme_aria .flexlayout__tabset_tab_divider_inner {
+  height: 100%;
+}
+.flexlayout__theme_aria .flexlayout__tabset-selected {
+  --tab-divider-bg: var(--color-tabset-background-selected);
+}
+.flexlayout__theme_aria .flexlayout__tabset-maximized {
+  --tab-divider-bg: var(--color-tabset-background-maximized);
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_top .flexlayout__tabset_tab_divider_selected_before .flexlayout__tabset_tab_divider_inner {
+  border-bottom-right-radius: var(--tab-button-radius);
+  background-color: var(--tab-divider-bg, var(--color-tabset-background));
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_top .flexlayout__tabset_tab_divider_selected_after .flexlayout__tabset_tab_divider_inner {
+  border-bottom-left-radius: var(--tab-button-radius);
+  background-color: var(--tab-divider-bg, var(--color-tabset-background));
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_bottom .flexlayout__tabset_tab_divider_selected_before .flexlayout__tabset_tab_divider_inner {
+  border-top-right-radius: var(--tab-button-radius);
+  background-color: var(--tab-divider-bg, var(--color-tabset-background));
+}
+.flexlayout__theme_aria .flexlayout__tabset_tabbar_outer_bottom .flexlayout__tabset_tab_divider_selected_after .flexlayout__tabset_tab_divider_inner {
+  border-top-left-radius: var(--tab-button-radius);
+  background-color: var(--tab-divider-bg, var(--color-tabset-background));
+}
+.flexlayout__theme_aria .flexlayout__border_button {
+  border-radius: var(--border-button-radius);
+  margin: 3px;
+  padding: 3px 8px;
+}
+.flexlayout__theme_aria .flexlayout__border_button--selected {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.flexlayout__theme_aria .flexlayout__border_sizer {
+  padding-bottom: 8px;
+}
+.flexlayout__theme_aria .flexlayout__popup_menu_container {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-2);
+  padding: 4px;
+}
+.flexlayout__theme_aria .flexlayout__popup_menu_item {
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+.flexlayout__theme_aria .flexlayout__popup_menu_item:hover {
   background-color: var(--color-1);
 }
 

@@ -6,7 +6,7 @@ export function Attributes({ node }: { node: TabNode }) {
 
     React.useEffect(() => {
         const timer = setInterval(() => {
-            setValue(v => v = v + 1);
+            setValue(v => v + 1);
         }, 500);
         return () => {
             clearInterval(timer);

@@ -84,7 +84,8 @@ export interface IGlobalAttributes {
 	/**
 	  Value for BorderNode attribute enableAutoHide if not overridden
 
-	  hide border if it has zero tabs
+	  hide border if it has zero tabs; not related to the borderType 'overlay' mode (Visual Studio
+            style auto hide), see the borderType attribute
 
 	  Default: false
 	 */
@@ -280,6 +281,15 @@ export interface IGlobalAttributes {
 	  Default: true
 	 */
 	tabEnableRenderOnDemand?: boolean;
+
+	/**
+	  Value for TabNode attribute enableScrollbars if not overridden
+
+	  whether the tab will be hosted in a scrollable container
+
+	  Default: true
+	 */
+	tabEnableScrollbars?: boolean;
 
 	/**
 	  Value for TabNode attribute icon if not overridden
@@ -813,6 +823,13 @@ export interface ITabAttributes {
 	enableRenderOnDemand?: boolean;
 
 	/**
+	  whether the tab will be hosted in a scrollable container
+
+	  Default: inherited from Global attribute tabEnableScrollbars (default true)
+	 */
+	enableScrollbars?: boolean;
+
+	/**
 	  if enabled the tab will re-mount when popped out/in
 
 	  Default: false
@@ -876,6 +893,16 @@ export interface ITabAttributes {
 	name?: string;
 
 	/**
+	  whether the tab is pinned; pinned tabs are grouped at the start of the tabstrip, cannot be closed
+            via the ui, and cannot be dragged out of their tabset (they can be reordered within the pinned group).
+            Set via Actions.setTabPinned. Only applies to tabs in tabsets (not borders); pinned tabs should be
+            listed first in the json
+
+	  Default: false
+	 */
+	pinned?: boolean;
+
+	/**
 	  the Id of the sub layout to render in this tab, defined in the subLayouts section of the model json (if
             component is also defined then use the <TabLayout> component in the factory to render the sublayout)
 
@@ -914,6 +941,17 @@ export interface IBorderAttributes {
 	autoSelectTabWhenOpen?: boolean;
 
 	/**
+	  the border display type: 'split' splits the main layout to make room when a tab is selected; 'overlay' shows
+            the selected tab's panel as an overlay on top of the main layout area, and the tab is deselected
+            by a pointer-down in the main layout area (Visual Studio style auto hide). Set via
+            Actions.setBorderType. Not related to enableAutoHide (which hides the border strip when it has
+            zero tabs)
+
+	  Default: "split"
+	 */
+	borderType?: string;
+
+	/**
 	  class applied to tab button
 
 	  Default: inherited from Global attribute borderClassName (default undefined)
@@ -928,7 +966,8 @@ export interface IBorderAttributes {
 	config?: any;
 
 	/**
-	  hide border if it has zero tabs
+	  hide border if it has zero tabs; not related to the borderType 'overlay' mode (Visual Studio
+            style auto hide), see the borderType attribute
 
 	  Default: inherited from Global attribute borderEnableAutoHide (default false)
 	 */
@@ -991,4 +1030,3 @@ export interface IBorderAttributes {
 	type?: string;
 
 }
-

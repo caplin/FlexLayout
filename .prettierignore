@@ -1,0 +1,16 @@
+# build outputs / generated
+dist/
+types/
+typedoc/
+demo/dist/
+
+# generated css (compiled from style/*.scss by the `css` script)
+style/*.css
+style/*.css.map
+
+# vendored / lockfiles
+node_modules/
+pnpm-lock.yaml
+
+# binary / assets
+screenshots/

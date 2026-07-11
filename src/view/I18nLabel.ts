@@ -1,5 +1,7 @@
 export enum I18nLabel {
     Close_Tab = "Close",
+    Pinned_Tab = "Pinned",
+    Rename_Tab = "Rename tab",
     Close_Tabset = "Close tab set",
     Active_Tabset = "Active tab set",
     Move_Tabset = "Move tab set",
@@ -9,6 +11,7 @@ export enum I18nLabel {
     Popout_Tab = "Popout selected tab",
     Popout_Tab_Float = "Float selected tab",
     Overflow_Menu_Tooltip = "Hidden tabs",
+    Splitter = "Resize",
     Error_rendering_component = "Error rendering component",
     Error_rendering_component_retry = "Retry",
 }

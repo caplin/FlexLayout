@@ -11,6 +11,7 @@ export interface ITabButtonStampProps {
 
 /** @internal */
 export const TabButtonStamp = (props: ITabButtonStampProps) => {
+    
     const { controller, tabNode } = props;
 
     const cm = controller.getClassName;
@@ -40,3 +41,6 @@ export const TabButtonStamp = (props: ITabButtonStampProps) => {
         </div>
     );
 };
+
+TabButtonStamp.displayName = 'TabButtonStamp'; // name in react dev tools
+

@@ -8,21 +8,26 @@ import { useEffect } from "react";
 function MapComponent() {
     const selfRef = React.useRef<HTMLDivElement | null>(null);
     const map = React.useRef<any>(null);
+    const mapDocument = React.useRef<Document | null>(null);
+
+    // creates the map on the given target, reusing the given view (so the zoom/pan state
+    // survives a rebuild)
+    const createMap = (target: HTMLDivElement, view: View) => {
+        map.current = new Map({
+            target,
+            layers: [
+                new TileLayer({
+                    preload: Infinity,
+                    source: new OSM(),
+                })
+            ],
+            view,
+        });
+    };
 
     useEffect(() => {
-        const osmLayer = new TileLayer({
-            preload: Infinity,
-            source: new OSM(),
-        })
-
-        map.current = new Map({
-            target: selfRef.current!,
-            layers: [osmLayer],
-            view: new View({
-                center: [0, 0],
-                zoom: 0,
-            }),
-        });
+        createMap(selfRef.current!, new View({ center: [0, 0], zoom: 0 }));
+        mapDocument.current = selfRef.current!.ownerDocument;
         return () => {
             map.current.setTarget(undefined);
         }
@@ -31,6 +36,16 @@ function MapComponent() {
     useEffect(() => {
         const target = selfRef.current;
         if (!target) return;
+
+        // when the tab moves between windows (popout/popin) the map's canvas is adopted into
+        // another document, which invalidates its rendering context (draws silently no-op).
+        // Rebuild the map with fresh renderers, keeping the same View so zoom/pan survive
+        if (mapDocument.current !== target.ownerDocument && map.current) {
+            mapDocument.current = target.ownerDocument;
+            const view = map.current.getView();
+            map.current.setTarget(undefined);
+            createMap(target, view);
+        }
 
         const win = target.ownerDocument.defaultView || window;
         const Observer = win.ResizeObserver || ResizeObserver;

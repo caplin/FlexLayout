@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, RowNode, TabNode, TabSetNode } from "../src";
+import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Rect, RowNode, TabNode, TabSetNode } from "../src";
 
 /*
 * The textRendered tabs: a representation of the model 'rendered' to a list of tab paths 
@@ -12,6 +12,200 @@ let pathMap: Record<string, Node> = {}; // maps tab path (e.g /ts1/t0) to the ac
 let model: Model;
 
 describe("Tree", function () {
+
+    describe("fromJson", () => {
+
+        it("loads a model without the optional global key", function () {
+            model = Model.fromJson(
+                {
+                    layout: {
+                        type: "row",
+                        children: [
+                            {
+                                type: "tabset",
+                                children: [
+                                    { type: "tab", name: "One" }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            );
+
+            textRender(model);
+            expect(tabs).equal("/ts0/t0[One]*");
+        });
+
+        it("clamps an out of range selected index from the json", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        { type: "tabset", selected: 5, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] }
+                    ]
+                }
+            });
+
+            textRender(model);
+            expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*");
+        });
+
+        it("tolerates a dangling subLayoutId", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        { type: "tabset", children: [{ type: "tab", id: "t1", name: "One", subLayoutId: "missing" }] }
+                    ]
+                }
+            });
+
+            const t = model.getNodeById("t1") as TabNode;
+            expect(t.isCloseable()).equal(true);
+            expect(() => t.isAllowedInWindow()).not.toThrow();
+        });
+    });
+
+    describe("Robustness", () => {
+
+        it("returns undefined for unknown layout ids", function () {
+            model = Model.fromJson(twoTabs);
+            expect(model.getMaximizedTabset("nope")).equal(undefined);
+            expect(model.getRootRow("nope")).equal(undefined);
+        });
+
+        it("ignores short weights arrays and unknown ids in adjustWeights", function () {
+            model = Model.fromJson(twoTabs);
+            textRender(model);
+            const row = model.getRootRow()!;
+            const w1 = (row.getChildren()[1] as TabSetNode).getWeight();
+
+            doAction(Actions.adjustWeights(row.getId(), [70]));
+            expect((row.getChildren()[0] as TabSetNode).getWeight()).equal(70);
+            expect((row.getChildren()[1] as TabSetNode).getWeight()).equal(w1);
+
+            // unknown id is a no-op rather than a throw
+            doAction(Actions.adjustWeights("unknown", [1, 2]));
+        });
+
+        it("clamps an out of range border selected index from json", function () {
+            model = Model.fromJson({
+                global: {},
+                borders: [
+                    // selected index 5 with a single child would otherwise crash getSize/setSize
+                    { type: "border", location: "top", selected: 5, children: [{ type: "tab", name: "top1" }] },
+                    // selected on an empty border clamps to -1 (nothing selected)
+                    { type: "border", location: "bottom", selected: 0, children: [] }
+                ],
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }] }
+            });
+            const borders = model.getBorderSet().getBorders();
+            expect(borders[0].getSelected()).equal(0);
+            expect(borders[1].getSelected()).equal(-1);
+            expect(() => borders[0].getSize()).not.toThrow();
+        });
+
+        it("ignores unknown ids in setActiveTabset, maximizeToggle and updateNodeAttributes", function () {
+            model = Model.fromJson(twoTabs);
+            textRender(model);
+            expect(() => model.doAction(Actions.setActiveTabset("unknownTabset", "badLayout"))).not.toThrow();
+            expect(() => model.doAction(Actions.maximizeToggle("unknownTabset", "badLayout"))).not.toThrow();
+            expect(() => model.doAction(Actions.updateNodeAttributes("unknownNode", { name: "x" }))).not.toThrow();
+        });
+
+        it("keeps calculated max >= min when a tab has contradictory min/max attributes", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        { type: "tabset", children: [{ type: "tab", name: "One", minWidth: 300, maxWidth: 100 }] }
+                    ]
+                }
+            });
+            const root = model.getRootRow()!;
+            root.calcMinMaxSize();
+            const tabset = root.getChildren()[0] as TabSetNode;
+            // without the clamp, maxWidth (100) would end up below minWidth (300), inverting the
+            // bounds fed to the splitter/weight math
+            expect(tabset.getMaxWidth()).toBeGreaterThanOrEqual(tabset.getMinWidth());
+            expect(root.getMaxWidth()).toBeGreaterThanOrEqual(root.getMinWidth());
+        });
+
+        it("getFirstTabSet returns undefined for an empty row instead of throwing", function () {
+            model = Model.fromJson({ global: {}, layout: { type: "row", children: [] } });
+            expect(() => model.getFirstTabSet()).not.toThrow();
+            const normal = Model.fromJson(twoTabs);
+            expect(normal.getFirstTabSet()).toBeInstanceOf(TabSetNode);
+        });
+
+        it("setRect fires resize only on a whole-pixel change", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] }
+            });
+            const t = model.getNodeById("t1") as TabNode;
+            let resizes = 0;
+            t.setEventListener("resize", () => { resizes++; });
+
+            t.setRect(new Rect(0, 0, 100, 100));
+            expect(resizes).equal(1);
+
+            // sub-pixel change rounds equal: positionTabPanels re-applies the rect every measure
+            // pass, so this must NOT re-fire resize
+            t.setRect(new Rect(0, 0, 100.2, 100.2));
+            expect(resizes).equal(1);
+
+            // a whole-pixel change does fire
+            t.setRect(new Rect(0, 0, 101, 101));
+            expect(resizes).equal(2);
+        });
+
+        it("restores horizontal scroll when vertical scroll is zero", async function () {
+            model = Model.fromJson({
+                global: {},
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] }
+            });
+            const t = model.getNodeById("t1") as TabNode;
+            const el = t.getMoveableElement();
+            t.setScrollTop(0);
+            t.setScrollLeft(123);
+
+            t.restoreScrollPosition();
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+
+            expect(el.scrollLeft).equal(123);
+        });
+
+        it("deleting a tab removes nested sublayouts and closes their tabs", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        { type: "tabset", children: [{ type: "tab", id: "tA", name: "A", subLayoutId: "L1" }, { type: "tab", name: "Keep" }] }
+                    ]
+                },
+                subLayouts: {
+                    L1: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tB", name: "B", subLayoutId: "L2" }] }] } },
+                    L2: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tC", name: "C" }] }] } }
+                }
+            });
+            expect(model.getLayouts().has("L1")).equal(true);
+            expect(model.getLayouts().has("L2")).equal(true);
+
+            const closed: string[] = [];
+            (model.getNodeById("tB") as TabNode).setEventListener("close", () => closed.push("B"));
+
+            doAction(Actions.deleteTab("tA"));
+
+            expect(model.getLayouts().has("L1")).equal(false);
+            expect(model.getLayouts().has("L2")).equal(false);
+            expect(closed).toEqual(["B"]);
+        });
+    });
 
     describe("Actions", () => {
 
@@ -341,6 +535,144 @@ describe("Tree", function () {
                 doAction(Actions.moveNode(fromId, toId, DockLocation.CENTER, -1));
                 expect(tabs).equal("/b/top/t0[top1],/b/bottom/t0[bottom1],/b/bottom/t1[bottom2],/b/left/t0[left1],/ts0/t0[One],/ts0/t1[right1]*");
             });
+
+            it("move tabset to border is rejected without losing the tabset", () => {
+                const fromId = tabset("/ts0").getId();
+                const toId = tab("/b/top").getId();
+                doAction(Actions.moveNode(fromId, toId, DockLocation.CENTER, 0));
+                expect(tabs).equal("/b/top/t0[top1],/b/bottom/t0[bottom1],/b/bottom/t1[bottom2],/b/left/t0[left1],/b/right/t0[right1],/ts0/t0[One]*");
+            });
+        });
+
+        describe("Selection preserved on insert", () => {
+            it("add tab before selected keeps same tab selected (tabset)", () => {
+                model = Model.fromJson({
+                    global: {},
+                    layout: {
+                        type: "row",
+                        children: [
+                            { type: "tabset", id: "A", selected: 1, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] }
+                        ]
+                    }
+                });
+                textRender(model);
+                expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*");
+
+                doAction(Actions.addTab({ name: "New", component: "grid" }, "A", DockLocation.CENTER, 0, false));
+                expect(tabs).equal("/ts0/t0[New],/ts0/t1[One],/ts0/t2[Two]*");
+            });
+
+            it("add tab before selected keeps same tab selected (border)", () => {
+                model = Model.fromJson({
+                    global: {},
+                    borders: [
+                        { type: "border", location: "top", selected: 1, children: [{ type: "tab", name: "top1" }, { type: "tab", name: "top2" }] }
+                    ],
+                    layout: {
+                        type: "row",
+                        children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }]
+                    }
+                });
+                textRender(model);
+                expect(tabs).equal("/b/top/t0[top1],/b/top/t1[top2]*,/ts0/t0[One]*");
+
+                const borderId = border("/b/top").getId();
+                doAction(Actions.addTab({ name: "New", component: "grid" }, borderId, DockLocation.CENTER, 0, false));
+                expect(tabs).equal("/b/top/t0[New],/b/top/t1[top1],/b/top/t2[top2]*,/ts0/t0[One]*");
+            });
+
+            it("merge tabset before selected keeps same tab selected", () => {
+                model = Model.fromJson({
+                    global: {},
+                    layout: {
+                        type: "row",
+                        children: [
+                            { type: "tabset", id: "A", selected: 1, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] },
+                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Three" }] }
+                        ]
+                    }
+                });
+                textRender(model);
+                expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*,/ts1/t0[Three]*");
+
+                doAction(Actions.moveNode("B", "A", DockLocation.CENTER, 0));
+                expect(tabs).equal("/ts0/t0[Three],/ts0/t1[One],/ts0/t2[Two]*");
+            });
+        });
+
+        describe("Splitter max size", () => {
+            // splitter at index 1 sits between tabsets A and B; initial sizes [250, 250]
+            const makeModel = (aAttrs: object, bAttrs: object) =>
+                Model.fromJson({
+                    global: {},
+                    layout: {
+                        type: "row",
+                        children: [
+                            { type: "tabset", id: "A", ...aAttrs, children: [{ type: "tab", name: "One" }] },
+                            { type: "tabset", id: "B", ...bAttrs, children: [{ type: "tab", name: "Two" }] }
+                        ]
+                    }
+                });
+
+            it("drag right caps growing left child at its own maxWidth", () => {
+                model = makeModel({ maxWidth: 300 }, {});
+                const row = model.getRootRow() as RowNode;
+                row.calcMinMaxSize();
+                // move splitter right by 100: A would grow 250 -> 350, must cap at 300
+                const weights = row.calculateSplit(1, 350, [250, 250], 500, 250);
+                expect(weights[0]).equal((300 * 100) / 500);
+            });
+
+            it("drag left caps growing right child at its own maxWidth", () => {
+                model = makeModel({}, { maxWidth: 300 });
+                const row = model.getRootRow() as RowNode;
+                row.calcMinMaxSize();
+                // move splitter left by 100: B would grow 250 -> 350, must cap at 300
+                const weights = row.calculateSplit(1, 150, [250, 250], 500, 250);
+                expect(weights[1]).equal((300 * 100) / 500);
+            });
+        });
+
+        describe("Maximized tabset cleanup", () => {
+            it("delete tabset clears maximized state", () => {
+                model = Model.fromJson({
+                    global: {},
+                    layout: {
+                        type: "row",
+                        children: [
+                            { type: "tabset", id: "A", enableDeleteWhenEmpty: false, children: [{ type: "tab", name: "One" }] },
+                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Two" }] }
+                        ]
+                    }
+                });
+                textRender(model);
+                const tsA = tabset("/ts0");
+
+                doAction(Actions.maximizeToggle("A"));
+                expect(model.getMaximizedTabset()).equal(tsA);
+
+                doAction(Actions.deleteTabset("A"));
+                expect(model.getMaximizedTabset()).equal(undefined);
+            });
+
+            it("popout of maximized tabset clears maximized state on its own layout", () => {
+                model = Model.fromJson(twoTabs);
+                textRender(model);
+                const tsA = tabset("/ts0");
+                const tsB = tabset("/ts1");
+
+                doAction(Actions.popoutTabset(tsA.getId()));
+                const windowLayoutId = tsA.getLayoutId();
+                expect(windowLayoutId).not.equal(Model.MAIN_LAYOUT_ID);
+
+                // move the second tabset into the same window so the layout survives the next popout
+                doAction(Actions.moveNode(tsB.getId(), tsA.getId(), DockLocation.RIGHT, -1));
+                doAction(Actions.maximizeToggle(tsA.getId(), windowLayoutId));
+                expect(model.getMaximizedTabset(windowLayoutId)).equal(tsA);
+
+                doAction(Actions.popoutTabset(tsA.getId()));
+                expect(model.getMaximizedTabset(windowLayoutId)).equal(undefined);
+            });
         });
 
         describe("Delete", () => {
@@ -512,6 +844,16 @@ describe("Tree", function () {
             model.toJson();
             expect(saved).equals(true);
         });
+
+        it("visibility changes fire once per actual change", () => {
+            const t = tab("/ts0/t0");
+            const events: boolean[] = [];
+            t.setEventListener("visibility", (p: { visible: boolean }) => { events.push(p.visible); });
+            t.setVisible(true);   // false -> true, fires
+            t.setVisible(true);   // no change, no event
+            t.setVisible(false);  // true -> false, fires
+            expect(events).toEqual([true, false]);
+        });
     });
 });
 
@@ -554,7 +896,7 @@ function textRender(model: Model) {
     pathMap = {};
     tabsArray = [];
     textRenderInner(pathMap, "", model.getBorderSet().getBorders());
-    textRenderInner(pathMap, "", model.getRootRow().getChildren());
+    textRenderInner(pathMap, "", model.getRootRow()!.getChildren());
     tabs = tabsArray.join(",");
 }
 

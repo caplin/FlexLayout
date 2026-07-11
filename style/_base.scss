@@ -67,6 +67,7 @@
         &__layout_border_container_inner {
             @include flexFix;
             flex-grow: 1;
+            position: relative; // anchor for overlay border panels
         }
 
         &__splitter {
@@ -77,6 +78,11 @@
             touch-action: none;
             z-index: 10;
             position: relative;
+
+            &:focus-visible {
+                outline: 2px solid var(--color-focus);
+                outline-offset: -2px;
+            }
 
             &_horz {
                 width: var(--splitter-size);
@@ -149,10 +155,6 @@
                 }
             }
 
-            &_extra {
-                touch-action: none;
-                background-color: transparent;
-            }
         }
 
         &__outline_rect {
@@ -318,7 +320,9 @@
             box-sizing: border-box;
             background-color: var(--color-tab-content);
             color: var(--color-text);
-            position: relative;
+            // absolute from first mount: the panel must never join the layout's flex flow, else it
+            // would squeeze the layout tree during the commit before the positioning pass runs
+            position: absolute;
 
             &_moveable {
                 position: relative;
@@ -337,6 +341,20 @@
                 right: 0;
                 bottom: 0;
                 background-color: #0000003d;
+            }
+
+            &_border_overlay {
+                // paint above the main area tab panels when overlaying them (overlay border).
+                // Must equal the drag overlay z-index (layout_overlay, 1000): the panel renders
+                // after the overlay, so during drags the panel (and any sublayout overlay within
+                // it) receives the drag events over its area, routing them to the hosted
+                // sublayout exactly as for a default border panel. Popup menus and drag outlines
+                // are appended to the root after the panels, so they still paint above
+                z-index: 1000;
+            }
+
+            &_overlay_raised {
+                z-index: 1001; // the popout overlay must cover the overlay border panel
             }
 
             &_layout_container {
@@ -359,6 +377,11 @@
                 box-sizing: border-box;
                 padding: 3px 0.5em;
                 font-weight: var(--font-weight);
+
+                &:focus-visible {
+                    outline: 2px solid var(--color-focus);
+                    outline-offset: -2px;
+                }
 
                 cursor: pointer;
 
@@ -405,6 +428,11 @@
                     display: flex;
                 }
 
+                &_pin {
+                    display: flex;
+                    // pointer-events: none;
+                }
+
                 &_content {
                     display: flex;
                     text-wrap: nowrap;
@@ -423,7 +451,8 @@
                 }
 
                 &_textbox:focus {
-                    outline: none;
+                    outline: 2px solid var(--color-focus);
+                    outline-offset: -1px;
                 }
 
                 &_trailing {
@@ -476,6 +505,11 @@
                     margin: 0px;
                     background-color: transparent;
                     padding: 1px;
+
+                    &:focus-visible {
+                        outline: 2px solid var(--color-focus);
+                        outline-offset: -2px;
+                    }
                 }
 
                 &_button {
@@ -486,6 +520,11 @@
                     background-color: transparent;
                     border-radius: 4px;
                     padding: 1px;
+
+                    &:focus-visible {
+                        outline: 2px solid var(--color-focus);
+                        outline-offset: -2px;
+                    }
 
                     @media (hover: hover) {
                         &:hover {
@@ -525,6 +564,41 @@
                 box-sizing: border-box;
                 overflow: hidden;
                 background-color: var(--color-border-tab-content);
+            }
+
+            // overlay mode: the border panel (host + splitter) overlays the main layout area,
+            // anchored to its border's edge, instead of insetting the main layout
+            &_tab_overlay {
+                position: absolute;
+                z-index: 100;
+
+                &_top {
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    flex-direction: column;
+                }
+
+                &_bottom {
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    flex-direction: column;
+                }
+
+                &_left {
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    flex-direction: row;
+                }
+
+                &_right {
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    flex-direction: row;
+                }
             }
 
             &_leading {
@@ -602,6 +676,11 @@
                 white-space: nowrap;
                 font-weight: var(--font-weight);
 
+                &:focus-visible {
+                    outline: 2px solid var(--color-focus);
+                    outline-offset: -2px;
+                }
+
                 &--selected {
                     background-color: var(--color-border-tab-selected-background);
                     color: var(--color-border-tab-selected);
@@ -676,6 +755,11 @@
                     border-radius: 4px;
                     padding: 1px;
 
+                    &:focus-visible {
+                        outline: 2px solid var(--color-focus);
+                        outline-offset: -2px;
+                    }
+
                     @media (hover: hover) {
                         &:hover {
                             background-color: var(--color-toolbar-button-hover);
@@ -714,6 +798,11 @@
                 cursor: pointer;
                 border-radius: 2px;
 
+                &:focus-visible {
+                    outline: 2px solid var(--color-focus);
+                    outline-offset: -2px;
+                }
+
                 &--selected {
                     font-weight: 500;
                     background-color: var(--color-tab-selected-background);
@@ -725,6 +814,12 @@
                 &_item:hover {
                     background-color: var(--color-6);
                 }
+            }
+
+            &_divider {
+                height: 1px;
+                margin: 4px 2px;
+                background-color: var(--color-popup-border);
             }
 
             &_container {

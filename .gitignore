@@ -13,3 +13,4 @@ style/*.css.map
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.vscode/

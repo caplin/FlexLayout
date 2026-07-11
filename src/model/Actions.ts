@@ -10,6 +10,8 @@ export class Actions {
     static ADD_TAB = "FlexLayout_AddTab";
     static DELETE_TAB = "FlexLayout_DeleteTab";
     static RENAME_TAB = "FlexLayout_RenameTab";
+    static SET_TAB_PINNED = "FlexLayout_SetTabPinned";
+    static SET_BORDER_TYPE = "FlexLayout_SetBorderType";
     static SELECT_TAB = "FlexLayout_SelectTab";
     static MOVE_NODE = "FlexLayout_MoveNode";
     static DELETE_TABSET = "FlexLayout_DeleteTabset";
@@ -97,6 +99,30 @@ export class Actions {
      */
     static renameTab(tabNodeId: string, text: string): Action {
         return new Action(Actions.RENAME_TAB, { node: tabNodeId, text });
+    }
+
+    /**
+     * Pins or unpins the given tab; pinning moves it to the end of the pinned group at the
+     * start of its tabset's tabstrip, unpinning moves it to the start of the unpinned tabs.
+     * Only applies to tabs in tabsets (ignored for border tabs).
+     * @param tabNodeId the id of the tab node to pin/unpin
+     * @param pinned the new pinned state
+     * @returns {Action} the action
+     */
+    static setTabPinned(tabNodeId: string, pinned: boolean): Action {
+        return new Action(Actions.SET_TAB_PINNED, { node: tabNodeId, pinned });
+    }
+
+    /**
+     * Sets the display type of the given border. In 'overlay' mode the selected tab's panel
+     * overlays the main layout area instead of insetting it (Visual Studio style auto hide),
+     * and is deselected by a pointer-down in the main layout area.
+     * @param borderNodeId the id of the border node (border ids are "border_" + location, e.g. "border_left")
+     * @param borderType the new border type
+     * @returns {Action} the action
+     */
+    static setBorderType(borderNodeId: string, borderType: "split" | "overlay"): Action {
+        return new Action(Actions.SET_BORDER_TYPE, { node: borderNodeId, borderType });
     }
 
     /**

@@ -1,20 +1,13 @@
 import { TabSetNode } from "./TabSetNode";
 import { BorderNode } from "./BorderNode";
 import { RowNode } from "./RowNode";
-import { TabNode } from "./TabNode";
 
 /** @internal */
-export function adjustSelectedIndexAfterDock(node: TabNode) {
-    const parent = node.getParent();
-    if (parent !== null && (parent instanceof TabSetNode || parent instanceof BorderNode)) {
-        const children = parent.getChildren();
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i] as TabNode;
-            if (child === node) {
-                parent.setSelected(i);
-                return;
-            }
-        }
+export function adjustSelectedIndexAfterInsert(parent: TabSetNode | BorderNode, insertedIndex: number, count: number = 1) {
+    // shift the selected index when tabs are inserted at or before it, so the same tab stays selected
+    const selectedIndex = parent.getSelected();
+    if (count > 0 && selectedIndex !== -1 && insertedIndex <= selectedIndex) {
+        parent.setSelected(selectedIndex + count);
     }
 }
 

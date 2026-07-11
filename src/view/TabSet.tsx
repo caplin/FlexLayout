@@ -3,14 +3,14 @@ import { I18nLabel } from "./I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
 import { TabSetNode } from "../model/TabSetNode";
-import { showPopup } from "./PopupMenu";
+import { showOverflowMenu } from "./PopupMenu";
 import { ITabSetRenderValues } from "./layout/LayoutTypes";
 import { LayoutController } from "./layout/LayoutInternal";
 import { TabButton } from "./TabButton";
 import { useTabOverflow } from "./TabOverflowHook";
 import { Orientation } from "../model/Orientation";
 import { CLASSES } from "./CSSClassNames";
-import { isAuxMouseEvent } from "./Utils";
+import { isAuxMouseEvent, toAriaKeyShortcuts } from "./Utils";
 import { createPortal } from "react-dom";
 
 /** @internal */
@@ -19,8 +19,11 @@ export interface ITabSetProps {
     tabsetNode: TabSetNode;
 }
 
+
+
 /** @internal */
 export const TabSet = (props: ITabSetProps) => {
+        
     const { tabsetNode, controller } = props;
 
     // Must define `selfRef` before it is used in `useLayoutEffect`
@@ -32,31 +35,36 @@ export const TabSet = (props: ITabSetProps) => {
     const buttonBarRef = React.useRef<HTMLDivElement>(null);
     const overflowbuttonRef = React.useRef<HTMLButtonElement>(null);
     const stickyButtonsRef = React.useRef<HTMLDivElement>(null);
+    const [overflowMenuOpen, setOverflowMenuOpen] = React.useState(false);
+    const hideOverflowRef = React.useRef<(() => void) | null>(null);
 
     const icons = controller.getIcons();
 
+    // close an open overflow menu if this tabset unmounts (e.g. removed by an external doAction);
+    // otherwise showPopup's document listener + overlay + portal would leak
+    React.useEffect(() => () => hideOverflowRef.current?.(), []);
+
     // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
     const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
-        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef,
+        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef, tabStripRef,
             controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
 
-    React.useLayoutEffect(() => {
-        if (selfRef.current) {
-            tabsetNode.setRect(controller.getBoundingClientRect(selfRef.current));
-        }
-
-        if (tabStripRef.current) {
-            tabsetNode.setTabStripRect(controller.getBoundingClientRect(tabStripRef.current));
-        }
-
-        if (contentRef.current) {
-            const newContentRect = controller.getBoundingClientRect(contentRef.current);
-            if (!tabsetNode.getContentRect().equalsWhenRounded(newContentRect) && !isNaN(newContentRect.x)) {
-                tabsetNode.setContentRect(newContentRect);
-                controller.setReLayout(true);
-            }
-        }
-    });
+    // register with the layout's central measure pass via callback refs: they fire whenever
+    // react attaches/detaches the elements, including remounts the component cannot know about
+    // (e.g. moving into or out of the maximize portal, which also happens on the first render
+    // after the main element becomes available), unlike an effect
+    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
+        selfRef.current = element;
+        controller.registerMeasurable(tabsetNode, "tabset", element);
+    }, [controller, tabsetNode]);
+    const setTabStripRef = React.useCallback((element: HTMLDivElement | null) => {
+        tabStripRef.current = element;
+        controller.registerMeasurable(tabsetNode, "tabstrip", element);
+    }, [controller, tabsetNode]);
+    const setContentRef = React.useCallback((element: HTMLDivElement | null) => {
+        contentRef.current = element;
+        controller.registerMeasurable(tabsetNode, "tabsetcontent", element);
+    }, [controller, tabsetNode]);
 
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -66,12 +74,17 @@ export const TabSet = (props: ITabSetProps) => {
             callback(tabsetNode, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
-            showPopup(
+            setOverflowMenuOpen(true);
+            hideOverflowRef.current = showOverflowMenu(
                 element,
                 tabsetNode,
                 items,
                 onOverflowItemSelect,
-                controller
+                controller,
+                () => {
+                    setOverflowMenuOpen(false);
+                    hideOverflowRef.current = null;
+                }
             );
         }
         event.stopPropagation();
@@ -135,7 +148,6 @@ export const TabSet = (props: ITabSetProps) => {
     const onPopoutWindow = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (selectedTabNode !== undefined) {
             controller.doAction(Actions.popoutTab(selectedTabNode.getId(), "window"));
-            //  controller.doAction(Actions.popoutTabset(selectedTabNode.getParent()!.getId(), "window"));
         }
         event.stopPropagation();
     };
@@ -143,12 +155,11 @@ export const TabSet = (props: ITabSetProps) => {
     const onPopoutFloat = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (selectedTabNode !== undefined) {
             controller.doAction(Actions.popoutTab(selectedTabNode.getId(), "float"));
-            //  controller.doAction(Actions.popoutTabset(selectedTabNode.getParent()!.getId(), "float"));
         }
         event.stopPropagation();
     };
 
-    const onDoubleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const onDoubleClick = (_event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (tabsetNode.canMaximize()) {
             controller.maximize(tabsetNode);
         }
@@ -218,7 +229,7 @@ export const TabSet = (props: ITabSetProps) => {
         return tabs;
     };
 
-    const renderButtons = (tabs: React.ReactNode[]) => {
+    const renderButtons = () => {
         let leading: React.ReactNode = undefined;
         let stickyButtons: React.ReactNode[] = [];
         let buttons: React.ReactNode[] = [];
@@ -239,11 +250,15 @@ export const TabSet = (props: ITabSetProps) => {
             renderState.overflowPosition = stickyButtons.length;
         }
 
+        // the sticky buttons bar renders after the tablist element, not inside it: a tablist
+        // may only contain tab children (the bar still sits directly after the last tab, in
+        // the same scrolling row)
+        let stickyBar: React.ReactNode = undefined;
         if (stickyButtons.length > 0) {
             if (!tabsetNode.isEnableTabWrap() && (isDockStickyButtons || isTabStretch)) {
                 buttons = [...stickyButtons, ...buttons];
             } else {
-                tabs.push(<div
+                stickyBar = (<div
                     ref={stickyButtonsRef}
                     key="sticky_buttons_container"
                     onPointerDown={onInterceptPointerDown}
@@ -269,10 +284,15 @@ export const TabSet = (props: ITabSetProps) => {
                     </>);
                 }
                 buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+                    // toolbar buttons carry an explicit tabindex: Safari only includes elements
+                    // with an explicit tabindex in the tab order (native buttons are skipped)
                     <button
                         key="overflowbutton"
+                        tabIndex={0}
                         data-layout-path={path + "/button/overflow"}
-
+                        aria-haspopup="menu"
+                        aria-expanded={overflowMenuOpen}
+                        aria-label={overflowTitle}
                         ref={overflowbuttonRef}
                         className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW)}
                         title={overflowTitle}
@@ -285,14 +305,16 @@ export const TabSet = (props: ITabSetProps) => {
             }
         }
 
-        if (selectedTabNode !== undefined) {
+        if (selectedTabNode !== undefined && !selectedTabNode.isPinned()) {
             if (selectedTabNode.isEnablePopoutFloatIcon()) {
                 const popoutFloatTitle = controller.i18nName(I18nLabel.Popout_Tab_Float);
                 buttons.push(
                     <button
                         key="popout-float"
+                        tabIndex={0}
                         data-layout-path={path + "/button/popout-float"}
                         title={popoutFloatTitle}
+                        aria-label={popoutFloatTitle}
                         className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
                         onClick={onPopoutFloat}
                         onPointerDown={onInterceptPointerDown}
@@ -307,8 +329,10 @@ export const TabSet = (props: ITabSetProps) => {
                 buttons.push(
                     <button
                         key="popout"
+                        tabIndex={0}
                         data-layout-path={path + "/button/popout"}
                         title={popoutTitle}
+                        aria-label={popoutTitle}
                         className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_FLOAT)}
                         onClick={onPopoutWindow}
                         onPointerDown={onInterceptPointerDown}
@@ -326,8 +350,11 @@ export const TabSet = (props: ITabSetProps) => {
             buttons.push(
                 <button
                     key="max"
+                    tabIndex={0}
                     data-layout-path={path + "/button/max"}
                     title={tabsetNode.isMaximized() ? minTitle : maxTitle}
+                    aria-label={tabsetNode.isMaximized() ? minTitle : maxTitle}
+                    aria-pressed={tabsetNode.isMaximized()}
                     className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_ + (tabsetNode.isMaximized() ? "max" : "min"))}
                     onClick={onMaximizeToggle}
                     onPointerDown={onInterceptPointerDown}
@@ -344,8 +371,10 @@ export const TabSet = (props: ITabSetProps) => {
             buttons.push(
                 <button
                     key="close"
+                    tabIndex={0}
                     data-layout-path={path + "/button/close"}
                     title={title}
+                    aria-label={title}
                     className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
                     onClick={isTabStretch ? onCloseTab : onClose}
                     onPointerDown={onInterceptPointerDown}
@@ -362,6 +391,7 @@ export const TabSet = (props: ITabSetProps) => {
                     key="active"
                     data-layout-path={path + "/button/active"}
                     title={title}
+                    aria-hidden="true"
                     className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}
                 >
                     {(typeof icons.activeTabset === "function") ? icons.activeTabset(tabsetNode) : icons.activeTabset}
@@ -379,11 +409,24 @@ export const TabSet = (props: ITabSetProps) => {
             </div>
         );
 
-        return { leading, buttonbar };
+        return { leading, buttonbar, stickyBar };
     };
 
-    const renderTabBar = (tabs: React.ReactNode[], leading: React.ReactNode, buttonbar: React.ReactNode) => {
+    const renderTabBar = (tabs: React.ReactNode[], leading: React.ReactNode, buttonbar: React.ReactNode, stickyBar: React.ReactNode) => {
         let tabStrip;
+
+        // advertise the tabset cycling shortcuts (if configured) on the tablist
+        const keyMap = controller.getKeyMap();
+        const tablistKeyshortcuts = [
+            toAriaKeyShortcuts(keyMap.focusNextTabset),
+            toAriaKeyShortcuts(keyMap.focusPreviousTabset),
+        ].filter(Boolean).join(" ") || undefined;
+
+        // while one of this tabset's tabs shows its rename textbox, the strip is a plain
+        // container: the editing tab drops its tab role (a tab must not contain interactive
+        // children) and a tablist may only contain tabs; both are restored when the edit ends
+        const editingHere = controller.getEditingTab()?.getParent() === tabsetNode;
+        const tablistRole = editingHere ? undefined : "tablist";
 
         let tabStripClasses = cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_OUTER);
         if (tabsetNode.getClassNameTabStrip() !== undefined) {
@@ -421,7 +464,7 @@ export const TabSet = (props: ITabSetProps) => {
                 tabStrip = (
                     <div className={tabStripClasses}
                         style={{ flexWrap: "wrap", gap: "1px", marginTop: "2px" }}
-                        ref={tabStripRef}
+                        ref={setTabStripRef}
                         data-layout-path={path + "/tabstrip"}
                         onPointerDown={onPointerDown}
                         onDoubleClick={onDoubleClick}
@@ -432,7 +475,18 @@ export const TabSet = (props: ITabSetProps) => {
                         onDragStart={onDragStart}
                     >
                         {leadingContainer}
-                        {tabs}
+                        {/* display: contents so the tabs keep wrapping in the strip's flex flow;
+                            the tablist element may only contain the tabs, not the toolbar buttons */}
+                        <div
+                            role={tablistRole}
+                            aria-orientation={editingHere ? undefined : "horizontal"}
+                            aria-label={editingHere ? undefined : tabsetNode.getName()}
+                            aria-keyshortcuts={editingHere ? undefined : tablistKeyshortcuts}
+                            style={{ display: "contents" }}
+                        >
+                            {tabs}
+                        </div>
+                        {stickyBar}
                         <div style={{ flexGrow: 1 }} />
                         {buttonbar}
                     </div>
@@ -444,6 +498,7 @@ export const TabSet = (props: ITabSetProps) => {
                 if (tabsetNode.isEnableTabScrollbar()) {
                     miniScrollbar = (
                         <div ref={miniScrollRef}
+                            aria-hidden="true"
                             className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)}
                             onPointerDown={onScrollPointerDown}
                         />
@@ -451,7 +506,7 @@ export const TabSet = (props: ITabSetProps) => {
                 }
                 tabStrip = (
                     <div className={tabStripClasses}
-                        ref={tabStripRef}
+                        ref={setTabStripRef}
                         data-layout-path={path + "/tabstrip"}
                         onPointerDown={onPointerDown}
                         onDoubleClick={onDoubleClick}
@@ -471,10 +526,15 @@ export const TabSet = (props: ITabSetProps) => {
                             >
                                 <div
                                     style={{ width: (isTabStretch ? "100%" : "none") }}
+                                    role={tablistRole}
+                                    aria-orientation={editingHere ? undefined : "horizontal"}
+                                    aria-label={editingHere ? undefined : tabsetNode.getName()}
+                                    aria-keyshortcuts={editingHere ? undefined : tablistKeyshortcuts}
                                     className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + tabsetNode.getTabLocation())}
                                 >
                                     {tabs}
                                 </div>
+                                {stickyBar}
                             </div>
                             {miniScrollbar}
                         </div>
@@ -495,7 +555,7 @@ export const TabSet = (props: ITabSetProps) => {
             }
         }
 
-        let content = <div ref={contentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
+        let content = <div ref={setContentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
             {emptyTabset}
         </div>
 
@@ -508,8 +568,8 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
     const tabs = renderTabs();
-    const { leading, buttonbar } = renderButtons(tabs);
-    const tabStrip = renderTabBar(tabs, leading, buttonbar);
+    const { leading, buttonbar, stickyBar } = renderButtons();
+    const tabStrip = renderTabBar(tabs, leading, buttonbar, stickyBar);
     const content = renderContent(tabStrip);
 
     const style: React.CSSProperties = {
@@ -527,7 +587,7 @@ export const TabSet = (props: ITabSetProps) => {
     // note: tabset container is needed to allow flexbox to size without border/padding/margin
     // then inner tabset can have border/padding/margin for styling
     const tabset = (
-        <div ref={selfRef}
+        <div ref={setSelfRef}
             className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTAINER)}
             style={style}
         >
@@ -557,5 +617,7 @@ export const TabSet = (props: ITabSetProps) => {
     }
 
 };
+
+TabSet.displayName = 'TabSet'; // name in react dev tools
 
 

@@ -162,9 +162,11 @@ body {
 .showLayout .flexlayout__row {
     margin: 5px;
     border: 3px solid blue;
+    border-radius: 5px;
 }
 
 .showLayout .flexlayout__tabset {
     margin: 5px;
     border: 3px solid orange;
+    border-radius: 5px;
 }

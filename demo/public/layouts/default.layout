@@ -26,9 +26,18 @@
 					"type": "tab",
 					"id": "#803a2efe-e507-4735-9c2a-46ce6042c1a2",
 					"name": "Terminal",
+					"component": "xterm",
+					"enableClose": false,
+					"icon": "images/terminal.svg",
+					"enableScrollbars":false
+				},
+				{
+					"type": "tab",
+					"id": "#9c1e5a84-2f7b-4d3a-8e60-5b48c7d2a913",
+					"name": "SubLayout",
 					"subLayoutId": "sublayout2",
 					"enableClose": false,
-					"icon": "images/terminal.svg"
+					"enableScrollbars":false
 				},
 				{
 					"type": "tab",
@@ -57,7 +66,8 @@
 					"subLayoutId": "sublayout1",
 					"altName": "The Navigation Tab",
 					"enableClose": true,
-					"icon": "images/folder.svg"
+					"icon": "images/folder.svg",
+					"enableScrollbars":false
 				}
 			]
 		},
@@ -109,9 +119,9 @@
 								"id": "#a7dff07f-a37a-4d58-9853-7b91c465101c",
 								"name": "ChartJS",
 								"component": "chart",
-								"enableWindowReMount": true,
 								"enableClose": false,
-								"enablePopoutOverlay": true
+								"enablePopoutOverlay": true,
+								"pinned": true
 							},
 							{
 								"type": "tab",
@@ -161,6 +171,13 @@
 								"id": "#285406e5-6795-4e17-b10d-6ff8e512ba62",
 								"name": "AGGrid",
 								"component": "aggrid"
+							},
+							{
+								"type": "tab",
+								"id": "#f5b7a3c1-8e2d-4c6a-9d41-3b7e5a2c9f10",
+								"name": "Editor",
+								"component": "monaco",
+								"enableScrollbars":false
 							}
 						]
 					}

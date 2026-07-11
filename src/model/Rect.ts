@@ -1,6 +1,5 @@
 import type * as React from "react";
 import { IJsonRect } from "./IJsonModel";
-import { Orientation } from "./Orientation";
 
 export class Rect {
     static empty() {
@@ -39,30 +38,6 @@ export class Rect {
         return new Rect(x, y, width, height);
     }
 
-    static getContentRect(element: HTMLElement) {
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
-
-        const paddingLeft = parseFloat(style.paddingLeft);
-        const paddingRight = parseFloat(style.paddingRight);
-        const paddingTop = parseFloat(style.paddingTop);
-        const paddingBottom = parseFloat(style.paddingBottom);
-        const borderLeftWidth = parseFloat(style.borderLeftWidth);
-        const borderRightWidth = parseFloat(style.borderRightWidth);
-        const borderTopWidth = parseFloat(style.borderTopWidth);
-        const borderBottomWidth = parseFloat(style.borderBottomWidth);
-
-        const contentWidth = rect.width - borderLeftWidth - paddingLeft - paddingRight - borderRightWidth;
-        const contentHeight = rect.height - borderTopWidth - paddingTop - paddingBottom - borderBottomWidth;
-
-        return new Rect(
-            rect.left + borderLeftWidth + paddingLeft,
-            rect.top + borderTopWidth + paddingTop,
-            contentWidth,
-            contentHeight,
-        );
-    }
-
     static fromDomRect(domRect: DOMRect) {
         return new Rect(domRect.x, domRect.y, domRect.width, domRect.height);
     }
@@ -88,10 +63,6 @@ export class Rect {
             Math.abs(this.width - rect.width) < epsilon &&
             Math.abs(this.height - rect.height) < epsilon
         );
-    }
-
-    equalSize(rect: Rect | null | undefined) {
-        return this.width === rect?.width && this.height === rect?.height
     }
 
     getBottom() {
@@ -135,13 +106,9 @@ export class Rect {
         }
     }
 
-    removeInsets(insets: { top: number; left: number; bottom: number; right: number }) {
-        return new Rect(this.x + insets.left, this.y + insets.top, Math.max(0, this.width - insets.left - insets.right), Math.max(0, this.height - insets.top - insets.bottom));
-    }
-
     centerInRect(outerRect: Rect) {
-        this.x = (outerRect.width - this.width) / 2;
-        this.y = (outerRect.height - this.height) / 2;
+        this.x = outerRect.x + (outerRect.width - this.width) / 2;
+        this.y = outerRect.y + (outerRect.height - this.height) / 2;
     }
 
     clamp(outerRect: Rect) {
@@ -170,15 +137,6 @@ export class Rect {
         if (this.y < outerRect.y) {
             this.y = outerRect.y;
         }
-    }
-
-    /** @internal */
-    _getSize(orientation: Orientation) {
-        let prefSize = this.width;
-        if (orientation === Orientation.VERT) {
-            prefSize = this.height;
-        }
-        return prefSize;
     }
 
     toString() {

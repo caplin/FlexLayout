@@ -1,14 +1,15 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon, ILayoutApi } from "../src/index";
+import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon, ILayoutApi, showPopupMenu, PopupMenuEntry } from "../src/index";
 import { NewFeatures } from "./NewFeatures";
-import { showPopup } from "./PopupMenu";
 import { SimpleForm } from "./SimpleForm";
 import { Utils } from "./Utils";
 import { AGGridExample } from "./aggrid";
 import { JsonView } from "./JsonView";
 import { ActionLog } from "./ActionLog";
 import MapComponent from "./openlayer";
+import MonacoComponent from "./monaco";
+import TerminalComponent from "./terminal";
 import MUIComponent from "./MUIComponent";
 import MUIDataGrid from "./MUIDataGrid";
 import BarChart from "./chart";
@@ -17,13 +18,53 @@ import * as Prism from "prismjs";
 import "prismjs/themes/prism-coy.css";
 import '../style/combined.scss';
 import './styles.css';
-import './popupmenu.css';
 import { Attributes } from "./Attributes";
 import { TabLayout } from "../src/view/TabLayout";
 
 const fields = ["Name", "Field1", "Field2", "Field3", "Field4", "Field5"];
 
+const randomString = (len: number, chars: string) => {
+    const a = [];
+    for (let i = 0; i < len; i++) {
+        a.push(chars[Math.floor(Math.random() * chars.length)]);
+    }
+
+    return a.join("");
+}
+
+const makeFakeData = () => {
+    const data = [];
+    const r = Math.random() * 50;
+    for (let i = 0; i < r; i++) {
+        const rec: { [key: string]: any; } = {};
+        rec.Name = randomString(5, "BCDFGHJKLMNPQRSTVWXYZ");
+        for (let j = 1; j < fields.length; j++) {
+            rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
+        }
+        data.push(rec);
+    }
+    return data;
+}
+
 const ContextExample = React.createContext('');
+
+const borderIconStyle = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
+
+// a side panel splitting the layout (side by side)
+const SplitBorderIcon = () => (
+    <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" style={borderIconStyle} viewBox="0 0 24 24">
+        <rect x="3.75" y="4.75" width="16.5" height="14.5" rx="1" fill="none" stroke="var(--color-icon)" strokeWidth="1.5" />
+        <rect x="6.75" y="7.75" width="6" height="8.5" rx="1" fill="var(--color-icon)" stroke="var(--color-icon)" />
+    </svg>
+);
+
+// a side panel floating over the layout (protrudes beyond the frame, knocked out where it crosses it)
+const OverlayBorderIcon = () => (
+    <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" style={borderIconStyle} viewBox="0 0 24 24">
+        <rect x="3.75" y="4.75" width="16.5" height="14.5" rx="1" fill="none" stroke="var(--color-icon)" strokeWidth="1.5" />
+        <rect x="3.75" y="4.75" width="8" height="14.5" rx="1" fill="var(--color-icon)" stroke="var(--color-icon)" />
+    </svg>
+);
 
 function App() {
     const [layoutFile, setLayoutFile] = React.useState<string | null>(null);
@@ -39,7 +80,7 @@ function App() {
     const loadingLayoutName = React.useRef<string | null>(null);
     const nextGridIndex = React.useRef<number>(1);
 
-    const showingPopupMenu = React.useRef<boolean>(false);
+    const contextMenuHideRef = React.useRef<(() => void) | null>(null);
     const layoutRef = React.useRef<ILayoutApi | null>(null);
 
     // latest values to prevent closure problems
@@ -49,23 +90,13 @@ function App() {
      React.useEffect(() => {
         latestModel.current = model;
         latestLayoutFile.current = layoutFile;
+        // e2e test hooks (used by popout-leak.spec / popup-position.spec): drive the live model and
+        // layout the way app code would, without pointer interactions
+        (window as any).__flexDispatch = (action: Action) => latestModel.current?.doAction(action);
+        (window as any).__flexActions = Actions;
+        (window as any).__flexModel = () => latestModel.current;
+        (window as any).__flexLayout = () => layoutRef.current;
      });
-
-    React.useEffect(() => {
-        // save layout when unloading page
-        window.onbeforeunload = (event: Event) => {
-            save();
-        };
-
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-        const layout = params.get('layout') || "default";
-
-        loadLayout(layout, false);
-
-        // use to generate json typescript interfaces 
-        // Model.toTypescriptInterfaces();
-    }, []);
 
     const save = () => {
         const jsonStr = JSON.stringify(latestModel.current!.toJson(), null, "\t");
@@ -133,7 +164,24 @@ function App() {
         alert("Error loading json config file: " + loadingLayoutName.current + "\n" + reason);
     }
 
-    const onAddActiveClick = (event: React.MouseEvent) => {
+    React.useEffect(() => {
+        // save layout when unloading page
+        window.onbeforeunload = () => {
+            save();
+        };
+
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        const layout = params.get('layout') || "default";
+
+        loadLayout(layout, false);
+
+        // use to generate json typescript interfaces
+        // Model.toTypescriptInterfaces();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const onAddActiveClick = (_event: React.MouseEvent) => {
 
         if (layoutFile?.startsWith("test_")) {
             layoutRef!.current!.addTabToActiveTabSet({
@@ -157,7 +205,7 @@ function App() {
         console.log("Added tab", addedTab);
     }
 
-    const onAddPopoutClick = (event: React.MouseEvent) => {
+    const onAddPopoutClick = (_event: React.MouseEvent) => {
         const rootDiv = layoutRef.current?.getRootDiv();
         if (rootDiv && model) {
             const rootRect = rootDiv.getBoundingClientRect();
@@ -199,7 +247,7 @@ function App() {
         setAttrs(event.target.checked);
     }
 
-    const onRenderDragRect = (content: React.ReactNode | undefined, node?: Node, json?: IJsonTabNode) => {
+    const onRenderDragRect = (content: React.ReactNode | undefined, _node?: Node, _json?: IJsonTabNode) => {
         if (layoutFile === "newfeatures") {
             return (<>
                 {content}
@@ -216,24 +264,50 @@ function App() {
     }
 
     const onContextMenu = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        if (!showingPopupMenu.current) {
-            event.preventDefault();
-            event.stopPropagation();
-            // console.log(node, event);
-            showPopup(
-                "Menu for " + (node instanceof TabNode ? "Tab: " + node.getName() : node.getType()),
-                layoutRef!.current!.getRootDiv()!,
-                event.clientX, event.clientY,
-                ["Option 1", "Option 2"],
-                (item: string | undefined) => {
-                    // console.log("selected: " + item);
-                    showingPopupMenu.current = false;
-                });
-            showingPopupMenu.current = true;
+        event.preventDefault();
+        event.stopPropagation();
+
+        // build the menu from the node's capabilities (only tabs have a menu in this demo)
+        const items: PopupMenuEntry[] = [];
+        if (node instanceof TabNode) {
+            if (node.isEnableRename()) {
+                items.push({ key: "rename", label: "Rename" });
+            }
+            if (node.getParent() instanceof TabSetNode) {
+                items.push({ key: "pin", label: node.isPinned() ? "Unpin" : "Pin" });
+            }
+            if (node.isCloseable()) {
+                items.push({ key: "sep1", type: "divider" });
+                items.push({ key: "close", label: "Close" });
+            }
         }
+        if (items.length === 0) {
+            return;
+        }
+
+        contextMenuHideRef.current?.(); // close any menu already open
+        contextMenuHideRef.current = showPopupMenu({
+            anchor: { x: event.clientX, y: event.clientY },
+            container: layoutRef.current?.getRootDiv() ?? undefined,
+            title: "Menu for " + (node instanceof TabNode ? "Tab: " + node.getName() : node.getType()),
+            items,
+            onSelect: (item) => {
+                if (item.key === "rename") {
+                    layoutRef.current?.editTabName(node.getId());
+                } else if (item.key === "pin" && node instanceof TabNode) {
+                    model?.doAction(Actions.setTabPinned(node.getId(), !node.isPinned()));
+                } else if (item.key === "close") {
+                    model?.doAction(Actions.deleteTab(node.getId()));
+                }
+                (window as any).__lastContextSelect = item.key; // e2e hook (context-menu.spec)
+            },
+            onClose: () => {
+                contextMenuHideRef.current = null;
+            },
+        });
     }
 
-    const onAuxMouseClick = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    const onAuxMouseClick = (_node: TabNode | TabSetNode | BorderNode, _event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         // console.log(node, event);
     }
 
@@ -290,7 +364,12 @@ function App() {
         }
     };
 
-    const onShowLayoutClick = (event: React.MouseEvent) => {
+    const onRerenderClick = (_event: React.MouseEvent) => {
+        // round trip the model: swapping in a new model keeps the tab contents mounted (no flash)
+        setModel(Model.fromJson(latestModel.current!.toJson(), latestModel.current!));
+    };
+
+    const onShowLayoutClick = (_event: React.MouseEvent) => {
         console.log(JSON.stringify(model!.toJson(), null, "\t"));
     }
 
@@ -353,6 +432,12 @@ function App() {
         else if (component === "map") {
             return <MapComponent />
         }
+        else if (component === "monaco") {
+            return <MonacoComponent />
+        }
+        else if (component === "xterm") {
+            return <TerminalComponent getModel={() => latestModel.current} layoutApi={layoutRef} />
+        }
         else if (component === "grid") {
             if (node.getExtraData().data == null) {
                 // create data in node extra data first time accessed
@@ -367,7 +452,7 @@ function App() {
                 node.getExtraData().model = Model.fromJson(node.getConfig().model);
                 model = node.getExtraData().model;
                 // save submodel on save event
-                node.setEventListener("save", (p: any) => {
+                node.setEventListener("save", (_p: any) => {
                     latestModel.current!.doAction(Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
                 }
@@ -404,6 +489,23 @@ function App() {
             }
         } else if (component === "testing") {
             return <div className="tab_content">{node.getName()}</div>;
+        } else if (component === "iframe") {
+            // used by the iframe state-preservation e2e test: the srcDoc stamps a unique id on each
+            // (re)load onto document.body, so a test can tell whether the iframe was reloaded when
+            // its tab moved (preserved in-layout, reloaded when moved to a popout window)
+            const srcDoc =
+                "<!doctype html><body><input id='field'>" +
+                "<script>document.body.dataset.loadId=Math.random().toString(36).slice(2)</script>";
+            return (
+                <iframe
+                    title={node.getId()}
+                    data-testid="state-iframe"
+                    srcDoc={srcDoc}
+                    style={{ display: "block", border: "none", boxSizing: "border-box" }}
+                    width="100%"
+                    height="100%"
+                />
+            );
         }
 
         return null;
@@ -414,7 +516,7 @@ function App() {
         loadLayout(target.value);
     }
 
-    const onReloadFromFile = (event: React.MouseEvent) => {
+    const onReloadFromFile = (_event: React.MouseEvent) => {
         loadLayout(layoutFile!, true);
     }
 
@@ -445,13 +547,13 @@ function App() {
         // playwright testing
         if (layoutFile?.startsWith("test_")) {
             if (node.getId() === "onRenderTab1") {
-                renderValues.leading = <img src="images/settings.svg" key="1" style={{ width: "1em", height: "1em" }} />
+                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />
                 renderValues.content = "onRenderTab1";
-                renderValues.buttons.push(<img src="images/folder.svg" key="1" style={{ width: "1em", height: "1em" }} />);
+                renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
             } else if (node.getId() === "onRenderTab2") {
-                renderValues.leading = <img src="images/settings.svg" key="1" style={{ width: "1em", height: "1em" }} />
+                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />
                 renderValues.content = "onRenderTab2";
-                renderValues.buttons.push(<img src="images/folder.svg" key="1" style={{ width: "1em", height: "1em" }} />);
+                renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
             }
         }
     }
@@ -459,7 +561,12 @@ function App() {
     const onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
         if (node instanceof TabSetNode) {
             if (layoutFile === "newfeatures") {
-                const button = createButton("Tabset menu", "menubtn", (e: React.MouseEvent<HTMLElement, MouseEvent>) => onContextMenu(node, e), <MenuIcon />);
+                const button = createButton("Menu for selected tab", "menubtn", (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+                    const selected = node.getSelectedNode();
+                    if (selected instanceof TabNode) {
+                        onContextMenu(selected, e);
+                    }
+                }, <MenuIcon />);
                 renderValues.leading = <div style={{ display: "flex", alignItems: "center", alignContent: "center", padding: 3 }}>
                     {button}
                 </div>;
@@ -470,7 +577,7 @@ function App() {
             }
 
             if (layoutFile === "default") {
-                const button = createButton("Add tab", "addtab", (e: React.MouseEvent<HTMLElement, MouseEvent>) => onAddFromTabSetButton(node), <AddIcon />);
+                const button = createButton("Add tab", "addtab", (_e: React.MouseEvent<HTMLElement, MouseEvent>) => onAddFromTabSetButton(node), <AddIcon />);
 
                 renderValues.stickyButtons.push(button);
                 // put overflow button before + button (default is after)
@@ -478,14 +585,29 @@ function App() {
             }
         }
 
+        if (node instanceof BorderNode &&
+            node.getSelected() !== -1 && // only when the border panel is showing
+            (layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_overlay")) {
+            // toggle between the split and overlay border types; the icon shows the current
+            // mode: the panel splitting the layout, or floating over it
+            const overlay = node.isOverlay();
+            renderValues.buttons.push(createButton(
+                overlay ? "Overlay border (toggle to split)" : "Split border (toggle to overlay)",
+                "bordertype",
+                () => model?.doAction(Actions.setBorderType(node.getId(), overlay ? "split" : "overlay")),
+                overlay ? <OverlayBorderIcon /> : <SplitBorderIcon />));
+        }
+
         // playwright testing
         if (layoutFile?.startsWith("test_")) {
+            // note: the imgs must be given a size - unsized imgs of svgs without intrinsic
+            // dimensions get the 300x150 default in webkit, blowing the toolbar up over the tabs
             if (node.getId() === "onRenderTabSet1") {
-                renderValues.buttons.push(<img src="images/folder.svg" key="1" />);
-                renderValues.buttons.push(<img src="images/settings.svg" key="2" />);
+                renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
+                renderValues.buttons.push(<img src="images/settings.svg" key="2" alt="" style={{ width: "1em", height: "1em" }} />);
             } else if (node.getId() === "onRenderTabSet2") {
-                renderValues.buttons.push(<img src="images/folder.svg" key="1" />);
-                renderValues.buttons.push(<img src="images/settings.svg" key="2" />);
+                renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
+                renderValues.buttons.push(<img src="images/settings.svg" key="2" alt="" style={{ width: "1em", height: "1em" }} />);
             } else if (node.getId() === "onRenderTabSet3") {
                 renderValues.stickyButtons.push(
                     <img src="images/add.svg"
@@ -496,8 +618,8 @@ function App() {
                     // onClick={() => this.onAddFromTabSetButton(node)}
                     />);
             } else if (node instanceof BorderNode) {
-                renderValues.buttons.push(<img src="images/folder.svg" key="1" />);
-                renderValues.buttons.push(<img src="images/settings.svg" key="2" />);
+                renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
+                renderValues.buttons.push(<img src="images/settings.svg" key="2" alt="" style={{ width: "1em", height: "1em" }} />);
             }
         }
     }
@@ -506,13 +628,14 @@ function App() {
         return (<button className="flexlayout__tab_toolbar_button"
             title={title}
             key={key}
+            tabIndex={0} // Safari only tabs to elements with an explicit tabindex
             style={{ display: "flex", alignItems: "center" }}
             onClick={handler}>
             {content}
         </button>);
     }
 
-    const onTabSetPlaceHolder = (node: TabSetNode) => {
+    const onTabSetPlaceHolder = (_node: TabSetNode) => {
         return <div
             key="placeholder"
             style={{
@@ -521,29 +644,6 @@ function App() {
                 alignItems: "center",
                 justifyContent: "center"
             }}>Drag tabs to this area</div>;
-    }
-
-    const makeFakeData = () => {
-        const data = [];
-        const r = Math.random() * 50;
-        for (let i = 0; i < r; i++) {
-            const rec: { [key: string]: any; } = {};
-            rec.Name = randomString(5, "BCDFGHJKLMNPQRSTVWXYZ");
-            for (let j = 1; j < fields.length; j++) {
-                rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
-            }
-            data.push(rec);
-        }
-        return data;
-    }
-
-    const randomString = (len: number, chars: string) => {
-        const a = [];
-        for (let i = 0; i < len; i++) {
-            a.push(chars[Math.floor(Math.random() * chars.length)]);
-        }
-
-        return a.join("");
     }
 
     let contents: React.ReactNode = "loading ...";
@@ -560,7 +660,8 @@ function App() {
             onRenderDragRect={onRenderDragRect}
             onExternalDrag={onExternalDrag}
             realtimeResize={realtimeResize}
-            onContextMenu={layoutFile === "newfeatures" ? onContextMenu : undefined}
+            keyMap={{ focusTabToggle: "F6", focusNextTabset: "Ctrl+]", focusPreviousTabset: "Ctrl+[" }}
+            onContextMenu={layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_pinned" || layoutFile === "test_overlay" ? onContextMenu : undefined}
             onAuxMouseClick={layoutFile === "newfeatures" ? onAuxMouseClick : undefined}
             // icons={{
             //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
@@ -596,7 +697,7 @@ function App() {
             <ContextExample.Provider value="from context">
                 <div className="app">
                     <div className="toolbar" dir="ltr">
-                        <select className="toolbar_control" onChange={onSelectLayout}>
+                        <select className="toolbar_control" aria-label="Layout" onChange={onSelectLayout}>
                             <option value="default">Default</option>
                             <option value="newfeatures">New Features</option>
                             <option value="simple">Simple</option>
@@ -606,25 +707,29 @@ function App() {
                         </select>
                         <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
                         <div style={{ flexGrow: 1 }}></div>
+                        <button className="toolbar_control" data-id="rerender" style={{ marginRight: 5 }} title="Round trip the model through toJson/fromJson and set the new model" onClick={onRerenderClick}>To-From JSON</button>
                         <span style={{ marginLeft: 5 }}>Realtime resize</span>
                         <input
                             name="realtimeResize"
                             type="checkbox"
+                            aria-label="Realtime resize"
                             checked={realtimeResize}
                             onChange={onRealtimeResize} />
                         <span style={{ marginLeft: 5 }}>Show layout</span>
                         <input
                             name="show layout"
                             type="checkbox"
+                            aria-label="Show layout"
                             checked={showLayout}
                             onChange={onShowLayout} />
                         <span style={{ marginLeft: 5 }}>Attributes</span>
                         <input
                             name="attrs"
                             type="checkbox"
+                            aria-label="Attributes"
                             checked={attrs}
                             onChange={onAttrs} />
-                        <select className="toolbar_control" style={{ marginLeft: 5 }}
+                        <select className="toolbar_control" aria-label="Font size" style={{ marginLeft: 5 }}
                             onChange={onFontSizeChange}
                             defaultValue="medium">
                             <option value="xx-small">Size xx-small</option>
@@ -642,10 +747,11 @@ function App() {
                             <option value="25px">Size 25px</option>
                             <option value="30px">Size 30px</option>
                         </select>
-                        <select className="toolbar_control" style={{ marginLeft: 5 }} defaultValue="alpha_light" onChange={onThemeChange}>
+                        <select className="toolbar_control" aria-label="Theme" style={{ marginLeft: 5 }} defaultValue="alpha_light" onChange={onThemeChange}>
                             <option value="alpha_light">Alpha Light</option>
                             <option value="alpha_dark">Alpha Dark</option>
                             <option value="alpha_rounded">Alpha Rounded</option>
+                            <option value="aria">Aria</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
                             <option value="rounded">Rounded</option>

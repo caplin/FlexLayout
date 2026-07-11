@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
-        "sourceMap": true,
+        "noEmit": true,
         "noImplicitAny": true,
         "target": "ESNext",
         "module": "ESNext",

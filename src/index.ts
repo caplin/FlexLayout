@@ -1,5 +1,6 @@
 export * from './view/Layout';
 export * from './view/TabLayout';
+export * from './view/PopupMenu';
 
 export * from './view/layout/LayoutTypes';
 export * from './view/Icons';

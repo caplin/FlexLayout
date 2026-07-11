@@ -1,4 +1,3 @@
-import type * as React from "react";
 import { Attributes } from "./Attributes";
 import { DockLocation } from "./DockLocation";
 import { DropInfo } from "./DropInfo";
@@ -205,6 +204,7 @@ export abstract class Node {
         this.attributes.selected = index;
     }
 
+
     /** @internal */
     findDropTargetNode(layoutId: string, dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
         let rtn: DropInfo | undefined;
@@ -230,7 +230,7 @@ export abstract class Node {
     }
 
     /** @internal */
-    canDrop(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {
+    canDrop(_dragNode: Node & IDraggable, _x: number, _y: number): DropInfo | undefined {
         return undefined;
     }
 
@@ -243,6 +243,20 @@ export abstract class Node {
 
             // prevent tabset with enableClose set to false docking into another tabset
             if (dropInfo.location === DockLocation.CENTER && dragNode.getType() === "tabset" && (dragNode as any).isEnableClose() === false) {
+                return false;
+            }
+
+            // a pinned tab may only be reordered within its own tabset's tabstrip
+            // (the parent check allows external drags of tabs with pinned in their json)
+            if (dragNode.getType() === "tab" && (dragNode as any).isPinned() === true && dragNode.getParent() !== undefined) {
+                if (dropInfo.node !== dragNode.getParent() || dropInfo.location !== DockLocation.CENTER) {
+                    return false;
+                }
+            }
+
+            // prevent a tabset/row containing pinned tabs merging into another tabset (its pinned
+            // tabs would leave their tabset); edge/split docks keep the tabset intact so remain allowed
+            if (dropInfo.location === DockLocation.CENTER && dragNode.getType() !== "tab" && containsPinnedTab(dragNode)) {
                 return false;
             }
 
@@ -285,21 +299,8 @@ export abstract class Node {
     }
 
     /** @internal */
-    styleWithPosition(style?: React.CSSProperties) {
-        if (style == null) {
-            style = {};
-        }
-        return this.rect.styleWithPosition(style);
-    }
-
-    /** @internal */
     isEnableDivide() {
         return true;
-    }
-
-    /** @internal */
-    toAttributeString() {
-        return JSON.stringify(this.attributes, undefined, "\t");
     }
 
     // implemented by subclasses
@@ -310,3 +311,11 @@ export abstract class Node {
 }
 
 export type NodeEventType = "save" | "resize" | "visibility" | "close";
+
+/** @internal */
+function containsPinnedTab(node: Node): boolean {
+    if (node.getType() === "tab") {
+        return (node as any).isPinned() === true;
+    }
+    return node.getChildren().some(containsPinnedTab);
+}

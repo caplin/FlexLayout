@@ -38,6 +38,7 @@ export default function DynamicCSS() {
         setSuccess(event.target.checked);
     };
 
+    // eslint-disable-next-line react-hooks/refs -- deliberate render counter for the demo
     renderCountRef.current ++;
 
     return (
@@ -54,6 +55,7 @@ export default function DynamicCSS() {
                 label="Change Style"
             />
             <StyledSlider success={success} defaultValue={30} sx={{ mt: 1 }} />
+            {/* eslint-disable-next-line react-hooks/refs -- deliberate render counter for the demo */}
             {"Render Count: " + renderCountRef.current}
         </div>
     );

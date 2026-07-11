@@ -3,6 +3,7 @@
     "emitDeclarationOnly": true,
     "declaration": true,
     "declarationDir": "types",
+    "stripInternal": true,
     "module": "ESNext",
     "target": "ESNext",
     "moduleResolution": "Bundler",

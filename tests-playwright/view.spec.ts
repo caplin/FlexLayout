@@ -20,7 +20,7 @@ import { CLASSES } from '../src/view/CSSClassNames';
 
 */
 
-const baseURL = 'http://localhost:5173/demo';
+const baseURL = '/demo';
 
 test.describe('drag tests two tabs', () => {
   test.beforeEach(async ({ page }) => {
@@ -29,8 +29,7 @@ test.describe('drag tests two tabs', () => {
     await page.getByRole('button', { name: 'Reload' }).click();
     // await page.locate('select#colors').selectOption('red');
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toEqual(2);
+    await expect(findAllTabSets(page)).toHaveCount(2);
   });
 
   test('tab to tab center', async ({ page }) => {
@@ -38,8 +37,7 @@ test.describe('drag tests two tabs', () => {
     const to = await findPath(page, '/ts1/t0');
     await drag(page, from, to, Location.CENTER); // Drag to the center of the destination tabset
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toBe(1);
+    await expect(findAllTabSets(page)).toHaveCount(1);
 
     await checkTab(page, '/ts0', 0, false, 'Two');
     await checkTab(page, '/ts0', 1, true, 'One');
@@ -50,8 +48,7 @@ test.describe('drag tests two tabs', () => {
     const to = await findPath(page, '/ts1/t0');
     await drag(page, from, to, Location.TOP); // Drag to the top of the destination tabset
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toBe(2);
+    await expect(findAllTabSets(page)).toHaveCount(2);
 
     await checkTab(page, '/r0/ts0', 0, true, 'One');
     await checkTab(page, '/r0/ts1', 0, true, 'Two');
@@ -62,8 +59,7 @@ test.describe('drag tests two tabs', () => {
     const to = await findPath(page, '/ts1/t0');
     await drag(page, from, to, Location.BOTTOM); // Drag to the bottom of the destination tabset
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toBe(2);
+    await expect(findAllTabSets(page)).toHaveCount(2);
 
     await checkTab(page, '/r0/ts0', 0, true, 'Two');
     await checkTab(page, '/r0/ts1', 0, true, 'One');
@@ -74,8 +70,7 @@ test.describe('drag tests two tabs', () => {
     const to = await findPath(page, '/ts1/t0');
     await drag(page, from, to, Location.LEFT); // Drag to the left of the destination tabset
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toBe(2);
+    await expect(findAllTabSets(page)).toHaveCount(2);
 
     await checkTab(page, '/ts0', 0, true, 'One');
     await checkTab(page, '/ts1', 0, true, 'Two');
@@ -86,8 +81,7 @@ test.describe('drag tests two tabs', () => {
     const to = await findPath(page, '/ts1/t0');
     await drag(page, from, to, Location.RIGHT); // Drag to the right of the destination tabset
 
-    const tabSets = await findAllTabSets(page);
-    expect(await tabSets.count()).toBe(2);
+    await expect(findAllTabSets(page)).toHaveCount(2);
 
     await checkTab(page, '/ts0', 0, true, 'Two');
     await checkTab(page, '/ts1', 0, true, 'One');
@@ -644,15 +638,61 @@ test.describe('Maximize methods', () => {
   });
 
   test('maximize tabset using max button', async ({ page }) => {
+    // regression: the maximized tabset's dom remounts (portal), so the measure pass must
+    // re-register its elements or the tab panel stays at the pre-maximize size
+    const panelBefore = await findPath(page, '/ts1/t0').boundingBox();
+
     await findPath(page, '/ts1/button/max').click();
     await expect(findPath(page, '/ts0')).toBeHidden();
     await expect(findPath(page, '/ts1')).toBeVisible();
     await expect(findPath(page, '/ts2')).toBeHidden();
 
+    // the tab panel must expand to fill the main layout area
+    await expect
+      .poll(async () => (await findPath(page, '/ts1/t0').boundingBox())!.width)
+      .toBeGreaterThan(panelBefore!.width * 2);
+
     await findPath(page, '/ts1/button/max').click();
     await expect(findPath(page, '/ts0')).toBeVisible();
     await expect(findPath(page, '/ts1')).toBeVisible();
     await expect(findPath(page, '/ts2')).toBeVisible();
+
+    // and back to its docked size on restore
+    await expect
+      .poll(async () => Math.round((await findPath(page, '/ts1/t0').boundingBox())!.width))
+      .toBe(Math.round(panelBefore!.width));
+  });
+
+  test('a saved maximized tabset restores filling the layout', async ({ page }) => {
+    // regression: on the first render the maximize portal target is not yet available, so the
+    // maximized tabset briefly renders in its flex position; when it then moves into the
+    // portal the measure pass must follow the remounted elements or the tab panel stays at
+    // the unmaximized size
+    const saved = {
+      global: {},
+      borders: [],
+      layout: {
+        type: 'row',
+        children: [
+          { type: 'tabset', weight: 50, children: [{ type: 'tab', name: 'One', component: 'testing' }] },
+          { type: 'tabset', weight: 50, maximized: true, children: [{ type: 'tab', name: 'Two', component: 'testing' }] },
+        ],
+      },
+    };
+    // the demo restores a layout from localStorage when present, like a user reload would
+    await page.addInitScript((json) => localStorage.setItem('test_with_borders', json), JSON.stringify(saved));
+    await page.goto(baseURL + '?layout=test_with_borders');
+    await expect(findPath(page, '/ts1')).toBeVisible();
+    await expect(findPath(page, '/ts0')).toBeHidden();
+
+    // the maximized tab panel must fill the main layout area
+    await expect
+      .poll(async () => {
+        const main = (await page.locator('.flexlayout__layout_main').boundingBox())!;
+        const panel = (await findPath(page, '/ts1/t0').boundingBox())!;
+        return Math.round(main.width - panel.width);
+      })
+      .toBe(0);
   });
 
   test('maximize tabset using double click', async ({ page }) => {

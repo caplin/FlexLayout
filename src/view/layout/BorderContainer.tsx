@@ -11,6 +11,8 @@ export interface IBorderContainerProps {
 }
 
 export const BorderContainer = ({ controller, inner }: IBorderContainerProps) => {
+
+    
     const classMain = controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MAIN);
     const borders = controller.getModel().getBorderSet().getBorderMap();
     
@@ -38,54 +40,28 @@ export const BorderContainer = ({ controller, inner }: IBorderContainerProps) =>
         const classBorderOuter = controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_BORDER_CONTAINER);
         const classBorderInner = controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_BORDER_CONTAINER_INNER);
 
-        if (controller.getModel().getBorderSet().getLayoutHorizontal()) {
-            const innerWithBorderTabs = (
-                <div className={classBorderInner} style={{ flexDirection: "column" }}>
-                    {borderSetContentComponents.get(DockLocation.TOP)}
-                    <div className={classBorderInner} style={{ flexDirection: "row" }}>
-                        {borderSetContentComponents.get(DockLocation.LEFT)}
-                        {innerContent}
-                        {borderSetContentComponents.get(DockLocation.RIGHT)}
-                    </div>
-                    {borderSetContentComponents.get(DockLocation.BOTTOM)}
-                </div>
-            );
-            return (
-                <div className={classBorderOuter} style={{ flexDirection: "column" }}>
-                    {borderSetComponents.get(DockLocation.TOP)}
-                    <div className={classBorderInner} style={{ flexDirection: "row" }}>
-                        {borderSetComponents.get(DockLocation.LEFT)}
-                        {innerWithBorderTabs}
-                        {borderSetComponents.get(DockLocation.RIGHT)}
-                    </div>
-                    {borderSetComponents.get(DockLocation.BOTTOM)}
-                </div>
-            );
-        } else {
-            const innerWithBorderTabs = (
+        const innerWithBorderTabs = (
+            <div className={classBorderInner} style={{ flexDirection: "column" }}>
+                {borderSetContentComponents.get(DockLocation.TOP)}
                 <div className={classBorderInner} style={{ flexDirection: "row" }}>
                     {borderSetContentComponents.get(DockLocation.LEFT)}
-                    <div className={classBorderInner} style={{ flexDirection: "column" }}>
-                        {borderSetContentComponents.get(DockLocation.TOP)}
-                        {innerContent}
-                        {borderSetContentComponents.get(DockLocation.BOTTOM)}
-                    </div>
+                    {innerContent}
                     {borderSetContentComponents.get(DockLocation.RIGHT)}
                 </div>
-            );
-
-            return (
-                <div className={classBorderOuter} style={{ flexDirection: "row" }}>
+                {borderSetContentComponents.get(DockLocation.BOTTOM)}
+            </div>
+        );
+        return (
+            <div className={classBorderOuter} style={{ flexDirection: "column" }}>
+                {borderSetComponents.get(DockLocation.TOP)}
+                <div className={classBorderInner} style={{ flexDirection: "row" }}>
                     {borderSetComponents.get(DockLocation.LEFT)}
-                    <div className={classBorderInner} style={{ flexDirection: "column" }}>
-                        {borderSetComponents.get(DockLocation.TOP)}
-                        {innerWithBorderTabs}
-                        {borderSetComponents.get(DockLocation.BOTTOM)}
-                    </div>
+                    {innerWithBorderTabs}
                     {borderSetComponents.get(DockLocation.RIGHT)}
                 </div>
-            );
-        }
+                {borderSetComponents.get(DockLocation.BOTTOM)}
+            </div>
+        );
 
     } else { // no borders
         return (
@@ -95,3 +71,5 @@ export const BorderContainer = ({ controller, inner }: IBorderContainerProps) =>
         );
     }
 };
+
+BorderContainer.displayName = 'BorderContainer'; // name in react dev tools

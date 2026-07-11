@@ -36,7 +36,9 @@ export const ActionLog = (props: { model: Model }) => {
         { field: 'data', width: 2000 },
     ]);
 
-    currentActions.current = actions;
+    React.useEffect(() => {
+        currentActions.current = actions;
+    });
 
     React.useEffect(() => {
         const currentModel = props.model;

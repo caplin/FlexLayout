@@ -8,7 +8,7 @@ import { Action } from "../model/Actions";
 import { BorderNode } from "../model/BorderNode";
 import { Model } from "../model/Model";
 import { I18nLabel } from "./I18nLabel";
-import { DragRectRenderCallback, NodeMouseEvent, ShowOverflowMenuCallback, TabSetPlaceHolderCallback, ITabSetRenderValues, ITabRenderValues, IIcons } from "./layout/LayoutTypes";
+import { DragRectRenderCallback, NodeMouseEvent, ShowOverflowMenuCallback, TabSetPlaceHolderCallback, ITabSetRenderValues, ITabRenderValues, IIcons, IKeyMap } from "./layout/LayoutTypes";
 import { LayoutInternal, LayoutController } from "./layout/LayoutInternal";
 
 export interface ILayoutProps {
@@ -18,7 +18,12 @@ export interface ILayoutProps {
     factory: (node: TabNode) => React.ReactNode;
     /** sets a top level class name on popout windows */
     popoutClassName?: string;
-    /** object mapping keys among close, maximize, restore, more, popout to React nodes to use in place of the default icons, can alternatively return functions for creating the React nodes */
+    /** keyboard bindings for the layout's command shortcuts (close tab, rename tab, focus toggle,
+     * close overlay border), merged over defaultKeyMap; pass an explicit undefined for a binding to
+     * disable that shortcut. The configured bindings are advertised to assistive technology via
+     * aria-keyshortcuts */
+    keyMap?: IKeyMap;
+    /** object mapping keys among close, pin, maximize, restore, more, popout to React nodes to use in place of the default icons, can alternatively return functions for creating the React nodes */
     icons?: IIcons;
     /** function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning undefined from the function will halt the action, otherwise return the action to continue */
     onAction?: (action: Action) => Action | undefined;
@@ -114,6 +119,13 @@ export interface ILayoutApi {
      */
     setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number): void;
 
+    /**
+     * Starts the inline rename edit on the given tab's button (the same edit that
+     * double-clicking the tab text starts); does nothing if the tab does not allow renaming
+     * @param tabNodeId the id of the tab node to rename
+     */
+    editTabName(tabNodeId: string): void;
+
     /** Get the root div element of the layout */
     getRootDiv(): HTMLDivElement | null | undefined;
 }
@@ -125,12 +137,15 @@ export interface ILayoutApi {
  */
 const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
     const controllerRef = useRef<LayoutController>(null);
-    const renderRevision = useRef<number>(0);
     const lastModel = useRef<Model>(props.model);
     const key = useRef<number>(0);
 
     if (lastModel.current !== props.model) {
-        key.current++;
+        // a brand new model remounts the whole layout; a model created via
+        // fromJson(json, currentModel) updates in place, keeping the tab contents mounted
+        if (props.model.getAdoptedFromModel() !== lastModel.current) {
+            key.current++;
+        }
         lastModel.current = props.model;
     }
 
@@ -155,12 +170,22 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
         setDragComponent: (event: DragEvent, component: React.ReactNode, x: number, y: number) => {
             controllerRef.current?.setDragComponent(event, component, x, y);
         },
+        editTabName: (tabNodeId: string) => {
+            const node = controllerRef.current?.getModel().getNodeById(tabNodeId);
+            if (node instanceof TabNode && node.isEnableRename()) {
+                controllerRef.current?.setEditingTab(node);
+            }
+        },
         getRootDiv: () => {
             return controllerRef.current!.getRootDiv();
         },
     }));
 
-    return (<LayoutInternal key={key.current} ref={controllerRef} {...props}  parentRedrawRevision={renderRevision.current++} />);
+    // fresh object identity per render: invalidates the memoized tab contents whenever this
+    // host component re-renders, without mutating a ref during render
+    const renderMarker = {};
+
+    return (<LayoutInternal key={key.current} ref={controllerRef} {...props}  parentRedrawRevision={renderMarker} />);
 });
 
 export { Layout };

@@ -1,3 +1,13 @@
+## 0.10.0 - 2026-07-14
+* **Added:** Pinnable tabs: new tab attribute `pinned` and action `Actions.setTabPinned(tabId, pinned)`. Pinned tabs are grouped at the start of the tabstrip (with a pin indicator icon), cannot be closed via the ui, and cannot be dragged out of their tabset (they can be reordered within the pinned group). New `pin` entry in the `icons` Layout prop.
+* **Added:** `ILayoutApi.editTabName(tabNodeId)` - starts the inline rename edit on a tab's button (the same edit that double clicking the tab text starts), e.g. from a context menu (see the demo's tab context menu).
+* **Added:** Overlay borders: new border attribute `borderType` ("split" | "overlay", default "split") and action `Actions.setBorderType(borderNodeId, borderType)`. In overlay mode the selected border tab's panel overlays the main layout area instead of insetting it, and is closed by a pointer-down in the main layout; the border splitter still resizes the panel (see the demo's border toolbar toggle button for an example of switching border types from the ui). Not related to the existing `enableAutoHide` attribute (which hides the border strip when it has zero tabs).
+* **Added:** Accessibility: aria roles for tabs, tab panels, splitters and menus, keyboard operation (arrow keys move between tabs, Enter/Space selects, Ctrl+Delete closes, F2 renames, arrow keys resize a focused splitter, full keyboard support in the overflow menu) and visible keyboard focus outlines (new `--color-focus` CSS variable in all themes).
+* **Added:** New Layout prop `keyMap` - configures (or disables) the layout's command shortcuts: `closeTab` (default "Ctrl+Delete"), `renameTab` (default "F2"), `focusTabToggle`, `focusNextTabset`/`focusPreviousTabset` and `closeOverlayBorder`. Bindings are merged over the exported `defaultKeyMap` and advertised to assistive technology via aria-keyshortcuts.
+* **Added:** `Model.fromJson` takes an optional second parameter, the model currently in use by the layout; when given, the layout updates in place and tabs with matching ids keep their contents mounted (no flash or loss of state). Use when replacing the model with a modified copy of its json.
+* **Added:** Demo: Monaco editor and xterm.js terminal panels. Both demonstrate the rebuild-on-document-change pattern for components bound to their creating document, preserving their state (editor text, terminal buffer) across popout round trips.
+* **Updated:** Dev Dependencies.
+
 ## 0.9.2 - 2026-06-28
 * **Fixed:** #525 - Popout title id causes close/reopen cascade.
 * Exposed TabNode.setMoveableElement to allow workround for issue #524

@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Rect } from "../model/Rect";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { I18nLabel } from "./I18nLabel";
 import { LayoutController, LayoutInternal } from "./layout/LayoutInternal";
@@ -9,11 +8,10 @@ import { CLASSES } from "./CSSClassNames";
 export interface ITabContentRenderProps {  
     controller: LayoutController,
     tabNode: TabNode,
-    rect: Rect;
     windowId: string;
     visible: boolean;
     fullRedrawRevision: number;
-    parentRedrawRevision: number;
+    parentRedrawRevision: object;
 }
 
 export const TabContentRenderer = React.memo(({ controller, tabNode }: ITabContentRenderProps) => {
@@ -38,11 +36,12 @@ export const TabContentRenderer = React.memo(({ controller, tabNode }: ITabConte
 
 // only re-render if visible && (fullRedrawRevision or parentRedrawRevision changed)
 function arePropsEqual(prevProps: ITabContentRenderProps, nextProps: ITabContentRenderProps) {
-    const reRender = nextProps.visible && 
+    const reRender = nextProps.visible &&
         (
             prevProps.windowId !== nextProps.windowId ||
             prevProps.fullRedrawRevision !== nextProps.fullRedrawRevision ||
             prevProps.parentRedrawRevision !== nextProps.parentRedrawRevision ||
+            prevProps.tabNode !== nextProps.tabNode || // node instance replaced (fromJson with a previous model)
             nextProps.tabNode.getSubLayoutId() !== undefined
         );
     return !reRender;

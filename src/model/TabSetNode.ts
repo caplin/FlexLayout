@@ -2,7 +2,6 @@ import { Attribute } from "./Attributes";
 import { Attributes } from "./Attributes";
 import { DockLocation } from "./DockLocation";
 import { DropInfo } from "./DropInfo";
-import { Orientation } from "./Orientation";
 import { Rect } from "./Rect";
 import { CLASSES } from "../view/CSSClassNames";
 import { canDockToLayout } from "../view/Utils";
@@ -15,7 +14,7 @@ import { Model } from "./Model";
 import { Node } from "./Node";
 import { RowNode } from "./RowNode";
 import { TabNode } from "./TabNode";
-import { adjustSelectedIndex } from "./Utils";
+import { adjustSelectedIndex, adjustSelectedIndexAfterInsert } from "./Utils";
 
 export class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
@@ -32,6 +31,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         }
         if (newLayoutNode.children.length === 0) {
             newLayoutNode.setSelected(-1);
+        } else if (newLayoutNode.getSelected() >= newLayoutNode.children.length) {
+            // clamp an out of range selected index from the json
+            newLayoutNode.setSelected(newLayoutNode.children.length - 1);
         }
 
         if (json.maximized && json.maximized === true) {
@@ -89,6 +91,20 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         return undefined;
     }
 
+    /** @internal */
+    getPinnedRunLength() {
+        // number of leading contiguous pinned tabs
+        let n = 0;
+        for (const child of this.children) {
+            if ((child as TabNode).isPinned()) {
+                n++;
+            } else {
+                break;
+            }
+        }
+        return n;
+    }
+
     getWeight(): number {
         return this.getAttr("weight") as number;
     }
@@ -108,15 +124,6 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     getMinHeight() {
         return this.calculatedMinHeight;
     }
-
-    /** @internal */
-    getMinSize(orientation: Orientation) {
-        if (orientation === Orientation.HORZ) {
-            return this.getMinWidth();
-        } else {
-            return this.getMinHeight();
-        }
-    }
     getAttrMaxWidth() {
         return (this.getAttr("maxWidth") as number);
     }
@@ -131,15 +138,6 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     getMaxHeight() {
         return this.calculatedMaxHeight;
-    }
-
-    /** @internal */
-    getMaxSize(orientation: Orientation) {
-        if (orientation === Orientation.HORZ) {
-            return this.getMaxWidth();
-        } else {
-            return this.getMaxHeight();
-        }
     }
 
     isCloseable() {
@@ -258,6 +256,12 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
         this.calculatedMinHeight += this.tabStripRect.height;
         this.calculatedMaxHeight += this.tabStripRect.height;
+
+        // contradictory attributes (e.g. a tab with maxWidth < minWidth) can drive the calculated
+        // max below the min; keep max >= min so getSplitterBounds / calculateSplit are not fed
+        // inverted bounds
+        this.calculatedMaxWidth = Math.max(this.calculatedMaxWidth, this.calculatedMinWidth);
+        this.calculatedMaxHeight = Math.max(this.calculatedMaxHeight, this.calculatedMinHeight);
     }
 
     /** @internal */
@@ -268,7 +272,7 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
                 return true;
             }
             // only one tabset, so disable
-            if (this.getParent() === this.getModel().getRootRow(this.getLayoutId()) && this.getModel().getRootRow(this.getLayoutId()).getChildren().length === 1) {
+            if (this.getParent() === this.getModel().getRootRow(this.getLayoutId()) && this.getModel().getRootRow(this.getLayoutId())!.getChildren().length === 1) {
                 return false;
             }
             return true;
@@ -289,6 +293,11 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
     /** @internal */
     setTabStripRect(rect: Rect) {
         this.tabStripRect = rect;
+    }
+
+    /** @internal */
+    getTabStripRect() {
+        return this.tabStripRect;
     }
     /** @internal */
     setWeight(weight: number) {
@@ -361,7 +370,28 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
             }
         }
 
-        if (!dragNode.canDockInto(dragNode, dropInfo)) {
+        // clamp tabstrip drops to the pinned/unpinned boundary: a pinned tab can only drop within
+        // the pinned group, anything else can only drop after it
+        if (dropInfo !== undefined && dropInfo.index !== -1 && this.children.length > 0) {
+            const run = this.getPinnedRunLength();
+            const pinnedDrag = dragNode instanceof TabNode && dragNode.isPinned();
+            const clamped = pinnedDrag ? Math.min(dropInfo.index, run) : Math.max(dropInfo.index, run);
+            if (clamped !== dropInfo.index) {
+                // reposition the outline to the boundary (using the boundary child's own tab rect
+                // keeps the outline on the correct row in tab wrap mode)
+                let r: Rect;
+                if (clamped < this.children.length) {
+                    const cr = (this.children[clamped] as TabNode).getTabRect()!;
+                    r = new Rect(cr.x - 2, cr.y, 3, cr.height);
+                } else {
+                    const cr = (this.children[this.children.length - 1] as TabNode).getTabRect()!;
+                    r = new Rect(cr.getRight() - 2, cr.y, 3, cr.height);
+                }
+                dropInfo = new DropInfo(this, r, DockLocation.CENTER, clamped, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
+            }
+        }
+
+        if (!this.canDockInto(dragNode, dropInfo)) {
             return undefined;
         }
 
@@ -370,7 +400,11 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     /** @internal */
     delete() {
+        const layoutId = this.getLayoutId();
         (this.parent as RowNode).removeChild(this);
+        if (this === this.model.getMaximizedTabset(layoutId)) {
+            this.model.setMaximizedTabset(undefined, layoutId);
+        }
     }
 
     /** @internal */
@@ -414,27 +448,38 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
                 insertPos = this.children.length;
             }
 
+            // keep pinned tabs grouped at the start (also covers programmatic moveNode/addTab)
+            const pinnedRun = this.getPinnedRunLength(); // dragNode already removed from its parent
+            if (dragNode instanceof TabNode) {
+                insertPos = dragNode.isPinned() ? Math.min(insertPos, pinnedRun) : Math.max(insertPos, pinnedRun);
+            } else {
+                insertPos = Math.max(insertPos, pinnedRun); // tabset/row merges insert after the pinned group
+            }
+
             if (dragNode instanceof TabNode) {
                 this.addChild(dragNode, insertPos);
                 if (select || (select !== false && this.isAutoSelectTab())) {
                     this.setSelected(insertPos);
+                } else {
+                    adjustSelectedIndexAfterInsert(this, insertPos);
                 }
-                // console.log("added child at : " + insertPos);
             } else if (dragNode instanceof RowNode) {
-                (dragNode as RowNode).forEachNode((child, level) => {
+                const firstInsertPos = insertPos;
+                (dragNode as RowNode).forEachNode((child, _level) => {
                     if (child instanceof TabNode) {
                         this.addChild(child, insertPos);
-                        // console.log("added child at : " + insertPos);
                         insertPos++;
                     }
                 }, 0);
+                adjustSelectedIndexAfterInsert(this, firstInsertPos, insertPos - firstInsertPos);
             } else {
+                const firstInsertPos = insertPos;
                 for (let i = 0; i < dragNode.getChildren().length; i++) {
                     const child = dragNode.getChildren()[i];
                     this.addChild(child, insertPos);
-                    // console.log("added child at : " + insertPos);
                     insertPos++;
                 }
+                adjustSelectedIndexAfterInsert(this, firstInsertPos, insertPos - firstInsertPos);
                 if (this.getSelected() === -1 && this.children.length > 0) {
                     this.setSelected(0);
                 }
@@ -444,11 +489,9 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
             let moveNode = dragNode as TabSetNode | RowNode | TabNode;
             if (dragNode instanceof TabNode) {
                 // create new tabset parent
-                // console.log("create a new tabset");
                 const callback = this.model.getOnCreateTabSet();
                 moveNode = new TabSetNode(this.model, callback ? callback(dragNode as TabNode) : {});
                 moveNode.addChild(dragNode);
-                // console.log("added child at end");
             } else if (dragNode instanceof RowNode) {
                 const parent = (this.getParent()! as RowNode);
                 // need to turn round if same orientation unless docking oposite direction
@@ -468,17 +511,14 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
             if (parentRow.getOrientation() === dockLocation.orientation) {
                 moveNode.setWeight(this.getWeight() / 2);
                 this.setWeight(this.getWeight() / 2);
-                // console.log("added child 50% size at: " +  pos + dockLocation.indexPlus);
                 parentRow.addChild(moveNode, pos + dockLocation.indexPlus);
             } else {
                 // create a new row to host the new tabset (it will go in the opposite direction)
-                // console.log("create a new row");
                 const newRow = new RowNode(this.model, {});
                 newRow.setWeight(this.getWeight());
                 newRow.addChild(this);
                 this.setWeight(50);
                 moveNode.setWeight(50);
-                // console.log("added child 50% size at: " +  dockLocation.indexPlus);
                 newRow.addChild(moveNode, dockLocation.indexPlus);
 
                 parentRow.removeChild(this);

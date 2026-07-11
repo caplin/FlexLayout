@@ -6,13 +6,13 @@
 
 FlexLayout is a layout manager for React that arranges components in multiple tabsets. Tabs can be resized, moved, and organized into complex layouts.
 
-![FlexLayout Demo Screenshot](screenshots/Screenshot_v0.9.png?raw=true "FlexLayout Demo Screenshot")
+![FlexLayout Demo Screenshot](screenshots/Screenshot_v0.10.png?raw=true "FlexLayout Demo Screenshot")
 
-[Run the Demo](https://caplin.github.io/FlexLayout/demos/v0.9/demo/index.html)
+[Run the Demo](https://caplin.github.io/FlexLayout/demos/v0.10/demo/index.html)
 
 Try it now using [CodeSandbox](https://codesandbox.io/p/sandbox/yvjzqf)
 
-[API Doc](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/index.html)
+[API Doc](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/index.html)
 
 FlexLayout's only dependency is React.
 
@@ -20,15 +20,18 @@ Features:
 * Splitters for resizing
 * Tabs (scrolling or wrapped)
 * Tab dragging and ordering
+* Pinnable tabs (kept at the start of the tabstrip, via `Actions.setTabPinned`)
 * Tabset dragging (move all tabs in a tabset in one operation)
 * Docking to tabsets or edges of the frame
 * Maximizing tabsets (double-click tabset header or use icon)
 * Tab overflow (menu for hidden tabs, mouse wheel scrolling)
 * Border tabsets
+* Overlay borders (border panels overlay the main layout, via `Actions.setBorderType`)
 * Popout tabs into floating panels or new browser windows
 * Submodels (layouts inside layouts)
 * Tab renaming (double-click tab text)
 * Theming (light, dark, underline, etc., and combined)
+* Accessibility (ARIA roles, keyboard operation with a configurable keymap, visible focus) — see [Accessibility](#accessibility)
 * Mobile support (iPad, Android)
 * Multiple ways to add tabs (drag, active tabset, by ID)
 * Comprehensive tab and tabset attributes (`enableTabStrip`, `enableDock`, `enableDrop`, etc.)
@@ -140,7 +143,7 @@ function App() {
       factory={factory} />
   );
 }
-```		
+```
 
 The above code renders two tabsets horizontally, each containing a single tab that hosts a `div` component (returned from the factory). Tabs can be moved and resized by dragging and dropping. Additional tabs can be added to the layout by sending actions to the model.
 
@@ -184,7 +187,7 @@ Each node type has a defined set of required and optional attributes.
 
 Weights on rows and tabsets specify their relative size within the parent row. The absolute values do not matter, only their proportions (e.g., two tabsets with weights 30 and 70 would render the same as if they had weights 3 and 7).
 
-NOTE: The easiest way to create your initial layout JSON is to use the [demo](https://caplin.github.io/FlexLayout/demos/v0.9/demo/index.html) app. Modify an existing layout by dragging, dropping, and adding nodes, then press the 'print' button to print the JSON to the browser's developer console.
+NOTE: The easiest way to create your initial layout JSON is to use the [demo](https://caplin.github.io/FlexLayout/demos/v0.10/demo/index.html) app. Modify an existing layout by dragging, dropping, and adding nodes, then press the 'print' button to print the JSON to the browser's developer console.
 
 By changing global or node attributes, you can modify the layout's appearance and functionality. For example, setting `tabSetEnableTabStrip: false` in the global options would change the layout into a multi-splitter (without tabs or drag-and-drop):
 
@@ -216,9 +219,7 @@ For example:
 
 You can use the `<Layout>` prop `onRenderTab` to customize tab rendering:
 
-<img src="screenshots/Screenshot_customize_tab.png?raw=true"
-     alt="FlexLayout Tab structure"
-     title="Tab structure"/>
+<img src="screenshots/Screenshot_customize_tab.png?raw=true" alt="FlexLayout Tab structure" title="Tab structure"/>
 
 Update the `renderValues` parameter as needed:
 
@@ -242,9 +243,7 @@ onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
 
 You can use the `<Layout>` prop `onRenderTabSet` to customize tabset rendering:
 
-<img src="screenshots/Screenshot_customize_tabset.png?raw=true"
-     alt="FlexLayout Tab structure"
-     title="Tabset structure" />
+<img src="screenshots/Screenshot_customize_tabset.png?raw=true" alt="FlexLayout Tab structure" title="Tabset structure" />
 
 Update the `renderValues` parameter as needed:
 
@@ -276,17 +275,56 @@ onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderVa
 }
 ```
 
+## Customizing Icons
+
+The built-in icons (close, pin, maximize/restore, popout, float, overflow, etc.) can be replaced via the `icons` layout prop. Each entry of the `IIcons` object is either a React node or a function receiving the relevant node and returning one:
+
+```tsx
+<Layout
+    model={model}
+    factory={factory}
+    icons={{
+        close: <MyCloseIcon />,
+        // functions receive the node, so the icon can depend on its state;
+        // 'more' also receives the hidden tabs, e.g. to show a count
+        more: (node, hiddenTabs) => <div>{hiddenTabs.length}</div>,
+    }}
+/>
+```
+
+The default icons are also exported (`CloseIcon`, `PinIcon`, `MaximizeIcon`, ...) for reuse in your own toolbars and menus. Icons are decorative to assistive technology (the buttons carry their own accessible names), so custom icons do not need alt text.
+
+## Localization
+
+All built-in text (button tooltips and the labels announced to assistive technology) is routed through the `i18nMapper` layout prop. It receives an `I18nLabel` enum value and returns the translated string, or `undefined` to use the default English text (the enum values are the defaults):
+
+```tsx
+import { I18nLabel } from "flexlayout-react";
+
+<Layout
+    model={model}
+    factory={factory}
+    i18nMapper={(id, param) => {
+        switch (id) {
+            case I18nLabel.Close_Tab: return "Schließen";
+            case I18nLabel.Move_Tabs: return "? Tabs verschieben"; // "?" is replaced with the tab count
+            default: return undefined; // use the default text
+        }
+    }}
+/>
+```
+
+Tab names, help text and menu items are application content and are localized by the application. The `lang` and `dir` attributes of the page are copied to popout window documents automatically.
+
 ## Model Actions
 
 Once the model JSON has been loaded, all changes are applied through actions. In the Demo app, you can view these actions in the 'Action Log':
 
-<img src="screenshots/Screenshot_action_log.png?raw=true"
-     alt="Action Log"
-     title="Action Log" />
+<img src="screenshots/Screenshot_action_log.png?raw=true" alt="Action Log" title="Action Log" />
 
 Apply actions using the `model.doAction()` method. This method takes a single argument created by one of the action generators (accessible via `FlexLayout.Actions.<actionName>`):
 
-[Actions Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/classes/Actions.html)
+[Actions Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/classes/Actions.html)
 
 ### Example
 
@@ -306,26 +344,26 @@ Note: You can intercept actions resulting from GUI changes before they are appli
 
 Many optional properties can be applied to the layout:
 
-[Layout Properties Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ILayoutProps.html)
+[Layout Properties Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/ILayoutProps.html)
 
 
 ## JSON Model Definition
 
 The JSON model is defined as a set of TypeScript interfaces. See the documentation for details on allowed attributes:
 
-[Model Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonModel.html)
+[Model Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/IJsonModel.html)
 
-[Global Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IGlobalAttributes.html)
+[Global Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/IGlobalAttributes.html)
 
-[Row Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonRowNode.html)
+[Row Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/IJsonRowNode.html)
 
-[Tabset Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonTabSetNode.html)
+[Tabset Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/IJsonTabSetNode.html)
 
 Note: Tabsets are dynamically created as tabs are moved and deleted when their last tab is removed (unless `enableDeleteWhenEmpty` is set to `false`).
 
-[Tab Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ITabAttributes.html)
+[Tab Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/ITabAttributes.html)
 
-[Border Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/IJsonBorderNode.html)
+[Border Attributes Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/IJsonBorderNode.html)
 
 
 
@@ -334,7 +372,7 @@ Note: Tabsets are dynamically created as tabs are moved and deleted when their l
 
 The Layout Ref provides methods for adding tabs:
 
-[Layout Methods Documentation](https://caplin.github.io/FlexLayout/demos/v0.9/typedoc/interfaces/ILayoutApi.html)
+[Layout Methods Documentation](https://caplin.github.io/FlexLayout/demos/v0.10/typedoc/interfaces/ILayoutApi.html)
 
 Example:
 
@@ -362,9 +400,9 @@ function MyComponent({ node }) {
 
 | Event      | Parameters | Description |
 | ---------- | ---------- | ----------- |
-| resize     | `{rect}`   | Called when the tab is resized during layout, before it is rendered with the new size. |
+| resize     | `{rect}`   | Called during layout when the tab's size changes, after its panel has been positioned to the new `rect` and before the browser paints. Geometry is applied imperatively, so a resize does not re-render the tab content — listen for this event if a component needs to react to size changes. |
 | close      | None       | Called when the tab is closed. |
-| visibility | `{visible}`| Called when the tab's visibility changes. |
+| visibility | `{visible}`| Called when the tab's visibility changes (during layout, before paint). |
 | save       | None       | Called before a `TabNode` is serialized to JSON. Use this to save node configuration by adding data to the object returned by `node.getConfig()`. |
 
 ## Popout Windows
@@ -398,6 +436,95 @@ Note this section only applies to window based popouts, not floating panels.
 
 See this article about using React portals in this way: https://dev.to/noriste/the-challenges-of-rendering-an-openlayers-map-in-a-popup-through-react-2elh
 
+### Popout Windows in Secure Environments
+
+Deployments with strict security headers need the following for popout windows to work:
+
+* **Same origin**: `popout.html` must be served from the same origin as the main page. The popout document runs no scripts of its own; it is driven entirely by the main window's JavaScript, which requires script access to the popout document.
+* **Content Security Policy (style-src)**: the main page's stylesheets are copied into the popout document at runtime. `<link rel="stylesheet">` elements work provided their URLs are allowed by the `style-src` of the response serving `popout.html`. Inline `<style>` elements (as injected by CSS-in-JS libraries such as Emotion or styled-components, or by Vite in dev mode) are blocked by a nonce/hash based `style-src`, since the copied elements cannot carry a valid nonce for the popout document — prefer real CSS files for anything rendered in popouts.
+* **Cross-origin isolation (COOP/COEP)**: if the main page is served with `Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` headers (e.g. for `SharedArrayBuffer`), `popout.html` must be served with compatible headers, otherwise the browser severs the connection between the windows and popouts cannot function. Set the `supportsPopout` prop to `false` to disable popouts explicitly where they cannot be supported.
+* **Popup blockers and sandboxed frames**: if `window.open` is blocked (popup blocker, or a sandboxed iframe without `allow-popups`) the popout degrades gracefully to a floating panel. Note that when a saved layout containing popouts is restored on page load, the `window.open` happens without a user gesture and is typically blocked — the popouts become floating panels unless the user has allowed popups for the site.
+* **Trusted Types**: the library uses no HTML string injection sinks and is compatible with `require-trusted-types-for 'script'`.
+* **Multi-monitor placement**: without the Window Management permission, browsers clamp popup window coordinates to the display of the main window, so a popout saved on a second monitor will restore on the main window's display. Popout positions are saved in the main window's CSS pixels and will scale if the browser zoom changes between sessions.
+
+## Accessibility
+
+FlexLayout has keyboard operability, ARIA semantics and visible focus styling built in.
+
+### ARIA roles
+
+* Tabs follow the [WAI-ARIA Tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/): the tab strip is a `tablist`, each tab button is a `tab` with `aria-selected`, and each tab's content area is a `tabpanel` labelled by its tab (`aria-labelledby`).
+* Splitters are exposed as `separator` elements with `aria-orientation` and `aria-valuenow`/`aria-valuemin`/`aria-valuemax`.
+* The tab overflow menu (and the reusable popup menu below) use `role="menu"`/`role="menuitem"`; the button that opens the overflow menu advertises `aria-haspopup` and `aria-expanded`.
+* Decorative icons are hidden from assistive technology with `aria-hidden`.
+* Tabs carry explicit accessible names (including pinned state), advertise their keyboard shortcuts via `aria-keyshortcuts`, and toggle buttons expose their state via `aria-pressed`.
+
+### Keyboard operation
+
+| Context | Keys | Action                                                                         |
+| --- | --- |--------------------------------------------------------------------------------|
+| Tabs | Arrow keys | Move focus between tabs in a tabset                                            |
+| Tabs | Enter / Space | Select the focused tab                                                         |
+| Tabs | Ctrl+Delete (default, rebindable) | Close the focused tab (when it is closeable)                                   |
+| Tabs | F2 (default, rebindable) | Rename the focused tab (when it is renameable)                                 |
+| Tabs | `focusTabToggle` binding (off by default) | Toggle focus between the selected tab button and its content                   |
+| Layout | `focusNextTabset` / `focusPreviousTabset` bindings (off by default) | Move focus to the next / previous tabset, mapped to Ctrl+[, Ctrl+] in the demo |
+| Splitters | Arrow keys | Resize                                                                         |
+| Overlay borders | Escape (default, rebindable) | Close the open overlay panel (focus returns to the border tab)                 |
+| Menus | Arrow keys, Home / End, type a letter | Move between items                                                             |
+| Menus | Enter / Space | Activate the focused item                                                      |
+| Menus | Escape / Tab | Close and return focus to the trigger                                          |
+
+### Configurable shortcuts (the `keyMap` prop)
+
+The command shortcuts above are configured through the `keyMap` layout prop. Bindings are merged over the exported `defaultKeyMap`, and passing an explicit `undefined` for a binding disables that shortcut (WCAG 2.1.4 requires shortcuts to be remappable or off):
+
+```tsx
+<Layout
+    model={model}
+    factory={factory}
+    keyMap={{ focusTabToggle: "F6", focusNextTabset: "Ctrl+]", focusPreviousTabset: "Ctrl+[" }}
+/>
+```
+
+* A binding is a `KeyboardEvent.key` name, optionally prefixed with the modifiers Ctrl, Shift, Alt or Meta joined with `+` — e.g. `"F2"`, `"Escape"`, `"Ctrl+Delete"`, `"Ctrl+]"`. Prefer function keys or modifier combinations: WCAG 2.1.4 requires single printable-character shortcuts to be remappable or off by default.
+* The configured bindings are advertised to assistive technology via `aria-keyshortcuts` (on the tab buttons, tab panels and tablists), so the advertised shortcuts always match the configured ones.
+* `defaultKeyMap` is exported so an application can display the bindings (e.g. in a keyboard-help dialog) or register them with its own shortcut manager.
+* The structural keys of the ARIA widget patterns (arrow keys within a tablist, Enter/Space activation, menu navigation, splitter arrows) are fixed and not remappable — assistive technology announces these from the widget roles themselves.
+* Pressing Enter on an already selected tab also moves focus into its content (in addition to the optional `focusTabToggle` binding).
+
+### Focus styling
+
+The bundled themes draw a visible focus outline driven by the `--color-focus` CSS variable. Override it (alongside the other theme CSS variables) to match your design system.
+
+### Reusable menu for application context menus
+
+The accessible menu control used for tab overflow is also exported for your own context menus, so they get the same keyboard and ARIA behaviour. It has no dependency on the layout model and can be used declaratively (`<PopupMenu>`) or imperatively (`showPopupMenu(...)`, e.g. from the `onContextMenu` layout prop).
+
+## Testing Your Layout
+
+Every element the library renders carries a `data-layout-path` attribute describing its position in the layout tree — a stable selector for end-to-end tests (FlexLayout's own Playwright suite is built on it; see `tests-playwright/helpers.ts` for ready-made helper functions):
+
+| Path | Element |
+| --- | --- |
+| `/r<n>` / `/ts<n>` | Row / tabset (`n` is the index within the parent), nested as in the model, e.g. `/r1/ts0` |
+| `/border/<location>` | Border strip (`top`, `bottom`, `left`, `right`) |
+| `.../tb<n>` | Tab button `n` within a tabset or border path |
+| `.../t<n>` | Tab panel `n` within a tabset or border path |
+| `.../tabstrip` | A tabset's tab strip |
+| `.../s<n>` | Splitter after child `n` of a row (e.g. `/s0`), or a border's splitter |
+| `.../button/<name>` | Toolbar buttons: `max`, `overflow`, `close`, `popout`, `float`, `pin` |
+| `.../textbox` | The inline rename textbox |
+| `/popup-menu` | The overflow/popup menu |
+
+```ts
+// playwright example: select the second tab of the first tabset, check a border panel opened
+await page.locator('[data-layout-path="/ts0/tb1"]').click();
+await expect(page.locator('[data-layout-path="/border/left/t0"]')).toBeVisible();
+```
+
+Note the paths describe the current structure, so indices shift when tabs and tabsets move — target stable states, or use node ids via the model for highly dynamic layouts.
+
 ## Running the Demo and Building the Project
 
 First, install the dependencies:
@@ -414,7 +541,7 @@ pnpm dev
 
 The `pnpm dev` command watches for changes in both FlexLayout and the Demo app, allowing you to see updates in your browser immediately.
 
-Once the demo is running, you can execute the Playwright tests in a separate terminal window:
+Run the playwright tests interactively using:
 
 ```bash
 pnpm playwright
@@ -423,13 +550,3 @@ pnpm playwright
 <img src="screenshots/PlaywrightUI.png?raw=true" alt="PlaywrightUI" title="PlaywrightUI screenshot"/>
 
 To build the npm distribution, run `pnpm build`.
-
-## Alternative Layout Managers
-
-| Name | Repository |
-| ------------- |:-------------|
-| rc-dock | https://github.com/ticlo/rc-dock |
-| Dockview | https://dockview.dev/ |
-| lumino | https://github.com/jupyterlab/lumino |
-| golden-layout | https://github.com/golden-layout/golden-layout |
-| react-mosaic | https://github.com/nomcopter/react-mosaic |

@@ -45,6 +45,7 @@
 
             --color-overflow: gray;
             --color-icon: gray;
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: var(--color-background);
             --color-tabset-background-selected: var(--color-1);
@@ -148,6 +149,7 @@
 
             --color-overflow: gray;
             --color-icon: gray;
+            --color-focus: #93c5fd; // keyboard focus ring
 
             --color-tabset-background: var(--color-1);
             --color-tabset-background-selected: var(--color-1);
@@ -276,6 +278,7 @@
 
             --color-overflow: gray;
             --color-icon: gray;
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: var(--color-1);
             --color-tabset-background-selected: var(--color-1);
@@ -409,6 +412,7 @@
 
             --color-overflow: gray;
             --color-icon: gray;
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: var(--color-background);
             --color-tabset-background-selected: var(--color-1);
@@ -555,6 +559,7 @@
 
             --color-overflow: #999db2;
             --color-icon: #999db2;
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: white;
             --color-tabset-background-selected: white;
@@ -719,6 +724,7 @@
 
             --color-overflow: var(--color-5);
             --color-icon: var(--color-5);
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: var(--color-1);
             --color-tabset-background-selected: var(--color-1);
@@ -910,6 +916,26 @@
     }
 }
 
+// the accessibility reference theme: alpha light with colors adjusted to meet the WCAG AA
+// contrast requirements (4.5:1 for text); the axe scans in the playwright suite run against
+// this theme, so adjust colors here as needed to keep them compliant
+@mixin aria_theme {
+    @include alpha_light_theme;
+
+    .flexlayout {
+        &__layout {
+            --color-tab-selected: #2563eb; // 5.2:1 on the white tab background (#3b7de7 is only 4.0:1)
+            --color-border-tab-selected: #2563eb;
+            --color-tab-unselected: var(--color-6); // 6.5:1 on the color-1 strip (color-5 is only 4.1:1)
+            --color-border-tab-unselected: var(--color-6);
+        }
+    }
+}
+
+@mixin aria_theme_overrides {
+    @include alpha_light_theme_overrides;
+}
+
 @mixin alpha_dark_theme {
     $color_text: white !default; // Gray 200
     $color_background: black !default; // Gray 800-ish (Selected Tab)
@@ -956,6 +982,7 @@
 
             --color-overflow: gray;
             --color-icon: gray;
+            --color-focus: #93c5fd; // keyboard focus ring
 
             --color-tabset-background: var(--color-1);
             --color-tabset-background-selected: var(--color-1);
@@ -1198,6 +1225,7 @@
 
             --color-overflow: var(--color-4);
             --color-icon: var(--color-4);
+            --color-focus: #3b7de7; // keyboard focus ring
 
             --color-tabset-background: white;
             --color-tabset-background-selected: white;

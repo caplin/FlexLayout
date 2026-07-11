@@ -47,8 +47,54 @@ export interface ITabRenderValues {
     buttons: React.ReactNode[];
 }
 
+/** Keyboard bindings for the layout's command shortcuts, each given as a key spec such as
+ * "F2", "Escape" or "Ctrl+Delete" (a KeyboardEvent.key name, optionally prefixed by
+ * modifiers Ctrl, Shift, Alt, Meta joined with +).
+ *
+ * Bindings given in the Layout keyMap prop are merged over defaultKeyMap; passing an explicit
+ * undefined for a binding disables that shortcut. The bindings are advertised to assistive
+ * technology via aria-keyshortcuts on the affected elements, so the advertised shortcuts always
+ * match the configured ones.
+ *
+ * Only command shortcuts are configurable; the structural keys defined by the WAI-ARIA widget
+ * patterns (arrow keys within a tablist, Enter/Space activation, popup menu navigation) are
+ * fixed, since assistive technology announces those from the widget roles themselves.
+ *
+ * Note: WCAG 2.1.4 requires single printable character shortcuts to be remappable or off by
+ * default, so prefer function keys or modifier combinations.
+ */
+export interface IKeyMap {
+    /** closes the focused tab button's tab (when the tab is closeable) */
+    closeTab?: string;
+    /** starts renaming the focused tab button's tab (when the tab is renameable, tabset tabs only) */
+    renameTab?: string;
+    /** toggles focus between the selected tab button and its content; off by default */
+    focusTabToggle?: string;
+    /** moves focus to the selected tab button of the next tabset in the layout (wrapping),
+     * from anywhere within the layout including inside tab content; off by default */
+    focusNextTabset?: string;
+    /** moves focus to the selected tab button of the previous tabset in the layout (wrapping),
+     * from anywhere within the layout including inside tab content; off by default */
+    focusPreviousTabset?: string;
+    /** closes an open overlay border panel when focus is inside it (or on its tab button) and
+     * returns focus to the tab button. Escape-to-dismiss is an ARIA convention, so overriding
+     * this is rarely a good idea, but it can be rebound or disabled like the other commands */
+    closeOverlayBorder?: string;
+}
+
+/** the default keyboard bindings, exported so applications can display or re-register them */
+export const defaultKeyMap: Readonly<IKeyMap> = {
+    closeTab: "Ctrl+Delete",
+    renameTab: "F2",
+    focusTabToggle: undefined,
+    focusNextTabset: undefined,
+    focusPreviousTabset: undefined,
+    closeOverlayBorder: "Escape",
+};
+
 export interface IIcons {
     close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
+    pin?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
     popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
     popoutFloat?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));

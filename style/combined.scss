@@ -33,6 +33,10 @@
     @include themes.alpha_rounded_theme;
 }
 
+.flexlayout__theme_aria {
+    @include themes.aria_theme;
+}
+
 
 @include base.baseMixin;
 
@@ -67,4 +71,8 @@
 
 .flexlayout__theme_alpha_rounded {
     @include themes.alpha_rounded_theme_overrides;
+}
+
+.flexlayout__theme_aria {
+    @include themes.aria_theme_overrides;
 }

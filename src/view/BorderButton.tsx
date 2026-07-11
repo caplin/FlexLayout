@@ -2,11 +2,12 @@ import * as React from "react";
 import { I18nLabel } from "./I18nLabel";
 import { Actions } from "../model/Actions";
 import { TabNode } from "../model/TabNode";
+import { BorderNode } from "../model/BorderNode";
 import { IIcons } from "../view/layout/LayoutTypes";
 import { LayoutController } from "../view/layout/LayoutInternal";
 import { ICloseType } from "../model/ICloseType";
 import { CLASSES } from "./CSSClassNames";
-import { getRenderStateEx, isAuxMouseEvent } from "./Utils";
+import { domId, focusFirstIn, getRenderStateEx, hasModifier, isAuxMouseEvent, matchesKey, toAriaKeyShortcuts } from "./Utils";
 
 /** @internal */
 export interface IBorderButtonProps {
@@ -20,9 +21,11 @@ export interface IBorderButtonProps {
 
 /** @internal */
 export const BorderButton = (props: IBorderButtonProps) => {
+    
     const { controller, tabNode, selected, border, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLInputElement>(null);
+    const keyMap = controller.getKeyMap();
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
         if (tabNode.isEnableDrag()) {
@@ -35,7 +38,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const onDragEnd = (event: React.DragEvent<HTMLElement>) => {
         event.stopPropagation();
-        controller.getDragDropManager().clearDragMain();
+        controller.getDragDropManager().onDragEnded();
     };
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -52,21 +55,47 @@ export const BorderButton = (props: IBorderButtonProps) => {
         controller.doAction(Actions.selectTab(tabNode.getId()));
     };
 
-    // const onDoubleClick = (event: Event) => {
-    //     // if (node.isEnableRename()) {
-    //     //     onRename();
-    //     // }
-    // };
+    const focusAdjacentTab = (delta: number) => {
+        const tablist = selfRef.current?.closest('[role="tablist"]');
+        if (tablist) {
+            const tabElements = Array.from(tablist.querySelectorAll('[role="tab"]')) as HTMLElement[];
+            const next = tabElements[tabElements.indexOf(selfRef.current!) + delta];
+            next?.focus();
+        }
+    };
 
-    // const onRename = () => {
-    //     layout.setEditingTab(node);
-    //     layout.getCurrentDocument()!.body.addEventListener("pointerdown", onEndEdit);
-    // };
+    // move focus into the tab content: the first focusable element, or the panel itself
+    const focusTabContent = () => {
+        const doc = selfRef.current!.ownerDocument;
+        const focusPanel = () => focusFirstIn(doc.getElementById(domId("flexlayout-tab-", tabNode.getId())));
+        if (selected) {
+            focusPanel();
+        } else {
+            onClick(); // select first, focus once the panel is shown
+            requestAnimationFrame(focusPanel);
+        }
+    };
 
-    const onEndEdit = (event: Event) => {
-        if (event.target !== contentRef.current!) {
-            controller.getCurrentDocument()!.body.removeEventListener("pointerdown", onEndEdit);
-            controller.setEditingTab(undefined);
+    const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+        if (controller.getEditingTab() === tabNode) {
+            return; // the rename textbox handles its own keys
+        }
+        if (matchesKey(event, keyMap.focusTabToggle)) {
+            focusTabContent();
+            event.preventDefault();
+        } else if (event.key === "Enter" || event.key === " ") {
+            onClick();
+            event.preventDefault();
+        } else if ((event.key === "ArrowLeft" || event.key === "ArrowUp") && !hasModifier(event)) {
+            focusAdjacentTab(-1);
+            event.preventDefault();
+        } else if ((event.key === "ArrowRight" || event.key === "ArrowDown") && !hasModifier(event)) {
+            focusAdjacentTab(1);
+            event.preventDefault();
+        } else if (matchesKey(event, keyMap.closeTab) && tabNode.isCloseable()) {
+            focusAdjacentTab(1); // move focus to a neighbour before this tab is removed
+            controller.doAction(Actions.deleteTab(tabNode.getId()));
+            event.preventDefault();
         }
     };
 
@@ -95,12 +124,45 @@ export const BorderButton = (props: IBorderButtonProps) => {
         event.stopPropagation();
     };
 
+    // roving tabindex: the selected tab is tabbable; when a border has no selection its first tab is
+    const isTabbable = () => {
+        if (selected) {
+            return true;
+        }
+        const parent = tabNode.getParent();
+        return parent instanceof BorderNode && parent.getSelected() === -1 && parent.getChildren()[0] === tabNode;
+    };
+
+    const editing = controller.getEditingTab() === tabNode;
+
+    // register with the layout's central measure pass via a callback ref: it fires whenever
+    // react attaches/detaches the element, including remounts the component cannot know
+    // about, unlike an effect
+    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
+        selfRef.current = element;
+        controller.registerMeasurable(tabNode, "tabbutton", element);
+    }, [controller, tabNode]);
+
     React.useLayoutEffect(() => {
-        tabNode.setTabRect(controller.getBoundingClientRect(selfRef.current!));
-        if (controller.getEditingTab() === tabNode) {
+        if (editing) {
             (contentRef.current! as HTMLInputElement).select();
         }
-    });
+    }, [editing]);
+
+    // while editing, end the edit on any pointer down outside the textbox
+    React.useEffect(() => {
+        if (editing) {
+            const body = controller.getCurrentDocument()!.body;
+            const onEndEdit = (event: Event) => {
+                if (event.target !== contentRef.current) {
+                    controller.setEditingTab(undefined);
+                }
+            };
+            body.addEventListener("pointerdown", onEndEdit);
+            return () => body.removeEventListener("pointerdown", onEndEdit);
+        }
+        return undefined;
+    }, [editing, controller]);
 
     const onTextBoxPointerDown = (event: React.PointerEvent<HTMLInputElement>) => {
         event.stopPropagation();
@@ -110,10 +172,12 @@ export const BorderButton = (props: IBorderButtonProps) => {
         if (event.code === 'Escape') {
             // esc
             controller.setEditingTab(undefined);
+            selfRef.current?.focus(); // return focus to the tab button
         } else if (event.code === 'Enter' || event.code === 'NumpadEnter') {
             // enter
             controller.setEditingTab(undefined);
             controller.doAction(Actions.renameTab(tabNode.getId(), (event.target as HTMLInputElement).value));
+            selfRef.current?.focus(); // return focus to the tab button
         }
     };
 
@@ -151,13 +215,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
             {renderState.leading}
         </div>) : null;
 
-    if (controller.getEditingTab() === tabNode) {
+    if (editing) {
         content = (
             <input
                 ref={contentRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TEXTBOX)}
                 data-layout-path={path + "/textbox"}
                 type="text"
+                aria-label={controller.i18nName(I18nLabel.Rename_Tab)}
                 autoFocus={true}
                 defaultValue={tabNode.getName()}
                 onKeyDown={onTextBoxKeyPress}
@@ -169,10 +234,14 @@ export const BorderButton = (props: IBorderButtonProps) => {
     if (tabNode.isCloseable()) {
         const closeTitle = controller.i18nName(I18nLabel.Close_Tab);
         renderState.buttons.push(
+            // hidden from assistive technology: it is a pointer affordance for the tab's
+            // close shortcut (advertised via aria-keyshortcuts), not a tab stop (per the
+            // APG tabs pattern, tab elements should not contain interactive children)
             <div
                 key="close"
                 data-layout-path={path + "/button/close"}
                 title={closeTitle}
+                aria-hidden="true"
                 className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)}
                 onPointerDown={onClosePointerDown}
                 onClick={onClose}>
@@ -181,9 +250,29 @@ export const BorderButton = (props: IBorderButtonProps) => {
         );
     }
 
+    // advertise the tab's keyboard operations to assistive technology; composed from the
+    // resolved keymap so the advertised shortcuts always match the configured bindings
+    const ariaKeyshortcuts = [
+        toAriaKeyShortcuts(keyMap.focusTabToggle),
+        tabNode.isCloseable() ? toAriaKeyShortcuts(keyMap.closeTab) : undefined,
+    ].filter(Boolean).join(" ") || undefined;
+
     return (
         <div
-            ref={selfRef}
+            ref={setSelfRef}
+            id={domId("flexlayout-tabbutton-", tabNode.getId())}
+            // while the rename textbox is showing, the element is a plain container for it, not
+            // a tab (a tab role must not contain interactive children); it stays programmatically
+            // focusable so the end of the edit can return focus to it
+            role={editing ? undefined : "tab"}
+            aria-selected={editing ? undefined : selected}
+            aria-controls={editing ? undefined : domId("flexlayout-tab-", tabNode.getId())}
+            // an explicit name: the subtree contains the close adornment, which must not leak
+            // into the tab's computed name
+            aria-label={editing ? undefined : renderState.name}
+            aria-keyshortcuts={editing ? undefined : ariaKeyshortcuts}
+            tabIndex={editing ? -1 : (isTabbable() ? 0 : -1)}
+            onKeyDown={onKeyDown}
             data-layout-path={path}
             className={classNames}
             onClick={onClick}
@@ -200,3 +289,6 @@ export const BorderButton = (props: IBorderButtonProps) => {
         </div>
     );
 };
+
+BorderButton.displayName = 'BorderButton'; // name in react dev tools
+

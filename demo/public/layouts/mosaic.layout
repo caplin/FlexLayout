@@ -45,9 +45,9 @@
 				"children": [
 					{
 						"type": "tab",
-						"name": "One",
+						"name": "Editor",
 						"tabsetClassName": "blueClass",
-						"component": "grid"
+						"component": "monaco"
 					}
 				]
 			}

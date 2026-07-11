@@ -1,4 +1,5 @@
 import * as React from "react";
+import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { DropInfo } from "../../model/DropInfo";
 import { Node } from "../../model/Node";
@@ -36,6 +37,12 @@ export class DragDropManager {
     addTabWithDragAndDrop(event: DragEvent, json: IJsonTabNode, onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void) {
         const tempNode = TabNode.fromJson(json, this._controller.getModel(), false);
         DragDropManager.dragState = new DragState(this._controller.getMainController()!, DragSource.Add, tempNode, json, onDrop);
+    }
+
+    // called on dragend from the drag source, or by the lost drag fallback
+    onDragEnded() {
+        this.clearDragMain();
+        DragDropManager.dragState = undefined;
     }
 
     moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)) {
@@ -115,11 +122,13 @@ export class DragDropManager {
         tempDiv.style.left = "-10000px";
         tempDiv.style.top = "-10000px";
         currentDocument!.body.appendChild(tempDiv);
-        createRoot(tempDiv).render(dragElement);
+        const root = createRoot(tempDiv);
+        flushSync(() => root.render(dragElement)); // commit synchronously so the browser can snapshot the drag image
 
         event.dataTransfer!.setDragImage(tempDiv, x, y);
-        setTimeout(() => {
-            currentDocument!.body.removeChild(tempDiv!);
+        setTimeout(() => { // the div must outlive the dragstart dispatch for the snapshot to be taken
+            root.unmount();
+            currentDocument!.body.removeChild(tempDiv);
         }, 0);
     }
 
@@ -170,7 +179,6 @@ export class DragDropManager {
     }
 
     onDragEnterRaw = (event: React.DragEvent<HTMLElement>) => {
-        // console.log("onDragEnterRaw", this._controller.getLayoutId(), this._dragEnterCount);
         this._dragEnterCount++;
         this.updateActive(event);
     }
@@ -181,7 +189,6 @@ export class DragDropManager {
     }
 
     clearDragMain() {
-        // console.log("clearDragMain");
         this._controller.showOverlayOnAllWindows(false);
         for (const [, layout] of this._controller.getModel().getLayouts()) {
             if (layout.getController()) {
@@ -191,7 +198,6 @@ export class DragDropManager {
     }
 
     clearDragLocal() {
-        // console.log("clearDragLocal", this._controller.getLayoutId());
         this._dragEnterCount = 0;
         this._active = false;
         this.clearDragLocalVisuals();
@@ -207,7 +213,6 @@ export class DragDropManager {
     }
 
     onDragEnter = (event: React.DragEvent<HTMLElement>) => {
-        // console.log("onDragEnter", this._controller.getLayoutId());
 
         if (!DragDropManager.dragState && this._controller.getProps().onExternalDrag) {
             const externalDrag = this._controller.getProps().onExternalDrag!(event);
@@ -257,7 +262,6 @@ export class DragDropManager {
             return;
         }
         if (this._active) {
-            //console.log("onDragOver", this._controller.getLayoutId(), this.isDraggingOverWindow);
             const clientRect = this._controller.getRootDiv()?.getBoundingClientRect();
             const pos = {
                 x: event.clientX - (clientRect?.left ?? 0),
@@ -283,11 +287,10 @@ export class DragDropManager {
         }
     }
 
-    onDragLeave = (event: React.DragEvent<HTMLElement>) => {
+    onDragLeave = (_event: React.DragEvent<HTMLElement>) => {
         if (this._mainController !== DragDropManager.dragState?.mainLayoutController) {
             return;
         }
-        // console.log("onDragLeave", this._controller.getLayoutId(),  this._controller.isMainWindow);
         this.clearDragLocalVisuals();
 
         if (this._controller.isMainLayout()) {

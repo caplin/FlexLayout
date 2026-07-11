@@ -37,7 +37,6 @@ const MIN_HEIGHT = 25;
 export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) => {
     const { controller, layout, children } = props;
     const [rect, setRect] = React.useState<Rect>(layout.getRect());
-    // const icons = controller.getIcons();
     const cm = controller.getClassName;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const headerRef = React.useRef<HTMLDivElement>(null);
@@ -50,17 +49,19 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
     const wRef = React.useRef<HTMLDivElement>(null);
     const nwRef = React.useRef<HTMLDivElement>(null);
     const moveToFrontRef = React.useRef<boolean>(false);
+    const raiseTimerRef = React.useRef<number | undefined>(undefined);
 
     const clampToDoc = React.useCallback((rect: Rect) => {
+        const win = controller.getCurrentWindow() ?? window;
         const layoutRect = Rect.fromDomRect(controller.getRootDiv()!.getBoundingClientRect());
         let boundaryRect: Rect;
         if (controller.getProps().constrainFloatPanels) {
             boundaryRect = new Rect(0, 0, layoutRect.width, layoutRect.height);
         } else {
-            const page = getPageMetrics();
+            const page = getPageMetrics(win);
             // Use Math.max to ensure the boundary covers at least the visible window
-            const width = Math.max(page.fullWidth, window.innerWidth);
-            const height = Math.max(page.fullHeight, window.innerHeight);
+            const width = Math.max(page.fullWidth, win.innerWidth);
+            const height = Math.max(page.fullHeight, win.innerHeight);
             boundaryRect = new Rect(-layoutRect.x, -layoutRect.y, width, height);
         }
 
@@ -109,9 +110,11 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 moveToFrontRef.current = true;
             }
         };
+        const win = controller.getCurrentWindow() ?? window;
         const onPointerUp = () => {
             if (moveToFrontRef.current) {
-                setTimeout(() => {
+                raiseTimerRef.current = win.setTimeout(() => {
+                    raiseTimerRef.current = undefined;
                     controller.moveWindowToFront(layout.getLayoutId());
                 }, 10);
                 moveToFrontRef.current = false
@@ -127,16 +130,21 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 current.removeEventListener("pointerdown", onPointerDown, { capture: true });
                 current.removeEventListener("pointerup", onPointerUp);
             }
+            // cancel a pending front-raise so it can't dispatch after unmount
+            if (raiseTimerRef.current !== undefined) {
+                win.clearTimeout(raiseTimerRef.current);
+                raiseTimerRef.current = undefined;
+            }
         };
     }, [controller, layout]);
 
     const onPointerDownHeader = (e: React.PointerEvent<HTMLElement>) => {
         e.stopPropagation();
         const offset = { x: e.clientX - rect.x, y: e.clientY - rect.y };
+        controller.showOverlayOnAllWindows(true);
 
-        startDrag(document, e,
+        startDrag(controller.getCurrentDocument() ?? document, e,
             (x, y) => {
-                controller.showOverlayOnAllWindows(true);
                 if (moveToFrontRef.current) {
                     controller.moveWindowToFront(layout.getLayoutId());
                     moveToFrontRef.current = false
@@ -151,17 +159,20 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 controller.redrawLayout();
                 controller.showOverlayOnAllWindows(false);
             },
-            () => { }
+            () => {
+                controller.redrawLayout();
+                controller.showOverlayOnAllWindows(false);
+            }
         );
     };
 
     const onPointerDownResize = (e: React.PointerEvent<HTMLElement>, direction: FloatWindowResizeDirection) => {
         const startRect = rect;
         const startPos = { x: e.clientX, y: e.clientY };
+        controller.showOverlayOnAllWindows(true);
 
-        startDrag(document, e,
+        startDrag(controller.getCurrentDocument() ?? document, e,
             (x, y) => {
-                controller.showOverlayOnAllWindows(true)
                 const dx = x - startPos.x;
                 const dy = y - startPos.y;
                 let newX = startRect.x;
@@ -194,7 +205,10 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 controller.redrawLayout();
                 controller.showOverlayOnAllWindows(false)
             },
-            () => { }
+            () => {
+                controller.redrawLayout();
+                controller.showOverlayOnAllWindows(false)
+            }
         );
         e.stopPropagation();
     };

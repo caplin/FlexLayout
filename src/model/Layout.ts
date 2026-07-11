@@ -23,7 +23,7 @@ export class Layout {
         this._layoutId = layoutId;
         this._type = type;
         this._rect = rect;
-        this._toExportRectFunction = (r, type) => r;
+        this._toExportRectFunction = (r, _type) => r;
     }
 
     visitNodes(fn: (node: Node, level: number) => void) {
@@ -125,7 +125,9 @@ export class Layout {
     static fromJson(layoutJson: IJsonSubLayout, model: Model, layoutId: string): Layout {
         const count = model.getLayouts().size;
         const rect = layoutJson.rect ? Rect.fromJson(layoutJson.rect) : new Rect(50 + 50 * count, 50 + 50 * count, 600, 400);
-        rect.snap(10); // snapping prevents issue where window moves 1 pixel per save/restore on Chrome
+        // round to whole pixels; drift across save/restore cycles is prevented by the popout window
+        // converging on its saved metrics after opening (see PopoutWindow)
+        rect.snap(1);
 
         const layout = new Layout(layoutId, layoutJson.type || "window", rect);
         layout.setRootRow(RowNode.fromJson(layoutJson.layout, model, layout));

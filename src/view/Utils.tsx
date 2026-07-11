@@ -4,6 +4,7 @@ import { TabNode } from "../model/TabNode";
 import { LayoutController } from "./layout/LayoutInternal";
 import { TabSetNode } from "../model/TabSetNode";
 import { Layout } from "../model/Layout";
+import { defaultKeyMap, IKeyMap } from "./layout/LayoutTypes";
 
 /** @internal */
 export function isDesktop() {
@@ -24,10 +25,11 @@ export function getRenderStateEx(
     }
 
     if (leadingContent === undefined && tabNode.getIcon() !== undefined) {
+        // alt is empty since the icon is decorative, the tab name is in the adjacent content
         if (iconAngle !== 0) {
-            leadingContent = <img style={{ width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }} src={tabNode.getIcon()} alt="leadingContent" />;
+            leadingContent = <img style={{ width: "1em", height: "1em", transform: "rotate(" + iconAngle + "deg)" }} src={tabNode.getIcon()} alt="" />;
         } else {
-            leadingContent = <img style={{ width: "1em", height: "1em" }} src={tabNode.getIcon()} alt="leadingContent" />;
+            leadingContent = <img style={{ width: "1em", height: "1em" }} src={tabNode.getIcon()} alt="" />;
         }
     }
 
@@ -40,6 +42,62 @@ export function getRenderStateEx(
     tabNode.setRenderedName(renderState.name);
 
     return renderState;
+}
+
+/** @internal */
+export function domId(prefix: string, nodeId: string) {
+    return prefix + nodeId.replace(/\s/g, "_"); // aria id references cannot contain whitespace
+}
+
+/** @internal the modifier/key fields shared by native and React keyboard events */
+export interface IKeyEventLike {
+    key: string;
+    ctrlKey: boolean;
+    shiftKey: boolean;
+    altKey: boolean;
+    metaKey: boolean;
+}
+
+/** @internal */
+export function matchesKey(event: IKeyEventLike, spec: string | undefined): boolean {
+    if (!spec) {
+        return false;
+    }
+    const parts = spec.split("+");
+    const key = parts.pop()!;
+    const has = (mod: string) => parts.some((p) => p.toLowerCase() === mod);
+    return event.key.toLowerCase() === key.toLowerCase() &&
+        event.ctrlKey === has("ctrl") &&
+        event.shiftKey === has("shift") &&
+        event.altKey === has("alt") &&
+        event.metaKey === has("meta");
+}
+
+/** @internal true when any modifier key is held; the fixed ARIA pattern keys (arrows on tabs and
+ * splitters) only apply unmodified, so modified presses stay available for keymap bindings */
+export function hasModifier(event: IKeyEventLike): boolean {
+    return event.ctrlKey || event.shiftKey || event.altKey || event.metaKey;
+}
+
+/** @internal merge the configured bindings over the defaults; a binding passed as an explicit
+ * undefined disables that shortcut */
+export function resolveKeyMap(keyMap: IKeyMap | undefined): IKeyMap {
+    return { ...defaultKeyMap, ...keyMap };
+}
+
+/** @internal */
+export function toAriaKeyShortcuts(spec: string | undefined) {
+    return spec?.replace(/\bctrl\b/i, "Control"); // the aria-keyshortcuts attribute spells it "Control"
+}
+
+/** @internal */
+export function focusFirstIn(container: HTMLElement | null) {
+    if (container) {
+        const focusable = container.querySelector(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) as HTMLElement | null;
+        (focusable ?? container).focus();
+    }
 }
 
 /** @internal */
@@ -85,15 +143,20 @@ export function startDrag(
         drag(ev.clientX, ev.clientY);
     };
 
+    const removeListeners = () => {
+        doc.removeEventListener("pointermove", pointerMove);
+        doc.removeEventListener("pointerup", pointerUp);
+        doc.removeEventListener("pointercancel", pointerCancel);
+    };
+
     const pointerCancel = (ev: PointerEvent) => {
         ev.preventDefault();
+        removeListeners();
         Utils_dragging = false;
         dragCancel();
     };
     const pointerUp = () => {
-        doc.removeEventListener("pointermove", pointerMove);
-        doc.removeEventListener("pointerup", pointerUp);
-        doc.removeEventListener("pointercancel", pointerCancel);
+        removeListeners();
         Utils_dragging = false;
         dragEnd();
     };
@@ -138,28 +201,6 @@ export function canDockToLayout(node: Node, layout: Layout) {
         }
         return true;
     }
-        // if (node instanceof TabNode) {
-        //     return node.isEnablePopout();
-        // } else if (node instanceof TabSetNode) {
-        //     for (const child of node.getChildren()) {
-        //         if ((child as TabNode).isEnablePopout() === false) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
-    // } else { // float or tab
-        // if (node instanceof TabNode) {
-        //     return node.isEnablePopoutFloat();
-        // } else if (node instanceof TabSetNode) {
-        //     for (const child of node.getChildren()) {
-        //         if ((child as TabNode).isEnablePopoutFloat() === false) {
-        //             return false;
-        //         }
-        //     }
-        //     return true;
-        // }
-    // }
     return false;
 }
 
@@ -169,7 +210,6 @@ export function copyInlineStyles(source: HTMLElement, target: HTMLElement): bool
     const targetStyle = target.getAttribute('style');
     if (sourceStyle === targetStyle) return false;
 
-    // console.log("copyInlineStyles", sourceStyle);
 
     if (sourceStyle) {
         // Set the style attribute on the target element
@@ -186,33 +226,34 @@ export function isSafari() {
     return userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Chromium");
 }
 
-export function getPageMetrics() {
+export function getPageMetrics(win: Window = window) {
+  const document = win.document;
   return {
     // How far the user has scrolled from the top/left
-    scrollTop: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
-    scrollLeft: window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
+    scrollTop: win.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
+    scrollLeft: win.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
 
     // The total height and width of the entire document
     fullHeight: Math.max(
-      document.body.scrollHeight, 
+      document.body.scrollHeight,
       document.documentElement.scrollHeight,
-      document.body.offsetHeight, 
+      document.body.offsetHeight,
       document.documentElement.offsetHeight,
-      document.body.clientHeight, 
+      document.body.clientHeight,
       document.documentElement.clientHeight
     ),
-    
+
     fullWidth: Math.max(
-      document.body.scrollWidth, 
+      document.body.scrollWidth,
       document.documentElement.scrollWidth,
-      document.body.offsetWidth, 
+      document.body.offsetWidth,
       document.documentElement.offsetWidth,
-      document.body.clientWidth, 
+      document.body.clientWidth,
       document.documentElement.clientWidth
     ),
 
-    viewportHeight: window.innerHeight || document.documentElement.clientHeight,
-    viewportWidth: window.innerWidth || document.documentElement.clientWidth
+    viewportHeight: win.innerHeight || document.documentElement.clientHeight,
+    viewportWidth: win.innerWidth || document.documentElement.clientWidth
   };
 }
 

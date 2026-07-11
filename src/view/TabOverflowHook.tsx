@@ -4,7 +4,7 @@ import { BorderNode } from "../model/BorderNode";
 import { Orientation } from "../model/Orientation";
 import { LayoutController } from "./layout/LayoutInternal";
 import { TabNode } from "../model/TabNode";
-import { startDrag } from "./Utils";
+import { domId, startDrag } from "./Utils";
 import { Rect } from "../model/Rect";
 
 /** @internal */
@@ -14,18 +14,26 @@ export const useTabOverflow = (
     orientation: Orientation,
     tabStripRef: React.RefObject<HTMLElement | null>,
     miniScrollRef: React.RefObject<HTMLElement | null>,
+    wheelRef: React.RefObject<HTMLElement | null>, // element whose wheel events scroll the tabs (needed to preventDefault, since React wheel listeners are passive)
     tabClassName: string
 ) => {
     const [hiddenTabs, setHiddenTabs] = React.useState<number[]>([]);
     const [isShowHiddenTabs, setShowHiddenTabs] = React.useState<boolean>(false);
     const [isDockStickyButtons, setDockStickyButtons] = React.useState<boolean>(false);
 
-    const selfRef = React.useRef<HTMLDivElement>(null);
     const userControlledPositionRef = React.useRef<boolean>(false);
     const updateHiddenTabsTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const hiddenTabsRef = React.useRef<number[]>([]);
     const thumbInternalPos = React.useRef<number>(0);
     const repositioningRef = React.useRef<boolean>(false);
+
+    React.useEffect(() => {
+        return () => {
+            if (updateHiddenTabsTimerRef.current !== undefined) {
+                clearTimeout(updateHiddenTabsTimerRef.current);
+            }
+        };
+    }, []);
 
     React.useLayoutEffect(() => {
         hiddenTabsRef.current = hiddenTabs;
@@ -177,7 +185,13 @@ export const useTabOverflow = (
         const selectedTabNode = node.getSelectedNode() as TabNode;
         if (selectedTabNode && tabStripRef.current) {
             const stripRect = controller.getBoundingClientRect(tabStripRef.current);
-            const selectedRect = selectedTabNode.getTabRect()!;
+            // measure the button from the dom (the model tabRect is only updated in the layout central
+            // measure pass, which runs after this effect)
+            const buttonElement = tabStripRef.current.ownerDocument.getElementById(domId("flexlayout-tabbutton-", selectedTabNode.getId()));
+            if (!buttonElement) {
+                return;
+            }
+            const selectedRect = controller.getBoundingClientRect(buttonElement);
 
             let shift = getNear(stripRect) - getNear(selectedRect);
             if (shift > 0 || getSize(selectedRect) > getSize(stripRect)) {
@@ -196,10 +210,15 @@ export const useTabOverflow = (
     const checkForOverflow = React.useCallback(() => {
         if (tabStripRef.current) {
             const strip = tabStripRef.current;
-            const tabContainer = strip.firstElementChild!;
+            // sum the strip's children: the tab container plus the sticky buttons bar (which
+            // renders as a sibling of the tablist element, not inside it)
+            let contentSize = 0;
+            for (const child of Array.from(strip.children)) {
+                contentSize += getElementSize(child);
+            }
 
             const offset = isDockStickyButtons ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
-            const dock = (getElementSize(tabContainer) + offset) > getElementSize(tabStripRef.current);
+            const dock = (contentSize + offset) > getElementSize(tabStripRef.current);
             if (dock !== isDockStickyButtons) {
                 setDockStickyButtons(dock);
             }
@@ -280,8 +299,6 @@ export const useTabOverflow = (
 
     const nodeId = node.getId();
     const selectedNode = node.getSelectedNode();
-    const rectWidth = node.getRect().width;
-    const rectHeight = node.getRect().height;
 
     // if node id changes (new model) then reset scroll to 0
     React.useLayoutEffect(() => {
@@ -290,10 +307,10 @@ export const useTabOverflow = (
         }
     }, [nodeId, tabStripRef, setScrollPosition]);
 
-    // if selected node or tabset/border rectangle change then unset usercontrolled (so selected tab will be kept in view)
+    // if the selected node changes then unset usercontrolled (so the selected tab will be kept in view)
     React.useLayoutEffect(() => {
         userControlledPositionRef.current = false;
-    }, [selectedNode, rectWidth, rectHeight]);
+    }, [selectedNode]);
 
     React.useLayoutEffect(() => {
         checkForOverflow(); // if tabs + sticky buttons length > scroll area => move sticky buttons to right buttons
@@ -311,17 +328,39 @@ export const useTabOverflow = (
         requestAnimationFrame(() => {
             updateHiddenTabs();
         });
-    }, [checkForOverflow, scrollIntoView, updateScrollMetrics, updateHiddenTabs, rectWidth, rectHeight, orientation, selectedNode]);
+    }, [checkForOverflow, scrollIntoView, updateScrollMetrics, updateHiddenTabs, orientation, selectedNode]);
 
+    // strip geometry changes no longer cause a react render (they are applied imperatively by the
+    // layout), so watch the strip element itself for size changes
+    React.useLayoutEffect(() => {
+        const strip = tabStripRef.current;
+        if (!strip) {
+            return;
+        }
+        const resizeObserver = new (strip.ownerDocument.defaultView!).ResizeObserver(() => {
+            userControlledPositionRef.current = false;
+            checkForOverflow();
+            scrollIntoView();
+            updateScrollMetrics();
+            updateHiddenTabs();
+        });
+        resizeObserver.observe(strip);
+        return () => resizeObserver.disconnect();
+    }, [checkForOverflow, scrollIntoView, updateScrollMetrics, updateHiddenTabs, tabStripRef]);
+
+    // no deps: the strip element can change between renders (e.g. tab wrap toggled)
     React.useEffect(() => {
-        const strip = selfRef.current;
+        if (node instanceof TabSetNode && node.isEnableTabWrap()) {
+            return; // wrapping tab strips show all tabs, wheel should scroll the page as normal
+        }
+        const strip = wheelRef.current;
         strip?.addEventListener("wheel", onWheel, { passive: false });
         return () => {
             strip?.removeEventListener("wheel", onWheel);
         };
-    }, [onWheel]);
+    });
 
-    return { selfRef, userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs };
+    return { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs };
 };
 
 function arraysEqual(arr1: number[], arr2: number[]) {

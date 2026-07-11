@@ -12,7 +12,7 @@ import { Model } from "./Model";
 import { Node } from "./Node";
 import { TabNode } from "./TabNode";
 import { TabSetNode } from "./TabSetNode";
-import { adjustSelectedIndex } from "./Utils";
+import { adjustSelectedIndex, adjustSelectedIndexAfterInsert } from "./Utils";
 
 export class BorderNode extends Node implements IDropTarget {
     static readonly TYPE = "border";
@@ -27,6 +27,12 @@ export class BorderNode extends Node implements IDropTarget {
                 child.setParent(border);
                 return child;
             });
+        }
+
+        if (border.getSelected() >= border.children.length) {
+            // clamp an out of range selected index from the json (empty border -> -1); an out of
+            // range index would otherwise crash getSize/setSize dereferencing children[selected]
+            border.setSelected(border.children.length - 1);
         }
 
         return border;
@@ -107,6 +113,19 @@ export class BorderNode extends Node implements IDropTarget {
         return this.getAttr("enableAutoHide") as boolean;
     }
 
+    getBorderType() {
+        return this.getAttr("borderType") as "split" | "overlay";
+    }
+
+    isOverlay() {
+        return this.getAttr("borderType") === "overlay";
+    }
+
+    /** @internal */
+    setBorderType(borderType: "split" | "overlay") {
+        this.attributes.borderType = borderType;
+    }
+
     getSelectedNode(): TabNode | undefined {
         if (this.getSelected() !== -1) {
             return this.children[this.getSelected()] as TabNode;
@@ -164,11 +183,6 @@ export class BorderNode extends Node implements IDropTarget {
     /** @internal */
     setSelected(index: number) {
         this.attributes.selected = index;
-    }
-
-    /** @internal */
-    getTabHeaderRect() {
-        return this.tabHeaderRect;
     }
 
     /** @internal */
@@ -295,13 +309,13 @@ export class BorderNode extends Node implements IDropTarget {
                     dropInfo = new DropInfo(this, outlineRect, dockLocation, 0, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
                 }
             }
-            if (!dragNode.canDockInto(dragNode, dropInfo)) {
+            if (!this.canDockInto(dragNode, dropInfo)) {
                 return undefined;
             }
         } else if (this.getSelected() !== -1 && this.contentRect!.contains(x, y)) {
             const outlineRect = this.contentRect;
             dropInfo = new DropInfo(this, outlineRect!, dockLocation, -1, CLASSES.FLEXLAYOUT__OUTLINE_RECT);
-            if (!dragNode.canDockInto(dragNode, dropInfo)) {
+            if (!this.canDockInto(dragNode, dropInfo)) {
                 return undefined;
             }
         }
@@ -311,6 +325,10 @@ export class BorderNode extends Node implements IDropTarget {
 
     /** @internal */
     drop(dragNode: Node & IDraggable, location: DockLocation, index: number, select?: boolean): void {
+        if (!(dragNode instanceof TabNode)) {
+            return; // borders can only contain tabs (as in canDrop)
+        }
+
         let fromIndex = 0;
         const dragParent = dragNode.getParent() as BorderNode | TabSetNode;
         if (dragParent !== undefined) {
@@ -324,7 +342,7 @@ export class BorderNode extends Node implements IDropTarget {
         }
 
         // if dropping a tab back to same tabset and moving to forward position then reduce insertion index
-        if (dragNode instanceof TabNode && dragParent === this && fromIndex < index && index > 0) {
+        if (dragParent === this && fromIndex < index && index > 0) {
             index--;
         }
 
@@ -334,12 +352,12 @@ export class BorderNode extends Node implements IDropTarget {
             insertPos = this.children.length;
         }
 
-        if (dragNode instanceof TabNode) {
-            this.addChild(dragNode, insertPos);
-        }
+        this.addChild(dragNode, insertPos);
 
         if (select || (select !== false && this.isAutoSelectTab())) {
             this.setSelected(insertPos);
+        } else {
+            adjustSelectedIndexAfterInsert(this, insertPos);
         }
 
         this.model.tidy();
@@ -350,7 +368,7 @@ export class BorderNode extends Node implements IDropTarget {
         const pBounds = [0, 0];
         const minSize = useMinSize ? this.getMinSize() : 0;
         const maxSize = useMinSize ? this.getMaxSize() : 99999;
-        const rootRow = this.model.getRootRow(Model.MAIN_LAYOUT_ID);
+        const rootRow = this.model.getRootRow(Model.MAIN_LAYOUT_ID)!;
         const innerRect = rootRow.getRect();
         const splitterSize = this.model.getSplitterSize()!;
         if (this.location === DockLocation.TOP) {
@@ -405,6 +423,13 @@ export class BorderNode extends Node implements IDropTarget {
         attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER).setDescription(
             `index of selected/visible tab in border; -1 means no tab selected`
         );
+        attributeDefinitions.add("borderType", "split").setType(Attribute.STRING).setDescription(
+            `the border display type: 'split' splits the main layout to make room when a tab is selected; 'overlay' shows
+            the selected tab's panel as an overlay on top of the main layout area, and the tab is deselected
+            by a pointer-down in the main layout area (Visual Studio style auto hide). Set via
+            Actions.setBorderType. Not related to enableAutoHide (which hides the border strip when it has
+            zero tabs)`
+        );
         attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN).setDescription(
             `show/hide this border`
         );
@@ -434,7 +459,8 @@ export class BorderNode extends Node implements IDropTarget {
             `the maximum size of the tab area`
         );
         attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute.BOOLEAN).setDescription(
-            `hide border if it has zero tabs`
+            `hide border if it has zero tabs; not related to the borderType 'overlay' mode (Visual Studio
+            style auto hide), see the borderType attribute`
         );
         attributeDefinitions.addInherited("enableTabScrollbar", "borderEnableTabScrollbar").setType(Attribute.BOOLEAN).setDescription(
             `whether to show a mini scrollbar for the tabs`

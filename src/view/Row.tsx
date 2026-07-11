@@ -15,14 +15,19 @@ export interface IRowProps {
 
 /** @internal */
 export const Row = (props: IRowProps) => {
+        
     const { controller, rowNode } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
 
     const horizontal = rowNode.getOrientation() === Orientation.HORZ;
 
-    React.useLayoutEffect(() => {
-        rowNode.setRect(controller.getBoundingClientRect(selfRef.current!));
-    });
+    // register with the layout's central measure pass via a callback ref: it fires whenever
+    // react attaches/detaches the element, including remounts the component cannot know about
+    // (e.g. moving into the maximize portal), unlike an effect
+    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
+        selfRef.current = element;
+        controller.registerMeasurable(rowNode, "row", element);
+    }, [controller, rowNode]);
 
     const items: React.ReactNode[] = [];
 
@@ -56,7 +61,7 @@ export const Row = (props: IRowProps) => {
 
      return (
         <div
-            ref={selfRef}
+            ref={setSelfRef}
             className={controller.getClassName(CLASSES.FLEXLAYOUT__ROW)}
             style={style}
             >
@@ -64,5 +69,8 @@ export const Row = (props: IRowProps) => {
         </div>
     );
 };
+
+Row.displayName = 'Row'; // name in react dev tools
+
 
 

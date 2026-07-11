@@ -5,6 +5,7 @@ import { CLASSES } from "./CSSClassNames";
 import { LayoutController } from "./layout/LayoutInternal";
 import { BorderNode } from "../model/BorderNode";
 import { Actions } from "../model/Actions";
+import { domId, matchesKey, toAriaKeyShortcuts } from "./Utils";
 
 /** @internal */
 export interface ITabProps {
@@ -15,6 +16,7 @@ export interface ITabProps {
 
 /** @internal */
 export const Tab = (props: ITabProps) => {
+        
     const { controller, selected, tabNode } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const firstSelect = React.useRef<boolean>(true);
@@ -29,12 +31,26 @@ export const Tab = (props: ITabProps) => {
     }, [tabNode, controller]);
 
     const parentNode = tabNode.getParent() as TabSetNode | BorderNode;
-    const rect = parentNode.getContentRect()!;
+    const focusToggleKey = controller.getKeyMap().focusTabToggle;
+
+    // the configured key (pressed anywhere within the tab content) returns focus to the tab button
+    const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+        if (matchesKey(event, focusToggleKey)) {
+            const button = event.currentTarget.ownerDocument.getElementById(domId("flexlayout-tabbutton-", tabNode.getId()));
+            if (button) {
+                button.focus();
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    };
 
     React.useLayoutEffect(() => {
         const element = tabNode.getMoveableElement();
-        selfRef.current!.appendChild(element);
-        
+        if (element.parentElement !== selfRef.current) {
+            selfRef.current!.appendChild(element);
+        }
+
         // keep scroll position
         const handleScroll = () => {
             tabNode.saveScrollPosition();
@@ -51,13 +67,18 @@ export const Tab = (props: ITabProps) => {
             if (self) {
                 self.removeEventListener("pointerdown", onPointerDown);
             }
-            if (controller.getModel().getNodeById(tabNode.getId())) { // check node still in model
-                if (!tabNode.isEnableWindowReMount()) {
-                    controller.getMainController()?.getMoveablesHome()?.appendChild(element); // keep element parented for open layers etc
-                }
-            }
             element.removeEventListener('scroll', handleScroll);
-            tabNode.setVisible(false);
+
+            // when the effect re-runs for an adopted node (model replaced via fromJson with a previous model)
+            // the element stays in place; only on a real unmount is the element disconnected
+            if (!element.isConnected) {
+                if (controller.getModel().getNodeById(tabNode.getId())) { // check node still in model
+                    if (!tabNode.isEnableWindowReMount()) {
+                        controller.getMainController()?.getMoveablesHome()?.appendChild(element); // keep element parented for open layers etc
+                    }
+                }
+                tabNode.setVisible(false);
+            }
         }
     }, [tabNode, controller, onPointerDown]);
 
@@ -70,44 +91,38 @@ export const Tab = (props: ITabProps) => {
         }
     });
 
-    tabNode.setRect(rect); // needed for resize event
-    const cm = controller.getClassName;
-    const style: React.CSSProperties = {};
+    // register with the layout's positioning pass, which owns this element's position styles,
+    // visibility and the resize/visibility events (see LayoutController.positionTabPanels)
+    React.useLayoutEffect(() => {
+        controller.registerTabPanel(tabNode, selfRef.current);
+        return () => {
+            controller.registerTabPanel(tabNode, null);
+        };
+    }, [controller, tabNode]);
 
-    rect.styleWithPosition(style);
+    const cm = controller.getClassName;
 
     let overlay = null;
 
-    if (selected) {
-        tabNode.setVisible(true);
-        if (document.hidden && tabNode.isEnablePopoutOverlay()) {
-            const overlayStyle: React.CSSProperties = {};
-            rect.styleWithPosition(overlayStyle);
-            overlay = (<div style={overlayStyle} className={cm(CLASSES.FLEXLAYOUT__TAB_OVERLAY)}></div>)
+    if (selected && document.hidden && tabNode.isEnablePopoutOverlay()) {
+        const overlayStyle: React.CSSProperties = {};
+        parentNode.getContentRect().styleWithPosition(overlayStyle);
+        let overlayClassName = cm(CLASSES.FLEXLAYOUT__TAB_OVERLAY);
+        if (parentNode instanceof BorderNode && parentNode.isOverlay()) {
+            // must paint above the overlay border panel
+            overlayClassName += " " + cm(CLASSES.FLEXLAYOUT__TAB_OVERLAY_RAISED);
         }
-    } else {
-        style.display = "none";
-        tabNode.setVisible(false);
-    }
-
-    if (parentNode instanceof TabSetNode) {
-        if (tabNode.getModel().getMaximizedTabset(controller.getLayoutId()) !== undefined) {
-            if (!parentNode.isMaximized()) {
-                style.display = "none";
-            }
-        }
-    }
-
-    if (parentNode instanceof BorderNode) {
-        if (!parentNode.isShowing()) {
-            style.display = "none";
-        }
+        overlay = (<div style={overlayStyle} className={overlayClassName}></div>)
     }
 
     let className = cm(CLASSES.FLEXLAYOUT__TAB);
     if (parentNode instanceof BorderNode) {
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER);
         className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER_ + parentNode.getLocation().getName());
+        if (parentNode.isOverlay()) {
+            // the panel must paint above the main area tab panels (root level siblings at z auto)
+            className += " " + cm(CLASSES.FLEXLAYOUT__TAB_BORDER_OVERLAY);
+        }
     }
 
     if (tabNode.getContentClassName() !== undefined) {
@@ -125,12 +140,20 @@ export const Tab = (props: ITabProps) => {
 
             <div
                 ref={selfRef}
-                style={style}
+                id={domId("flexlayout-tab-", tabNode.getId())}
+                role="tabpanel"
+                aria-labelledby={domId("flexlayout-tabbutton-", tabNode.getId())}
+                aria-keyshortcuts={toAriaKeyShortcuts(focusToggleKey)}
+                tabIndex={-1}
+                onKeyDown={focusToggleKey ? onKeyDown : undefined}
                 className={className}
                 data-layout-path={tabNode.getPath()}
             />
         </>
     );
 };
+
+Tab.displayName = 'Tab'; // name in react dev tools
+
 
 

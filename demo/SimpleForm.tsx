@@ -10,7 +10,7 @@ export function SimpleForm() {
 
   React.useEffect(() => {
     const timer = setInterval(() => {
-      setValue(v => v = v + 1);
+      setValue(v => v + 1);
     }, 1000);
     return () => {
       clearInterval(timer);
