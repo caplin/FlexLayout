@@ -1,6 +1,5 @@
 {
 	"global": {
-		"tabSetEnableSingleTabStretch": true
 	},
 	"borders": [],
 	"layout": {
@@ -29,8 +28,8 @@
 					{
 						"type": "tab",
 						"id": "5",
-						"name": "Grid 1",
-						"component": "grid",
+						"name": "Editor",
+						"component": "monaco",
 						"icon": "images/article.svg"
 					}
 				]

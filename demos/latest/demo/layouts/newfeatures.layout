@@ -1,7 +1,5 @@
 {
 	"global": {
-		"splitterSize": 3,
-		"splitterExtra": 7,
 		"tabEnablePopout": true,
 		"tabSetEnableClose": true,
 		"tabSetEnableTabWrap": true,
@@ -198,5 +196,5 @@
 			}
 		]
 	},
-	"popouts": {}
+	"subLayouts": {}
 }

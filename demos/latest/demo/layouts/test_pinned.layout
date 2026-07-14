@@ -1,0 +1,51 @@
+{
+  "global": {
+    "tabEnablePopout": true
+  },
+  "borders": [],
+  "layout": {
+    "type": "row",
+    "weight": 100,
+    "children": [
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "PinOne",
+            "component": "testing",
+            "pinned": true
+          },
+          {
+            "type": "tab",
+            "name": "PinTwo",
+            "component": "testing",
+            "pinned": true
+          },
+          {
+            "type": "tab",
+            "name": "Three",
+            "component": "testing"
+          },
+          {
+            "type": "tab",
+            "name": "Four",
+            "component": "testing"
+          }
+        ]
+      },
+      {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "Five",
+            "component": "testing"
+          }
+        ]
+      }
+    ]
+  }
+}

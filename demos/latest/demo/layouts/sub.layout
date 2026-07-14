@@ -1,6 +1,7 @@
 {
 	"global": {
-		"tabEnableFloat": true
+		"tabEnableFloat": true,
+		"tabEnablePopoutFloatIcon": true
 	},
 	"borders": [],
 	"layout": {

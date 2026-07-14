@@ -1,12 +1,5 @@
 {
-  "global": {
-    "tabSetMinHeight": 100,
-    "tabSetMinWidth": 100,
-    "borderMinSize": 100,
-    "borderEnableAutoHide": true,
-    "tabSetEnableClose": true,
-    "tabSetEnableCloseButton": true
-  },
+  "global": {},
   "borders": [
     {
       "type": "border",
@@ -27,22 +20,24 @@
           "type": "tab",
           "name": "bottom1",
           "component": "testing"
-        },
-        {
-          "type": "tab",
-          "name": "bottom2",
-          "component": "testing"
         }
+
       ]
     },
     {
       "type": "border",
       "location": "left",
+      "borderType": "overlay",
       "children": [
         {
           "type": "tab",
           "name": "left1",
           "component": "testing"
+        },
+        {
+          "type": "tab",
+          "name": "left2",
+          "subLayoutId": "sub1"
         }
       ]
     },
@@ -86,8 +81,23 @@
         ]
       },
       {
+        "type": "tabset",
+        "weight": 50,
+        "children": [
+          {
+            "type": "tab",
+            "name": "Three",
+            "component": "testing"
+          }
+        ]
+      }
+    ]
+  },
+  "subLayouts": {
+    "sub1": {
+      "type": "tab",
+      "layout": {
         "type": "row",
-        "weight": 100,
         "children": [
           {
             "type": "tabset",
@@ -95,17 +105,7 @@
             "children": [
               {
                 "type": "tab",
-                "name": "Three",
-                "component": "testing"
-              },
-              {
-                "type": "tab",
-                "name": "Four",
-                "component": "testing"
-              },
-              {
-                "type": "tab",
-                "name": "Five",
+                "name": "SubA",
                 "component": "testing"
               }
             ]
@@ -116,18 +116,13 @@
             "children": [
               {
                 "type": "tab",
-                "name": "Six",
-                "component": "testing"
-              },
-              {
-                "type": "tab",
-                "name": "Seven",
+                "name": "SubB",
                 "component": "testing"
               }
             ]
           }
         ]
       }
-    ]
+    }
   }
 }
