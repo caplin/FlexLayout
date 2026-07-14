@@ -6,23 +6,24 @@ const borderJson: IJsonModel = {
     global: {},
     borders: [
         {
-            type: "border", location: "left", children: [
+            type: "border",
+            location: "left",
+            children: [
                 { type: "tab", id: "bl0", name: "left1" },
                 { type: "tab", id: "bl1", name: "left2" },
-            ]
+            ],
         },
         {
-            type: "border", location: "bottom", borderType: "overlay", children: [
-                { type: "tab", id: "bb0", name: "bottom1" },
-            ]
-        }
+            type: "border",
+            location: "bottom",
+            borderType: "overlay",
+            children: [{ type: "tab", id: "bb0", name: "bottom1" }],
+        },
     ],
     layout: {
         type: "row",
-        children: [
-            { type: "tabset", id: "ts0", children: [{ type: "tab", id: "t0", name: "One" }] }
-        ]
-    }
+        children: [{ type: "tabset", id: "ts0", children: [{ type: "tab", id: "t0", name: "One" }] }],
+    },
 };
 
 let model: Model;
@@ -34,7 +35,6 @@ beforeEach(() => {
 });
 
 describe("setBorderType action", () => {
-
     it("defaults to the 'default' border type", () => {
         expect(border("border_left").getBorderType()).equal("split");
         expect(border("border_left").isOverlay()).equal(false);
@@ -82,7 +82,6 @@ describe("setBorderType action", () => {
 });
 
 describe("serialization", () => {
-
     it("round-trips the borderType attribute", () => {
         model.doAction(Actions.setBorderType("border_left", "overlay"));
         const json = model.toJson();

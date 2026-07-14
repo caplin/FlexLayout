@@ -50,19 +50,18 @@ export class BorderSet {
         }
     }
 
-        /** @internal */
-        setPaths() {
-            for (const borderNode of this.borders) {
-                const path = "/border/" + borderNode.getLocation().getName();
-                borderNode.setPath(path);
-                let i = 0;
-                for (const node of borderNode.getChildren()) {
-                    node.setPath( path + "/t" + i);
-                    i++;
-                }
+    /** @internal */
+    setPaths() {
+        for (const borderNode of this.borders) {
+            const path = "/border/" + borderNode.getLocation().getName();
+            borderNode.setPath(path);
+            let i = 0;
+            for (const node of borderNode.getChildren()) {
+                node.setPath(path + "/t" + i);
+                i++;
             }
         }
-
+    }
 
     /** @internal */
     findDropTargetNode(dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {

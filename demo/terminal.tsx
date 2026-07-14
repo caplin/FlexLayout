@@ -165,10 +165,12 @@ function TerminalComponent(props: ITerminalProps) {
                 if (ch === "\x1b") {
                     const seq = data.slice(i, i + 3);
                     const history = historyRef.current;
-                    if (seq === "\x1b[A" && history.length > 0) { // up
+                    if (seq === "\x1b[A" && history.length > 0) {
+                        // up
                         historyIndexRef.current = historyIndexRef.current <= 0 ? 0 : historyIndexRef.current - 1;
                         setLine(history[historyIndexRef.current] ?? "");
-                    } else if (seq === "\x1b[B") { // down
+                    } else if (seq === "\x1b[B") {
+                        // down
                         if (historyIndexRef.current >= history.length - 1) {
                             historyIndexRef.current = history.length;
                             setLine("");
@@ -190,7 +192,8 @@ function TerminalComponent(props: ITerminalProps) {
                     historyIndexRef.current = historyRef.current.length;
                     execute(term, line);
                     term.write(PROMPT);
-                } else if (ch === "\x7f") { // backspace
+                } else if (ch === "\x7f") {
+                    // backspace
                     if (lineRef.current.length > 0) {
                         lineRef.current = lineRef.current.slice(0, -1);
                         term.write("\b \b");
@@ -255,9 +258,7 @@ function TerminalComponent(props: ITerminalProps) {
         };
     });
 
-    return (
-        <div ref={containerRef} style={{ height: "100%", width: "100%", backgroundColor: "#000000" }} />
-    );
+    return <div ref={containerRef} style={{ height: "100%", width: "100%", backgroundColor: "#000000" }} />;
 }
 
 export default TerminalComponent;

@@ -12,11 +12,7 @@ export function isDesktop() {
     return desktop;
 }
 /** @internal */
-export function getRenderStateEx(
-    controller: LayoutController,
-    tabNode: TabNode,
-    iconAngle?: number
-) {
+export function getRenderStateEx(controller: LayoutController, tabNode: TabNode, iconAngle?: number) {
     let leadingContent = undefined;
     const titleContent: React.ReactNode = tabNode.getName();
     const name = tabNode.getName();
@@ -66,11 +62,7 @@ export function matchesKey(event: IKeyEventLike, spec: string | undefined): bool
     const parts = spec.split("+");
     const key = parts.pop()!;
     const has = (mod: string) => parts.some((p) => p.toLowerCase() === mod);
-    return event.key.toLowerCase() === key.toLowerCase() &&
-        event.ctrlKey === has("ctrl") &&
-        event.shiftKey === has("shift") &&
-        event.altKey === has("alt") &&
-        event.metaKey === has("meta");
+    return event.key.toLowerCase() === key.toLowerCase() && event.ctrlKey === has("ctrl") && event.shiftKey === has("shift") && event.altKey === has("alt") && event.metaKey === has("meta");
 }
 
 /** @internal true when any modifier key is held; the fixed ARIA pattern keys (arrows on tabs and
@@ -94,7 +86,7 @@ export function toAriaKeyShortcuts(spec: string | undefined) {
 export function focusFirstIn(container: HTMLElement | null) {
     if (container) {
         const focusable = container.querySelector(
-            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ) as HTMLElement | null;
         (focusable ?? container).focus();
     }
@@ -112,15 +104,12 @@ export function isAuxMouseEvent(event: React.MouseEvent<HTMLElement, MouseEvent>
 }
 
 export function enablePointerOnIFrames(enable: boolean, currentDocument: Document) {
-    const iframes = [
-        ...getElementsByTagName('iframe', currentDocument),
-        ...getElementsByTagName('webview', currentDocument),
-    ];
+    const iframes = [...getElementsByTagName("iframe", currentDocument), ...getElementsByTagName("webview", currentDocument)];
 
     for (const iframe of iframes) {
-        (iframe as HTMLElement).style.pointerEvents = enable ? 'auto' : 'none';
+        (iframe as HTMLElement).style.pointerEvents = enable ? "auto" : "none";
     }
-};
+}
 
 export function getElementsByTagName(tag: string, currentDocument: Document): Element[] {
     return [...currentDocument.getElementsByTagName(tag)];
@@ -128,13 +117,7 @@ export function getElementsByTagName(tag: string, currentDocument: Document): El
 
 export let Utils_dragging: boolean = false;
 
-export function startDrag(
-    doc: Document,
-    event: React.PointerEvent<HTMLElement>,
-    drag: (x: number, y: number) => void,
-    dragEnd: () => void,
-    dragCancel: () => void) {
-
+export function startDrag(doc: Document, event: React.PointerEvent<HTMLElement>, drag: (x: number, y: number) => void, dragEnd: () => void, dragCancel: () => void) {
     Utils_dragging = true;
     event.preventDefault();
 
@@ -163,14 +146,14 @@ export function startDrag(
 
     doc.addEventListener("pointermove", pointerMove);
     doc.addEventListener("pointerup", pointerUp);
-    doc.addEventListener('pointercancel', pointerCancel);
+    doc.addEventListener("pointercancel", pointerCancel);
 }
 
 export function findParentLayout(layout: Layout): Layout | undefined {
     let parentLayout: Layout | undefined = undefined;
     const model = layout.getController()!.getModel();
-    model.visitNodes( node => {
-        if (node instanceof TabNode && node.getSubLayoutId() === layout.getLayoutId()){
+    model.visitNodes((node) => {
+        if (node instanceof TabNode && node.getSubLayoutId() === layout.getLayoutId()) {
             parentLayout = node.getLayout();
         }
     });
@@ -178,7 +161,7 @@ export function findParentLayout(layout: Layout): Layout | undefined {
 }
 
 export function canDockToLayout(node: Node, layout: Layout) {
-    const type = layout.getType()
+    const type = layout.getType();
     if (type === "window") {
         return node.isAllowedInWindow();
     } else if (type === "float") {
@@ -206,17 +189,16 @@ export function canDockToLayout(node: Node, layout: Layout) {
 
 export function copyInlineStyles(source: HTMLElement, target: HTMLElement): boolean {
     // Get the inline style attribute from the source element
-    const sourceStyle = source.getAttribute('style');
-    const targetStyle = target.getAttribute('style');
+    const sourceStyle = source.getAttribute("style");
+    const targetStyle = target.getAttribute("style");
     if (sourceStyle === targetStyle) return false;
-
 
     if (sourceStyle) {
         // Set the style attribute on the target element
-        target.setAttribute('style', sourceStyle);
+        target.setAttribute("style", sourceStyle);
     } else {
         // If the source has no inline style, clear the target's style attribute
-        target.removeAttribute('style');
+        target.removeAttribute("style");
     }
     return true;
 }
@@ -227,34 +209,32 @@ export function isSafari() {
 }
 
 export function getPageMetrics(win: Window = window) {
-  const document = win.document;
-  return {
-    // How far the user has scrolled from the top/left
-    scrollTop: win.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
-    scrollLeft: win.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
+    const document = win.document;
+    return {
+        // How far the user has scrolled from the top/left
+        scrollTop: win.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
+        scrollLeft: win.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0,
 
-    // The total height and width of the entire document
-    fullHeight: Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.offsetHeight,
-      document.body.clientHeight,
-      document.documentElement.clientHeight
-    ),
+        // The total height and width of the entire document
+        fullHeight: Math.max(
+            document.body.scrollHeight,
+            document.documentElement.scrollHeight,
+            document.body.offsetHeight,
+            document.documentElement.offsetHeight,
+            document.body.clientHeight,
+            document.documentElement.clientHeight,
+        ),
 
-    fullWidth: Math.max(
-      document.body.scrollWidth,
-      document.documentElement.scrollWidth,
-      document.body.offsetWidth,
-      document.documentElement.offsetWidth,
-      document.body.clientWidth,
-      document.documentElement.clientWidth
-    ),
+        fullWidth: Math.max(
+            document.body.scrollWidth,
+            document.documentElement.scrollWidth,
+            document.body.offsetWidth,
+            document.documentElement.offsetWidth,
+            document.body.clientWidth,
+            document.documentElement.clientWidth,
+        ),
 
-    viewportHeight: win.innerHeight || document.documentElement.clientHeight,
-    viewportWidth: win.innerWidth || document.documentElement.clientWidth
-  };
+        viewportHeight: win.innerHeight || document.documentElement.clientHeight,
+        viewportWidth: win.innerWidth || document.documentElement.clientWidth,
+    };
 }
-
-

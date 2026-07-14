@@ -45,13 +45,13 @@ export class DragDropManager {
         DragDropManager.dragState = undefined;
     }
 
-    moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)) {
+    moveTabWithDragAndDrop(event: DragEvent, node: TabNode | TabSetNode) {
         this.setDragNode(event, node);
     }
 
     setDragNode = (event: DragEvent, node: Node & IDraggable) => {
         DragDropManager.dragState = new DragState(this._controller.getMainController()!, DragSource.Internal, node, undefined, undefined);
-        event.dataTransfer!.setData('text/plain', "--flexlayout--");
+        event.dataTransfer!.setData("text/plain", "--flexlayout--");
         event.dataTransfer!.effectAllowed = "copyMove";
         event.dataTransfer!.dropEffect = "move";
 
@@ -77,7 +77,8 @@ export class DragDropManager {
             }
         } else {
             const element = event.target as HTMLElement;
-            if (element && typeof element.getBoundingClientRect === 'function') { // incase its not actually a htmlelement at runtime
+            if (element && typeof element.getBoundingClientRect === "function") {
+                // incase its not actually a htmlelement at runtime
                 const rect = element.getBoundingClientRect();
                 const offsetX = event.clientX - rect.left;
                 const offsetY = event.clientY - rect.top;
@@ -108,15 +109,13 @@ export class DragDropManager {
 
     setDragComponent(event: DragEvent, component: React.ReactNode, x: number, y: number) {
         const dragElement = (
-            <div style={{ position: "unset" }}
-                className={this._controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT) + " " + this._controller.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT)}>
+            <div style={{ position: "unset" }} className={this._controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT) + " " + this._controller.getClassName(CLASSES.FLEXLAYOUT__DRAG_RECT)}>
                 {component}
             </div>
         );
 
-
         const currentDocument = this._controller.getCurrentDocument();
-        const tempDiv = currentDocument!.createElement('div');
+        const tempDiv = currentDocument!.createElement("div");
         tempDiv.setAttribute("data-layout-path", "/drag-rectangle");
         tempDiv.style.position = "absolute";
         tempDiv.style.left = "-10000px";
@@ -126,7 +125,8 @@ export class DragDropManager {
         flushSync(() => root.render(dragElement)); // commit synchronously so the browser can snapshot the drag image
 
         event.dataTransfer!.setDragImage(tempDiv, x, y);
-        setTimeout(() => { // the div must outlive the dragstart dispatch for the snapshot to be taken
+        setTimeout(() => {
+            // the div must outlive the dragstart dispatch for the snapshot to be taken
             root.unmount();
             currentDocument!.body.removeChild(tempDiv);
         }, 0);
@@ -152,7 +152,7 @@ export class DragDropManager {
 
         if (foundTab) {
             const parentLayout = findParentLayout(foundTab);
-            if (found === parentLayout || !found ) {
+            if (found === parentLayout || !found) {
                 found = foundTab;
             }
         }
@@ -181,12 +181,12 @@ export class DragDropManager {
     onDragEnterRaw = (event: React.DragEvent<HTMLElement>) => {
         this._dragEnterCount++;
         this.updateActive(event);
-    }
+    };
 
     onDragLeaveRaw = (event: React.DragEvent<HTMLElement>) => {
         this._dragEnterCount--;
         this.updateActive(event);
-    }
+    };
 
     clearDragMain() {
         this._controller.showOverlayOnAllWindows(false);
@@ -213,7 +213,6 @@ export class DragDropManager {
     }
 
     onDragEnter = (event: React.DragEvent<HTMLElement>) => {
-
         if (!DragDropManager.dragState && this._controller.getProps().onExternalDrag) {
             const externalDrag = this._controller.getProps().onExternalDrag!(event);
             if (externalDrag) {
@@ -248,14 +247,10 @@ export class DragDropManager {
             }
 
             const clientRect = this._controller.getRootDiv()!.getBoundingClientRect()!;
-            const r = new Rect(
-                event.clientX - (clientRect.left),
-                event.clientY - (clientRect.top),
-                1, 1
-            );
+            const r = new Rect(event.clientX - clientRect.left, event.clientY - clientRect.top, 1, 1);
             r.positionElement(this._outlineDiv);
         }
-    }
+    };
 
     onDragOver = (event: React.DragEvent<HTMLElement>) => {
         if (this._mainController !== DragDropManager.dragState?.mainLayoutController) {
@@ -285,7 +280,7 @@ export class DragDropManager {
                 //     }
             }
         }
-    }
+    };
 
     onDragLeave = (_event: React.DragEvent<HTMLElement>) => {
         if (this._mainController !== DragDropManager.dragState?.mainLayoutController) {
@@ -307,7 +302,7 @@ export class DragDropManager {
                 this.clearDragMain();
             }
         }
-    }
+    };
 
     onDrop = (event: React.DragEvent<HTMLElement>) => {
         if (this._mainController !== DragDropManager.dragState?.mainLayoutController) {
@@ -332,32 +327,36 @@ export class DragDropManager {
             DragDropManager.dragState = undefined;
         }
         this._dragEnterCount = 0;
+    };
+
+    getDragEnterCount() {
+        return this._dragEnterCount;
     }
 
-    getDragEnterCount() { return this._dragEnterCount; }
-
-    isDragging() { return this._dragging; }
+    isDragging() {
+        return this._dragging;
+    }
 }
 
 export enum DragSource {
     Internal = "internal",
     External = "external",
-    Add = "add"
+    Add = "add",
 }
 
 export class DragState {
     readonly mainLayoutController: LayoutController;
     readonly dragSource: DragSource;
-    readonly dragNode: Node & IDraggable | undefined;
+    readonly dragNode: (Node & IDraggable) | undefined;
     readonly dragJson: IJsonTabNode | undefined;
     readonly fnNewNodeDropped: ((node?: Node, event?: React.DragEvent<HTMLElement>) => void) | undefined;
 
     constructor(
         mainLayoutController: LayoutController,
         dragSource: DragSource,
-        dragNode: Node & IDraggable | undefined,
+        dragNode: (Node & IDraggable) | undefined,
         dragJson: IJsonTabNode | undefined,
-        fnNewNodeDropped: ((node?: Node, event?: React.DragEvent<HTMLElement>) => void) | undefined
+        fnNewNodeDropped: ((node?: Node, event?: React.DragEvent<HTMLElement>) => void) | undefined,
     ) {
         this.mainLayoutController = mainLayoutController;
         this.dragSource = dragSource;

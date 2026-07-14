@@ -3,7 +3,11 @@ body {
     margin: 0;
     padding: 0;
     font-size: medium;
-    font-family: system-ui, -apple-system, Arial, sans-serif;
+    font-family:
+        system-ui,
+        -apple-system,
+        Arial,
+        sans-serif;
     scrollbar-width: thin;
     color-scheme: light;
 }
@@ -19,7 +23,7 @@ body {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    font-size:14px;
+    font-size: 14px;
 }
 
 .toolbar_control {
@@ -81,7 +85,6 @@ body {
     padding: 6px;
 }
 
-
 .flexlayout__theme_light,
 .flexlayout__theme_alpha_light,
 .flexlayout__theme_gray,
@@ -99,7 +102,6 @@ body {
 
 .flexlayout__theme_dark,
 .flexlayout__theme_alpha_dark {
-
     html,
     body {
         color: lightgray;
@@ -133,9 +135,7 @@ body {
     .simple_table td {
         border-top: 1px solid #333;
     }
-
 }
-
 
 .flexlayout__theme_rounded,
 .flexlayout__theme_alpha_rounded {

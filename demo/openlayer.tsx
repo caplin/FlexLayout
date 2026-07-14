@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Map, View } from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import OSM from 'ol/source/OSM';
-import 'ol/ol.css';
+import { Map, View } from "ol";
+import TileLayer from "ol/layer/Tile";
+import OSM from "ol/source/OSM";
+import "ol/ol.css";
 import { useEffect } from "react";
 
 function MapComponent() {
@@ -19,7 +19,7 @@ function MapComponent() {
                 new TileLayer({
                     preload: Infinity,
                     source: new OSM(),
-                })
+                }),
             ],
             view,
         });
@@ -30,7 +30,7 @@ function MapComponent() {
         mapDocument.current = selfRef.current!.ownerDocument;
         return () => {
             map.current.setTarget(undefined);
-        }
+        };
     }, []);
 
     useEffect(() => {
@@ -65,9 +65,7 @@ function MapComponent() {
         };
     });
 
-    return (
-        <div ref={selfRef} style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
-    );
+    return <div ref={selfRef} style={{ height: "100%", width: "100%" }} id="map" className="map-container" />;
 }
 
 export default MapComponent;

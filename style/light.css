@@ -425,7 +425,6 @@
 }
 .flexlayout__tab_button_pin {
   display: flex;
-  pointer-events: none;
 }
 .flexlayout__tab_button_content {
   display: flex;

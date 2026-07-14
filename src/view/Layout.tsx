@@ -40,10 +40,12 @@ export interface ILayoutProps {
     /** function called when model has changed */
     onModelChange?: (model: Model, action: Action) => void;
     /** function called when an external object (not a tab) gets dragged onto the layout, with a single dragenter argument. Should return either undefined to reject the drag/drop or an object with keys dragText, jsonDrop, to create a tab via drag (similar to a call to addTabToTabSet). Function onDropis passed the added tabNodeand thedrop DragEvent`, unless the drag was canceled. */
-    onExternalDrag?: (event: React.DragEvent<HTMLElement>) => undefined | {
-        json: IJsonTabNode,
-        onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void
-    };
+    onExternalDrag?: (event: React.DragEvent<HTMLElement>) =>
+        | undefined
+        | {
+              json: IJsonTabNode;
+              onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void;
+          };
     /** function called with default css class name, return value is class name that will be used. Mainly for use with css modules. */
     classNameMapper?: (defaultClassName: string) => string;
     /** function called for each I18nLabel to allow user translation, currently used for tab and tabset move messages, return undefined to use default values */
@@ -73,8 +75,7 @@ export interface ILayoutProps {
 }
 
 export interface ILayoutApi {
-
-     /** re-render the layout */
+    /** re-render the layout */
     redraw(): void;
 
     /**
@@ -87,21 +88,21 @@ export interface ILayoutApi {
 
     /**
      * Adds a new tab by dragging an item to the drop location, must be called from within an HTML
-     * drag start handler. You can use the setDragComponent() method to set the drag image before calling this 
+     * drag start handler. You can use the setDragComponent() method to set the drag image before calling this
      * method.
      * @param event the drag start event
      * @param json the json for the new tab node
      * @param onDrop a callback to call when the drag is complete
      */
     addTabWithDragAndDrop(event: DragEvent, json: IJsonTabNode, onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void): void;
-    
+
     /**
      * Move a tab/tabset using drag and drop, must be called from within an HTML
      * drag start handler
      * @param event the drag start event
      * @param node the tab or tabset to drag
      */
-    moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)): void;
+    moveTabWithDragAndDrop(event: DragEvent, node: TabNode | TabSetNode): void;
 
     /**
      * Adds a new tab to the active tabset (if there is one)
@@ -149,7 +150,7 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
         lastModel.current = props.model;
     }
 
-    Layout.displayName = 'Layout'; // name in react dev tools
+    Layout.displayName = "Layout"; // name in react dev tools
 
     useImperativeHandle(ref, () => ({
         redraw: () => {
@@ -161,7 +162,7 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
         addTabWithDragAndDrop: (event: DragEvent, json: IJsonTabNode, onDrop?: (node?: Node, event?: React.DragEvent<HTMLElement>) => void) => {
             controllerRef.current?.addTabWithDragAndDrop(event, json, onDrop);
         },
-        moveTabWithDragAndDrop: (event: DragEvent, node: (TabNode | TabSetNode)) => {
+        moveTabWithDragAndDrop: (event: DragEvent, node: TabNode | TabSetNode) => {
             controllerRef.current?.moveTabWithDragAndDrop(event, node);
         },
         addTabToActiveTabSet: (json: IJsonTabNode): TabNode | undefined => {
@@ -185,12 +186,10 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
     // host component re-renders, without mutating a ref during render
     const renderMarker = {};
 
-    return (<LayoutInternal key={key.current} ref={controllerRef} {...props}  parentRedrawRevision={renderMarker} />);
+    return <LayoutInternal key={key.current} ref={controllerRef} {...props} parentRedrawRevision={renderMarker} />;
 });
 
 export { Layout };
 
 declare const __VERSION__: string;
 export const FlexLayoutVersion = __VERSION__;
-
-

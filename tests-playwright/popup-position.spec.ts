@@ -1,11 +1,11 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from "@playwright/test";
 
 // Regression: inside a popout window the overflow menu must open over its trigger button, not at
 // the window origin (0,0). The bug was cross-realm type checks + measuring the trigger during a
 // deferred render; the menu now snapshots the trigger rect when it opens.
-test('overflow menu in a popout window is positioned over its trigger', async ({ page, context }) => {
-    await page.goto('/demo?layout=default');
-    await expect(page.locator('.flexlayout__tabset').first()).toBeVisible();
+test("overflow menu in a popout window is positioned over its trigger", async ({ page, context }) => {
+    await page.goto("/demo?layout=default");
+    await expect(page.locator(".flexlayout__tabset").first()).toBeVisible();
 
     // pop the first tab out into its own window
     await page.locator('[data-layout-path$="/button/popout"]').first().click();
@@ -36,7 +36,7 @@ test('overflow menu in a popout window is positioned over its trigger', async ({
     const btn = (await overflow.boundingBox())!;
 
     await overflow.click();
-    const menu = popout.locator('.flexlayout__popup_menu_container');
+    const menu = popout.locator(".flexlayout__popup_menu_container");
     await expect(menu).toBeVisible();
     const box = (await menu.boundingBox())!;
 

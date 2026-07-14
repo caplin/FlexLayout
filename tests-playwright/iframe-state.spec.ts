@@ -24,9 +24,7 @@ test("iframe keeps its state when moved within the layout, and reloads when popp
 
     // add an iframe tab to the first tabset and capture its node id
     await findPath(page, "/r1/ts0/tabstrip").click(); // make the tabset active
-    const tabId = await page.evaluate(
-        () => (window as any).__flexLayout().addTabToActiveTabSet({ component: "iframe", name: "Frame" }).getId() as string,
-    );
+    const tabId = await page.evaluate(() => (window as any).__flexLayout().addTabToActiveTabSet({ component: "iframe", name: "Frame" }).getId() as string);
 
     const frame = iframeEl(page);
     await expect(frame).toBeVisible();

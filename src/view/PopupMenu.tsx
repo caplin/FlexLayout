@@ -118,7 +118,8 @@ function anchorToRect(anchor: { x: number; y: number } | DOMRect | HTMLElement):
     if (isElementAnchor(anchor)) {
         return anchor.getBoundingClientRect();
     }
-    if ("right" in anchor && "bottom" in anchor) { // DOMRect-like
+    if ("right" in anchor && "bottom" in anchor) {
+        // DOMRect-like
         return anchor as DOMRect;
     }
     const point = anchor as { x: number; y: number };
@@ -155,7 +156,6 @@ function computePosition(anchorRect: DOMRect, containerRect: DOMRect): React.CSS
  * @group Popup Menu
  */
 export const PopupMenu = (props: IPopupMenuProps) => {
-        
     const { anchor, items, onSelect, onClose, renderItem, title } = props;
     const cm = props.classNameMapper ?? ((c: string) => c);
     const container = resolveContainer(props);
@@ -163,22 +163,32 @@ export const PopupMenu = (props: IPopupMenuProps) => {
     const menuRef = React.useRef<HTMLDivElement>(null);
     // type-ahead: characters typed within TYPEAHEAD_RESET_MS accumulate into a search buffer
     const typeahead = React.useRef<{ buffer: string; timer: ReturnType<typeof setTimeout> | undefined }>({ buffer: "", timer: undefined });
-    React.useEffect(() => () => { if (typeahead.current.timer) clearTimeout(typeahead.current.timer); }, []);
+    React.useEffect(
+        () => () => {
+            if (typeahead.current.timer) clearTimeout(typeahead.current.timer);
+        },
+        [],
+    );
 
-    const select = React.useCallback((item: IPopupMenuItem) => {
-        if (item.disabled) {
-            return;
-        }
-        onSelect?.(item);
-        onClose();
-    }, [onSelect, onClose]);
+    const select = React.useCallback(
+        (item: IPopupMenuItem) => {
+            if (item.disabled) {
+                return;
+            }
+            onSelect?.(item);
+            onClose();
+        },
+        [onSelect, onClose],
+    );
 
     // focus the first item on mount, return focus to the trigger on unmount
     React.useEffect(() => {
         const first = menuRef.current?.querySelector('[role="menuitem"]:not([aria-disabled="true"])') as HTMLElement | null;
         (first ?? menuRef.current)?.focus();
         const returnTo = props.returnFocusTo ?? (isElementAnchor(anchor) ? anchor : undefined);
-        return () => { returnTo?.focus?.(); };
+        return () => {
+            returnTo?.focus?.();
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -222,7 +232,9 @@ export const PopupMenu = (props: IPopupMenuProps) => {
                 clearTimeout(ta.timer);
             }
             ta.buffer += event.key.toLowerCase();
-            ta.timer = setTimeout(() => { ta.buffer = ""; }, TYPEAHEAD_RESET_MS);
+            ta.timer = setTimeout(() => {
+                ta.buffer = "";
+            }, TYPEAHEAD_RESET_MS);
             // if the same key is pressed repeatedly, cycle through items starting with that letter
             const allSame = [...ta.buffer].every((c) => c === ta.buffer[0]);
             const search = allSame ? ta.buffer[0] : ta.buffer;
@@ -249,35 +261,29 @@ export const PopupMenu = (props: IPopupMenuProps) => {
     });
 
     const defaultItem = (item: IPopupMenuItem) => (
-        <div key={item.key}
+        <div
+            key={item.key}
             className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM)}
             role="menuitem"
             tabIndex={-1}
             aria-disabled={item.disabled || undefined}
-            onClick={(event) => { select(item); event.stopPropagation(); }}
+            onClick={(event) => {
+                select(item);
+                event.stopPropagation();
+            }}
         >
-            {item.content ?? (<>
-                {item.icon}
-                {item.label}
-            </>)}
+            {item.content ?? (
+                <>
+                    {item.icon}
+                    {item.label}
+                </>
+            )}
         </div>
     );
 
     const menu = (
-        <div
-            ref={containerRef}
-            className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER)}
-            style={computePosition(anchorToRect(anchor), container.getBoundingClientRect())}
-        >
-            <div
-                ref={menuRef}
-                className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU)}
-                role="menu"
-                aria-label={title}
-                tabIndex={0}
-                onKeyDown={handleKeyDown}
-                data-layout-path="/popup-menu"
-            >
+        <div ref={containerRef} className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER)} style={computePosition(anchorToRect(anchor), container.getBoundingClientRect())}>
+            <div ref={menuRef} className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU)} role="menu" aria-label={title} tabIndex={0} onKeyDown={handleKeyDown} data-layout-path="/popup-menu">
                 {items.map((entry, i) =>
                     entry.type === "divider" ? (
                         <div key={entry.key} className={cm(CLASSES.FLEXLAYOUT__POPUP_MENU_DIVIDER)} role="separator" />
@@ -354,13 +360,17 @@ export function showOverflowMenu(
             classes += " " + cm(CLASSES.FLEXLAYOUT__POPUP_MENU_ITEM__SELECTED);
         }
         return (
-            <div key={item.key}
+            <div
+                key={item.key}
                 className={classes}
                 role="menuitem"
                 aria-label={it.node.getNameForOverflowMenu()}
                 tabIndex={-1}
                 data-layout-path={"/popup-menu/tb" + i}
-                onClick={(event) => { api.select(); event.stopPropagation(); }}
+                onClick={(event) => {
+                    api.select();
+                    event.stopPropagation();
+                }}
                 draggable={true}
                 onDragStart={(event) => {
                     event.stopPropagation(); // prevent starting a tabset drag as well
@@ -394,7 +404,6 @@ export function showOverflowMenu(
             onHidden?.();
         },
     });
-}    
+}
 
-PopupMenu.displayName = 'PopupMenu'; // name in react dev tools
-
+PopupMenu.displayName = "PopupMenu"; // name in react dev tools

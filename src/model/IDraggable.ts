@@ -4,4 +4,3 @@ export interface IDraggable {
     /** @internal */
     getName(): string | undefined;
 }
-

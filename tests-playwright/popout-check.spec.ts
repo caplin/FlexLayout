@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
 // targeted check: tab panels are positioned correctly inside popout windows
-test('popout window positions its tab panel', async ({ page, context }) => {
-    await page.goto('/demo?layout=default');
-    await expect(page.locator('.flexlayout__tabset').first()).toBeVisible();
+test("popout window positions its tab panel", async ({ page, context }) => {
+    await page.goto("/demo?layout=default");
+    await expect(page.locator(".flexlayout__tabset").first()).toBeVisible();
 
     const popoutButton = page.locator('[data-layout-path$="/button/popout"]').first();
     await expect(popoutButton).toBeVisible();
@@ -12,10 +12,12 @@ test('popout window positions its tab panel', async ({ page, context }) => {
 
     // under react strict mode (dev) the first popout window is closed and reopened,
     // so wait for a popout page that stays open
-    await expect.poll(async () => {
-        const open = context.pages().filter((p) => p !== page && !p.isClosed());
-        return open.length;
-    }).toBe(1);
+    await expect
+        .poll(async () => {
+            const open = context.pages().filter((p) => p !== page && !p.isClosed());
+            return open.length;
+        })
+        .toBe(1);
     const popout = context.pages().filter((p) => p !== page && !p.isClosed())[0];
     await popout.waitForLoadState();
 

@@ -16,7 +16,6 @@ export interface ITabProps {
 
 /** @internal */
 export const Tab = (props: ITabProps) => {
-        
     const { controller, selected, tabNode } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const firstSelect = React.useRef<boolean>(true);
@@ -55,7 +54,7 @@ export const Tab = (props: ITabProps) => {
         const handleScroll = () => {
             tabNode.saveScrollPosition();
         };
-        element.addEventListener('scroll', handleScroll);
+        element.addEventListener("scroll", handleScroll);
 
         // listen for clicks to change active tabset
         const self = selfRef.current;
@@ -67,19 +66,20 @@ export const Tab = (props: ITabProps) => {
             if (self) {
                 self.removeEventListener("pointerdown", onPointerDown);
             }
-            element.removeEventListener('scroll', handleScroll);
+            element.removeEventListener("scroll", handleScroll);
 
             // when the effect re-runs for an adopted node (model replaced via fromJson with a previous model)
             // the element stays in place; only on a real unmount is the element disconnected
             if (!element.isConnected) {
-                if (controller.getModel().getNodeById(tabNode.getId())) { // check node still in model
+                if (controller.getModel().getNodeById(tabNode.getId())) {
+                    // check node still in model
                     if (!tabNode.isEnableWindowReMount()) {
                         controller.getMainController()?.getMoveablesHome()?.appendChild(element); // keep element parented for open layers etc
                     }
                 }
                 tabNode.setVisible(false);
             }
-        }
+        };
     }, [tabNode, controller, onPointerDown]);
 
     React.useEffect(() => {
@@ -112,7 +112,7 @@ export const Tab = (props: ITabProps) => {
             // must paint above the overlay border panel
             overlayClassName += " " + cm(CLASSES.FLEXLAYOUT__TAB_OVERLAY_RAISED);
         }
-        overlay = (<div style={overlayStyle} className={overlayClassName}></div>)
+        overlay = <div style={overlayStyle} className={overlayClassName}></div>;
     }
 
     let className = cm(CLASSES.FLEXLAYOUT__TAB);
@@ -153,7 +153,4 @@ export const Tab = (props: ITabProps) => {
     );
 };
 
-Tab.displayName = 'Tab'; // name in react dev tools
-
-
-
+Tab.displayName = "Tab"; // name in react dev tools

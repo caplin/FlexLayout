@@ -6,7 +6,6 @@ import { ILayoutType } from "./IJsonModel";
  * The Action creator class for FlexLayout model actions
  */
 export class Actions {
-    
     static ADD_TAB = "FlexLayout_AddTab";
     static DELETE_TAB = "FlexLayout_DeleteTab";
     static RENAME_TAB = "FlexLayout_RenameTab";
@@ -26,7 +25,7 @@ export class Actions {
     static POPOUT_TABSET = "FlexLayout_PopoutTabset";
     static CLOSE_POPOUT = "FlexLayout_ClosePopout";
     static MOVE_POPOUT_TO_FRONT = "FlexLayout_MoveFloatToFront";
-    
+
     static CREATE_SUBLAYOUT = "FlexLayout_CreateSubLayout";
 
     /**
@@ -52,7 +51,6 @@ export class Actions {
     static addNode(json: IJsonTabNode, toNodeId: string, location: DockLocation, index: number, select?: boolean): Action {
         return this.addTab(json, toNodeId, location, index, select);
     }
-
 
     /**
      * Moves a node (tab or tabset) from one location to another
@@ -146,7 +144,7 @@ export class Actions {
     /**
      * Adjust the weights of a row, used when the splitter is moved
      * @param nodeId the id of the row node whose childrens weights are being adjusted
-     * @param weights an array of weights to be applied to the children 
+     * @param weights an array of weights to be applied to the children
      * @returns {Action} the action
      */
     static adjustWeights(nodeId: string, weights: number[]): Action {
@@ -156,7 +154,7 @@ export class Actions {
     /**
      * Adjust the size of the border
      * @param nodeId the id of the border node to adjust
-     * @param size the new border size 
+     * @param size the new border size
      * @returns {Action} the action
      */
     static adjustBorderSplit(nodeId: string, size: number): Action {
@@ -250,9 +248,6 @@ export class Actions {
     static createSubLayout(layout: IJsonRowNode, rect: IJsonRect, type: ILayoutType): Action {
         return new Action(Actions.CREATE_SUBLAYOUT, { layout, rect, type });
     }
-
-
-
 }
 
 export class Action {

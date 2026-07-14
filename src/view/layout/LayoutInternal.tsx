@@ -58,8 +58,7 @@ export interface ILayoutInternalState {
 
 /** @internal */
 export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternalProps>((props, ref) => {
-
-    LayoutInternal.displayName = 'LayoutInternal'; // name in react dev tools
+    LayoutInternal.displayName = "LayoutInternal"; // name in react dev tools
 
     const [state, setStateRaw] = React.useState<ILayoutInternalState>({
         editingTab: undefined,
@@ -68,17 +67,17 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         calculatedBorderBarSize: 29,
         layoutRedrawRevision: 0,
         fullRedrawRevision: 0,
-        showHiddenBorder: DockLocation.CENTER // using center indicates no hidden border
+        showHiddenBorder: DockLocation.CENTER, // using center indicates no hidden border
     });
 
     const setState = React.useCallback(
         (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => {
-            setStateRaw(prev => ({
+            setStateRaw((prev) => ({
                 ...prev,
-                ...(typeof update === 'function' ? update(prev, props) : update)
+                ...(typeof update === "function" ? update(prev, props) : update),
             }));
         },
-        [props]
+        [props],
     );
 
     const layoutRef = React.useRef<HTMLDivElement>(null); // ref of layout container
@@ -126,8 +125,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         // containing a sublayout moved between windows), the document-scoped listeners are still
         // bound to the old document (its resize observer dies with a closed popout window, leaving
         // this layout blind to container resizes) - re-run them against the new document
-        if (layoutRef.current && controller.getCurrentDocument() !== undefined &&
-            controller.getCurrentDocument() !== layoutRef.current.ownerDocument) {
+        if (layoutRef.current && controller.getCurrentDocument() !== undefined && controller.getCurrentDocument() !== layoutRef.current.ownerDocument) {
             setDocumentVersion((v) => v + 1);
         }
 
@@ -197,7 +195,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         };
 
         if (controller.isMainLayout()) {
-            document.addEventListener('visibilitychange', visibilityChange);
+            document.addEventListener("visibilitychange", visibilityChange);
             // close open overlay border panels on a pointer down in the main layout area
             // (capture phase, since splitters and toolbar buttons stop propagation)
             currentDocument.addEventListener("pointerdown", controller.onOverlayBorderPointerDown, true);
@@ -215,7 +213,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         return () => {
             resizeObserver.disconnect();
             currentWindow.removeEventListener("resize", resizeListener);
-            document.removeEventListener('visibilitychange', visibilityChange);
+            document.removeEventListener("visibilitychange", visibilityChange);
             currentDocument.removeEventListener("pointerdown", controller.onOverlayBorderPointerDown, true);
             currentDocument.removeEventListener("keydown", controller.onOverlayBorderKeyDown);
             currentDocument.removeEventListener("keydown", controller.onTabsetNavKeyDown);
@@ -229,7 +227,6 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         let styleObserver: MutationObserver | undefined;
 
         if (!controller.isMainLayout() && controller.getLayout().getType() === "window") {
-
             // If it's a popout, synchronize styles from main root div
             const mainRootDiv = controller.getProps().mainLayoutController?.getRootDiv();
             if (mainRootDiv) {
@@ -245,7 +242,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
                     }
                 });
 
-                styleObserver.observe(sourceElement, { attributeFilter: ['style'] });
+                styleObserver.observe(sourceElement, { attributeFilter: ["style"] });
             }
         }
 
@@ -261,7 +258,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         const layout = currentModel.getLayouts().get(controller.getLayoutId())!;
         layout.setController(controller);
         layout.setToExportRectFunction((r: Rect, type: ILayoutType) => {
-            return (type === "window") ? controller.getScreenRect(r) : controller.getRelativeRect(r);
+            return type === "window" ? controller.getScreenRect(r) : controller.getRelativeRect(r);
         });
 
         controller.setLayout(layout);
@@ -270,7 +267,7 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
             currentModel.addChangeListener(controller.onModelChange);
             return () => {
                 currentModel.removeChangeListener(controller.onModelChange);
-            }
+            };
         }
         return;
     }, [props.model, controller]);
@@ -283,7 +280,8 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
                 FindBorderBarSize
             </div>
             <div key="findSplitterSize" ref={findSplitterSizeRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_ + "horz")} />
-        </div>) : null;
+        </div>
+    ) : null;
 
     // first render just gets the metrics and layoutRef
     if (!layoutRef.current) {
@@ -320,9 +318,11 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
         reorderedTabContents = controller.reorderComponents(controller.renderTabContents(), controller.getOrderedTabMoveableIds());
         // aria-hidden: the offscreen stamps duplicate every tab's name (they exist only to
         // provide drag images), so they must not be exposed to assistive technology
-        dragTabButtons = <div key="__dragTabButtons__" aria-hidden="true" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
-            {controller.renderDragTabButtons()}
-        </div>;
+        dragTabButtons = (
+            <div key="__dragTabButtons__" aria-hidden="true" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_TAB_STAMPS)}>
+                {controller.renderDragTabButtons()}
+            </div>
+        );
         moveablesHome = <div ref={moveablesHomeRef} key="__moveables_home__" className={controller.getClassName(CLASSES.FLEXLAYOUT__LAYOUT_MOVEABLES_HOME)}></div>;
     }
 
@@ -383,7 +383,11 @@ export class LayoutController {
     private _lastRect: Rect = Rect.empty();
     private _lastSplitterSize: number = 8;
 
-    constructor(props: ILayoutInternalProps, state: ILayoutInternalState, setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void) {
+    constructor(
+        props: ILayoutInternalProps,
+        state: ILayoutInternalState,
+        setState: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void,
+    ) {
         this._props = props;
         this._state = state;
         this._setState = setState;
@@ -427,13 +431,7 @@ export class LayoutController {
 
                 // Render tab container at correct position
                 if (isRendered || isSelected || !isEnableRenderOnDemand) {
-                    tabs.set(tabNode.getId(), (
-                        <Tab
-                            key={tabNode.getId()}
-                            controller={this}
-                            tabNode={tabNode}
-                            selected={isSelected} />
-                    ));
+                    tabs.set(tabNode.getId(), <Tab key={tabNode.getId()} controller={this} tabNode={tabNode} selected={isSelected} />);
                 }
             }
         });
@@ -457,24 +455,28 @@ export class LayoutController {
 
                     if (renderTabContent) {
                         const element = tabNode.getMoveableElement();
-                        element.style.overflow = tabNode.isEnableScrollbars() ? "auto":"hidden";
+                        element.style.overflow = tabNode.isEnableScrollbars() ? "auto" : "hidden";
                         const windowId = layout.getWindowId() || "";
                         const key = tabNode.getId() + (tabNode.isEnableWindowReMount() ? windowId : "");
 
                         // Render tab content into moveable element using portal
                         // Note: TabContentRenderer calls the factory to render the contents
-                        tabContents.set(tabNode.getId(), createPortal(
-                            <TabContentRenderer
-                                key={key}
-                                controller={this}
-                                tabNode={tabNode}
-                                windowId={windowId}
-                                visible={visible}
-                                fullRedrawRevision={this._state.fullRedrawRevision}
-                                parentRedrawRevision={this._props.parentRedrawRevision}
-                            >
-                            </TabContentRenderer>
-                            , element, key));
+                        tabContents.set(
+                            tabNode.getId(),
+                            createPortal(
+                                <TabContentRenderer
+                                    key={key}
+                                    controller={this}
+                                    tabNode={tabNode}
+                                    windowId={windowId}
+                                    visible={visible}
+                                    fullRedrawRevision={this._state.fullRedrawRevision}
+                                    parentRedrawRevision={this._props.parentRedrawRevision}
+                                ></TabContentRenderer>,
+                                element,
+                                key,
+                            ),
+                        );
 
                         tabNode.setRendered(true);
                     }
@@ -493,7 +495,7 @@ export class LayoutController {
                 const child = node as TabNode;
 
                 // what the tab should look like when dragged (since images need to have been loaded before drag image can be taken)
-                dragTabButtons.push(<DragTabButton key={child.getId()} controller={this} tabNode={child} dragging={Utils_dragging} />)
+                dragTabButtons.push(<DragTabButton key={child.getId()} controller={this} tabNode={child} dragging={Utils_dragging} />);
             }
         });
 
@@ -567,7 +569,7 @@ export class LayoutController {
     };
 
     reorderComponents(components: Map<string, React.ReactNode>, ids: string[]) {
-        const nextIds = ids.filter(id => components.has(id));
+        const nextIds = ids.filter((id) => components.has(id));
         const nextIdsSet = new Set(nextIds);
 
         for (const id of components.keys()) {
@@ -577,7 +579,7 @@ export class LayoutController {
         }
 
         ids.splice(0, ids.length, ...nextIds);
-        return ids.map(id => components.get(id));
+        return ids.map((id) => components.get(id));
     }
 
     checkForBorderToShow(x: number, y: number) {
@@ -588,8 +590,7 @@ export class LayoutController {
 
         let overEdge = false;
         if (this._props.model.isEnableEdgeDock() && this._state.showHiddenBorder === DockLocation.CENTER) {
-            if ((y > c.y - offset && y < c.y + offset) ||
-                (x > c.x - offset && x < c.x + offset)) {
+            if ((y > c.y - offset && y < c.y + offset) || (x > c.x - offset && x < c.x + offset)) {
                 overEdge = true;
             }
         }
@@ -617,7 +618,9 @@ export class LayoutController {
     // capture phase: splitters and toolbar buttons stop propagation in their own pointer down
     // handlers, which would prevent a bubble phase listener from ever seeing the event
     onOverlayBorderPointerDown = (event: PointerEvent) => {
-        const openOverlays = this._props.model.getBorderSet().getBorders()
+        const openOverlays = this._props.model
+            .getBorderSet()
+            .getBorders()
             .filter((border) => border.isOverlay() && border.getSelected() !== -1);
         if (openOverlays.length === 0) {
             return;
@@ -627,11 +630,21 @@ export class LayoutController {
         // themselves (the overlay wrapper holds the panel host and its splitter - resizing a
         // overlay must not close it)
         const target = event.target as Element | null;
-        if (target?.closest?.(
-            "." + this.getClassName(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER) + "," +
-            "." + this.getClassName(CLASSES.FLEXLAYOUT__FLOAT_WINDOW) + "," +
-            "." + this.getClassName(CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT) + "," +
-            "." + this.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY))) {
+        if (
+            target?.closest?.(
+                "." +
+                    this.getClassName(CLASSES.FLEXLAYOUT__POPUP_MENU_CONTAINER) +
+                    "," +
+                    "." +
+                    this.getClassName(CLASSES.FLEXLAYOUT__FLOAT_WINDOW) +
+                    "," +
+                    "." +
+                    this.getClassName(CLASSES.FLEXLAYOUT__FLOATING_WINDOW_CONTENT) +
+                    "," +
+                    "." +
+                    this.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY),
+            )
+        ) {
             return;
         }
 
@@ -682,7 +695,9 @@ export class LayoutController {
         if (!active) {
             return;
         }
-        const openOverlays = this._props.model.getBorderSet().getBorders()
+        const openOverlays = this._props.model
+            .getBorderSet()
+            .getBorders()
             .filter((border) => border.isOverlay() && border.getSelected() !== -1);
         for (const border of openOverlays) {
             const selectedNode = border.getSelectedNode()!;
@@ -772,7 +787,6 @@ export class LayoutController {
             this._measurables.delete(key);
         }
     }
-
 
     // measure all registered elements in one batched pass (all reads, no dom writes between them)
     // and write the results into the model; runs in the layout effect after every commit
@@ -908,7 +922,7 @@ export class LayoutController {
         this._dragDropManager.addTabWithDragAndDrop(event, json, onDrop);
     }
 
-    moveTabWithDragAndDrop(event: DragEvent, node: (TabNode | TabSetNode)) {
+    moveTabWithDragAndDrop(event: DragEvent, node: TabNode | TabSetNode) {
         this._dragDropManager.moveTabWithDragAndDrop(event, node);
     }
 
@@ -924,17 +938,25 @@ export class LayoutController {
         return this._moveablesHomeRef.current;
     }
 
-    getProps() { return this._props; }
+    getProps() {
+        return this._props;
+    }
 
     // the keyboard bindings for the command shortcuts: the keyMap prop merged over the defaults
     getKeyMap(): IKeyMap {
         return resolveKeyMap(this._props.keyMap);
     }
 
-    setProps(value: ILayoutInternalProps) { this._props = value; }
+    setProps(value: ILayoutInternalProps) {
+        this._props = value;
+    }
 
-    getState() { return this._state; }
-    setStateRaw(value: ILayoutInternalState) { this._state = value; }
+    getState() {
+        return this._state;
+    }
+    setStateRaw(value: ILayoutInternalState) {
+        this._state = value;
+    }
 
     setState(update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) {
         this._setState(update);
@@ -942,26 +964,48 @@ export class LayoutController {
     setSetState(value: (update: Partial<ILayoutInternalState> | ((prevState: ILayoutInternalState, props: ILayoutInternalProps) => Partial<ILayoutInternalState>)) => void) {
         this._setState = value;
     }
-    setLayoutRef(value: React.RefObject<HTMLDivElement | null>) { this._layoutRef = value; }
+    setLayoutRef(value: React.RefObject<HTMLDivElement | null>) {
+        this._layoutRef = value;
+    }
 
-    setMoveablesHomeRef(value: React.RefObject<HTMLDivElement | null>) { this._moveablesHomeRef = value; }
-    setFindBorderBarSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findBorderBarSizeRef = value; }
-    setFindSplitterSizeRef(value: React.RefObject<HTMLDivElement | null>) { this._findSplitterSizeRef = value; }
+    setMoveablesHomeRef(value: React.RefObject<HTMLDivElement | null>) {
+        this._moveablesHomeRef = value;
+    }
+    setFindBorderBarSizeRef(value: React.RefObject<HTMLDivElement | null>) {
+        this._findBorderBarSizeRef = value;
+    }
+    setFindSplitterSizeRef(value: React.RefObject<HTMLDivElement | null>) {
+        this._findSplitterSizeRef = value;
+    }
 
-    getMainRef() { return this._mainRef; }
-    setMainRef(value: React.RefObject<HTMLDivElement | null>) { this._mainRef = value; }
+    getMainRef() {
+        return this._mainRef;
+    }
+    setMainRef(value: React.RefObject<HTMLDivElement | null>) {
+        this._mainRef = value;
+    }
 
-    getOrderedTabIds() { return this._orderedTabIds; }
-    getOrderedTabMoveableIds() { return this._orderedTabMoveableIds; }
+    getOrderedTabIds() {
+        return this._orderedTabIds;
+    }
+    getOrderedTabMoveableIds() {
+        return this._orderedTabMoveableIds;
+    }
 
-    getCurrentDocument() { return this._currentDocument; }
-    setCurrentDocument(value: Document | undefined) { this._currentDocument = value; }
+    getCurrentDocument() {
+        return this._currentDocument;
+    }
+    setCurrentDocument(value: Document | undefined) {
+        this._currentDocument = value;
+    }
 
-    getCurrentWindow() { return this._currentWindow; }
+    getCurrentWindow() {
+        return this._currentWindow;
+    }
     setCurrentWindow(value: Window | undefined) {
         this._currentWindow = value;
         if (value && !LayoutController.Windows.has(value)) {
-            LayoutController.Windows.set(value, randomUUID())
+            LayoutController.Windows.set(value, randomUUID());
         }
     }
 
@@ -972,23 +1016,47 @@ export class LayoutController {
         return undefined;
     }
 
-    isSupportsPopout() { return this._supportsPopout; }
-    getPopoutURL() { return this._popoutURL; }
-    getIcons() { return this._icons; }
+    isSupportsPopout() {
+        return this._supportsPopout;
+    }
+    getPopoutURL() {
+        return this._popoutURL;
+    }
+    getIcons() {
+        return this._icons;
+    }
 
-    getDragDropManager() { return this._dragDropManager; }
+    getDragDropManager() {
+        return this._dragDropManager;
+    }
 
-    getLayoutId() { return this._layoutId; }
-    getLayout() { return this._layout; }
-    setLayout(value: ModelLayout) { this._layout = value; }
+    getLayoutId() {
+        return this._layoutId;
+    }
+    getLayout() {
+        return this._layout;
+    }
+    setLayout(value: ModelLayout) {
+        this._layout = value;
+    }
 
-    getMainController() { return this._mainController; }
-    isMainLayout() { return this._layout.isMainLayout(); }
+    getMainController() {
+        return this._mainController;
+    }
+    isMainLayout() {
+        return this._layout.isMainLayout();
+    }
 
-    getPopoutWindowName() { return this._popoutWindowName; }
+    getPopoutWindowName() {
+        return this._popoutWindowName;
+    }
 
-    isReLayout() { return this._reLayout; }
-    setReLayout(value: boolean) { this._reLayout = value; }
+    isReLayout() {
+        return this._reLayout;
+    }
+    setReLayout(value: boolean) {
+        this._reLayout = value;
+    }
 
     getBoundingClientRect(div: HTMLElement): Rect {
         const layoutRect = this.getDomRect();
@@ -1056,7 +1124,6 @@ export class LayoutController {
         this.doAction(Actions.closePopout(layout.getLayoutId()));
     };
 
-
     getScreenRect(inRect: Rect) {
         const rect = inRect.clone();
         const layoutRect = this.getDomRect();
@@ -1064,8 +1131,8 @@ export class LayoutController {
         // outer can be less than inner (or otherwise implausible), fall back to typical sizes
         const measuredNavHeight = this._currentWindow!.outerHeight - this._currentWindow!.innerHeight;
         const measuredNavWidth = this._currentWindow!.outerWidth - this._currentWindow!.innerWidth;
-        const navHeight = (measuredNavHeight >= 0 && measuredNavHeight <= 200) ? measuredNavHeight : 60;
-        const navWidth = (measuredNavWidth >= 0 && measuredNavWidth <= 100) ? measuredNavWidth : 2;
+        const navHeight = measuredNavHeight >= 0 && measuredNavHeight <= 200 ? measuredNavHeight : 60;
+        const navWidth = measuredNavWidth >= 0 && measuredNavWidth <= 100 ? measuredNavWidth : 2;
         rect.x = this._currentWindow!.screenX + this._currentWindow!.scrollX + navWidth / 2 + layoutRect.x + rect.x;
         rect.y = this._currentWindow!.screenY + this._currentWindow!.scrollY + (navHeight - navWidth / 2) + layoutRect.y + rect.y;
         rect.height += navHeight;
@@ -1109,19 +1176,13 @@ export class LayoutController {
         this.doAction(Actions.maximizeToggle(tabsetNode.getId(), this.getLayoutId()));
     }
 
-    customizeTab(
-        tabNode: TabNode,
-        renderValues: ITabRenderValues,
-    ) {
+    customizeTab(tabNode: TabNode, renderValues: ITabRenderValues) {
         if (this._props.onRenderTab) {
             this._props.onRenderTab(tabNode, renderValues);
         }
     }
 
-    customizeTabSet(
-        tabSetNode: TabSetNode | BorderNode,
-        renderValues: ITabSetRenderValues,
-    ) {
+    customizeTabSet(tabSetNode: TabSetNode | BorderNode, renderValues: ITabSetRenderValues) {
         if (this._props.onRenderTabSet) {
             this._props.onRenderTabSet(tabSetNode, renderValues);
         }
@@ -1174,8 +1235,6 @@ export class LayoutController {
             }
         }
     }
-
-
 }
 
 const defaultIcons = {
@@ -1189,7 +1248,7 @@ const defaultIcons = {
     restore: <RestoreIcon />,
     more: <OverflowIcon />,
     edgeArrow: <EdgeIcon />,
-    activeTabset: <AsterickIcon />
+    activeTabset: <AsterickIcon />,
 };
 
 const defaultSupportsPopout: boolean = isDesktop();

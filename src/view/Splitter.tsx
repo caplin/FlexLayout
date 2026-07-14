@@ -18,7 +18,6 @@ export interface ISplitterProps {
     horizontal: boolean;
 }
 
-
 /** @internal */
 export const Splitter = (props: ISplitterProps) => {
     const { controller, node, index, horizontal } = props;
@@ -30,7 +29,7 @@ export const Splitter = (props: ISplitterProps) => {
     const handleDiv = React.useRef<HTMLDivElement | undefined>(undefined);
     const dragStartX = React.useRef<number>(0);
     const dragStartY = React.useRef<number>(0);
-    const initalSizes = React.useRef<{ initialSizes: number[], sum: number, startPosition: number }>({ initialSizes: [], sum: 0, startPosition: 0 })
+    const initalSizes = React.useRef<{ initialSizes: number[]; sum: number; startPosition: number }>({ initialSizes: [], sum: 0, startPosition: 0 });
 
     const onTouchStart = React.useCallback((event: TouchEvent) => {
         event.preventDefault();
@@ -46,9 +45,8 @@ export const Splitter = (props: ISplitterProps) => {
         return () => {
             self?.removeEventListener("touchstart", onTouchStart);
             extended?.removeEventListener("touchstart", onTouchStart);
-        }
+        };
     }, [onTouchStart]);
-
 
     const onPointerDown = (event: React.PointerEvent<HTMLElement>) => {
         event.stopPropagation();
@@ -63,22 +61,16 @@ export const Splitter = (props: ISplitterProps) => {
         const rootdiv = controller.getRootDiv();
         outlineDiv.current = controller.getCurrentDocument()!.createElement("div");
         outlineDiv.current.style.flexDirection = horizontal ? "row" : "column";
-        outlineDiv.current.className = controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_DRAG) +
-                    ((node instanceof BorderNode)? " " + controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_BORDER): "");
+        outlineDiv.current.className =
+            controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_DRAG) + (node instanceof BorderNode ? " " + controller.getClassName(CLASSES.FLEXLAYOUT__SPLITTER_BORDER) : "");
         outlineDiv.current.style.cursor = node.getOrientation() === Orientation.VERT ? "ns-resize" : "ew-resize";
 
         handleDiv.current = controller.getCurrentDocument()!.createElement("div");
-        handleDiv.current.className = cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE) + " " +
-            (horizontal ? cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_HORZ) : cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_VERT));
+        handleDiv.current.className = cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE) + " " + (horizontal ? cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_HORZ) : cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_VERT));
         outlineDiv.current.appendChild(handleDiv.current);
 
         const r = selfRef.current!.getBoundingClientRect()!;
-        const rect = new Rect(
-            r.x - controller.getDomRect()!.x,
-            r.y - controller.getDomRect()!.y,
-            r.width,
-            r.height
-        );
+        const rect = new Rect(r.x - controller.getDomRect()!.x, r.y - controller.getDomRect()!.y, r.width, r.height);
 
         dragStartX.current = event.clientX - r.x;
         dragStartY.current = event.clientY - r.y;
@@ -94,7 +86,8 @@ export const Splitter = (props: ISplitterProps) => {
             return; // modified arrows are left for keymap bindings (e.g. tabset cycling)
         }
         let delta = 0;
-        if (horizontal) { // vertical separator: left/right arrows
+        if (horizontal) {
+            // vertical separator: left/right arrows
             if (event.key === "ArrowLeft") delta = -10;
             if (event.key === "ArrowRight") delta = 10;
         } else {
@@ -106,7 +99,7 @@ export const Splitter = (props: ISplitterProps) => {
             if (node instanceof BorderNode) {
                 // moving towards the border edge shrinks it; bottom/right borders grow the other way
                 const location = node.getLocation();
-                const grow = (location === DockLocation.BOTTOM || location === DockLocation.RIGHT) ? -delta : delta;
+                const grow = location === DockLocation.BOTTOM || location === DockLocation.RIGHT ? -delta : delta;
                 const size = Math.max(node.getMinSize(), Math.min(node.getMaxSize(), node.getSize() + grow));
                 controller.doAction(Actions.adjustBorderSplit(node.getId(), size));
             } else {
@@ -129,7 +122,6 @@ export const Splitter = (props: ISplitterProps) => {
     };
 
     const onDragMove = (x: number, y: number) => {
-
         if (outlineDiv.current) {
             const clientRect = controller.getDomRect();
             if (!clientRect) {
@@ -161,7 +153,6 @@ export const Splitter = (props: ISplitterProps) => {
     };
 
     const updateLayout = (_realtime: boolean) => {
-
         const redraw = () => {
             if (outlineDiv.current) {
                 let value: number;
@@ -201,7 +192,7 @@ export const Splitter = (props: ISplitterProps) => {
     const cm = controller.getClassName;
     const style: React.CSSProperties & { [key: string]: any } = {
         cursor: horizontal ? "ew-resize" : "ns-resize",
-        flexDirection: horizontal ? "column" : "row"
+        flexDirection: horizontal ? "column" : "row",
     };
 
     let className = cm(CLASSES.FLEXLAYOUT__SPLITTER) + " " + cm(CLASSES.FLEXLAYOUT__SPLITTER_ + node.getOrientation().getName());
@@ -242,29 +233,26 @@ export const Splitter = (props: ISplitterProps) => {
         splitterValueText = splitterValue + "px"; // announced preferentially over the raw number
     }
 
-    return (<div
-        className={className}
-        style={style}
-        ref={selfRef}
-        role="separator"
-        aria-label={controller.i18nName(I18nLabel.Splitter)}
-        aria-orientation={horizontal ? "vertical" : "horizontal"}
-        aria-valuenow={splitterValue}
-        aria-valuemin={splitterMin}
-        aria-valuemax={splitterMax}
-        aria-valuetext={splitterValueText}
-        tabIndex={0}
-        onKeyDown={onKeyDown}
-        data-layout-path={node.getPath() + "/s" + (index - 1)}
-        onPointerDown={onPointerDown}>
+    return (
         <div
-            className={cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE) + " " +
-                (horizontal ? cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_HORZ) : cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_VERT))
-            }>
+            className={className}
+            style={style}
+            ref={selfRef}
+            role="separator"
+            aria-label={controller.i18nName(I18nLabel.Splitter)}
+            aria-orientation={horizontal ? "vertical" : "horizontal"}
+            aria-valuenow={splitterValue}
+            aria-valuemin={splitterMin}
+            aria-valuemax={splitterMax}
+            aria-valuetext={splitterValueText}
+            tabIndex={0}
+            onKeyDown={onKeyDown}
+            data-layout-path={node.getPath() + "/s" + (index - 1)}
+            onPointerDown={onPointerDown}
+        >
+            <div className={cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE) + " " + (horizontal ? cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_HORZ) : cm(CLASSES.FLEXLAYOUT__SPLITTER_HANDLE_VERT))}></div>
         </div>
-    </div>);
-
+    );
 };
 
-Splitter.displayName = 'Splitter'; // name in react dev tools
-
+Splitter.displayName = "Splitter"; // name in react dev tools

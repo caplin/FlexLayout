@@ -19,7 +19,6 @@ export interface IPopoutWindowProps {
 
 /** @internal */
 export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>) => {
-        
     const { title, controller, layout, url, onCloseLayout, children } = props;
     const popoutWindow = React.useRef<Window>(null);
     const [content, setContent] = React.useState<HTMLElement | undefined>(undefined);
@@ -28,7 +27,6 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
 
     const initializedRef = React.useRef(false);
     const observerRef = React.useRef<MutationObserver | null>(null);
-
 
     React.useLayoutEffect(() => {
         if (!initializedRef.current && content) {
@@ -47,14 +45,14 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
             }
         };
 
-        if (!popoutWindow.current) { // only create window once, even in strict mode
+        if (!popoutWindow.current) {
+            // only create window once, even in strict mode
             const layoutId = layout.getLayoutId();
             const rect = layout.getRect();
 
             popoutWindow.current = window.open(url, layoutId, `left=${rect.x},top=${rect.y},width=${rect.width},height=${rect.height}`);
 
             if (popoutWindow.current) {
-
                 window.addEventListener("beforeunload", onMainWindowBeforeUnload);
 
                 popoutWindow.current.addEventListener("load", () => {
@@ -119,10 +117,9 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
             popoutWindow.current = null;
             observerRef.current?.disconnect();
             observerRef.current = null;
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
 
     if (content !== undefined) {
         return createPortal(children, content!);
@@ -133,7 +130,7 @@ export const PopoutWindow = (props: React.PropsWithChildren<IPopoutWindowProps>)
 
 function handleStyleMutations(mutationsList: MutationRecord[], popoutDocument: Document, styleMap: Map<HTMLElement, HTMLElement>) {
     for (const mutation of mutationsList) {
-        if (mutation.type === 'childList' && mutation.target === document.head) {
+        if (mutation.type === "childList" && mutation.target === document.head) {
             // style/link nodes added to or removed from the head
             for (const addition of mutation.addedNodes) {
                 if (addition instanceof HTMLLinkElement || addition instanceof HTMLStyleElement) {
@@ -159,7 +156,7 @@ function handleStyleMutations(mutationsList: MutationRecord[], popoutDocument: D
             }
         }
     }
-};
+}
 
 /** @internal */
 function findOwningStyle(node: Node): HTMLStyleElement | undefined {
@@ -170,12 +167,10 @@ function findOwningStyle(node: Node): HTMLStyleElement | undefined {
     return el instanceof HTMLStyleElement ? el : undefined;
 }
 
-
-
 /** @internal */
 function copyStyles(popoutDoc: Document, styleMap: Map<HTMLElement, HTMLElement>): Promise<boolean[]> {
     const promises: Promise<boolean>[] = [];
-    const styleElements = document.querySelectorAll('style, link[rel="stylesheet"]') as NodeListOf<HTMLElement>
+    const styleElements = document.querySelectorAll('style, link[rel="stylesheet"]') as NodeListOf<HTMLElement>;
     for (const element of styleElements) {
         copyStyle(popoutDoc, element, styleMap, promises);
     }
@@ -191,21 +186,23 @@ function copyStyle(popoutDoc: Document, element: HTMLElement, styleMap: Map<HTML
         styleMap.set(element, linkElement);
 
         if (promises) {
-            promises.push(new Promise((resolve) => {
-                // resolve on error and after a timeout as well as on load: if a stylesheet is
-                // blocked (CSP/adblock), 404s, or never fires load, the aggregate promise must
-                // still settle - otherwise setContent is never called and the popout stays blank
-                let settled = false;
-                const done = (loaded: boolean) => {
-                    if (!settled) {
-                        settled = true;
-                        resolve(loaded);
-                    }
-                };
-                linkElement.onload = () => done(true);
-                linkElement.onerror = () => done(false);
-                popoutDoc.defaultView?.setTimeout(() => done(false), STYLE_LOAD_TIMEOUT_MS);
-            }));
+            promises.push(
+                new Promise((resolve) => {
+                    // resolve on error and after a timeout as well as on load: if a stylesheet is
+                    // blocked (CSP/adblock), 404s, or never fires load, the aggregate promise must
+                    // still settle - otherwise setContent is never called and the popout stays blank
+                    let settled = false;
+                    const done = (loaded: boolean) => {
+                        if (!settled) {
+                            settled = true;
+                            resolve(loaded);
+                        }
+                    };
+                    linkElement.onload = () => done(true);
+                    linkElement.onerror = () => done(false);
+                    popoutDoc.defaultView?.setTimeout(() => done(false), STYLE_LOAD_TIMEOUT_MS);
+                }),
+            );
         }
     } else if (element instanceof HTMLStyleElement) {
         try {
@@ -218,5 +215,4 @@ function copyStyle(popoutDoc: Document, element: HTMLElement, styleMap: Map<HTML
     }
 }
 
-PopoutWindow.displayName = 'PopoutWindow'; // name in react dev tools
-
+PopoutWindow.displayName = "PopoutWindow"; // name in react dev tools

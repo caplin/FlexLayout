@@ -2,9 +2,9 @@
 import { Action, Actions, BorderNode, DockLocation, IJsonModel, Model, Node, Rect, RowNode, TabNode, TabSetNode } from "../src";
 
 /*
-* The textRendered tabs: a representation of the model 'rendered' to a list of tab paths 
-* where /ts0/t1[One]* is tab index 1 in tabset 0 of the root row with name=One and its selected (ie. path + tabname and selected indicator))
-*/
+ * The textRendered tabs: a representation of the model 'rendered' to a list of tab paths
+ * where /ts0/t1[One]* is tab index 1 in tabset 0 of the root row with name=One and its selected (ie. path + tabname and selected indicator))
+ */
 let tabsArray: string[] = []; // the rendered tabs as an array
 let tabs = ""; // the rendered tabs array as a comma separated string
 let pathMap: Record<string, Node> = {}; // maps tab path (e.g /ts1/t0) to the actual Node
@@ -12,25 +12,19 @@ let pathMap: Record<string, Node> = {}; // maps tab path (e.g /ts1/t0) to the ac
 let model: Model;
 
 describe("Tree", function () {
-
     describe("fromJson", () => {
-
         it("loads a model without the optional global key", function () {
-            model = Model.fromJson(
-                {
-                    layout: {
-                        type: "row",
-                        children: [
-                            {
-                                type: "tabset",
-                                children: [
-                                    { type: "tab", name: "One" }
-                                ]
-                            }
-                        ]
-                    }
-                }
-            );
+            model = Model.fromJson({
+                layout: {
+                    type: "row",
+                    children: [
+                        {
+                            type: "tabset",
+                            children: [{ type: "tab", name: "One" }],
+                        },
+                    ],
+                },
+            });
 
             textRender(model);
             expect(tabs).equal("/ts0/t0[One]*");
@@ -42,9 +36,16 @@ describe("Tree", function () {
                 layout: {
                     type: "row",
                     children: [
-                        { type: "tabset", selected: 5, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] }
-                    ]
-                }
+                        {
+                            type: "tabset",
+                            selected: 5,
+                            children: [
+                                { type: "tab", name: "One" },
+                                { type: "tab", name: "Two" },
+                            ],
+                        },
+                    ],
+                },
             });
 
             textRender(model);
@@ -56,10 +57,8 @@ describe("Tree", function () {
                 global: {},
                 layout: {
                     type: "row",
-                    children: [
-                        { type: "tabset", children: [{ type: "tab", id: "t1", name: "One", subLayoutId: "missing" }] }
-                    ]
-                }
+                    children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One", subLayoutId: "missing" }] }],
+                },
             });
 
             const t = model.getNodeById("t1") as TabNode;
@@ -69,7 +68,6 @@ describe("Tree", function () {
     });
 
     describe("Robustness", () => {
-
         it("returns undefined for unknown layout ids", function () {
             model = Model.fromJson(twoTabs);
             expect(model.getMaximizedTabset("nope")).equal(undefined);
@@ -97,9 +95,9 @@ describe("Tree", function () {
                     // selected index 5 with a single child would otherwise crash getSize/setSize
                     { type: "border", location: "top", selected: 5, children: [{ type: "tab", name: "top1" }] },
                     // selected on an empty border clamps to -1 (nothing selected)
-                    { type: "border", location: "bottom", selected: 0, children: [] }
+                    { type: "border", location: "bottom", selected: 0, children: [] },
                 ],
-                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }] }
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }] },
             });
             const borders = model.getBorderSet().getBorders();
             expect(borders[0].getSelected()).equal(0);
@@ -120,10 +118,8 @@ describe("Tree", function () {
                 global: {},
                 layout: {
                     type: "row",
-                    children: [
-                        { type: "tabset", children: [{ type: "tab", name: "One", minWidth: 300, maxWidth: 100 }] }
-                    ]
-                }
+                    children: [{ type: "tabset", children: [{ type: "tab", name: "One", minWidth: 300, maxWidth: 100 }] }],
+                },
             });
             const root = model.getRootRow()!;
             root.calcMinMaxSize();
@@ -144,11 +140,13 @@ describe("Tree", function () {
         it("setRect fires resize only on a whole-pixel change", function () {
             model = Model.fromJson({
                 global: {},
-                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] }
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] },
             });
             const t = model.getNodeById("t1") as TabNode;
             let resizes = 0;
-            t.setEventListener("resize", () => { resizes++; });
+            t.setEventListener("resize", () => {
+                resizes++;
+            });
 
             t.setRect(new Rect(0, 0, 100, 100));
             expect(resizes).equal(1);
@@ -166,7 +164,7 @@ describe("Tree", function () {
         it("restores horizontal scroll when vertical scroll is zero", async function () {
             model = Model.fromJson({
                 global: {},
-                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] }
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] },
             });
             const t = model.getNodeById("t1") as TabNode;
             const el = t.getMoveableElement();
@@ -185,13 +183,19 @@ describe("Tree", function () {
                 layout: {
                     type: "row",
                     children: [
-                        { type: "tabset", children: [{ type: "tab", id: "tA", name: "A", subLayoutId: "L1" }, { type: "tab", name: "Keep" }] }
-                    ]
+                        {
+                            type: "tabset",
+                            children: [
+                                { type: "tab", id: "tA", name: "A", subLayoutId: "L1" },
+                                { type: "tab", name: "Keep" },
+                            ],
+                        },
+                    ],
                 },
                 subLayouts: {
                     L1: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tB", name: "B", subLayoutId: "L2" }] }] } },
-                    L2: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tC", name: "C" }] }] } }
-                }
+                    L2: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tC", name: "C" }] }] } },
+                },
             });
             expect(model.getLayouts().has("L1")).equal(true);
             expect(model.getLayouts().has("L2")).equal(true);
@@ -208,26 +212,22 @@ describe("Tree", function () {
     });
 
     describe("Actions", () => {
-
         describe("Add", () => {
-
             it("empty tabset", function () {
-                model = Model.fromJson(
-                    {
-                        global: {},
-                        layout: {
-                            type: "row",
-                            children: [
-                                {
-                                    type: "tabset",
-                                    id: "1",
-                                    enableDeleteWhenEmpty: false,
-                                    children: []
-                                }
-                            ]
-                        }
-                    }
-                );
+                model = Model.fromJson({
+                    global: {},
+                    layout: {
+                        type: "row",
+                        children: [
+                            {
+                                type: "tabset",
+                                id: "1",
+                                enableDeleteWhenEmpty: false,
+                                children: [],
+                            },
+                        ],
+                    },
+                });
 
                 doAction(Actions.addTab({ id: "2", name: "newtab1", component: "grid" }, "1", DockLocation.CENTER, -1));
 
@@ -507,7 +507,6 @@ describe("Tree", function () {
                 expect(tabs).equal("/b/top/t0[top1],/b/bottom/t0[bottom1],/b/bottom/t1[bottom2],/b/left/t0[left1],/b/right/t0[right1],/b/right/t1[One]");
             });
 
-
             it("move from border top", () => {
                 const fromId = tab("/b/top/t0").getId();
                 const toId = tab("/ts0").getId();
@@ -551,9 +550,17 @@ describe("Tree", function () {
                     layout: {
                         type: "row",
                         children: [
-                            { type: "tabset", id: "A", selected: 1, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] }
-                        ]
-                    }
+                            {
+                                type: "tabset",
+                                id: "A",
+                                selected: 1,
+                                children: [
+                                    { type: "tab", name: "One" },
+                                    { type: "tab", name: "Two" },
+                                ],
+                            },
+                        ],
+                    },
                 });
                 textRender(model);
                 expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*");
@@ -566,12 +573,20 @@ describe("Tree", function () {
                 model = Model.fromJson({
                     global: {},
                     borders: [
-                        { type: "border", location: "top", selected: 1, children: [{ type: "tab", name: "top1" }, { type: "tab", name: "top2" }] }
+                        {
+                            type: "border",
+                            location: "top",
+                            selected: 1,
+                            children: [
+                                { type: "tab", name: "top1" },
+                                { type: "tab", name: "top2" },
+                            ],
+                        },
                     ],
                     layout: {
                         type: "row",
-                        children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }]
-                    }
+                        children: [{ type: "tabset", children: [{ type: "tab", name: "One" }] }],
+                    },
                 });
                 textRender(model);
                 expect(tabs).equal("/b/top/t0[top1],/b/top/t1[top2]*,/ts0/t0[One]*");
@@ -587,10 +602,18 @@ describe("Tree", function () {
                     layout: {
                         type: "row",
                         children: [
-                            { type: "tabset", id: "A", selected: 1, children: [{ type: "tab", name: "One" }, { type: "tab", name: "Two" }] },
-                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Three" }] }
-                        ]
-                    }
+                            {
+                                type: "tabset",
+                                id: "A",
+                                selected: 1,
+                                children: [
+                                    { type: "tab", name: "One" },
+                                    { type: "tab", name: "Two" },
+                                ],
+                            },
+                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Three" }] },
+                        ],
+                    },
                 });
                 textRender(model);
                 expect(tabs).equal("/ts0/t0[One],/ts0/t1[Two]*,/ts1/t0[Three]*");
@@ -609,9 +632,9 @@ describe("Tree", function () {
                         type: "row",
                         children: [
                             { type: "tabset", id: "A", ...aAttrs, children: [{ type: "tab", name: "One" }] },
-                            { type: "tabset", id: "B", ...bAttrs, children: [{ type: "tab", name: "Two" }] }
-                        ]
-                    }
+                            { type: "tabset", id: "B", ...bAttrs, children: [{ type: "tab", name: "Two" }] },
+                        ],
+                    },
                 });
 
             it("drag right caps growing left child at its own maxWidth", () => {
@@ -641,9 +664,9 @@ describe("Tree", function () {
                         type: "row",
                         children: [
                             { type: "tabset", id: "A", enableDeleteWhenEmpty: false, children: [{ type: "tab", name: "One" }] },
-                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Two" }] }
-                        ]
-                    }
+                            { type: "tabset", id: "B", children: [{ type: "tab", name: "Two" }] },
+                        ],
+                    },
                 });
                 textRender(model);
                 const tsA = tabset("/ts0");
@@ -676,8 +699,7 @@ describe("Tree", function () {
         });
 
         describe("Delete", () => {
-            beforeEach(() => {
-            });
+            beforeEach(() => {});
 
             it("delete from tabset with 1 tab", () => {
                 model = Model.fromJson(threeTabs);
@@ -742,7 +764,6 @@ describe("Tree", function () {
                 doAction(Actions.deleteTab(tab("/b/right/t0").getId()));
                 expect(tabs).equal("/ts0/t0[One]*");
             });
-
         });
 
         describe("Other Actions", () => {
@@ -820,7 +841,6 @@ describe("Tree", function () {
                 doAction(Actions.updateModelAttributes({ borderSize: 10 }));
                 expect(model.getAttribute("borderSize")).equals(10);
             });
-
         });
     });
 
@@ -833,14 +853,18 @@ describe("Tree", function () {
 
         it("close tab", () => {
             let closed = false;
-            tab("/ts0/t0").setEventListener("close", () => { closed = true; })
+            tab("/ts0/t0").setEventListener("close", () => {
+                closed = true;
+            });
             doAction(Actions.deleteTab(tab("/ts0/t0").getId()));
             expect(closed).equals(true);
         });
 
         it("save tab", () => {
             let saved = false;
-            tab("/ts0/t0").setEventListener("save", () => { saved = true; })
+            tab("/ts0/t0").setEventListener("save", () => {
+                saved = true;
+            });
             model.toJson();
             expect(saved).equals(true);
         });
@@ -848,17 +872,18 @@ describe("Tree", function () {
         it("visibility changes fire once per actual change", () => {
             const t = tab("/ts0/t0");
             const events: boolean[] = [];
-            t.setEventListener("visibility", (p: { visible: boolean }) => { events.push(p.visible); });
-            t.setVisible(true);   // false -> true, fires
-            t.setVisible(true);   // no change, no event
-            t.setVisible(false);  // true -> false, fires
+            t.setEventListener("visibility", (p: { visible: boolean }) => {
+                events.push(p.visible);
+            });
+            t.setVisible(true); // false -> true, fires
+            t.setVisible(true); // no change, no event
+            t.setVisible(false); // true -> false, fires
             expect(events).toEqual([true, false]);
         });
     });
 });
 
-
-// ---------------------------- helpers ------------------------ 
+// ---------------------------- helpers ------------------------
 
 function doAction(action: Action) {
     model.doAction(action);
@@ -884,12 +909,12 @@ function border(path: string) {
 
 function tabsMatch(regExStr: string) {
     const regex = new RegExp(regExStr);
-    return tabsArray.filter(t => regex.test(t)).join(",");
+    return tabsArray.filter((t) => regex.test(t)).join(",");
 }
 
 function tabsDontMatch(regExStr: string) {
     const regex = new RegExp(regExStr);
-    return tabsArray.filter(t => !regex.test(t)).join(",");
+    return tabsArray.filter((t) => !regex.test(t)).join(",");
 }
 
 function textRender(model: Model) {
@@ -915,7 +940,7 @@ function textRenderInner(pathMap: Record<string, Node>, path: string, children: 
         } else if (c instanceof TabNode) {
             const newpath = path + "/t" + index++;
             pathMap[newpath] = c;
-            const parent = c.getParent() as (BorderNode | TabSetNode);
+            const parent = c.getParent() as BorderNode | TabSetNode;
             const selected = parent.getSelectedNode() === c;
             tabsArray.push(newpath + "[" + c.getName() + "]" + (selected ? "*" : ""));
             textRenderInner(pathMap, newpath, c.getChildren());
@@ -944,8 +969,8 @@ const twoTabs: IJsonModel = {
                         type: "tab",
                         name: "One",
                         component: "text",
-                    }
-                ]
+                    },
+                ],
             },
             {
                 type: "tabset",
@@ -956,65 +981,65 @@ const twoTabs: IJsonModel = {
                         type: "tab",
                         name: "Two",
                         component: "text",
-                    }
-                ]
-            }
-        ]
-    }
+                    },
+                ],
+            },
+        ],
+    },
 };
 
 const withBorders: IJsonModel = {
     global: {},
     borders: [
         {
-            "type": "border",
-            "location": "top",
-            "children": [
+            type: "border",
+            location: "top",
+            children: [
                 {
-                    "type": "tab",
-                    "name": "top1",
-                    "component": "text"
-                }
-            ]
+                    type: "tab",
+                    name: "top1",
+                    component: "text",
+                },
+            ],
         },
         {
-            "type": "border",
-            "location": "bottom",
-            "children": [
+            type: "border",
+            location: "bottom",
+            children: [
                 {
-                    "type": "tab",
-                    "name": "bottom1",
-                    "component": "text"
+                    type: "tab",
+                    name: "bottom1",
+                    component: "text",
                 },
                 {
-                    "type": "tab",
-                    "name": "bottom2",
-                    "component": "text"
-                }
-            ]
+                    type: "tab",
+                    name: "bottom2",
+                    component: "text",
+                },
+            ],
         },
         {
-            "type": "border",
-            "location": "left",
-            "children": [
+            type: "border",
+            location: "left",
+            children: [
                 {
-                    "type": "tab",
-                    "name": "left1",
-                    "component": "text"
-                }
-            ]
+                    type: "tab",
+                    name: "left1",
+                    component: "text",
+                },
+            ],
         },
         {
-            "type": "border",
-            "location": "right",
-            "children": [
+            type: "border",
+            location: "right",
+            children: [
                 {
-                    "type": "tab",
-                    "name": "right1",
-                    "component": "text"
-                }
-            ]
-        }
+                    type: "tab",
+                    name: "right1",
+                    component: "text",
+                },
+            ],
+        },
     ],
     layout: {
         type: "row",
@@ -1028,11 +1053,11 @@ const withBorders: IJsonModel = {
                         type: "tab",
                         name: "One",
                         component: "text",
-                    }
-                ]
-            }
-        ]
-    }
+                    },
+                ],
+            },
+        ],
+    },
 };
 
 const threeTabs: IJsonModel = {
@@ -1050,8 +1075,8 @@ const threeTabs: IJsonModel = {
                         type: "tab",
                         name: "One",
                         component: "text",
-                    }
-                ]
+                    },
+                ],
             },
             {
                 type: "tabset",
@@ -1063,8 +1088,8 @@ const threeTabs: IJsonModel = {
                         name: "Two",
                         icon: "/test/images/settings.svg",
                         component: "text",
-                    }
-                ]
+                    },
+                ],
             },
             {
                 type: "tabset",
@@ -1074,10 +1099,9 @@ const threeTabs: IJsonModel = {
                         type: "tab",
                         name: "Three",
                         component: "text",
-                    }
-                ]
-            }
-
-        ]
-    }
+                    },
+                ],
+            },
+        ],
+    },
 };

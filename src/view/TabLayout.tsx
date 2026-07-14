@@ -8,7 +8,7 @@ export interface ITabLayoutProps {
 /**
  * Component that can be used within the factory to render a tabs defined sublayout.
  * This allows the sublayout to be surrounded by other controls, e.g. a header and footer bars
- * 
+ *
  * @category Components
  * @group Main Layout
  */
@@ -17,7 +17,7 @@ export const TabLayout = (props: ITabLayoutProps) => {
 
     const layout = tabNode.getLayout();
     const controller = layout!.getController()!;
-    
+
     if (!controller) return;
 
     return (
@@ -25,4 +25,4 @@ export const TabLayout = (props: ITabLayoutProps) => {
             <LayoutInternal {...controller.getProps()} layoutId={tabNode.getSubLayoutId()} mainLayoutController={controller.getMainController()} />;
         </div>
     );
-}
+};

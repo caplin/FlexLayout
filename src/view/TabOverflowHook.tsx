@@ -15,7 +15,7 @@ export const useTabOverflow = (
     tabStripRef: React.RefObject<HTMLElement | null>,
     miniScrollRef: React.RefObject<HTMLElement | null>,
     wheelRef: React.RefObject<HTMLElement | null>, // element whose wheel events scroll the tabs (needed to preventDefault, since React wheel listeners are passive)
-    tabClassName: string
+    tabClassName: string,
 ) => {
     const [hiddenTabs, setHiddenTabs] = React.useState<number[]>([]);
     const [isShowHiddenTabs, setShowHiddenTabs] = React.useState<boolean>(false);
@@ -39,61 +39,82 @@ export const useTabOverflow = (
         hiddenTabsRef.current = hiddenTabs;
     });
 
-    const setScrollPosition = React.useCallback((p: number) => {
-        if (orientation === Orientation.HORZ) {
-            tabStripRef.current!.scrollLeft = p;
-        } else {
-            tabStripRef.current!.scrollTop = p;
-        }
-    }, [orientation, tabStripRef]);
+    const setScrollPosition = React.useCallback(
+        (p: number) => {
+            if (orientation === Orientation.HORZ) {
+                tabStripRef.current!.scrollLeft = p;
+            } else {
+                tabStripRef.current!.scrollTop = p;
+            }
+        },
+        [orientation, tabStripRef],
+    );
 
-    const getScrollPosition = React.useCallback((elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.scrollLeft;
-        } else {
-            return elm.scrollTop;
-        }
-    }, [orientation]);
+    const getScrollPosition = React.useCallback(
+        (elm: Element) => {
+            if (orientation === Orientation.HORZ) {
+                return elm.scrollLeft;
+            } else {
+                return elm.scrollTop;
+            }
+        },
+        [orientation],
+    );
 
-    const getElementSize = React.useCallback((elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.clientWidth;
-        } else {
-            return elm.clientHeight;
-        }
-    }, [orientation]);
+    const getElementSize = React.useCallback(
+        (elm: Element) => {
+            if (orientation === Orientation.HORZ) {
+                return elm.clientWidth;
+            } else {
+                return elm.clientHeight;
+            }
+        },
+        [orientation],
+    );
 
-    const getScrollSize = React.useCallback((elm: Element) => {
-        if (orientation === Orientation.HORZ) {
-            return elm.scrollWidth;
-        } else {
-            return elm.scrollHeight;
-        }
-    }, [orientation]);
+    const getScrollSize = React.useCallback(
+        (elm: Element) => {
+            if (orientation === Orientation.HORZ) {
+                return elm.scrollWidth;
+            } else {
+                return elm.scrollHeight;
+            }
+        },
+        [orientation],
+    );
 
-    const getSize = React.useCallback((rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.width;
-        } else {
-            return rect.height;
-        }
-    }, [orientation]);
+    const getSize = React.useCallback(
+        (rect: DOMRect | Rect) => {
+            if (orientation === Orientation.HORZ) {
+                return rect.width;
+            } else {
+                return rect.height;
+            }
+        },
+        [orientation],
+    );
 
-    const getNear = React.useCallback((rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.x;
-        } else {
-            return rect.y;
-        }
-    }, [orientation]);
+    const getNear = React.useCallback(
+        (rect: DOMRect | Rect) => {
+            if (orientation === Orientation.HORZ) {
+                return rect.x;
+            } else {
+                return rect.y;
+            }
+        },
+        [orientation],
+    );
 
-    const getFar = React.useCallback((rect: DOMRect | Rect) => {
-        if (orientation === Orientation.HORZ) {
-            return rect.right;
-        } else {
-            return rect.bottom;
-        }
-    }, [orientation]);
+    const getFar = React.useCallback(
+        (rect: DOMRect | Rect) => {
+            if (orientation === Orientation.HORZ) {
+                return rect.right;
+            } else {
+                return rect.bottom;
+            }
+        },
+        [orientation],
+    );
 
     const findHiddenTabs = React.useCallback((): number[] => {
         const hidden: number[] = [];
@@ -131,13 +152,13 @@ export const useTabOverflow = (
             const position = getScrollPosition(t);
 
             if (scrollSize > size && scrollSize > 0) {
-                let thumbSize = size * size / scrollSize;
+                let thumbSize = (size * size) / scrollSize;
                 let adjust = 0;
                 if (thumbSize < 20) {
                     adjust = 20 - thumbSize;
                     thumbSize = 20;
                 }
-                const thumbPos = position * (size - adjust) / scrollSize;
+                const thumbPos = (position * (size - adjust)) / scrollSize;
                 if (orientation === Orientation.HORZ) {
                     s.style.width = thumbSize + "px";
                     s.style.left = thumbPos + "px";
@@ -158,28 +179,31 @@ export const useTabOverflow = (
         }
     }, [orientation, tabStripRef, miniScrollRef, getElementSize, getScrollSize, getScrollPosition]);
 
-    const updateHiddenTabs = React.useCallback((isInitial = false) => {
-        const newHiddenTabs = findHiddenTabs();
-        const showHidden = newHiddenTabs.length > 0;
+    const updateHiddenTabs = React.useCallback(
+        (isInitial = false) => {
+            const newHiddenTabs = findHiddenTabs();
+            const showHidden = newHiddenTabs.length > 0;
 
-        if (showHidden !== isShowHiddenTabs) {
-            setShowHiddenTabs(showHidden);
-        }
+            if (showHidden !== isShowHiddenTabs) {
+                setShowHiddenTabs(showHidden);
+            }
 
-        if (isInitial) {
-            setHiddenTabs(newHiddenTabs);
-        } else if (updateHiddenTabsTimerRef.current === undefined) {
-            // throttle updates to prevent Maximum update depth exceeded error
-            updateHiddenTabsTimerRef.current = setTimeout(() => {
-                const currentHiddenTabs = findHiddenTabs();
-                if (!arraysEqual(currentHiddenTabs, hiddenTabsRef.current)) {
-                    setHiddenTabs(currentHiddenTabs);
-                }
+            if (isInitial) {
+                setHiddenTabs(newHiddenTabs);
+            } else if (updateHiddenTabsTimerRef.current === undefined) {
+                // throttle updates to prevent Maximum update depth exceeded error
+                updateHiddenTabsTimerRef.current = setTimeout(() => {
+                    const currentHiddenTabs = findHiddenTabs();
+                    if (!arraysEqual(currentHiddenTabs, hiddenTabsRef.current)) {
+                        setHiddenTabs(currentHiddenTabs);
+                    }
 
-                updateHiddenTabsTimerRef.current = undefined;
-            }, 100);
-        }
-    }, [findHiddenTabs, isShowHiddenTabs]);
+                    updateHiddenTabsTimerRef.current = undefined;
+                }, 100);
+            }
+        },
+        [findHiddenTabs, isShowHiddenTabs],
+    );
 
     const scrollIntoView = React.useCallback(() => {
         const selectedTabNode = node.getSelectedNode() as TabNode;
@@ -218,7 +242,7 @@ export const useTabOverflow = (
             }
 
             const offset = isDockStickyButtons ? 10 : 0; // prevents flashing, after sticky buttons docked set, must be 10 pixels smaller before unsetting
-            const dock = (contentSize + offset) > getElementSize(tabStripRef.current);
+            const dock = contentSize + offset > getElementSize(tabStripRef.current);
             if (dock !== isDockStickyButtons) {
                 setDockStickyButtons(dock);
             }
@@ -234,64 +258,73 @@ export const useTabOverflow = (
         updateHiddenTabs();
     }, [updateScrollMetrics, updateHiddenTabs]);
 
-    const onDragMove = React.useCallback((x: number, y: number) => {
-        if (tabStripRef.current && miniScrollRef.current) {
-            const t = tabStripRef.current;
-            const s = miniScrollRef.current;
-            const size = getElementSize(t);
-            const scrollSize = getScrollSize(t);
-            const thumbSize = getElementSize(s);
+    const onDragMove = React.useCallback(
+        (x: number, y: number) => {
+            if (tabStripRef.current && miniScrollRef.current) {
+                const t = tabStripRef.current;
+                const s = miniScrollRef.current;
+                const size = getElementSize(t);
+                const scrollSize = getScrollSize(t);
+                const thumbSize = getElementSize(s);
 
-            const r = t.getBoundingClientRect()!;
-            let thumb: number;
-            if (orientation === Orientation.HORZ) {
-                thumb = x - r.x - thumbInternalPos.current;
-            } else {
-                thumb = y - r.y - thumbInternalPos.current;
-            }
-
-            thumb = Math.max(0, Math.min(scrollSize - thumbSize, thumb));
-            if (size > 0) {
-                const scrollPos = thumb * scrollSize / size;
-                setScrollPosition(scrollPos);
-            }
-        }
-    }, [tabStripRef, miniScrollRef, orientation, getElementSize, getScrollSize, setScrollPosition]);
-
-    const onDragEnd = React.useCallback(() => { }, []);
-    const onDragCancel = React.useCallback(() => { }, []);
-
-    const onScrollPointerDown = React.useCallback((event: React.PointerEvent<HTMLElement>) => {
-        event.stopPropagation();
-        miniScrollRef.current!.setPointerCapture(event.pointerId);
-        const r = miniScrollRef.current!.getBoundingClientRect()!;
-        if (orientation === Orientation.HORZ) {
-            thumbInternalPos.current = event.clientX - r.x;
-        } else {
-            thumbInternalPos.current = event.clientY - r.y;
-        }
-        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
-    }, [miniScrollRef, orientation, onDragMove, onDragEnd, onDragCancel]);
-
-    const onMouseWheel = React.useCallback((event: React.WheelEvent<HTMLElement>) => {
-        if (tabStripRef.current) {
-            if (node.getChildren().length === 0) return;
-
-            let delta: number;
-            if (Math.abs(event.deltaY) > 0) {
-                delta = -event.deltaY;
-                if (event.deltaMode === 1) {
-                    // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
-                    delta *= 40;
+                const r = t.getBoundingClientRect()!;
+                let thumb: number;
+                if (orientation === Orientation.HORZ) {
+                    thumb = x - r.x - thumbInternalPos.current;
+                } else {
+                    thumb = y - r.y - thumbInternalPos.current;
                 }
-                const newPos = getScrollPosition(tabStripRef.current) - delta;
-                const maxScroll = getScrollSize(tabStripRef.current) - getElementSize(tabStripRef.current);
-                const p = Math.max(0, Math.min(maxScroll, newPos));
-                setScrollPosition(p);
-                event.stopPropagation();
+
+                thumb = Math.max(0, Math.min(scrollSize - thumbSize, thumb));
+                if (size > 0) {
+                    const scrollPos = (thumb * scrollSize) / size;
+                    setScrollPosition(scrollPos);
+                }
             }
-        }
-    }, [node, tabStripRef, getScrollPosition, getScrollSize, getElementSize, setScrollPosition]);
+        },
+        [tabStripRef, miniScrollRef, orientation, getElementSize, getScrollSize, setScrollPosition],
+    );
+
+    const onDragEnd = React.useCallback(() => {}, []);
+    const onDragCancel = React.useCallback(() => {}, []);
+
+    const onScrollPointerDown = React.useCallback(
+        (event: React.PointerEvent<HTMLElement>) => {
+            event.stopPropagation();
+            miniScrollRef.current!.setPointerCapture(event.pointerId);
+            const r = miniScrollRef.current!.getBoundingClientRect()!;
+            if (orientation === Orientation.HORZ) {
+                thumbInternalPos.current = event.clientX - r.x;
+            } else {
+                thumbInternalPos.current = event.clientY - r.y;
+            }
+            startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
+        },
+        [miniScrollRef, orientation, onDragMove, onDragEnd, onDragCancel],
+    );
+
+    const onMouseWheel = React.useCallback(
+        (event: React.WheelEvent<HTMLElement>) => {
+            if (tabStripRef.current) {
+                if (node.getChildren().length === 0) return;
+
+                let delta: number;
+                if (Math.abs(event.deltaY) > 0) {
+                    delta = -event.deltaY;
+                    if (event.deltaMode === 1) {
+                        // DOM_DELTA_LINE	0x01	The delta values are specified in lines.
+                        delta *= 40;
+                    }
+                    const newPos = getScrollPosition(tabStripRef.current) - delta;
+                    const maxScroll = getScrollSize(tabStripRef.current) - getElementSize(tabStripRef.current);
+                    const p = Math.max(0, Math.min(maxScroll, newPos));
+                    setScrollPosition(p);
+                    event.stopPropagation();
+                }
+            }
+        },
+        [node, tabStripRef, getScrollPosition, getScrollSize, getElementSize, setScrollPosition],
+    );
 
     const onWheel = React.useCallback((event: Event) => {
         event.preventDefault();
@@ -337,7 +370,7 @@ export const useTabOverflow = (
         if (!strip) {
             return;
         }
-        const resizeObserver = new (strip.ownerDocument.defaultView!).ResizeObserver(() => {
+        const resizeObserver = new strip.ownerDocument.defaultView!.ResizeObserver(() => {
             userControlledPositionRef.current = false;
             checkForOverflow();
             scrollIntoView();

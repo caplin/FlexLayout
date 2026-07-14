@@ -15,7 +15,6 @@ export interface IRowProps {
 
 /** @internal */
 export const Row = (props: IRowProps) => {
-        
     const { controller, rowNode } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
 
@@ -24,10 +23,13 @@ export const Row = (props: IRowProps) => {
     // register with the layout's central measure pass via a callback ref: it fires whenever
     // react attaches/detaches the element, including remounts the component cannot know about
     // (e.g. moving into the maximize portal), unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(rowNode, "row", element);
-    }, [controller, rowNode]);
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(rowNode, "row", element);
+        },
+        [controller, rowNode],
+    );
 
     const items: React.ReactNode[] = [];
 
@@ -35,7 +37,7 @@ export const Row = (props: IRowProps) => {
 
     for (const child of rowNode.getChildren()) {
         if (i > 0) {
-            items.push(<Splitter key={"splitter" + i} controller={controller} node={rowNode} index={i} horizontal={horizontal} />)
+            items.push(<Splitter key={"splitter" + i} controller={controller} node={rowNode} index={i} horizontal={horizontal} />);
         }
         if (child instanceof RowNode) {
             items.push(<Row key={child.getId()} controller={controller} rowNode={child} />);
@@ -46,7 +48,7 @@ export const Row = (props: IRowProps) => {
     }
 
     const style: React.CSSProperties = {
-        flexGrow: Math.max(1, rowNode.getWeight()*1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize 
+        flexGrow: Math.max(1, rowNode.getWeight() * 1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize
         minWidth: rowNode.getMinWidth(),
         minHeight: rowNode.getMinHeight(),
         maxWidth: rowNode.getMaxWidth(),
@@ -59,18 +61,11 @@ export const Row = (props: IRowProps) => {
         style.flexDirection = "column";
     }
 
-     return (
-        <div
-            ref={setSelfRef}
-            className={controller.getClassName(CLASSES.FLEXLAYOUT__ROW)}
-            style={style}
-            >
+    return (
+        <div ref={setSelfRef} className={controller.getClassName(CLASSES.FLEXLAYOUT__ROW)} style={style}>
             {items}
         </div>
     );
 };
 
-Row.displayName = 'Row'; // name in react dev tools
-
-
-
+Row.displayName = "Row"; // name in react dev tools

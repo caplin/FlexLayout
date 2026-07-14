@@ -8,7 +8,6 @@ export interface IFloatingWindowContainerProps {
 }
 
 export const FloatingWindowContainer = ({ controller }: IFloatingWindowContainerProps) => {
-    
     const floatingLayouts: React.ReactNode[] = [];
     const layouts = controller.getModel().getLayouts();
     let windowPopoutId = 0;
@@ -28,29 +27,21 @@ export const FloatingWindowContainer = ({ controller }: IFloatingWindowContainer
                         <div className={controller.getProps().popoutClassName}>
                             <LayoutInternal {...controller.getProps()} layoutId={layoutId} mainLayoutController={controller} />
                         </div>
-                    </PopoutWindow>
+                    </PopoutWindow>,
                 );
                 windowPopoutId++;
             } else if (layout.getType() === "float") {
                 floatingLayouts.push(
-                    <FloatWindow
-                        key={layoutId + "float"}
-                        controller={controller}
-                        layout={layout}
-                        zIndex={floatPopoutZIndex}
-                        onCloseLayout={controller.onCloseLayout}
-                    >
+                    <FloatWindow key={layoutId + "float"} controller={controller} layout={layout} zIndex={floatPopoutZIndex} onCloseLayout={controller.onCloseLayout}>
                         <LayoutInternal {...controller.getProps()} layoutId={layoutId} mainLayoutController={controller} />
-                    </FloatWindow>
+                    </FloatWindow>,
                 );
                 floatPopoutZIndex++;
             }
         }
     }
 
-
     return <>{floatingLayouts}</>;
 };
 
-FloatingWindowContainer.displayName = 'FloatingWindowContainer'; // name in react dev tools
-
+FloatingWindowContainer.displayName = "FloatingWindowContainer"; // name in react dev tools

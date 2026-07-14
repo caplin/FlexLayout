@@ -1,6 +1,24 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import { Action, Actions, BorderNode, IJsonTabNode, ITabRenderValues, ITabSetRenderValues, Layout, Model, Node, TabNode, TabSetNode, AddIcon, MenuIcon, SettingsIcon, ILayoutApi, showPopupMenu, PopupMenuEntry } from "../src/index";
+import {
+    Action,
+    Actions,
+    BorderNode,
+    IJsonTabNode,
+    ITabRenderValues,
+    ITabSetRenderValues,
+    Layout,
+    Model,
+    Node,
+    TabNode,
+    TabSetNode,
+    AddIcon,
+    MenuIcon,
+    SettingsIcon,
+    ILayoutApi,
+    showPopupMenu,
+    PopupMenuEntry,
+} from "../src/index";
 import { NewFeatures } from "./NewFeatures";
 import { SimpleForm } from "./SimpleForm";
 import { Utils } from "./Utils";
@@ -16,8 +34,8 @@ import BarChart from "./chart";
 import * as Prism from "prismjs";
 
 import "prismjs/themes/prism-coy.css";
-import '../style/combined.scss';
-import './styles.css';
+import "../style/combined.scss";
+import "./styles.css";
 import { Attributes } from "./Attributes";
 import { TabLayout } from "../src/view/TabLayout";
 
@@ -30,13 +48,13 @@ const randomString = (len: number, chars: string) => {
     }
 
     return a.join("");
-}
+};
 
 const makeFakeData = () => {
     const data = [];
     const r = Math.random() * 50;
     for (let i = 0; i < r; i++) {
-        const rec: { [key: string]: any; } = {};
+        const rec: { [key: string]: any } = {};
         rec.Name = randomString(5, "BCDFGHJKLMNPQRSTVWXYZ");
         for (let j = 1; j < fields.length; j++) {
             rec[fields[j]] = (1.5 + Math.random() * 2).toFixed(2);
@@ -44,9 +62,9 @@ const makeFakeData = () => {
         data.push(rec);
     }
     return data;
-}
+};
 
-const ContextExample = React.createContext('');
+const ContextExample = React.createContext("");
 
 const borderIconStyle = { width: "1em", height: "1em", display: "flex", alignItems: "center" };
 
@@ -87,7 +105,7 @@ function App() {
     const latestModel = React.useRef<Model | null>(model);
     const latestLayoutFile = React.useRef<string | null>(layoutFile);
 
-     React.useEffect(() => {
+    React.useEffect(() => {
         latestModel.current = model;
         latestLayoutFile.current = layoutFile;
         // e2e test hooks (used by popout-leak.spec / popup-position.spec): drive the live model and
@@ -96,12 +114,12 @@ function App() {
         (window as any).__flexActions = Actions;
         (window as any).__flexModel = () => latestModel.current;
         (window as any).__flexLayout = () => layoutRef.current;
-     });
+    });
 
     const save = () => {
         const jsonStr = JSON.stringify(latestModel.current!.toJson(), null, "\t");
         localStorage.setItem(latestLayoutFile.current!, jsonStr);
-    }
+    };
 
     const load = (jsonText: string) => {
         const json = JSON.parse(jsonText);
@@ -120,11 +138,11 @@ function App() {
         // you can control where nodes can be dropped
         //model.setOnAllowDrop(this.allowDrop);
 
-        const html = Prism.highlight(jsonText, Prism.languages.javascript, 'javascript');
+        const html = Prism.highlight(jsonText, Prism.languages.javascript, "javascript");
         setLayoutFile(loadingLayoutName!.current);
         setModel(model);
         setJson(html);
-    }
+    };
 
     const loadLayout = (layoutName: string, reload?: boolean) => {
         if (layoutFile !== null) {
@@ -144,7 +162,7 @@ function App() {
         if (!loaded) {
             Utils.downloadFile("layouts/" + layoutName + ".layout", load, error);
         }
-    }
+    };
 
     // const allowDrop = (dragNode: (TabNode | TabSetNode), dropInfo: DropInfo) => {
     //     let dropNode = dropInfo.node;
@@ -162,7 +180,7 @@ function App() {
 
     const error = (reason: string) => {
         alert("Error loading json config file: " + loadingLayoutName.current + "\n" + reason);
-    }
+    };
 
     React.useEffect(() => {
         // save layout when unloading page
@@ -172,7 +190,7 @@ function App() {
 
         const url = new URL(window.location.href);
         const params = new URLSearchParams(url.search);
-        const layout = params.get('layout') || "default";
+        const layout = params.get("layout") || "default";
 
         loadLayout(layout, false);
 
@@ -182,28 +200,27 @@ function App() {
     }, []);
 
     const onAddActiveClick = (_event: React.MouseEvent) => {
-
         if (layoutFile?.startsWith("test_")) {
             layoutRef!.current!.addTabToActiveTabSet({
                 component: "testing",
-                name: "Text" + nextGridIndex.current++
+                name: "Text" + nextGridIndex.current++,
             });
         } else {
             layoutRef!.current!.addTabToActiveTabSet({
                 component: "grid",
                 icon: "images/article.svg",
-                name: "Grid " + nextGridIndex.current++
+                name: "Grid " + nextGridIndex.current++,
             });
         }
-    }
+    };
 
     const onAddFromTabSetButton = (node: TabSetNode | BorderNode) => {
         const addedTab = layoutRef!.current!.addTabToTabSet(node.getId(), {
             component: "grid",
-            name: "Grid " + nextGridIndex.current++
+            name: "Grid " + nextGridIndex.current++,
         });
         console.log("Added tab", addedTab);
-    }
+    };
 
     const onAddPopoutClick = (_event: React.MouseEvent) => {
         const rootDiv = layoutRef.current?.getRootDiv();
@@ -214,54 +231,58 @@ function App() {
             const x = Math.round((rootRect.width - width) / 2);
             const y = Math.round((rootRect.height - height) / 2);
 
-            model.doAction(Actions.createPopout(
-                {
-                    type: "row",
-                    children: [
-                        {
-                            type: "tabset",
-                            children: [
-                                {
-                                    component: "grid",
-                                    name: "Grid " + nextGridIndex.current++
-                                }
-                            ]
-                        }
-                    ]
-                },
-                { x, y, width, height },
-                "float"
-            ));
+            model.doAction(
+                Actions.createPopout(
+                    {
+                        type: "row",
+                        children: [
+                            {
+                                type: "tabset",
+                                children: [
+                                    {
+                                        component: "grid",
+                                        name: "Grid " + nextGridIndex.current++,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    { x, y, width, height },
+                    "float",
+                ),
+            );
         }
-    }
+    };
 
     const onRealtimeResize = (event: React.ChangeEvent<HTMLInputElement>) => {
         setRealtimeResize(event.target.checked);
-    }
+    };
 
     const onShowLayout = (event: React.ChangeEvent<HTMLInputElement>) => {
         setShowLayout(event.target.checked);
-    }
+    };
 
     const onAttrs = (event: React.ChangeEvent<HTMLInputElement>) => {
         setAttrs(event.target.checked);
-    }
+    };
 
     const onRenderDragRect = (content: React.ReactNode | undefined, _node?: Node, _json?: IJsonTabNode) => {
         if (layoutFile === "newfeatures") {
-            return (<>
-                {content}
-                <div style={{ whiteSpace: "pre" }}>
-                    <br />
-                    This is a customized<br />
-                    drag rectangle
-                </div>
-            </>
+            return (
+                <>
+                    {content}
+                    <div style={{ whiteSpace: "pre" }}>
+                        <br />
+                        This is a customized
+                        <br />
+                        drag rectangle
+                    </div>
+                </>
             );
         } else {
             return undefined; // use default rendering
         }
-    }
+    };
 
     const onContextMenu = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
@@ -305,46 +326,45 @@ function App() {
                 contextMenuHideRef.current = null;
             },
         });
-    }
+    };
 
     const onAuxMouseClick = (_node: TabNode | TabSetNode | BorderNode, _event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         // console.log(node, event);
-    }
+    };
 
     const onTableDragStart = (event: React.DragEvent<HTMLDivElement>, node: Node) => {
         layoutRef.current!.moveTabWithDragAndDrop(event.nativeEvent, node as TabNode);
-    }
+    };
 
     const onDragStart = (event: React.DragEvent<HTMLElement>) => {
         event.stopPropagation();
         if (layoutFile?.startsWith("test_")) {
             const gridName = "Text" + nextGridIndex.current++;
-            event.dataTransfer.setData('text/plain', "FlexLayoutTab:" + JSON.stringify({ name: gridName }));
+            event.dataTransfer.setData("text/plain", "FlexLayoutTab:" + JSON.stringify({ name: gridName }));
             layoutRef.current!.setDragComponent(event.nativeEvent, gridName, 10, 10);
-            layoutRef.current!.addTabWithDragAndDrop(event.nativeEvent, { name: gridName, component: "testing", "icon": "images/article.svg" });
-
+            layoutRef.current!.addTabWithDragAndDrop(event.nativeEvent, { name: gridName, component: "testing", icon: "images/article.svg" });
         } else {
             const gridName = "Grid " + nextGridIndex.current++;
-            event.dataTransfer.setData('text/plain', "FlexLayoutTab:" + JSON.stringify({ name: gridName }));
+            event.dataTransfer.setData("text/plain", "FlexLayoutTab:" + JSON.stringify({ name: gridName }));
             layoutRef.current!.setDragComponent(event.nativeEvent, gridName, 10, 10);
-            layoutRef.current!.addTabWithDragAndDrop(event.nativeEvent, { name: gridName, component: "grid", "icon": "images/article.svg" });
+            layoutRef.current!.addTabWithDragAndDrop(event.nativeEvent, { name: gridName, component: "grid", icon: "images/article.svg" });
         }
-    }
+    };
 
     const onExternalDrag = (e: React.DragEvent<HTMLElement>) => {
         // console.log("onExternaldrag ", e.dataTransfer.types);
         // Check for supported content type
         const validTypes = ["text/uri-list", "text/html", "text/plain"];
-        if (e.dataTransfer.types.find(t => validTypes.indexOf(t) !== -1) === undefined) return;
+        if (e.dataTransfer.types.find((t) => validTypes.indexOf(t) !== -1) === undefined) return;
         // Set dropEffect (icon)
         e.dataTransfer.dropEffect = "link";
         return {
             json: {
                 type: "tab",
-                component: "multitype"
+                component: "multitype",
             },
             onDrop: (node?: Node, event?: React.DragEvent<HTMLElement>) => {
-                if (!node || !event) return;  // aborted drag
+                if (!node || !event) return; // aborted drag
 
                 if (node instanceof TabNode) {
                     if (event.dataTransfer) {
@@ -360,8 +380,8 @@ function App() {
                         }
                     }
                 }
-            }
-        }
+            },
+        };
     };
 
     const onRerenderClick = (_event: React.MouseEvent) => {
@@ -371,11 +391,11 @@ function App() {
 
     const onShowLayoutClick = (_event: React.MouseEvent) => {
         console.log(JSON.stringify(model!.toJson(), null, "\t"));
-    }
+    };
 
     const onAction = (action: Action) => {
         return action;
-    }
+    };
 
     const factory = (node: TabNode) => {
         // log lifecycle events
@@ -384,69 +404,63 @@ function App() {
         // node.setEventListener("close", function(p){console.log("close", node.getName());});
 
         if (attrs) {
-            return <Attributes node={node} />
+            return <Attributes node={node} />;
         }
 
         const component = node.getComponent();
 
         if (component === "json") {
-            return (<JsonView model={latestModel.current!} />);
-        }
-        else if (component === "user sublayout") {
+            return <JsonView model={latestModel.current!} />;
+        } else if (component === "user sublayout") {
             /*
                 If you define both a component and a subLayoutId in the tab then you must
                 render the sublayout here by wrapping the <TabLayout> component.
             */
-            return (<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-                <div title="Header rendered in factory method"
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "var(--color-tab-unselected)",
-                        backgroundColor: "var(--color-tabset-background)",
-                        marginBottom: 5,
-                        fontWeight: 500,
-                    }}>User Defined Header</div>
-                <TabLayout tabNode={node} />
-            </div>);
-        }
-        else if (component === "simpleform") {
-            return <SimpleForm />
-        }
-        else if (component === "mui") {
-            return <MUIComponent />
-        }
-        else if (component === "muigrid") {
-            return <MUIDataGrid theme={popoutClassName} />
-        }
-        else if (component === "aggrid") {
-            return <AGGridExample theme={popoutClassName} />
-        }
-        else if (component === "chart") {
-            return <BarChart />
-        }
-        else if (component === "actionlog") {
+            return (
+                <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                    <div
+                        title="Header rendered in factory method"
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "var(--color-tab-unselected)",
+                            backgroundColor: "var(--color-tabset-background)",
+                            marginBottom: 5,
+                            fontWeight: 500,
+                        }}
+                    >
+                        User Defined Header
+                    </div>
+                    <TabLayout tabNode={node} />
+                </div>
+            );
+        } else if (component === "simpleform") {
+            return <SimpleForm />;
+        } else if (component === "mui") {
+            return <MUIComponent />;
+        } else if (component === "muigrid") {
+            return <MUIDataGrid theme={popoutClassName} />;
+        } else if (component === "aggrid") {
+            return <AGGridExample theme={popoutClassName} />;
+        } else if (component === "chart") {
+            return <BarChart />;
+        } else if (component === "actionlog") {
             return <ActionLog model={model!} />;
-        }
-        else if (component === "map") {
-            return <MapComponent />
-        }
-        else if (component === "monaco") {
-            return <MonacoComponent />
-        }
-        else if (component === "xterm") {
-            return <TerminalComponent getModel={() => latestModel.current} layoutApi={layoutRef} />
-        }
-        else if (component === "grid") {
+        } else if (component === "map") {
+            return <MapComponent />;
+        } else if (component === "monaco") {
+            return <MonacoComponent />;
+        } else if (component === "xterm") {
+            return <TerminalComponent getModel={() => latestModel.current} layoutApi={layoutRef} />;
+        } else if (component === "grid") {
             if (node.getExtraData().data == null) {
                 // create data in node extra data first time accessed
                 node.getExtraData().data = makeFakeData();
             }
 
             return <SimpleTable fields={fields} data={node.getExtraData().data} node={node} onDragStart={onTableDragStart} />;
-        }
-        else if (component === "sub") {
+        } else if (component === "sub") {
             let model = node.getExtraData().model;
             if (model == null) {
                 node.getExtraData().model = Model.fromJson(node.getConfig().model);
@@ -455,37 +469,30 @@ function App() {
                 node.setEventListener("save", (_p: any) => {
                     latestModel.current!.doAction(Actions.updateNodeAttributes(node.getId(), { config: { model: node.getExtraData().model.toJson() } }));
                     //  node.getConfig().model = node.getExtraData().model.toJson();
-                }
-                );
+                });
             }
 
             return <Layout model={model} factory={factory} />;
-        }
-        else if (component === "text") {
+        } else if (component === "text") {
             try {
                 return <div dangerouslySetInnerHTML={{ __html: node.getConfig().text }} />;
             } catch (e) {
                 console.log(e);
             }
-        }
-        else if (component === "newfeatures") {
+        } else if (component === "newfeatures") {
             return <NewFeatures />;
-        }
-        else if (component === "multitype") {
+        } else if (component === "multitype") {
             try {
                 const config = node.getConfig();
                 if (config.type === "url") {
                     return <iframe title={node.getId()} src={config.data} style={{ display: "block", border: "none", boxSizing: "border-box" }} width="100%" height="100%" />;
                 } else if (config.type === "html") {
-                    return (<div dangerouslySetInnerHTML={{ __html: config.data }} />);
+                    return <div dangerouslySetInnerHTML={{ __html: config.data }} />;
                 } else if (config.type === "text") {
-                    return (
-                        <textarea style={{ position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }}
-                            defaultValue={config.data}
-                        />);
+                    return <textarea style={{ position: "absolute", width: "100%", height: "100%", resize: "none", boxSizing: "border-box", border: "none" }} defaultValue={config.data} />;
                 }
             } catch (e) {
-                return (<div>{String(e)}</div>);
+                return <div>{String(e)}</div>;
             }
         } else if (component === "testing") {
             return <div className="tab_content">{node.getName()}</div>;
@@ -493,32 +500,21 @@ function App() {
             // used by the iframe state-preservation e2e test: the srcDoc stamps a unique id on each
             // (re)load onto document.body, so a test can tell whether the iframe was reloaded when
             // its tab moved (preserved in-layout, reloaded when moved to a popout window)
-            const srcDoc =
-                "<!doctype html><body><input id='field'>" +
-                "<script>document.body.dataset.loadId=Math.random().toString(36).slice(2)</script>";
-            return (
-                <iframe
-                    title={node.getId()}
-                    data-testid="state-iframe"
-                    srcDoc={srcDoc}
-                    style={{ display: "block", border: "none", boxSizing: "border-box" }}
-                    width="100%"
-                    height="100%"
-                />
-            );
+            const srcDoc = "<!doctype html><body><input id='field'>" + "<script>document.body.dataset.loadId=Math.random().toString(36).slice(2)</script>";
+            return <iframe title={node.getId()} data-testid="state-iframe" srcDoc={srcDoc} style={{ display: "block", border: "none", boxSizing: "border-box" }} width="100%" height="100%" />;
         }
 
         return null;
-    }
+    };
 
     const onSelectLayout = (event: React.FormEvent) => {
         const target = event.target as HTMLSelectElement;
         loadLayout(target.value);
-    }
+    };
 
     const onReloadFromFile = (_event: React.MouseEvent) => {
         loadLayout(layoutFile!, true);
-    }
+    };
 
     const onThemeChange = (event: React.FormEvent) => {
         const target = event.target as HTMLSelectElement;
@@ -526,15 +522,15 @@ function App() {
         document.documentElement.className = themeClassName;
         // need to set popout top level class name to new theme
         setPopoutClassName(themeClassName);
-    }
+    };
 
     const onFontSizeChange = (event: React.FormEvent) => {
         const target = event.target as HTMLSelectElement;
         setFontSize(target.value);
 
-        const flexLayoutElement = document.querySelector('.flexlayout__layout') as HTMLElement | null;
-        flexLayoutElement!.style.setProperty('--font-size', target.value);
-    }
+        const flexLayoutElement = document.querySelector(".flexlayout__layout") as HTMLElement | null;
+        flexLayoutElement!.style.setProperty("--font-size", target.value);
+    };
 
     const onRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
         // renderValues.content = (<div>hello</div>);
@@ -547,29 +543,32 @@ function App() {
         // playwright testing
         if (layoutFile?.startsWith("test_")) {
             if (node.getId() === "onRenderTab1") {
-                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />
+                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />;
                 renderValues.content = "onRenderTab1";
                 renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
             } else if (node.getId() === "onRenderTab2") {
-                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />
+                renderValues.leading = <img src="images/settings.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />;
                 renderValues.content = "onRenderTab2";
                 renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
             }
         }
-    }
+    };
 
-    const onRenderTabSet = (node: (TabSetNode | BorderNode), renderValues: ITabSetRenderValues) => {
+    const onRenderTabSet = (node: TabSetNode | BorderNode, renderValues: ITabSetRenderValues) => {
         if (node instanceof TabSetNode) {
             if (layoutFile === "newfeatures") {
-                const button = createButton("Menu for selected tab", "menubtn", (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
-                    const selected = node.getSelectedNode();
-                    if (selected instanceof TabNode) {
-                        onContextMenu(selected, e);
-                    }
-                }, <MenuIcon />);
-                renderValues.leading = <div style={{ display: "flex", alignItems: "center", alignContent: "center", padding: 3 }}>
-                    {button}
-                </div>;
+                const button = createButton(
+                    "Menu for selected tab",
+                    "menubtn",
+                    (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+                        const selected = node.getSelectedNode();
+                        if (selected instanceof TabNode) {
+                            onContextMenu(selected, e);
+                        }
+                    },
+                    <MenuIcon />,
+                );
+                renderValues.leading = <div style={{ display: "flex", alignItems: "center", alignContent: "center", padding: 3 }}>{button}</div>;
             }
 
             if (layoutFile === "newfeatures") {
@@ -581,21 +580,26 @@ function App() {
 
                 renderValues.stickyButtons.push(button);
                 // put overflow button before + button (default is after)
-                // renderValues.overflowPosition=0    
+                // renderValues.overflowPosition=0
             }
         }
 
-        if (node instanceof BorderNode &&
+        if (
+            node instanceof BorderNode &&
             node.getSelected() !== -1 && // only when the border panel is showing
-            (layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_overlay")) {
+            (layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_overlay")
+        ) {
             // toggle between the split and overlay border types; the icon shows the current
             // mode: the panel splitting the layout, or floating over it
             const overlay = node.isOverlay();
-            renderValues.buttons.push(createButton(
-                overlay ? "Overlay border (toggle to split)" : "Split border (toggle to overlay)",
-                "bordertype",
-                () => model?.doAction(Actions.setBorderType(node.getId(), overlay ? "split" : "overlay")),
-                overlay ? <OverlayBorderIcon /> : <SplitBorderIcon />));
+            renderValues.buttons.push(
+                createButton(
+                    overlay ? "Overlay border (toggle to split)" : "Split border (toggle to overlay)",
+                    "bordertype",
+                    () => model?.doAction(Actions.setBorderType(node.getId(), overlay ? "split" : "overlay")),
+                    overlay ? <OverlayBorderIcon /> : <SplitBorderIcon />,
+                ),
+            );
         }
 
         // playwright testing
@@ -610,86 +614,99 @@ function App() {
                 renderValues.buttons.push(<img src="images/settings.svg" key="2" alt="" style={{ width: "1em", height: "1em" }} />);
             } else if (node.getId() === "onRenderTabSet3") {
                 renderValues.stickyButtons.push(
-                    <img src="images/add.svg"
+                    <img
+                        src="images/add.svg"
                         alt="Add"
                         key="Add button"
                         title="Add Tab (using onRenderTabSet callback, see Demo)"
                         style={{ marginLeft: 5, width: 24, height: 24 }}
-                    // onClick={() => this.onAddFromTabSetButton(node)}
-                    />);
+                        // onClick={() => this.onAddFromTabSetButton(node)}
+                    />,
+                );
             } else if (node instanceof BorderNode) {
                 renderValues.buttons.push(<img src="images/folder.svg" key="1" alt="" style={{ width: "1em", height: "1em" }} />);
                 renderValues.buttons.push(<img src="images/settings.svg" key="2" alt="" style={{ width: "1em", height: "1em" }} />);
             }
         }
-    }
+    };
 
     const createButton = (title: string, key: string, handler: React.MouseEventHandler | undefined, content: React.ReactNode) => {
-        return (<button className="flexlayout__tab_toolbar_button"
-            title={title}
-            key={key}
-            tabIndex={0} // Safari only tabs to elements with an explicit tabindex
-            style={{ display: "flex", alignItems: "center" }}
-            onClick={handler}>
-            {content}
-        </button>);
-    }
+        return (
+            <button
+                className="flexlayout__tab_toolbar_button"
+                title={title}
+                key={key}
+                tabIndex={0} // Safari only tabs to elements with an explicit tabindex
+                style={{ display: "flex", alignItems: "center" }}
+                onClick={handler}
+            >
+                {content}
+            </button>
+        );
+    };
 
     const onTabSetPlaceHolder = (_node: TabSetNode) => {
-        return <div
-            key="placeholder"
-            style={{
-                display: "flex",
-                flexGrow: 1,
-                alignItems: "center",
-                justifyContent: "center"
-            }}>Drag tabs to this area</div>;
-    }
+        return (
+            <div
+                key="placeholder"
+                style={{
+                    display: "flex",
+                    flexGrow: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                Drag tabs to this area
+            </div>
+        );
+    };
 
     let contents: React.ReactNode = "loading ...";
     if (model !== null) {
-        contents = <Layout
-            ref={layoutRef}
-            model={model}
-            popoutClassName={popoutClassName}
-            popoutWindowName="Demo Popout"
-            factory={factory}
-            onAction={onAction}
-            onRenderTab={onRenderTab}
-            onRenderTabSet={onRenderTabSet}
-            onRenderDragRect={onRenderDragRect}
-            onExternalDrag={onExternalDrag}
-            realtimeResize={realtimeResize}
-            keyMap={{ focusTabToggle: "F6", focusNextTabset: "Ctrl+]", focusPreviousTabset: "Ctrl+[" }}
-            onContextMenu={layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_pinned" || layoutFile === "test_overlay" ? onContextMenu : undefined}
-            onAuxMouseClick={layoutFile === "newfeatures" ? onAuxMouseClick : undefined}
-            // icons={{
-            //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
-            //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
-            //     }
-            // }}
-            onTabSetPlaceHolder={onTabSetPlaceHolder}
+        contents = (
+            <Layout
+                ref={layoutRef}
+                model={model}
+                popoutClassName={popoutClassName}
+                popoutWindowName="Demo Popout"
+                factory={factory}
+                onAction={onAction}
+                onRenderTab={onRenderTab}
+                onRenderTabSet={onRenderTabSet}
+                onRenderDragRect={onRenderDragRect}
+                onExternalDrag={onExternalDrag}
+                realtimeResize={realtimeResize}
+                keyMap={{ focusTabToggle: "F6", focusNextTabset: "Ctrl+]", focusPreviousTabset: "Ctrl+[" }}
+                onContextMenu={layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_pinned" || layoutFile === "test_overlay" ? onContextMenu : undefined}
+                onAuxMouseClick={layoutFile === "newfeatures" ? onAuxMouseClick : undefined}
+                // icons={{
+                //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
+                //         return (<div style={{fontSize:".7em"}}>{hiddenTabs.length}</div>);
+                //     }
+                // }}
+                onTabSetPlaceHolder={onTabSetPlaceHolder}
 
-        // classNameMapper={
-        //     className => {
-        //         console.log(className);
-        //         if (className === "flexlayout__tab_button--selected") {
-        //             className = "override__tab_button--selected";
-        //         }
-        //         return className;
-        //     }
-        // }
-        // i18nMapper = {
-        //     (id, param?) => {
-        //         if (id === I18nLabel.Move_Tab) {
-        //             return `move this tab: ${param}`;
-        //         } else if (id === I18nLabel.Move_Tabset) {
-        //             return `move this tabset`
-        //         }
-        //         return undefined;
-        //     }
-        // }
-        />;
+                // classNameMapper={
+                //     className => {
+                //         console.log(className);
+                //         if (className === "flexlayout__tab_button--selected") {
+                //             className = "override__tab_button--selected";
+                //         }
+                //         return className;
+                //     }
+                // }
+                // i18nMapper = {
+                //     (id, param?) => {
+                //         if (id === I18nLabel.Move_Tab) {
+                //             return `move this tab: ${param}`;
+                //         } else if (id === I18nLabel.Move_Tabset) {
+                //             return `move this tabset`
+                //         }
+                //         return undefined;
+                //     }
+                // }
+            />
+        );
     }
 
     return (
@@ -705,33 +722,26 @@ function App() {
                             <option value="sub">SubLayout</option>
                             <option value="complex">Complex</option>
                         </select>
-                        <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>Reload</button>
+                        <button key="reloadbutton" className="toolbar_control" onClick={onReloadFromFile} style={{ marginLeft: 5 }}>
+                            Reload
+                        </button>
                         <div style={{ flexGrow: 1 }}></div>
-                        <button className="toolbar_control" data-id="rerender" style={{ marginRight: 5 }} title="Round trip the model through toJson/fromJson and set the new model" onClick={onRerenderClick}>To-From JSON</button>
+                        <button
+                            className="toolbar_control"
+                            data-id="rerender"
+                            style={{ marginRight: 5 }}
+                            title="Round trip the model through toJson/fromJson and set the new model"
+                            onClick={onRerenderClick}
+                        >
+                            To-From JSON
+                        </button>
                         <span style={{ marginLeft: 5 }}>Realtime resize</span>
-                        <input
-                            name="realtimeResize"
-                            type="checkbox"
-                            aria-label="Realtime resize"
-                            checked={realtimeResize}
-                            onChange={onRealtimeResize} />
+                        <input name="realtimeResize" type="checkbox" aria-label="Realtime resize" checked={realtimeResize} onChange={onRealtimeResize} />
                         <span style={{ marginLeft: 5 }}>Show layout</span>
-                        <input
-                            name="show layout"
-                            type="checkbox"
-                            aria-label="Show layout"
-                            checked={showLayout}
-                            onChange={onShowLayout} />
+                        <input name="show layout" type="checkbox" aria-label="Show layout" checked={showLayout} onChange={onShowLayout} />
                         <span style={{ marginLeft: 5 }}>Attributes</span>
-                        <input
-                            name="attrs"
-                            type="checkbox"
-                            aria-label="Attributes"
-                            checked={attrs}
-                            onChange={onAttrs} />
-                        <select className="toolbar_control" aria-label="Font size" style={{ marginLeft: 5 }}
-                            onChange={onFontSizeChange}
-                            defaultValue="medium">
+                        <input name="attrs" type="checkbox" aria-label="Attributes" checked={attrs} onChange={onAttrs} />
+                        <select className="toolbar_control" aria-label="Font size" style={{ marginLeft: 5 }} onChange={onFontSizeChange} defaultValue="medium">
                             <option value="xx-small">Size xx-small</option>
                             <option value="x-small">Size x-small</option>
                             <option value="small">Size small</option>
@@ -758,27 +768,34 @@ function App() {
                             <option value="underline">Underline</option>
                             <option value="gray">Gray</option>
                         </select>
-                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="print layout json to the developer console" onClick={onShowLayoutClick}>{"Print"}</button>
-                        <button className="toolbar_control drag-from" data-id="add-drag" draggable={true}
+                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="print layout json to the developer console" onClick={onShowLayoutClick}>
+                            {"Print"}
+                        </button>
+                        <button
+                            className="toolbar_control drag-from"
+                            data-id="add-drag"
+                            draggable={true}
                             style={{ height: "30px", marginLeft: 5, border: "none", outline: "none" }}
                             title="Add tab by starting a drag on a draggable element"
-                            onDragStart={onDragStart}>
+                            onDragStart={onDragStart}
+                        >
                             Add Drag
                         </button>
-                        <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={onAddActiveClick}>Add Active</button>
-                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="Add using Actions.createPopout" onClick={onAddPopoutClick}>Add Float</button>
+                        <button className="toolbar_control" data-id="add-active" style={{ marginLeft: 5 }} title="Add using Layout.addTabToActiveTabSet" onClick={onAddActiveClick}>
+                            Add Active
+                        </button>
+                        <button className="toolbar_control" style={{ marginLeft: 5 }} title="Add using Actions.createPopout" onClick={onAddPopoutClick}>
+                            Add Float
+                        </button>
                     </div>
-                    <div className={"contents" + (showLayout ? " showLayout" : "")}>
-                        {contents}
-                    </div>
+                    <div className={"contents" + (showLayout ? " showLayout" : "")}>{contents}</div>
                 </div>
             </ContextExample.Provider>
         </React.StrictMode>
     );
 }
 
-function SimpleTable(props: { fields: any, node: Node, data: any, onDragStart: (event: React.DragEvent<HTMLDivElement>, node: Node) => void }) {
-
+function SimpleTable(props: { fields: any; node: Node; data: any; onDragStart: (event: React.DragEvent<HTMLDivElement>, node: Node) => void }) {
     // if (Math.random()>0.8) throw Error("oppps I crashed");
     const headercells = props.fields.map(function (field: any) {
         return <th key={field}>{field}</th>;
@@ -790,12 +807,14 @@ function SimpleTable(props: { fields: any, node: Node, data: any, onDragStart: (
         rows.push(<tr key={i}>{row}</tr>);
     }
 
-    return <table className="simple_table">
-        <tbody>
-            <tr>{headercells}</tr>
-            {rows}
-        </tbody>
-    </table>;
+    return (
+        <table className="simple_table">
+            <tbody>
+                <tr>{headercells}</tr>
+                {rows}
+            </tbody>
+        </table>
+    );
 }
 
 // function InnerComponent() {
@@ -804,4 +823,4 @@ function SimpleTable(props: { fields: any, node: Node, data: any, onDragStart: (
 // }
 
 const root = createRoot(document.getElementById("container")!);
-root.render(<App />)
+root.render(<App />);

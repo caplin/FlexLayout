@@ -157,7 +157,7 @@ export class BorderNode extends Node implements IDropTarget {
     }
 
     toJson(): IJsonBorderNode {
-        const json: IJsonBorderNode = {location: "bottom"};
+        const json: IJsonBorderNode = { location: "bottom" };
         BorderNode.attributeDefinitions.toJson(json, this.attributes);
         json.location = this.location.getName() as IBorderLocation;
         json.children = this.children.map((child) => (child as TabNode).toJson());
@@ -420,51 +420,41 @@ export class BorderNode extends Node implements IDropTarget {
         const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", BorderNode.TYPE, true).setType(Attribute.STRING).setFixed();
 
-        attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER).setDescription(
-            `index of selected/visible tab in border; -1 means no tab selected`
-        );
-        attributeDefinitions.add("borderType", "split").setType(Attribute.STRING).setDescription(
-            `the border display type: 'split' splits the main layout to make room when a tab is selected; 'overlay' shows
+        attributeDefinitions.add("selected", -1).setType(Attribute.NUMBER).setDescription(`index of selected/visible tab in border; -1 means no tab selected`);
+        attributeDefinitions
+            .add("borderType", "split")
+            .setType(Attribute.STRING)
+            .setDescription(
+                `the border display type: 'split' splits the main layout to make room when a tab is selected; 'overlay' shows
             the selected tab's panel as an overlay on top of the main layout area, and the tab is deselected
             by a pointer-down in the main layout area (Visual Studio style auto hide). Set via
             Actions.setBorderType. Not related to enableAutoHide (which hides the border strip when it has
-            zero tabs)`
-        );
-        attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN).setDescription(
-            `show/hide this border`
-        );
-        attributeDefinitions.add("config", undefined).setType("any").setDescription(
-            `a place to hold json config used in your own code`
-        );
+            zero tabs)`,
+            );
+        attributeDefinitions.add("show", true).setType(Attribute.BOOLEAN).setDescription(`show/hide this border`);
+        attributeDefinitions.add("config", undefined).setType("any").setDescription(`a place to hold json config used in your own code`);
 
-        attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN).setDescription(
-            `whether tabs can be dropped into this border`
-        );
-        attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING).setDescription(
-            `class applied to tab button`
-        );
-        attributeDefinitions.addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen").setType(Attribute.BOOLEAN).setDescription(
-            `whether to select new/moved tabs in border when the border is already open`
-        );
-        attributeDefinitions.addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed").setType(Attribute.BOOLEAN).setDescription(
-            `whether to select new/moved tabs in border when the border is currently closed`
-        );
-        attributeDefinitions.addInherited("size", "borderSize").setType(Attribute.NUMBER).setDescription(
-            `size of the tab area when selected`
-        );
-        attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute.NUMBER).setDescription(
-            `the minimum size of the tab area`
-        );
-        attributeDefinitions.addInherited("maxSize", "borderMaxSize").setType(Attribute.NUMBER).setDescription(
-            `the maximum size of the tab area`
-        );
-        attributeDefinitions.addInherited("enableAutoHide", "borderEnableAutoHide").setType(Attribute.BOOLEAN).setDescription(
-            `hide border if it has zero tabs; not related to the borderType 'overlay' mode (Visual Studio
-            style auto hide), see the borderType attribute`
-        );
-        attributeDefinitions.addInherited("enableTabScrollbar", "borderEnableTabScrollbar").setType(Attribute.BOOLEAN).setDescription(
-            `whether to show a mini scrollbar for the tabs`
-        );
+        attributeDefinitions.addInherited("enableDrop", "borderEnableDrop").setType(Attribute.BOOLEAN).setDescription(`whether tabs can be dropped into this border`);
+        attributeDefinitions.addInherited("className", "borderClassName").setType(Attribute.STRING).setDescription(`class applied to tab button`);
+        attributeDefinitions
+            .addInherited("autoSelectTabWhenOpen", "borderAutoSelectTabWhenOpen")
+            .setType(Attribute.BOOLEAN)
+            .setDescription(`whether to select new/moved tabs in border when the border is already open`);
+        attributeDefinitions
+            .addInherited("autoSelectTabWhenClosed", "borderAutoSelectTabWhenClosed")
+            .setType(Attribute.BOOLEAN)
+            .setDescription(`whether to select new/moved tabs in border when the border is currently closed`);
+        attributeDefinitions.addInherited("size", "borderSize").setType(Attribute.NUMBER).setDescription(`size of the tab area when selected`);
+        attributeDefinitions.addInherited("minSize", "borderMinSize").setType(Attribute.NUMBER).setDescription(`the minimum size of the tab area`);
+        attributeDefinitions.addInherited("maxSize", "borderMaxSize").setType(Attribute.NUMBER).setDescription(`the maximum size of the tab area`);
+        attributeDefinitions
+            .addInherited("enableAutoHide", "borderEnableAutoHide")
+            .setType(Attribute.BOOLEAN)
+            .setDescription(
+                `hide border if it has zero tabs; not related to the borderType 'overlay' mode (Visual Studio
+            style auto hide), see the borderType attribute`,
+            );
+        attributeDefinitions.addInherited("enableTabScrollbar", "borderEnableTabScrollbar").setType(Attribute.BOOLEAN).setDescription(`whether to show a mini scrollbar for the tabs`);
         return attributeDefinitions;
     }
 }

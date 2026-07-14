@@ -13,13 +13,12 @@ export interface IDragTabButton {
 
 /** @internal */
 export const DragTabButton = React.memo((props: IDragTabButton) => {
-    
-    DragTabButton.displayName = 'DragTabButton'; // name in react dev tools
+    DragTabButton.displayName = "DragTabButton"; // name in react dev tools
 
-    const { controller, tabNode} = props;
+    const { controller, tabNode } = props;
     const selfRef = React.useRef<HTMLDivElement | null>(null);
 
-    React.useEffect(()=> {
+    React.useEffect(() => {
         tabNode.setTabStamp(selfRef.current);
     }, [tabNode]);
 
@@ -27,9 +26,8 @@ export const DragTabButton = React.memo((props: IDragTabButton) => {
 
     const classNames = cm(CLASSES.FLEXLAYOUT__DRAG_RECT);
 
-    return (<div
-            ref={selfRef}
-            className={classNames}>
+    return (
+        <div ref={selfRef} className={classNames}>
             <TabButtonStamp key={tabNode.getId()} controller={controller} tabNode={tabNode} />
         </div>
     );

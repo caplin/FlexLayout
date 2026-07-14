@@ -21,7 +21,6 @@ export interface IBorderButtonProps {
 
 /** @internal */
 export const BorderButton = (props: IBorderButtonProps) => {
-    
     const { controller, tabNode, selected, border, icons, path } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLInputElement>(null);
@@ -44,7 +43,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
             controller.auxMouseClick(tabNode, event);
-        } 
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -138,10 +137,13 @@ export const BorderButton = (props: IBorderButtonProps) => {
     // register with the layout's central measure pass via a callback ref: it fires whenever
     // react attaches/detaches the element, including remounts the component cannot know
     // about, unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(tabNode, "tabbutton", element);
-    }, [controller, tabNode]);
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(tabNode, "tabbutton", element);
+        },
+        [controller, tabNode],
+    );
 
     React.useLayoutEffect(() => {
         if (editing) {
@@ -169,11 +171,11 @@ export const BorderButton = (props: IBorderButtonProps) => {
     };
 
     const onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.code === 'Escape') {
+        if (event.code === "Escape") {
             // esc
             controller.setEditingTab(undefined);
             selfRef.current?.focus(); // return focus to the tab button
-        } else if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+        } else if (event.code === "Enter" || event.code === "NumpadEnter") {
             // enter
             controller.setEditingTab(undefined);
             controller.doAction(Actions.renameTab(tabNode.getId(), (event.target as HTMLInputElement).value));
@@ -205,15 +207,9 @@ export const BorderButton = (props: IBorderButtonProps) => {
 
     const renderState = getRenderStateEx(controller, tabNode, iconAngle);
 
-    let content = renderState.content ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>
-            {renderState.content}
-        </div>) : null;
+    let content = renderState.content ? <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_CONTENT)}>{renderState.content}</div> : null;
 
-    const leading = renderState.leading ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>
-            {renderState.leading}
-        </div>) : null;
+    const leading = renderState.leading ? <div className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_LEADING)}>{renderState.leading}</div> : null;
 
     if (editing) {
         content = (
@@ -244,18 +240,16 @@ export const BorderButton = (props: IBorderButtonProps) => {
                 aria-hidden="true"
                 className={cm(CLASSES.FLEXLAYOUT__BORDER_BUTTON_TRAILING)}
                 onPointerDown={onClosePointerDown}
-                onClick={onClose}>
-                {(typeof icons.close === "function") ? icons.close(tabNode) : icons.close}
-            </div>
+                onClick={onClose}
+            >
+                {typeof icons.close === "function" ? icons.close(tabNode) : icons.close}
+            </div>,
         );
     }
 
     // advertise the tab's keyboard operations to assistive technology; composed from the
     // resolved keymap so the advertised shortcuts always match the configured bindings
-    const ariaKeyshortcuts = [
-        toAriaKeyShortcuts(keyMap.focusTabToggle),
-        tabNode.isCloseable() ? toAriaKeyShortcuts(keyMap.closeTab) : undefined,
-    ].filter(Boolean).join(" ") || undefined;
+    const ariaKeyshortcuts = [toAriaKeyShortcuts(keyMap.focusTabToggle), tabNode.isCloseable() ? toAriaKeyShortcuts(keyMap.closeTab) : undefined].filter(Boolean).join(" ") || undefined;
 
     return (
         <div
@@ -271,7 +265,7 @@ export const BorderButton = (props: IBorderButtonProps) => {
             // into the tab's computed name
             aria-label={editing ? undefined : renderState.name}
             aria-keyshortcuts={editing ? undefined : ariaKeyshortcuts}
-            tabIndex={editing ? -1 : (isTabbable() ? 0 : -1)}
+            tabIndex={editing ? -1 : isTabbable() ? 0 : -1}
             onKeyDown={onKeyDown}
             data-layout-path={path}
             className={classNames}
@@ -290,5 +284,4 @@ export const BorderButton = (props: IBorderButtonProps) => {
     );
 };
 
-BorderButton.displayName = 'BorderButton'; // name in react dev tools
-
+BorderButton.displayName = "BorderButton"; // name in react dev tools

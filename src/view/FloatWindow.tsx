@@ -51,25 +51,27 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
     const moveToFrontRef = React.useRef<boolean>(false);
     const raiseTimerRef = React.useRef<number | undefined>(undefined);
 
-    const clampToDoc = React.useCallback((rect: Rect) => {
-        const win = controller.getCurrentWindow() ?? window;
-        const layoutRect = Rect.fromDomRect(controller.getRootDiv()!.getBoundingClientRect());
-        let boundaryRect: Rect;
-        if (controller.getProps().constrainFloatPanels) {
-            boundaryRect = new Rect(0, 0, layoutRect.width, layoutRect.height);
-        } else {
-            const page = getPageMetrics(win);
-            // Use Math.max to ensure the boundary covers at least the visible window
-            const width = Math.max(page.fullWidth, win.innerWidth);
-            const height = Math.max(page.fullHeight, win.innerHeight);
-            boundaryRect = new Rect(-layoutRect.x, -layoutRect.y, width, height);
-        }
+    const clampToDoc = React.useCallback(
+        (rect: Rect) => {
+            const win = controller.getCurrentWindow() ?? window;
+            const layoutRect = Rect.fromDomRect(controller.getRootDiv()!.getBoundingClientRect());
+            let boundaryRect: Rect;
+            if (controller.getProps().constrainFloatPanels) {
+                boundaryRect = new Rect(0, 0, layoutRect.width, layoutRect.height);
+            } else {
+                const page = getPageMetrics(win);
+                // Use Math.max to ensure the boundary covers at least the visible window
+                const width = Math.max(page.fullWidth, win.innerWidth);
+                const height = Math.max(page.fullHeight, win.innerHeight);
+                boundaryRect = new Rect(-layoutRect.x, -layoutRect.y, width, height);
+            }
 
-        const clamped = rect.clone();
-        clamped.clamp(boundaryRect);
-        return clamped;
-    }, [controller]);
-
+            const clamped = rect.clone();
+            clamped.clamp(boundaryRect);
+            return clamped;
+        },
+        [controller],
+    );
 
     const onTouchStart = React.useCallback((event: TouchEvent) => {
         event.preventDefault();
@@ -78,12 +80,12 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
 
     React.useEffect(() => {
         const refs = [headerRef, nRef, neRef, eRef, seRef, sRef, swRef, wRef, nwRef];
-        const elements = refs.map(r => r.current).filter(el => el !== null);
+        const elements = refs.map((r) => r.current).filter((el) => el !== null);
 
-        elements.forEach(el => el!.addEventListener("touchstart", onTouchStart, { passive: false }));
+        elements.forEach((el) => el!.addEventListener("touchstart", onTouchStart, { passive: false }));
 
         return () => {
-            elements.forEach(el => el!.removeEventListener("touchstart", onTouchStart));
+            elements.forEach((el) => el!.removeEventListener("touchstart", onTouchStart));
         };
     }, [onTouchStart]);
 
@@ -94,7 +96,6 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
             initializedRef.current = true;
             const clamped = clampToDoc(rect);
             if (!clamped.equals(rect)) {
-
                 // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRect(clamped);
                 layout.setRect(clamped);
@@ -117,7 +118,7 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                     raiseTimerRef.current = undefined;
                     controller.moveWindowToFront(layout.getLayoutId());
                 }, 10);
-                moveToFrontRef.current = false
+                moveToFrontRef.current = false;
             }
         };
         const current = selfRef.current;
@@ -143,11 +144,13 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
         const offset = { x: e.clientX - rect.x, y: e.clientY - rect.y };
         controller.showOverlayOnAllWindows(true);
 
-        startDrag(controller.getCurrentDocument() ?? document, e,
+        startDrag(
+            controller.getCurrentDocument() ?? document,
+            e,
             (x, y) => {
                 if (moveToFrontRef.current) {
                     controller.moveWindowToFront(layout.getLayoutId());
-                    moveToFrontRef.current = false
+                    moveToFrontRef.current = false;
                 }
                 const newRect = new Rect(x - offset.x, y - offset.y, rect.width, rect.height);
                 const clamped = clampToDoc(newRect);
@@ -162,7 +165,7 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
             () => {
                 controller.redrawLayout();
                 controller.showOverlayOnAllWindows(false);
-            }
+            },
         );
     };
 
@@ -171,7 +174,9 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
         const startPos = { x: e.clientX, y: e.clientY };
         controller.showOverlayOnAllWindows(true);
 
-        startDrag(controller.getCurrentDocument() ?? document, e,
+        startDrag(
+            controller.getCurrentDocument() ?? document,
+            e,
             (x, y) => {
                 const dx = x - startPos.x;
                 const dy = y - startPos.y;
@@ -203,57 +208,89 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
 
             () => {
                 controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false)
+                controller.showOverlayOnAllWindows(false);
             },
             () => {
                 controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false)
-            }
+                controller.showOverlayOnAllWindows(false);
+            },
         );
         e.stopPropagation();
     };
 
-    const content = (<div
-        ref={selfRef}
-        className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW)}
-        style={{
-            left: rect.x,
-            top: rect.y,
-            width: rect.width,
-            height: rect.height,
-            position: "absolute",
-            // zIndex: zIndex // needed if using portal
-        }}
-    >
-        <div ref={headerRef} className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW_HEADER)} onPointerDown={onPointerDownHeader}>
-            {/* <div className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}>
+    const content = (
+        <div
+            ref={selfRef}
+            className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW)}
+            style={{
+                left: rect.x,
+                top: rect.y,
+                width: rect.width,
+                height: rect.height,
+                position: "absolute",
+                // zIndex: zIndex // needed if using portal
+            }}
+        >
+            <div ref={headerRef} className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW_HEADER)} onPointerDown={onPointerDownHeader}>
+                {/* <div className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}>
                     {(typeof icons.popoutFloat === "function") ? icons.popoutFloat(layout) : icons.popoutFloat}
                 </div> */}
-            <div style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-                <div style={{ width: 50, height: 8, display: "flex", flexDirection: "column", justifyContent: "space-around", opacity: 0.5 }}>
-                    <div style={{ height: 2, backgroundColor: "gray", borderRadius: 1 }}></div>
+                <div style={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
+                    <div style={{ width: 50, height: 8, display: "flex", flexDirection: "column", justifyContent: "space-around", opacity: 0.5 }}>
+                        <div style={{ height: 2, backgroundColor: "gray", borderRadius: 1 }}></div>
+                    </div>
                 </div>
-            </div>
-            {/* <div
+                {/* <div
                     className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_BUTTON_CLOSE)}
                     style={{ cursor: "pointer" }}
                     onClick={() => onCloseLayout(layout)}
                 >
                     {(typeof icons.closeFloatPopout === "function") ? icons.closeFloatPopout() : icons.closeFloatPopout}
                 </div> */}
+            </div>
+            <div className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW_CONTENT)}>{children}</div>
+            <div
+                ref={nRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, left: RESIZE_EDGE_SIZE, right: RESIZE_EDGE_SIZE, height: RESIZE_EDGE_SIZE, cursor: "ns-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.North)}
+            />
+            <div
+                ref={sRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: RESIZE_MARGIN, left: RESIZE_EDGE_SIZE, right: RESIZE_EDGE_SIZE, height: RESIZE_EDGE_SIZE, cursor: "ns-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.South)}
+            />
+            <div
+                ref={eRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_EDGE_SIZE, bottom: RESIZE_EDGE_SIZE, right: RESIZE_MARGIN, width: RESIZE_EDGE_SIZE, cursor: "ew-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.East)}
+            />
+            <div
+                ref={wRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_EDGE_SIZE, bottom: RESIZE_EDGE_SIZE, left: RESIZE_MARGIN, width: RESIZE_EDGE_SIZE, cursor: "ew-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.West)}
+            />
+            <div
+                ref={nwRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, left: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nwse-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.NorthWest)}
+            />
+            <div
+                ref={neRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, right: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nesw-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.NorthEast)}
+            />
+            <div
+                ref={swRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: RESIZE_MARGIN, left: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nesw-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.SouthWest)}
+            />
+            <div
+                ref={seRef}
+                style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: 0, right: 0, width: RESIZE_SE_CORNER_SIZE, height: RESIZE_SE_CORNER_SIZE, cursor: "nwse-resize" }}
+                onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.SouthEast)}
+            />
         </div>
-        <div className={cm(CLASSES.FLEXLAYOUT__FLOAT_WINDOW_CONTENT)}>
-            {children}
-        </div>
-        <div ref={nRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, left: RESIZE_EDGE_SIZE, right: RESIZE_EDGE_SIZE, height: RESIZE_EDGE_SIZE, cursor: "ns-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.North)} />
-        <div ref={sRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: RESIZE_MARGIN, left: RESIZE_EDGE_SIZE, right: RESIZE_EDGE_SIZE, height: RESIZE_EDGE_SIZE, cursor: "ns-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.South)} />
-        <div ref={eRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_EDGE_SIZE, bottom: RESIZE_EDGE_SIZE, right: RESIZE_MARGIN, width: RESIZE_EDGE_SIZE, cursor: "ew-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.East)} />
-        <div ref={wRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_EDGE_SIZE, bottom: RESIZE_EDGE_SIZE, left: RESIZE_MARGIN, width: RESIZE_EDGE_SIZE, cursor: "ew-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.West)} />
-        <div ref={nwRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, left: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nwse-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.NorthWest)} />
-        <div ref={neRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, top: RESIZE_MARGIN, right: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nesw-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.NorthEast)} />
-        <div ref={swRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: RESIZE_MARGIN, left: RESIZE_MARGIN, width: RESIZE_CORNER_SIZE, height: RESIZE_CORNER_SIZE, cursor: "nesw-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.SouthWest)} />
-        <div ref={seRef} style={{ position: "absolute", zIndex: RESIZE_ZINDEX, bottom: 0, right: 0, width: RESIZE_SE_CORNER_SIZE, height: RESIZE_SE_CORNER_SIZE, cursor: "nwse-resize" }} onPointerDown={(e) => onPointerDownResize(e, FloatWindowResizeDirection.SouthEast)} />
-    </div>);
+    );
 
     // const portal = createPortal(content, document.documentElement, layout.getLayoutId());
     // return portal;

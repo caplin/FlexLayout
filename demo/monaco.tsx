@@ -41,7 +41,9 @@ function MonacoComponent() {
                 key={editorSeed.version}
                 defaultLanguage="typescript"
                 defaultValue={editorSeed.value}
-                onChange={(value) => { valueRef.current = value ?? ""; }}
+                onChange={(value) => {
+                    valueRef.current = value ?? "";
+                }}
                 options={{
                     minimap: { enabled: false },
                     automaticLayout: true, // monaco tracks its container size itself

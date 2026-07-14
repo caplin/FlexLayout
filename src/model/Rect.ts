@@ -23,14 +23,14 @@ export class Rect {
     }
 
     toJson() {
-        return {x: this.x, y: this.y, width: this.width, height: this.height};
+        return { x: this.x, y: this.y, width: this.width, height: this.height };
     }
 
     snap(round: number) {
         this.x = Math.round(this.x / round) * round;
         this.y = Math.round(this.y / round) * round;
         this.width = Math.round(this.width / round) * round;
-        this.height= Math.round(this.height / round) * round;
+        this.height = Math.round(this.height / round) * round;
     }
 
     static getBoundingClientRect(element: Element) {
@@ -51,18 +51,13 @@ export class Rect {
     }
 
     equals(rect: Rect | null | undefined) {
-        return this.x === rect?.x && this.y === rect?.y && this.width === rect?.width && this.height === rect?.height
+        return this.x === rect?.x && this.y === rect?.y && this.width === rect?.width && this.height === rect?.height;
     }
 
     equalsWhenRounded(rect: Rect | null | undefined) {
         if (!rect) return false;
         const epsilon = 0.5;
-        return (
-            Math.abs(this.x - rect.x) < epsilon &&
-            Math.abs(this.y - rect.y) < epsilon &&
-            Math.abs(this.width - rect.width) < epsilon &&
-            Math.abs(this.height - rect.height) < epsilon
-        );
+        return Math.abs(this.x - rect.x) < epsilon && Math.abs(this.y - rect.y) < epsilon && Math.abs(this.width - rect.width) < epsilon && Math.abs(this.height - rect.height) < epsilon;
     }
 
     getBottom() {

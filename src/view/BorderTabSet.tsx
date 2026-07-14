@@ -22,7 +22,6 @@ export interface IBorderTabSetProps {
 
 /** @internal */
 export const BorderTabSet = (props: IBorderTabSetProps) => {
-    
     const { borderNode, controller, size } = props;
 
     // Must define `selfRef` before it is used in `useLayoutEffect`
@@ -41,19 +40,26 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
     // otherwise showPopup's document listener + overlay + portal would leak
     React.useEffect(() => () => hideOverflowRef.current?.(), []);
 
-    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
-        useTabOverflow(controller, borderNode, Orientation.flip(borderNode.getOrientation()), tabStripInnerRef, miniScrollRef, selfRef,
-            controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_BUTTON)
-        );
+    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } = useTabOverflow(
+        controller,
+        borderNode,
+        Orientation.flip(borderNode.getOrientation()),
+        tabStripInnerRef,
+        miniScrollRef,
+        selfRef,
+        controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_BUTTON),
+    );
 
     // register with the layout's central measure pass via a callback ref: it fires whenever
     // react attaches/detaches the element, including remounts the component cannot know about
     // (e.g. moving into the maximize portal), unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(borderNode, "borderheader", element);
-    }, [controller, borderNode]);
-
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(borderNode, "borderheader", element);
+        },
+        [controller, borderNode],
+    );
 
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
@@ -71,23 +77,18 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = controller.getShowOverflowMenu();
-        const items = hiddenTabs.map(h => { return { index: h, node: (borderNode.getChildren()[h] as TabNode) }; });
+        const items = hiddenTabs.map((h) => {
+            return { index: h, node: borderNode.getChildren()[h] as TabNode };
+        });
         if (callback !== undefined) {
-
             callback(borderNode, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             setOverflowMenuOpen(true);
-            hideOverflowRef.current = showOverflowMenu(
-                element,
-                borderNode,
-                items,
-                onOverflowItemSelect,
-                controller,
-                () => {
-                    setOverflowMenuOpen(false);
-                    hideOverflowRef.current = null;
-                });
+            hideOverflowRef.current = showOverflowMenu(element, borderNode, items, onOverflowItemSelect, controller, () => {
+                setOverflowMenuOpen(false);
+                hideOverflowRef.current = null;
+            });
         }
         event.stopPropagation();
     };
@@ -130,12 +131,10 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                     key={child.getId()}
                     selected={isSelected}
                     icons={icons}
-                />
+                />,
             );
             if (i < borderNode.getChildren().length - 1) {
-                tabButtons.push(
-                    <div key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER)}></div>
-                );
+                tabButtons.push(<div key={"divider" + i} className={cm(CLASSES.FLEXLAYOUT__BORDER_TAB_DIVIDER)}></div>);
             }
         }
         return tabButtons;
@@ -164,15 +163,19 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             if (isDockStickyButtons) {
                 buttons = [...stickyButtons, ...buttons];
             } else {
-                stickyBar = (<div
-                    ref={stickyButtonsRef}
-                    key="sticky_buttons_container"
-                    onPointerDown={onInterceptPointerDown}
-                    onDragStart={(e) => { e.preventDefault() }}
-                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
-                >
-                    {stickyButtons}
-                </div>);
+                stickyBar = (
+                    <div
+                        ref={stickyButtonsRef}
+                        key="sticky_buttons_container"
+                        onPointerDown={onInterceptPointerDown}
+                        onDragStart={(e) => {
+                            e.preventDefault();
+                        }}
+                        className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+                    >
+                        {stickyButtons}
+                    </div>
+                );
             }
         }
 
@@ -180,16 +183,22 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             const overflowTitle = controller.i18nName(I18nLabel.Overflow_Menu_Tooltip);
             let overflowContent;
             if (typeof icons.more === "function") {
-                const items = hiddenTabs.map(h => { return { index: h, node: (borderNode.getChildren()[h] as TabNode) }; });
+                const items = hiddenTabs.map((h) => {
+                    return { index: h, node: borderNode.getChildren()[h] as TabNode };
+                });
 
                 overflowContent = icons.more(borderNode, items);
             } else {
-                overflowContent = (<>
-                    {icons.more}
-                    <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
-                </>);
+                overflowContent = (
+                    <>
+                        {icons.more}
+                        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
+                    </>
+                );
             }
-            buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+            buttons.splice(
+                Math.min(renderState.overflowPosition, buttons.length),
+                0,
                 // toolbar buttons carry an explicit tabindex: Safari only includes elements
                 // with an explicit tabindex in the tab order (native buttons are skipped)
                 <button
@@ -199,13 +208,19 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                     aria-expanded={overflowMenuOpen}
                     aria-label={overflowTitle}
                     ref={overflowbuttonRef}
-                    className={cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + borderNode.getLocation().getName())}
+                    className={
+                        cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON) +
+                        " " +
+                        cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW) +
+                        " " +
+                        cm(CLASSES.FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_OVERFLOW_ + borderNode.getLocation().getName())
+                    }
                     title={overflowTitle}
                     onClick={onOverflowClick}
                     onPointerDown={onInterceptPointerDown}
                 >
                     {overflowContent}
-                </button>
+                </button>,
             );
         }
 
@@ -214,7 +229,6 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             const selectedTabNode = borderNode.getChildren()[selectedIndex] as TabNode;
 
             if (selectedTabNode !== undefined && controller.isMainLayout()) {
-
                 if (selectedTabNode.isEnablePopoutFloatIcon()) {
                     const popoutFloatTitle = controller.i18nName(I18nLabel.Popout_Tab_Float);
                     buttons.push(
@@ -227,13 +241,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                             onClick={onPopoutFloat}
                             onPointerDown={onInterceptPointerDown}
                         >
-                            {(typeof icons.popoutFloat === "function") ? icons.popoutFloat(selectedTabNode) : icons.popoutFloat}
-                        </button>
+                            {typeof icons.popoutFloat === "function" ? icons.popoutFloat(selectedTabNode) : icons.popoutFloat}
+                        </button>,
                     );
                 }
 
-                if (controller.isSupportsPopout() &&
-                    selectedTabNode.isEnablePopoutIcon() && selectedTabNode.isAllowedInWindow()) {
+                if (controller.isSupportsPopout() && selectedTabNode.isEnablePopoutIcon() && selectedTabNode.isAllowedInWindow()) {
                     const popoutTitle = controller.i18nName(I18nLabel.Popout_Tab);
                     buttons.push(
                         <button
@@ -245,8 +258,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                             onClick={onPopoutWindow}
                             onPointerDown={onInterceptPointerDown}
                         >
-                            {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
-                        </button>
+                            {typeof icons.popout === "function" ? icons.popout(selectedTabNode) : icons.popout}
+                        </button>,
                     );
                 }
             }
@@ -284,22 +297,12 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
 
     let miniScrollbar = undefined;
     if (borderNode.isEnableTabScrollbar()) {
-        miniScrollbar = (
-            <div ref={miniScrollRef}
-                aria-hidden="true"
-                className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)}
-                onPointerDown={onScrollPointerDown}
-            />
-        );
+        miniScrollbar = <div ref={miniScrollRef} aria-hidden="true" className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)} onPointerDown={onScrollPointerDown} />;
     }
 
     let leadingContainer: React.ReactNode = undefined;
     if (leading) {
-        leadingContainer = (
-            <div className={cm(CLASSES.FLEXLAYOUT__BORDER_LEADING)}>
-                {leading}
-            </div>
-        );
+        leadingContainer = <div className={cm(CLASSES.FLEXLAYOUT__BORDER_LEADING)}>{leading}</div>;
     }
 
     return (
@@ -307,7 +310,7 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
             ref={setSelfRef}
             style={{
                 display: "flex",
-                flexDirection: (borderNode.getOrientation() === Orientation.VERT ? "row" : "column")
+                flexDirection: borderNode.getOrientation() === Orientation.VERT ? "row" : "column",
             }}
             className={borderClasses}
             data-layout-path={borderNode.getPath()}
@@ -329,7 +332,11 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                         // while one of this border's tabs shows its rename textbox, the strip is
                         // a plain container (see the matching comment in TabSet)
                         role={controller.getEditingTab()?.getParent() === borderNode ? undefined : "tablist"}
-                        aria-orientation={(controller.getEditingTab()?.getParent() !== borderNode && (borderNode.getLocation() === DockLocation.LEFT || borderNode.getLocation() === DockLocation.RIGHT)) ? "vertical" : undefined}
+                        aria-orientation={
+                            controller.getEditingTab()?.getParent() !== borderNode && (borderNode.getLocation() === DockLocation.LEFT || borderNode.getLocation() === DockLocation.RIGHT)
+                                ? "vertical"
+                                : undefined
+                        }
                         className={cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__BORDER_INNER_TAB_CONTAINER_ + borderNode.getLocation().getName())}
                     >
                         {tabButtons}
@@ -339,10 +346,8 @@ export const BorderTabSet = (props: IBorderTabSetProps) => {
                 {miniScrollbar}
             </div>
             {toolbar}
-        </div >
+        </div>
     );
-
 };
 
-BorderTabSet.displayName = 'BorderTabSet'; // name in react dev tools
-
+BorderTabSet.displayName = "BorderTabSet"; // name in react dev tools

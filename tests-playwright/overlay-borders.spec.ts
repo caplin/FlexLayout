@@ -185,7 +185,7 @@ test.describe("overlay borders", () => {
 
         // drag the SubA tab onto the center of the SubB tabset: they merge into one tabset
         const from = panel.locator(".flexlayout__tab_button", { hasText: "SubA" });
-        const to = panel.locator("[role=\"tabpanel\"]", { hasText: "SubB" });
+        const to = panel.locator('[role="tabpanel"]', { hasText: "SubB" });
         await drag(page, from, to, Location.CENTER);
 
         await expect(subTabsets).toHaveCount(1);

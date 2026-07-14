@@ -14,17 +14,19 @@ export interface IBorderTabProps {
 }
 
 export function BorderTab(props: IBorderTabProps) {
-        
     const { controller, borderNode, show } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
 
     // register with the layout's central measure pass via a callback ref: it fires whenever
     // react attaches/detaches the element, including remounts the component cannot know about
     // (e.g. moving into the maximize portal), unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(borderNode, "bordercontent", element);
-    }, [controller, borderNode]);
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(borderNode, "bordercontent", element);
+        },
+        [controller, borderNode],
+    );
 
     let horizontal = true;
     const style: React.CSSProperties = {};
@@ -66,8 +68,8 @@ export function BorderTab(props: IBorderTabProps) {
                 }
             }
         }
-        const wrapperClassName = controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY) + " " +
-            controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY_ + borderNode.getLocation().getName());
+        const wrapperClassName =
+            controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY) + " " + controller.getClassName(CLASSES.FLEXLAYOUT__BORDER_TAB_OVERLAY_ + borderNode.getLocation().getName());
         return (
             <div className={wrapperClassName} style={wrapperStyle}>
                 {contentFirst && <div ref={setSelfRef} style={style} className={className}></div>}
@@ -82,8 +84,7 @@ export function BorderTab(props: IBorderTabProps) {
     if (contentFirst) {
         return (
             <>
-                <div ref={setSelfRef} style={style} className={className}>
-                </div>
+                <div ref={setSelfRef} style={style} className={className}></div>
                 {show && <Splitter controller={controller} node={borderNode} index={0} horizontal={horizontal} />}
             </>
         );
@@ -91,13 +92,10 @@ export function BorderTab(props: IBorderTabProps) {
         return (
             <>
                 {show && <Splitter controller={controller} node={borderNode} index={0} horizontal={horizontal} />}
-                <div ref={setSelfRef} style={style} className={className}>
-                </div>
+                <div ref={setSelfRef} style={style} className={className}></div>
             </>
         );
-
     }
 }
 
-BorderTab.displayName = 'BorderTab'; // name in react dev tools
-
+BorderTab.displayName = "BorderTab"; // name in react dev tools

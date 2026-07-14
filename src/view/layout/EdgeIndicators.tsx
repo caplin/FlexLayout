@@ -7,7 +7,6 @@ export interface IEdgeIndicatorsProps {
 }
 
 export const EdgeIndicators = ({ controller }: IEdgeIndicatorsProps) => {
-    
     const edges: React.ReactNode[] = [];
     const arrowIcon = controller.getIcons().edgeArrow;
 
@@ -20,37 +19,48 @@ export const EdgeIndicators = ({ controller }: IEdgeIndicatorsProps) => {
         const radius = 50;
 
         edges.push(
-            <div key="North" aria-hidden="true" style={{ top: 0, left: r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}>
-                <div style={{ transform: "rotate(180deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>
+            <div
+                key="North"
+                aria-hidden="true"
+                style={{ top: 0, left: r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }}
+                className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}
+            >
+                <div style={{ transform: "rotate(180deg)" }}>{arrowIcon}</div>
+            </div>,
         );
         edges.push(
-            <div key="West" aria-hidden="true" style={{ top: r.height / 2 - offset, left: 0, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}>
-                <div style={{ transform: "rotate(90deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>
+            <div
+                key="West"
+                aria-hidden="true"
+                style={{ top: r.height / 2 - offset, left: 0, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }}
+                className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}
+            >
+                <div style={{ transform: "rotate(90deg)" }}>{arrowIcon}</div>
+            </div>,
         );
         edges.push(
-            <div key="South" aria-hidden="true" style={{ top: r.height - width, left: r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}>
-                <div>
-                    {arrowIcon}
-                </div>
-            </div>
+            <div
+                key="South"
+                aria-hidden="true"
+                style={{ top: r.height - width, left: r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }}
+                className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}
+            >
+                <div>{arrowIcon}</div>
+            </div>,
         );
         edges.push(
-            <div key="East" aria-hidden="true" style={{ top: r.height / 2 - offset, left: r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}>
-                <div style={{ transform: "rotate(-90deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>
+            <div
+                key="East"
+                aria-hidden="true"
+                style={{ top: r.height / 2 - offset, left: r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }}
+                className={className + " " + controller.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}
+            >
+                <div style={{ transform: "rotate(-90deg)" }}>{arrowIcon}</div>
+            </div>,
         );
     }
 
     return <>{edges}</>;
 };
 
-EdgeIndicators.displayName = 'EdgeIndicators'; // name in react dev tools
-
+EdgeIndicators.displayName = "EdgeIndicators"; // name in react dev tools

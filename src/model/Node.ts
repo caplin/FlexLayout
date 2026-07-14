@@ -71,7 +71,7 @@ export abstract class Node {
     }
 
     isCloseable() {
-        for (let i=0; i<this.children.length; i++) {
+        for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
             if (!child.isCloseable()) {
                 return false;
@@ -81,7 +81,7 @@ export abstract class Node {
     }
 
     isAllowedInWindow() {
-        for (let i=0; i<this.children.length; i++) {
+        for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
             if (!child.isAllowedInWindow()) {
                 return false;
@@ -97,13 +97,13 @@ export abstract class Node {
             return Orientation.flip(this.parent.getOrientation());
         }
     }
-     
-    getLayoutId() : string {
+
+    getLayoutId(): string {
         return this.getLayout().getLayoutId();
     }
-     
+
     /** @internal */
-    getLayout() : Layout {
+    getLayout(): Layout {
         if (this.parent) {
             return this.parent.getLayout();
         }
@@ -182,7 +182,6 @@ export abstract class Node {
     setParent(parent: Node) {
         this.parent = parent;
     }
-   
 
     /** @internal */
     setRect(rect: Rect) {
@@ -203,7 +202,6 @@ export abstract class Node {
     setSelected(index: number) {
         this.attributes.selected = index;
     }
-
 
     /** @internal */
     findDropTargetNode(layoutId: string, dragNode: Node & IDraggable, x: number, y: number): DropInfo | undefined {

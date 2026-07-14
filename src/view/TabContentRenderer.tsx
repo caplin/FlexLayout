@@ -5,9 +5,9 @@ import { LayoutController, LayoutInternal } from "./layout/LayoutInternal";
 import { TabNode } from "../model/TabNode";
 import { CLASSES } from "./CSSClassNames";
 
-export interface ITabContentRenderProps {  
-    controller: LayoutController,
-    tabNode: TabNode,
+export interface ITabContentRenderProps {
+    controller: LayoutController;
+    tabNode: TabNode;
     windowId: string;
     visible: boolean;
     fullRedrawRevision: number;
@@ -15,35 +15,33 @@ export interface ITabContentRenderProps {
 }
 
 export const TabContentRenderer = React.memo(({ controller, tabNode }: ITabContentRenderProps) => {
-
-    TabContentRenderer.displayName = 'TabContentRenderer'; // name in react dev tools
+    TabContentRenderer.displayName = "TabContentRenderer"; // name in react dev tools
 
     let content;
     if (tabNode.getComponent()) {
         content = controller.getFactory()(tabNode);
     } else if (tabNode.getSubLayoutId()) {
-        content = <div className={controller.getClassName(CLASSES.FLEXLAYOUT__TAB_LAYOUT_CONTAINER)}>
+        content = (
+            <div className={controller.getClassName(CLASSES.FLEXLAYOUT__TAB_LAYOUT_CONTAINER)}>
                 <LayoutInternal {...controller.getProps()} layoutId={tabNode.getSubLayoutId()} mainLayoutController={controller.getMainController()} />;
-            </div>;
+            </div>
+        );
     }
     return (
-        <ErrorBoundary
-            message={controller.i18nName(I18nLabel.Error_rendering_component)}
-            retryText={controller.i18nName(I18nLabel.Error_rendering_component_retry)}>
+        <ErrorBoundary message={controller.i18nName(I18nLabel.Error_rendering_component)} retryText={controller.i18nName(I18nLabel.Error_rendering_component_retry)}>
             {content}
-        </ErrorBoundary>);
+        </ErrorBoundary>
+    );
 }, arePropsEqual);
 
 // only re-render if visible && (fullRedrawRevision or parentRedrawRevision changed)
 function arePropsEqual(prevProps: ITabContentRenderProps, nextProps: ITabContentRenderProps) {
-    const reRender = nextProps.visible &&
-        (
-            prevProps.windowId !== nextProps.windowId ||
+    const reRender =
+        nextProps.visible &&
+        (prevProps.windowId !== nextProps.windowId ||
             prevProps.fullRedrawRevision !== nextProps.fullRedrawRevision ||
             prevProps.parentRedrawRevision !== nextProps.parentRedrawRevision ||
             prevProps.tabNode !== nextProps.tabNode || // node instance replaced (fromJson with a previous model)
-            nextProps.tabNode.getSubLayoutId() !== undefined
-        );
+            nextProps.tabNode.getSubLayoutId() !== undefined);
     return !reRender;
 }
-

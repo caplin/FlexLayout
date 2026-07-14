@@ -1,8 +1,8 @@
-import { test } from '@playwright/test';
+import { test } from "@playwright/test";
 
 // performance harness: not part of the regular suite, run with PERF=1
 // PERF=1 npx playwright test --project=chromium perf-harness
-test.skip(!process.env.PERF, 'perf harness, run with PERF=1');
+test.skip(!process.env.PERF, "perf harness, run with PERF=1");
 
 function bigLayout(rows: number, tabsetsPerRow: number, tabsPerTabset: number) {
     let n = 0;
@@ -29,13 +29,13 @@ function bigLayout(rows: number, tabsetsPerRow: number, tabsPerTabset: number) {
     };
 }
 
-test('measure select and splitter drag', async ({ page }) => {
+test("measure select and splitter drag", async ({ page }) => {
     const layout = bigLayout(6, 5, 3); // 30 tabsets, 90 tabs
     await page.addInitScript((json) => {
-        localStorage.setItem('perf_big', json);
+        localStorage.setItem("perf_big", json);
     }, JSON.stringify(layout));
-    await page.goto('/demo?layout=perf_big');
-    await page.waitForSelector('.flexlayout__tabset');
+    await page.goto("/demo?layout=perf_big");
+    await page.waitForSelector(".flexlayout__tabset");
     await page.waitForTimeout(500); // settle
 
     const results = await page.evaluate(async () => {
@@ -60,7 +60,7 @@ test('measure select and splitter drag', async ({ page }) => {
         const cy = sr.y + sr.height / 2;
         const opts = (x: number, y: number) => ({ bubbles: true, cancelable: true, clientX: x, clientY: y, pointerId: 1 });
         const moveTimes: number[] = [];
-        splitter.dispatchEvent(new PointerEvent('pointerdown', opts(cx, cy)));
+        splitter.dispatchEvent(new PointerEvent("pointerdown", opts(cx, cy)));
         for (let i = 0; i < 40; i++) {
             const y = cy + ((i % 20) - 10) * 4;
             const t0 = performance.now();
@@ -68,7 +68,7 @@ test('measure select and splitter drag', async ({ page }) => {
             moveTimes.push(performance.now() - t0);
             await raf2();
         }
-        document.dispatchEvent(new PointerEvent('pointerup', opts(cx, cy)));
+        document.dispatchEvent(new PointerEvent("pointerup", opts(cx, cy)));
 
         return {
             selectMedianMs: median(selectTimes),
@@ -76,5 +76,5 @@ test('measure select and splitter drag', async ({ page }) => {
         };
     });
 
-    console.log('PERF', JSON.stringify(results));
+    console.log("PERF", JSON.stringify(results));
 });

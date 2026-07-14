@@ -113,7 +113,7 @@ test.describe("pinned tabs", () => {
         await expect(page.locator(".flexlayout__popup_menu")).toBeVisible();
         // a pinned tab is not closeable, so its menu has no Close item (or divider)
         await expect(page.getByRole("menuitem", { name: "Close", exact: true })).toHaveCount(0);
-        await expect(page.locator(".flexlayout__popup_menu [role=\"separator\"]")).toHaveCount(0);
+        await expect(page.locator('.flexlayout__popup_menu [role="separator"]')).toHaveCount(0);
         await page.getByRole("menuitem", { name: "Unpin", exact: true }).click();
         await checkOrder(page, "/ts0", ["PinTwo", "Three", "PinOne", "Four"]);
         await expect(findPath(page, "/ts0/tb2/button/pin")).toHaveCount(0);

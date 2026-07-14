@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
 // Model.fromJson with a previous model: replacing the model with a round tripped copy keeps the
 // tab contents mounted (no flash, no loss of dom/component state)
-test('rerender via fromJson with previous model keeps tab contents mounted', async ({ page }) => {
-    await page.goto('/demo?layout=test_two_tabs');
-    await page.waitForSelector('.flexlayout__tabset');
+test("rerender via fromJson with previous model keeps tab contents mounted", async ({ page }) => {
+    await page.goto("/demo?layout=test_two_tabs");
+    await page.waitForSelector(".flexlayout__tabset");
     await page.waitForTimeout(300);
 
     await page.evaluate(() => {
@@ -36,5 +36,5 @@ test('rerender via fromJson with previous model keeps tab contents mounted', asy
     // the layout still works after the swap: select the other tabset's tab
     const tab = page.locator('[data-layout-path="/ts1/tb0"]');
     await tab.click();
-    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    await expect(tab).toHaveAttribute("aria-selected", "true");
 });

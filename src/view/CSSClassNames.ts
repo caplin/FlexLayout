@@ -30,7 +30,7 @@ export enum CLASSES {
     FLEXLAYOUT__BORDER_TOOLBAR_BUTTON_FLOAT = "flexlayout__border_toolbar_button-float",
 
     FLEXLAYOUT__DRAG_RECT = "flexlayout__drag_rect",
-    
+
     FLEXLAYOUT__EDGE_RECT = "flexlayout__edge_rect",
     FLEXLAYOUT__EDGE_RECT_TOP = "flexlayout__edge_rect_top",
     FLEXLAYOUT__EDGE_RECT_LEFT = "flexlayout__edge_rect_left",
@@ -87,7 +87,7 @@ export enum CLASSES {
     FLEXLAYOUT__TABSET_TABBAR_INNER = "flexlayout__tabset_tabbar_inner",
     FLEXLAYOUT__TABSET_TABBAR_INNER_ = "flexlayout__tabset_tabbar_inner_",
     FLEXLAYOUT__TABSET_LEADING = "flexlayout__tabset_leading",
-   
+
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER = "flexlayout__tabset_tabbar_inner_tab_container",
     FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ = "flexlayout__tabset_tabbar_inner_tab_container_",
 
@@ -124,6 +124,4 @@ export enum CLASSES {
 
     FLEXLAYOUT__MINI_SCROLLBAR = "flexlayout__mini_scrollbar",
     FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER = "flexlayout__mini_scrollbar_container",
-
-
 }

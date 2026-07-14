@@ -35,7 +35,6 @@ const gotoDemo = async (page: Page, layout: string) => {
 };
 
 test.describe("axe accessibility scan", () => {
-
     test("simple layout", async ({ page }) => {
         await gotoDemo(page, "test_two_tabs");
         await expect(page.locator(".flexlayout__tabset")).toHaveCount(2);

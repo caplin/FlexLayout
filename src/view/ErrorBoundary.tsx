@@ -31,20 +31,23 @@ export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBo
 
     retry = () => {
         this.setState({ hasError: false });
-      };
+    };
 
     render() {
         if (this.state.hasError) {
             return (
                 <div className={CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTAINER}>
                     <div role="alert" className={CLASSES.FLEXLAYOUT__ERROR_BOUNDARY_CONTENT}>
-                        <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                             {this.props.message}
                             {/* explicit tabindex: Safari only tabs to elements with an explicit tabindex */}
-                            <p><button tabIndex={0} onClick={this.retry}>{this.props.retryText}</button></p>
+                            <p>
+                                <button tabIndex={0} onClick={this.retry}>
+                                    {this.props.retryText}
+                                </button>
+                            </p>
                         </div>
                     </div>
-                    
                 </div>
             );
         }

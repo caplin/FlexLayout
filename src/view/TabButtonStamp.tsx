@@ -11,7 +11,6 @@ export interface ITabButtonStampProps {
 
 /** @internal */
 export const TabButtonStamp = (props: ITabButtonStampProps) => {
-    
     const { controller, tabNode } = props;
 
     const cm = controller.getClassName;
@@ -20,27 +19,16 @@ export const TabButtonStamp = (props: ITabButtonStampProps) => {
 
     const renderState = getRenderStateEx(controller, tabNode);
 
-    const content = renderState.content ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
-            {renderState.content}
-        </div>)
-        : tabNode.getNameForOverflowMenu();
+    const content = renderState.content ? <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>{renderState.content}</div> : tabNode.getNameForOverflowMenu();
 
-    const leading = renderState.leading ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
-            {renderState.leading}
-        </div>) : null;
+    const leading = renderState.leading ? <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>{renderState.leading}</div> : null;
 
     return (
-        <div
-            className={classNames}
-            title={tabNode.getHelpText()}
-        >
+        <div className={classNames} title={tabNode.getHelpText()}>
             {leading}
             {content}
         </div>
     );
 };
 
-TabButtonStamp.displayName = 'TabButtonStamp'; // name in react dev tools
-
+TabButtonStamp.displayName = "TabButtonStamp"; // name in react dev tools

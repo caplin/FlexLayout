@@ -19,11 +19,8 @@ export interface ITabSetProps {
     tabsetNode: TabSetNode;
 }
 
-
-
 /** @internal */
 export const TabSet = (props: ITabSetProps) => {
-        
     const { tabsetNode, controller } = props;
 
     // Must define `selfRef` before it is used in `useLayoutEffect`
@@ -45,47 +42,56 @@ export const TabSet = (props: ITabSetProps) => {
     React.useEffect(() => () => hideOverflowRef.current?.(), []);
 
     // this must be after the useEffect, so the node rect is already set (else window popin will not position tabs correctly)
-    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } =
-        useTabOverflow(controller, tabsetNode, Orientation.HORZ, tabStripInnerRef, miniScrollRef, tabStripRef,
-            controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON));
+    const { userControlledPositionRef, onScroll, onScrollPointerDown, hiddenTabs, onMouseWheel, isDockStickyButtons, isShowHiddenTabs } = useTabOverflow(
+        controller,
+        tabsetNode,
+        Orientation.HORZ,
+        tabStripInnerRef,
+        miniScrollRef,
+        tabStripRef,
+        controller.getClassName(CLASSES.FLEXLAYOUT__TAB_BUTTON),
+    );
 
     // register with the layout's central measure pass via callback refs: they fire whenever
     // react attaches/detaches the elements, including remounts the component cannot know about
     // (e.g. moving into or out of the maximize portal, which also happens on the first render
     // after the main element becomes available), unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(tabsetNode, "tabset", element);
-    }, [controller, tabsetNode]);
-    const setTabStripRef = React.useCallback((element: HTMLDivElement | null) => {
-        tabStripRef.current = element;
-        controller.registerMeasurable(tabsetNode, "tabstrip", element);
-    }, [controller, tabsetNode]);
-    const setContentRef = React.useCallback((element: HTMLDivElement | null) => {
-        contentRef.current = element;
-        controller.registerMeasurable(tabsetNode, "tabsetcontent", element);
-    }, [controller, tabsetNode]);
-
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(tabsetNode, "tabset", element);
+        },
+        [controller, tabsetNode],
+    );
+    const setTabStripRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            tabStripRef.current = element;
+            controller.registerMeasurable(tabsetNode, "tabstrip", element);
+        },
+        [controller, tabsetNode],
+    );
+    const setContentRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            contentRef.current = element;
+            controller.registerMeasurable(tabsetNode, "tabsetcontent", element);
+        },
+        [controller, tabsetNode],
+    );
 
     const onOverflowClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         const callback = controller.getShowOverflowMenu();
-        const items = hiddenTabs.map(h => { return { index: h, node: (tabsetNode.getChildren()[h] as TabNode) }; });
+        const items = hiddenTabs.map((h) => {
+            return { index: h, node: tabsetNode.getChildren()[h] as TabNode };
+        });
         if (callback !== undefined) {
             callback(tabsetNode, event, items, onOverflowItemSelect);
         } else {
             const element = overflowbuttonRef.current!;
             setOverflowMenuOpen(true);
-            hideOverflowRef.current = showOverflowMenu(
-                element,
-                tabsetNode,
-                items,
-                onOverflowItemSelect,
-                controller,
-                () => {
-                    setOverflowMenuOpen(false);
-                    hideOverflowRef.current = null;
-                }
-            );
+            hideOverflowRef.current = showOverflowMenu(element, tabsetNode, items, onOverflowItemSelect, controller, () => {
+                setOverflowMenuOpen(false);
+                hideOverflowRef.current = null;
+            });
         }
         event.stopPropagation();
     };
@@ -171,7 +177,6 @@ export const TabSet = (props: ITabSetProps) => {
     const selectedTabNode: TabNode = tabsetNode.getSelectedNode() as TabNode;
     const path = tabsetNode.getPath();
 
-
     const renderTabs = () => {
         const tabs = [];
         let lastOneSelected = false;
@@ -197,17 +202,10 @@ export const TabSet = (props: ITabSetProps) => {
                 tabs.push(
                     <div key={"divider" + i} className={cns}>
                         <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_INNER)}></div>
-                    </div>
+                    </div>,
                 );
 
-                tabs.push(
-                    <TabButton
-                        controller={controller}
-                        tabNode={child}
-                        path={path + "/tb" + i}
-                        key={child.getId()}
-                        selected={isSelected}
-                    />);
+                tabs.push(<TabButton controller={controller} tabNode={child} path={path + "/tb" + i} key={child.getId()} selected={isSelected} />);
 
                 // last spacer
                 if (i === tabsetNode.getChildren().length - 1) {
@@ -218,10 +216,9 @@ export const TabSet = (props: ITabSetProps) => {
                     tabs.push(
                         <div key={"divider" + (i + 1)} className={cns}>
                             <div className={cm(CLASSES.FLEXLAYOUT__TABSET_TAB_DIVIDER_INNER)}></div>
-                        </div>
+                        </div>,
                     );
                 }
-
 
                 lastOneSelected = isSelected;
             }
@@ -242,9 +239,8 @@ export const TabSet = (props: ITabSetProps) => {
         buttons = renderState.buttons;
 
         const isTabStretch = tabsetNode.isEnableSingleTabStretch() && tabsetNode.getChildren().length === 1;
-        let showClose = (isTabStretch && ((tabsetNode.getChildren()[0] as TabNode).isCloseable())) || tabsetNode.isCloseable();
-        showClose = showClose && tabsetNode.isEnableCloseButton()
-
+        let showClose = (isTabStretch && (tabsetNode.getChildren()[0] as TabNode).isCloseable()) || tabsetNode.isCloseable();
+        showClose = showClose && tabsetNode.isEnableCloseButton();
 
         if (renderState.overflowPosition === undefined) {
             renderState.overflowPosition = stickyButtons.length;
@@ -258,15 +254,19 @@ export const TabSet = (props: ITabSetProps) => {
             if (!tabsetNode.isEnableTabWrap() && (isDockStickyButtons || isTabStretch)) {
                 buttons = [...stickyButtons, ...buttons];
             } else {
-                stickyBar = (<div
-                    ref={stickyButtonsRef}
-                    key="sticky_buttons_container"
-                    onPointerDown={onInterceptPointerDown}
-                    onDragStart={(e) => { e.preventDefault() }}
-                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
-                >
-                    {stickyButtons}
-                </div>);
+                stickyBar = (
+                    <div
+                        ref={stickyButtonsRef}
+                        key="sticky_buttons_container"
+                        onPointerDown={onInterceptPointerDown}
+                        onDragStart={(e) => {
+                            e.preventDefault();
+                        }}
+                        className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_STICKY_BUTTONS_CONTAINER)}
+                    >
+                        {stickyButtons}
+                    </div>
+                );
             }
         }
 
@@ -275,15 +275,21 @@ export const TabSet = (props: ITabSetProps) => {
                 const overflowTitle = controller.i18nName(I18nLabel.Overflow_Menu_Tooltip);
                 let overflowContent;
                 if (typeof icons.more === "function") {
-                    const items = hiddenTabs.map(h => { return { index: h, node: (tabsetNode.getChildren()[h] as TabNode) }; });
+                    const items = hiddenTabs.map((h) => {
+                        return { index: h, node: tabsetNode.getChildren()[h] as TabNode };
+                    });
                     overflowContent = icons.more(tabsetNode, items);
                 } else {
-                    overflowContent = (<>
-                        {icons.more}
-                        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
-                    </>);
+                    overflowContent = (
+                        <>
+                            {icons.more}
+                            <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_OVERFLOW_COUNT)}>{hiddenTabs.length > 0 ? hiddenTabs.length : ""}</div>
+                        </>
+                    );
                 }
-                buttons.splice(Math.min(renderState.overflowPosition, buttons.length), 0,
+                buttons.splice(
+                    Math.min(renderState.overflowPosition, buttons.length),
+                    0,
                     // toolbar buttons carry an explicit tabindex: Safari only includes elements
                     // with an explicit tabindex in the tab order (native buttons are skipped)
                     <button
@@ -300,7 +306,7 @@ export const TabSet = (props: ITabSetProps) => {
                         onPointerDown={onInterceptPointerDown}
                     >
                         {overflowContent}
-                    </button>
+                    </button>,
                 );
             }
         }
@@ -319,8 +325,8 @@ export const TabSet = (props: ITabSetProps) => {
                         onClick={onPopoutFloat}
                         onPointerDown={onInterceptPointerDown}
                     >
-                        {(typeof icons.popoutFloat === "function") ? icons.popoutFloat(selectedTabNode) : icons.popoutFloat}
-                    </button>
+                        {typeof icons.popoutFloat === "function" ? icons.popoutFloat(selectedTabNode) : icons.popoutFloat}
+                    </button>,
                 );
             }
 
@@ -337,11 +343,10 @@ export const TabSet = (props: ITabSetProps) => {
                         onClick={onPopoutWindow}
                         onPointerDown={onInterceptPointerDown}
                     >
-                        {(typeof icons.popout === "function") ? icons.popout(selectedTabNode) : icons.popout}
-                    </button>
+                        {typeof icons.popout === "function" ? icons.popout(selectedTabNode) : icons.popout}
+                    </button>,
                 );
             }
-
         }
 
         if (tabsetNode.canMaximize()) {
@@ -359,10 +364,14 @@ export const TabSet = (props: ITabSetProps) => {
                     onClick={onMaximizeToggle}
                     onPointerDown={onInterceptPointerDown}
                 >
-                    {tabsetNode.isMaximized() ?
-                        (typeof icons.restore === "function") ? icons.restore(tabsetNode) : icons.restore :
-                        (typeof icons.maximize === "function") ? icons.maximize(tabsetNode) : icons.maximize}
-                </button>
+                    {tabsetNode.isMaximized()
+                        ? typeof icons.restore === "function"
+                            ? icons.restore(tabsetNode)
+                            : icons.restore
+                        : typeof icons.maximize === "function"
+                          ? icons.maximize(tabsetNode)
+                          : icons.maximize}
+                </button>,
             );
         }
 
@@ -379,31 +388,29 @@ export const TabSet = (props: ITabSetProps) => {
                     onClick={isTabStretch ? onCloseTab : onClose}
                     onPointerDown={onInterceptPointerDown}
                 >
-                    {(typeof icons.closeTabset === "function") ? icons.closeTabset(tabsetNode) : icons.closeTabset}
-                </button>
+                    {typeof icons.closeTabset === "function" ? icons.closeTabset(tabsetNode) : icons.closeTabset}
+                </button>,
             );
         }
 
         if (tabsetNode.isActive() && tabsetNode.isEnableActiveIcon()) {
             const title = controller.i18nName(I18nLabel.Active_Tabset);
             buttons.push(
-                <div
-                    key="active"
-                    data-layout-path={path + "/button/active"}
-                    title={title}
-                    aria-hidden="true"
-                    className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}
-                >
-                    {(typeof icons.activeTabset === "function") ? icons.activeTabset(tabsetNode) : icons.activeTabset}
-                </div>
+                <div key="active" data-layout-path={path + "/button/active"} title={title} aria-hidden="true" className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR_ICON)}>
+                    {typeof icons.activeTabset === "function" ? icons.activeTabset(tabsetNode) : icons.activeTabset}
+                </div>,
             );
         }
 
         const buttonbar = (
-            <div key="buttonbar" ref={buttonBarRef}
+            <div
+                key="buttonbar"
+                ref={buttonBarRef}
                 className={cm(CLASSES.FLEXLAYOUT__TAB_TOOLBAR)}
                 onPointerDown={onInterceptPointerDown}
-                onDragStart={(e) => { e.preventDefault() }}
+                onDragStart={(e) => {
+                    e.preventDefault();
+                }}
             >
                 {buttons}
             </div>
@@ -417,10 +424,7 @@ export const TabSet = (props: ITabSetProps) => {
 
         // advertise the tabset cycling shortcuts (if configured) on the tablist
         const keyMap = controller.getKeyMap();
-        const tablistKeyshortcuts = [
-            toAriaKeyShortcuts(keyMap.focusNextTabset),
-            toAriaKeyShortcuts(keyMap.focusPreviousTabset),
-        ].filter(Boolean).join(" ") || undefined;
+        const tablistKeyshortcuts = [toAriaKeyShortcuts(keyMap.focusNextTabset), toAriaKeyShortcuts(keyMap.focusPreviousTabset)].filter(Boolean).join(" ") || undefined;
 
         // while one of this tabset's tabs shows its rename textbox, the strip is a plain
         // container: the editing tab drops its tab role (a tab must not contain interactive
@@ -452,17 +456,14 @@ export const TabSet = (props: ITabSetProps) => {
 
         let leadingContainer: React.ReactNode = undefined;
         if (leading) {
-            leadingContainer = (
-                <div className={cm(CLASSES.FLEXLAYOUT__TABSET_LEADING)}>
-                    {leading}
-                </div>
-            );
+            leadingContainer = <div className={cm(CLASSES.FLEXLAYOUT__TABSET_LEADING)}>{leading}</div>;
         }
 
         if (tabsetNode.isEnableTabWrap()) {
             if (tabsetNode.isEnableTabStrip()) {
                 tabStrip = (
-                    <div className={tabStripClasses}
+                    <div
+                        className={tabStripClasses}
                         style={{ flexWrap: "wrap", gap: "1px", marginTop: "2px" }}
                         ref={setTabStripRef}
                         data-layout-path={path + "/tabstrip"}
@@ -496,16 +497,11 @@ export const TabSet = (props: ITabSetProps) => {
             if (tabsetNode.isEnableTabStrip()) {
                 let miniScrollbar = undefined;
                 if (tabsetNode.isEnableTabScrollbar()) {
-                    miniScrollbar = (
-                        <div ref={miniScrollRef}
-                            aria-hidden="true"
-                            className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)}
-                            onPointerDown={onScrollPointerDown}
-                        />
-                    );
+                    miniScrollbar = <div ref={miniScrollRef} aria-hidden="true" className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR)} onPointerDown={onScrollPointerDown} />;
                 }
                 tabStrip = (
-                    <div className={tabStripClasses}
+                    <div
+                        className={tabStripClasses}
                         ref={setTabStripRef}
                         data-layout-path={path + "/tabstrip"}
                         onPointerDown={onPointerDown}
@@ -519,18 +515,21 @@ export const TabSet = (props: ITabSetProps) => {
                     >
                         {leadingContainer}
                         <div className={cm(CLASSES.FLEXLAYOUT__MINI_SCROLLBAR_CONTAINER)}>
-                            <div ref={tabStripInnerRef}
+                            <div
+                                ref={tabStripInnerRef}
                                 className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_ + tabsetNode.getTabLocation())}
-                                style={{ overflowX: 'auto', overflowY: "hidden" }}
+                                style={{ overflowX: "auto", overflowY: "hidden" }}
                                 onScroll={onScroll}
                             >
                                 <div
-                                    style={{ width: (isTabStretch ? "100%" : "none") }}
+                                    style={{ width: isTabStretch ? "100%" : "none" }}
                                     role={tablistRole}
                                     aria-orientation={editingHere ? undefined : "horizontal"}
                                     aria-label={editingHere ? undefined : tabsetNode.getName()}
                                     aria-keyshortcuts={editingHere ? undefined : tablistKeyshortcuts}
-                                    className={cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + tabsetNode.getTabLocation())}
+                                    className={
+                                        cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER) + " " + cm(CLASSES.FLEXLAYOUT__TABSET_TABBAR_INNER_TAB_CONTAINER_ + tabsetNode.getTabLocation())
+                                    }
                                 >
                                     {tabs}
                                 </div>
@@ -544,7 +543,7 @@ export const TabSet = (props: ITabSetProps) => {
             }
         }
         return tabStrip;
-    }
+    };
 
     const renderContent = (tabStrip: React.ReactNode) => {
         let emptyTabset: React.ReactNode;
@@ -555,17 +554,29 @@ export const TabSet = (props: ITabSetProps) => {
             }
         }
 
-        let content = <div ref={setContentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
-            {emptyTabset}
-        </div>
+        let content = (
+            <div ref={setContentRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTENT)}>
+                {emptyTabset}
+            </div>
+        );
 
         if (tabsetNode.getTabLocation() === "top") {
-            content = <>{tabStrip}{content}</>;
+            content = (
+                <>
+                    {tabStrip}
+                    {content}
+                </>
+            );
         } else {
-            content = <>{content}{tabStrip}</>;
+            content = (
+                <>
+                    {content}
+                    {tabStrip}
+                </>
+            );
         }
         return content;
-    }
+    };
 
     const tabs = renderTabs();
     const { leading, buttonbar, stickyBar } = renderButtons();
@@ -577,7 +588,7 @@ export const TabSet = (props: ITabSetProps) => {
         minWidth: tabsetNode.getMinWidth(),
         minHeight: tabsetNode.getMinHeight(),
         maxWidth: tabsetNode.getMaxWidth(),
-        maxHeight: tabsetNode.getMaxHeight()
+        maxHeight: tabsetNode.getMaxHeight(),
     };
 
     if (tabsetNode.getModel().getMaximizedTabset(controller.getLayoutId()) !== undefined && !tabsetNode.isMaximized()) {
@@ -587,13 +598,8 @@ export const TabSet = (props: ITabSetProps) => {
     // note: tabset container is needed to allow flexbox to size without border/padding/margin
     // then inner tabset can have border/padding/margin for styling
     const tabset = (
-        <div ref={setSelfRef}
-            className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTAINER)}
-            style={style}
-        >
-            <div className={cm(CLASSES.FLEXLAYOUT__TABSET)}
-                data-layout-path={path}
-            >
+        <div ref={setSelfRef} className={cm(CLASSES.FLEXLAYOUT__TABSET_CONTAINER)} style={style}>
+            <div className={cm(CLASSES.FLEXLAYOUT__TABSET)} data-layout-path={path}>
                 {content}
             </div>
         </div>
@@ -602,22 +608,26 @@ export const TabSet = (props: ITabSetProps) => {
     if (tabsetNode.isMaximized()) {
         if (controller.getMainElement()) {
             return createPortal(
-                <div style={{
-                    position: "absolute",
-                    display: "flex",
-                    top: 0, left: 0, bottom: 0, right: 0
-                }}>
+                <div
+                    style={{
+                        position: "absolute",
+                        display: "flex",
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0,
+                    }}
+                >
                     {tabset}
-                </div>, controller.getMainElement()!);
+                </div>,
+                controller.getMainElement()!,
+            );
         } else {
             return tabset;
         }
     } else {
         return tabset;
     }
-
 };
 
-TabSet.displayName = 'TabSet'; // name in react dev tools
-
-
+TabSet.displayName = "TabSet"; // name in react dev tools

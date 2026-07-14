@@ -106,18 +106,13 @@ export class Layout {
     toJson(): IJsonSubLayout {
         // chrome sets top,left to large -ve values when minimized, dont save in this case
         if (this.getType() === "window" && this.getWindow() && this.getWindow()!.screenTop > -10000) {
-            this.setRect(new Rect(
-                this.getWindow()!.screenLeft,
-                this.getWindow()!.screenTop,
-                this.getWindow()!.outerWidth,
-                this.getWindow()!.outerHeight
-            ));
+            this.setRect(new Rect(this.getWindow()!.screenLeft, this.getWindow()!.screenTop, this.getWindow()!.outerWidth, this.getWindow()!.outerHeight));
         }
 
-        const json: IJsonSubLayout = { 
+        const json: IJsonSubLayout = {
             type: this.getType(),
-            layout: this.getRootRow()!.toJson(), 
-            rect: this.getType() === "tab"? undefined: this.getRect().toJson() 
+            layout: this.getRootRow()!.toJson(),
+            rect: this.getType() === "tab" ? undefined : this.getRect().toJson(),
         };
         return json;
     }

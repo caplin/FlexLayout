@@ -18,7 +18,6 @@ export interface ITabButtonProps {
 
 /** @internal */
 export const TabButton = (props: ITabButtonProps) => {
-        
     const { controller, tabNode, selected, path } = props;
     const selfRef = React.useRef<HTMLDivElement>(null);
     const contentRef = React.useRef<HTMLInputElement>(null);
@@ -29,10 +28,13 @@ export const TabButton = (props: ITabButtonProps) => {
     // register with the layout's central measure pass via a callback ref: it fires whenever
     // react attaches/detaches the element, including remounts the component cannot know about
     // (e.g. the parent tabset moving into the maximize portal), unlike an effect
-    const setSelfRef = React.useCallback((element: HTMLDivElement | null) => {
-        selfRef.current = element;
-        controller.registerMeasurable(tabNode, "tabbutton", element);
-    }, [controller, tabNode]);
+    const setSelfRef = React.useCallback(
+        (element: HTMLDivElement | null) => {
+            selfRef.current = element;
+            controller.registerMeasurable(tabNode, "tabbutton", element);
+        },
+        [controller, tabNode],
+    );
 
     React.useLayoutEffect(() => {
         if (editing) {
@@ -71,7 +73,7 @@ export const TabButton = (props: ITabButtonProps) => {
     const onAuxMouseClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         if (isAuxMouseEvent(event)) {
             controller.auxMouseClick(tabNode, event);
-        } 
+        }
     };
 
     const onContextMenu = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -174,11 +176,11 @@ export const TabButton = (props: ITabButtonProps) => {
     };
 
     const onTextBoxKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.code === 'Escape') {
+        if (event.code === "Escape") {
             // esc
             controller.setEditingTab(undefined);
             selfRef.current?.focus(); // return focus to the tab button
-        } else if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+        } else if (event.code === "Enter" || event.code === "NumpadEnter") {
             // enter
             controller.setEditingTab(undefined);
             controller.doAction(Actions.renameTab(tabNode.getId(), (event.target as HTMLInputElement).value));
@@ -217,21 +219,18 @@ export const TabButton = (props: ITabButtonProps) => {
 
     // advertise the tab's keyboard operations to assistive technology; composed from the
     // resolved keymap so the advertised shortcuts always match the configured bindings
-    const ariaKeyshortcuts = [
-        toAriaKeyShortcuts(keyMap.focusTabToggle),
-        tabNode.isCloseable() ? toAriaKeyShortcuts(keyMap.closeTab) : undefined,
-        tabNode.isEnableRename() ? toAriaKeyShortcuts(keyMap.renameTab) : undefined,
-    ].filter(Boolean).join(" ") || undefined;
+    const ariaKeyshortcuts =
+        [
+            toAriaKeyShortcuts(keyMap.focusTabToggle),
+            tabNode.isCloseable() ? toAriaKeyShortcuts(keyMap.closeTab) : undefined,
+            tabNode.isEnableRename() ? toAriaKeyShortcuts(keyMap.renameTab) : undefined,
+        ]
+            .filter(Boolean)
+            .join(" ") || undefined;
 
-    let content = renderState.content ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>
-            {renderState.content}
-        </div>) : null;
+    let content = renderState.content ? <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_CONTENT)}>{renderState.content}</div> : null;
 
-    const leading = renderState.leading ? (
-        <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>
-            {renderState.leading}
-        </div>) : null;
+    const leading = renderState.leading ? <div className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_LEADING)}>{renderState.leading}</div> : null;
 
     if (editing) {
         content = (
@@ -253,14 +252,9 @@ export const TabButton = (props: ITabButtonProps) => {
         const pinnedTitle = controller.i18nName(I18nLabel.Pinned_Tab);
         renderState.buttons.push(
             // the pinned state is conveyed to assistive technology via the tab's aria-label
-            <div
-                key="pin"
-                data-layout-path={path + "/button/pin"}
-                title={pinnedTitle}
-                aria-hidden="true"
-                className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_PIN)}>
-                {(typeof icons.pin === "function") ? icons.pin(tabNode) : icons.pin}
-            </div>
+            <div key="pin" data-layout-path={path + "/button/pin"} title={pinnedTitle} aria-hidden="true" className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_PIN)}>
+                {typeof icons.pin === "function" ? icons.pin(tabNode) : icons.pin}
+            </div>,
         );
     }
 
@@ -277,9 +271,10 @@ export const TabButton = (props: ITabButtonProps) => {
                 aria-hidden="true"
                 className={cm(CLASSES.FLEXLAYOUT__TAB_BUTTON_TRAILING)}
                 onPointerDown={onClosePointerDown}
-                onClick={onClose}>
-                {(typeof icons.close === "function") ? icons.close(tabNode) : icons.close}
-            </div>
+                onClick={onClose}
+            >
+                {typeof icons.close === "function" ? icons.close(tabNode) : icons.close}
+            </div>,
         );
     }
 
@@ -295,9 +290,9 @@ export const TabButton = (props: ITabButtonProps) => {
             aria-controls={editing ? undefined : domId("flexlayout-tab-", tabNode.getId())}
             // an explicit name: the subtree contains the close/pin adornments, which must not
             // leak into the tab's computed name; pinned state is conveyed here
-            aria-label={editing ? undefined : (tabNode.isPinned() ? renderState.name + " (" + controller.i18nName(I18nLabel.Pinned_Tab) + ")" : renderState.name)}
+            aria-label={editing ? undefined : tabNode.isPinned() ? renderState.name + " (" + controller.i18nName(I18nLabel.Pinned_Tab) + ")" : renderState.name}
             aria-keyshortcuts={editing ? undefined : ariaKeyshortcuts}
-            tabIndex={editing ? -1 : (isTabbable ? 0 : -1)}
+            tabIndex={editing ? -1 : isTabbable ? 0 : -1}
             onKeyDown={onKeyDown}
             data-layout-path={path}
             className={classNames}
@@ -317,5 +312,4 @@ export const TabButton = (props: ITabButtonProps) => {
     );
 };
 
-TabButton.displayName = 'TabButton'; // name in react dev tools
-
+TabButton.displayName = "TabButton"; // name in react dev tools

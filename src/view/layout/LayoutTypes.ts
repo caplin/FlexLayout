@@ -5,16 +5,9 @@ import { Node } from "../../model/Node";
 import { TabNode } from "../../model/TabNode";
 import { TabSetNode } from "../../model/TabSetNode";
 
-export type DragRectRenderCallback = (
-    content: React.ReactNode | undefined,
-    node?: Node,
-    json?: IJsonTabNode
-) => React.ReactNode | undefined;
+export type DragRectRenderCallback = (content: React.ReactNode | undefined, node?: Node, json?: IJsonTabNode) => React.ReactNode | undefined;
 
-export type NodeMouseEvent = (
-    node: TabNode | TabSetNode | BorderNode,
-    event: React.MouseEvent<HTMLElement, MouseEvent>
-) => void;
+export type NodeMouseEvent = (node: TabNode | TabSetNode | BorderNode, event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 
 export type ShowOverflowMenuCallback = (
     node: TabSetNode | BorderNode,
@@ -33,7 +26,7 @@ export interface ITabSetRenderValues {
     /** components that will be added at the end of the tabset */
     buttons: React.ReactNode[];
     /** position to insert overflow button within [...stickyButtons, ...buttons]
-     * if left undefined position will be after the sticky buttons (if any) 
+     * if left undefined position will be after the sticky buttons (if any)
      */
     overflowPosition: number | undefined;
 }
@@ -93,16 +86,15 @@ export const defaultKeyMap: Readonly<IKeyMap> = {
 };
 
 export interface IIcons {
-    close?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    pin?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    closeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    popout?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    popoutFloat?: (React.ReactNode | ((tabNode: TabNode) => React.ReactNode));
-    maximize?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    restore?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    more?: (React.ReactNode | ((tabSetNode: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode));
+    close?: React.ReactNode | ((tabNode: TabNode) => React.ReactNode);
+    pin?: React.ReactNode | ((tabNode: TabNode) => React.ReactNode);
+    closeTabset?: React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode);
+    popout?: React.ReactNode | ((tabNode: TabNode) => React.ReactNode);
+    popoutFloat?: React.ReactNode | ((tabNode: TabNode) => React.ReactNode);
+    maximize?: React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode);
+    restore?: React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode);
+    more?: React.ReactNode | ((tabSetNode: TabSetNode | BorderNode, hiddenTabs: { node: TabNode; index: number }[]) => React.ReactNode);
     edgeArrow?: React.ReactNode;
-    activeTabset?: (React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode));
-    closeFloatPopout?: (React.ReactNode | (() => React.ReactNode));
+    activeTabset?: React.ReactNode | ((tabSetNode: TabSetNode) => React.ReactNode);
+    closeFloatPopout?: React.ReactNode | (() => React.ReactNode);
 }
-
