@@ -288,9 +288,9 @@ function App() {
         event.preventDefault();
         event.stopPropagation();
 
-        // build the menu from the node's capabilities (only tabs have a menu in this demo)
+        // show menu on default layout for non-border tabs
         const items: PopupMenuEntry[] = [];
-        if (node instanceof TabNode) {
+        if ((layoutFile?.startsWith("test_") && node instanceof TabNode) || (layoutFile === "default" && node instanceof TabNode && node.getParent() instanceof TabSetNode)) {
             if (node.isEnableRename()) {
                 items.push({ key: "rename", label: "Rename" });
             }
@@ -301,31 +301,48 @@ function App() {
                 items.push({ key: "sep1", type: "divider" });
                 items.push({ key: "close", label: "Close" });
             }
-        }
-        if (items.length === 0) {
-            return;
-        }
 
-        contextMenuHideRef.current?.(); // close any menu already open
-        contextMenuHideRef.current = showPopupMenu({
-            anchor: { x: event.clientX, y: event.clientY },
-            container: layoutRef.current?.getRootDiv() ?? undefined,
-            title: "Menu for " + (node instanceof TabNode ? "Tab: " + node.getName() : node.getType()),
-            items,
-            onSelect: (item) => {
-                if (item.key === "rename") {
-                    layoutRef.current?.editTabName(node.getId());
-                } else if (item.key === "pin" && node instanceof TabNode) {
-                    model?.doAction(Actions.setTabPinned(node.getId(), !node.isPinned()));
-                } else if (item.key === "close") {
-                    model?.doAction(Actions.deleteTab(node.getId()));
-                }
-                (window as any).__lastContextSelect = item.key; // e2e hook (context-menu.spec)
-            },
-            onClose: () => {
-                contextMenuHideRef.current = null;
-            },
-        });
+            if (items.length === 0) {
+                return;
+            }
+
+            contextMenuHideRef.current?.(); // close any menu already open
+            contextMenuHideRef.current = showPopupMenu({
+                anchor: { x: event.clientX, y: event.clientY },
+                container: node.getLayoutRef()!,
+                title: "Menu for " + "Tab: " + node.getName(),
+                items,
+                onSelect: (item) => {
+                    if (item.key === "rename") {
+                        layoutRef.current?.editTabName(node.getId());
+                    } else if (item.key === "pin" && node instanceof TabNode) {
+                        model?.doAction(Actions.setTabPinned(node.getId(), !node.isPinned()));
+                    } else if (item.key === "close") {
+                        model?.doAction(Actions.deleteTab(node.getId()));
+                    }
+                    (window as any).__lastContextSelect = item.key; // e2e hook (context-menu.spec)
+                },
+                onClose: () => {
+                    contextMenuHideRef.current = null;
+                },
+            });
+
+            // show dummy menu on new featurs layout for all types
+        } else if (layoutFile === "newfeatures") {
+            items.push({ key: "option1", label: "Option 1" });
+            items.push({ key: "option2", label: "Option 2" });
+            contextMenuHideRef.current?.(); // close any menu already open
+            contextMenuHideRef.current = showPopupMenu({
+                anchor: { x: event.clientX, y: event.clientY },
+                container: node.getLayoutRef()!,
+                title: "Menu for " + node.getType(),
+                items,
+                // onSelect: (item) => {},
+                onClose: () => {
+                    contextMenuHideRef.current = null;
+                },
+            });
+        }
     };
 
     const onAuxMouseClick = (_node: TabNode | TabSetNode | BorderNode, _event: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -677,7 +694,11 @@ function App() {
                 onExternalDrag={onExternalDrag}
                 realtimeResize={realtimeResize}
                 keyMap={{ focusTabToggle: "F6", focusNextTabset: "Ctrl+]", focusPreviousTabset: "Ctrl+[" }}
-                onContextMenu={layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_pinned" || layoutFile === "test_overlay" ? onContextMenu : undefined}
+                onContextMenu={
+                    layoutFile === "default" || layoutFile === "newfeatures" || layoutFile === "test_pinned" || layoutFile === "test_overlay" || layoutFile === "test_with_borders"
+                        ? onContextMenu
+                        : undefined
+                }
                 onAuxMouseClick={layoutFile === "newfeatures" ? onAuxMouseClick : undefined}
                 // icons={{
                 //     more: (node: (TabSetNode | BorderNode), hiddenTabs: { node: TabNode; index: number }[]) => {
@@ -761,12 +782,12 @@ function App() {
                             <option value="alpha_light">Alpha Light</option>
                             <option value="alpha_dark">Alpha Dark</option>
                             <option value="alpha_rounded">Alpha Rounded</option>
-                            <option value="aria">Aria</option>
                             <option value="light">Light</option>
                             <option value="dark">Dark</option>
                             <option value="rounded">Rounded</option>
                             <option value="underline">Underline</option>
                             <option value="gray">Gray</option>
+                            <option value="aria">Aria</option>
                         </select>
                         <button className="toolbar_control" style={{ marginLeft: 5 }} title="print layout json to the developer console" onClick={onShowLayoutClick}>
                             {"Print"}

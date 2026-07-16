@@ -102,6 +102,10 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     controller.setFindSplitterSizeRef(findSplitterSizeRef);
     controller.setMainRef(mainRef);
 
+    // need to update layout controller incase model is
+    const layout = props.model.getLayouts().get(controller.getLayoutId())!;
+    layout.setController(controller);
+
     React.useImperativeHandle(ref, () => controller, [controller]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -255,8 +259,8 @@ export const LayoutInternal = React.forwardRef<LayoutController, ILayoutInternal
     React.useEffect(() => {
         const currentModel = props.model;
 
-        const layout = currentModel.getLayouts().get(controller.getLayoutId())!;
-        layout.setController(controller);
+        // const layout = currentModel.getLayouts().get(controller.getLayoutId())!;
+        // layout.setController(controller);
         layout.setToExportRectFunction((r: Rect, type: ILayoutType) => {
             return type === "window" ? controller.getScreenRect(r) : controller.getRelativeRect(r);
         });
@@ -1073,6 +1077,10 @@ export class LayoutController {
             return this._props.classNameMapper(defaultClassName);
         }
     };
+
+    getLayoutRef() {
+        return this._layoutRef.current;
+    }
 
     getDomRect() {
         if (this._cachedLayoutDOMRect !== undefined) {

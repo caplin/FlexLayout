@@ -174,7 +174,7 @@ const Layout = React.forwardRef<ILayoutApi, ILayoutProps>((props, ref) => {
         editTabName: (tabNodeId: string) => {
             const node = controllerRef.current?.getModel().getNodeById(tabNodeId);
             if (node instanceof TabNode && node.isEnableRename()) {
-                controllerRef.current?.setEditingTab(node);
+                node.getLayout().getController()?.setEditingTab(node);
             }
         },
         getRootDiv: () => {

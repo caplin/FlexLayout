@@ -110,6 +110,10 @@ export abstract class Node {
         return this.model.getMainLayout();
     }
 
+    getLayoutRef() {
+        return this.getLayout().getController()!.getLayoutRef();
+    }
+
     setEventListener(event: NodeEventType, callback: (params: any) => void) {
         this.listeners.set(event, callback);
     }

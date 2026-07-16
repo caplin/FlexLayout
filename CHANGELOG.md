@@ -1,3 +1,8 @@
+## 0.10.1 - 2026-07-21
+* **Fixed:** flash of sublayout rendered via the factory when replacing the model with a modified copy of its json.
+* **Fixed:** `ILayoutApi.editTabName(tabNodeId)` in popouts
+* **Fixed:** context menu in 'New Features' demo layout
+
 ## 0.10.0 - 2026-07-14
 * **Added:** Pinnable tabs: new tab attribute `pinned` and action `Actions.setTabPinned(tabId, pinned)`. Pinned tabs are grouped at the start of the tabstrip (with a pin indicator icon), cannot be closed via the ui, and cannot be dragged out of their tabset (they can be reordered within the pinned group). New `pin` entry in the `icons` Layout prop.
 * **Added:** `ILayoutApi.editTabName(tabNodeId)` - starts the inline rename edit on a tab's button (the same edit that double clicking the tab text starts), e.g. from a context menu (see the demo's tab context menu).

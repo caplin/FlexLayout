@@ -5,7 +5,7 @@ import { test, expect } from "@playwright/test";
 // click, is an accessible menu, and is fully keyboard operable.
 test.describe("reusable popup menu (demo context menu)", () => {
     const openMenu = async (page: import("@playwright/test").Page) => {
-        await page.goto("/demo?layout=newfeatures");
+        await page.goto("/demo?layout=test_with_borders");
         const tab = page.locator(".flexlayout__tab_button").first();
         await expect(tab).toBeVisible();
         await tab.click({ button: "right" });
