@@ -1,0 +1,151 @@
+{
+	"global": {
+        "tabSetEnableTabScrollbar": true,
+        "borderEnableTabScrollbar": true,
+        "tabSetEnableTabGroups": true
+	},
+	"borders": [
+		{
+			"location": "left",
+			"type": "border",
+			"size": 400,
+			"children": [
+				{
+					"type": "tab",
+					"id": "model_explorer",
+					"name": "Model Explorer",
+					"component": "model_explorer",
+					"icon": "images/dns.svg",
+					"enableClose": false,
+					"enableScrollbars": false,
+					"config": { "alwaysShowInDemo": true }
+				}
+			]
+		},
+		{
+			"location": "right",
+			"type": "border",
+			"size": 300,
+			"children": [
+				{
+					"type": "tabgroup",
+					"id": "helpers",
+					"name": "Helpers",
+					"color": "#94b870",
+					"opened": true,
+					"children": [
+						{
+							"type": "tab",
+							"id": "theme",
+							"name": "Theme",
+							"component": "theme",
+							"enableClose": false,
+							"icon": "images/settings.svg"
+						},
+						{
+							"type": "tab",
+							"id": "layout_json",
+							"name": "Layout JSON",
+							"component": "json",
+							"icon": "images/data_object.svg"
+						}
+					]
+				}
+
+			]
+		}
+	],
+	"layout": {
+		"type": "row",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "ts0",
+				"active": true,
+				"children": [
+					{
+						"type": "tabgroup",
+						"id": "g1",
+						"name": "Design",
+						"color": "#7895c4",
+						"opened": true,
+						"children": [
+							{
+								"type": "tab",
+								"id": "t1",
+								"name": "Colors",
+								"component": "label"
+							},
+							{
+								"type": "tab",
+								"id": "t2",
+								"name": "Typography",
+								"component": "label"
+							},
+							{
+								"type": "tab",
+								"id": "t3",
+								"name": "Icons",
+								"component": "label"
+							}
+						]
+					},
+					{
+						"type": "tabgroup",
+						"id": "g2",
+						"name": "Reports",
+						"color": "#d97a7a",
+						"opened": false,
+						"children": [
+							{
+								"type": "tab",
+								"id": "t4",
+								"name": "Weekly",
+								"component": "label"
+							},
+							{
+								"type": "tab",
+								"id": "t5",
+								"name": "Monthly",
+								"component": "label"
+							}
+						]
+					},
+					{
+						"type": "tabgroup",
+						"id": "g3",
+						"name": "Personal",
+						"color": "#a394cf",
+						"opened": false,
+						"children": [
+							{
+								"type": "tab",
+								"id": "t6",
+								"name": "Shopping",
+								"component": "label"
+							},
+							{
+								"type": "tab",
+								"id": "t7",
+								"name": "Todo",
+								"component": "label"
+							},
+							{
+								"type": "tab",
+								"id": "t8",
+								"name": "Notes",
+								"component": "label"
+							}
+						]
+					},
+					{
+						"type": "tab",
+						"id": "t9",
+						"name": "Settings",
+						"component": "label"
+					}
+				]
+			}
+		]
+	}
+}

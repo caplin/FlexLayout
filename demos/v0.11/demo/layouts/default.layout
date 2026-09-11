@@ -1,0 +1,326 @@
+{
+	"global": {
+		"tabEnablePin": true,
+		"tabEnableRename": true,
+		"tabEnablePopout": true,
+		"tabSetEnableCloseButton": true,
+		"tabSetMinWidth": 130,
+		"tabSetMinHeight": 100,
+		"tabSetEnableTabScrollbar": true,
+		"borderMinSize": 100,
+		"borderEnableTabScrollbar": true
+	},
+	"borders": [
+		{
+			"location": "bottom",
+			"type": "border",
+			"children": [
+				{
+					"type": "tab",
+					"id": "terminal",
+					"name": "Terminal",
+					"component": "xterm",
+					"enableClose": false,
+					"icon": "images/terminal.svg",
+					"enableScrollbars": false
+				},
+				{
+					"type": "tab",
+					"id": "sublayout_2",
+					"name": "SubLayout 2",
+					"subLayoutId": "sublayout2",
+					"enableClose": false,
+					"icon": "images/layers.svg",
+					"enableScrollbars": false
+				},
+				{
+					"type": "tab",
+					"id": "action_log",
+					"name": "Action Log",
+					"component": "actionlog",
+					"icon": "images/history.svg",
+					"enableRenderOnDemand": false
+				},
+				{
+					"type": "tab",
+					"id": "layout_json",
+					"name": "Layout JSON",
+					"component": "json",
+					"icon": "images/data_object.svg"
+				}
+			]
+		},
+		{
+			"location": "left",
+			"type": "border",
+			"size": 400,
+			"children": [
+				{
+					"type": "tab",
+					"id": "model_explorer",
+					"name": "Model Explorer",
+					"component": "model_explorer",
+					"icon": "images/dns.svg",
+					"enableClose": false,
+					"enableScrollbars": false,
+					"config": { "alwaysShowInDemo": true }
+				}
+			]
+		},
+		{
+			"location": "right",
+			"type": "border",
+			"size": 260,
+			"children": [
+				{
+					"type": "tab",
+					"id": "theme",
+					"name": "Theme",
+					"component": "theme",
+					"enableClose": false,
+					"icon": "images/settings.svg",
+					"config": { "alwaysShowInDemo": true }
+				},
+				{
+					"type": "tab",
+					"id": "sublayout_1",
+					"name": "SubLayout 1",
+					"component": "user sublayout",
+					"subLayoutId": "sublayout1",
+					"altName": "The Navigation Tab",
+					"enableClose": true,
+					"icon": "images/layers.svg",
+					"enableScrollbars": false
+				}
+			]
+		}
+	],
+	"layout": {
+		"type": "row",
+		"id": "#11b6dde6-2808-4a87-b378-dd6ed2a92547",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "#018c109c-20ab-4458-84c8-1817d2e7d81b",
+				"weight": 33,
+				"children": [
+					{
+						"type": "tab",
+						"id": "openlayers_map",
+						"name": "OpenLayers Map",
+						"component": "map",
+						"enablePopoutOverlay": true
+					}
+				]
+			},
+			{
+				"type": "row",
+				"id": "#cec0f587-2651-4bb2-a755-006a7111bb11",
+				"weight": 33,
+				"children": [
+					{
+						"type": "tabset",
+						"id": "#770c0042-3776-4576-becc-90b627bb8c91",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "chartjs",
+								"name": "ChartJS",
+								"component": "chart",
+								"pinned": true,
+								"enableClose": false,
+								"enablePopoutOverlay": true
+							},
+							{
+								"type": "tab",
+								"id": "#963c76b2-ea75-4cf9-8677-823fb1aec5ea",
+								"name": "Grid 1",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "#8bba601c-b902-432a-bc3f-5e076dafdf1d",
+								"name": "Grid 2",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "#b89da41a-933d-4784-b4b9-c9a7d19aea0d",
+								"name": "Grid 3",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "#b9ffea20-84d7-430d-ad16-947b26127fbc",
+								"name": "Grid 4",
+								"component": "grid",
+								"icon": "images/article.svg"
+							},
+							{
+								"type": "tab",
+								"id": "#bebb3b66-bcba-449e-a9b8-774e92fa8c37",
+								"name": "Grid 5",
+								"component": "grid",
+								"icon": "images/article.svg"
+							}
+						],
+						"active": true
+					},
+					{
+						"type": "tabset",
+						"id": "#c0b4aba3-dba9-4883-a384-1b299518fd0b",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "aggrid",
+								"name": "AGGrid",
+								"component": "aggrid"
+							},
+							{
+								"type": "tab",
+								"id": "editor",
+								"name": "Editor",
+								"component": "monaco",
+								"enableScrollbars": false
+							}
+						]
+					}
+				]
+			},
+			{
+				"type": "row",
+				"id": "#6b135a77-d283-404e-8a92-4bb5bf2579cb",
+				"weight": 33,
+				"children": [
+					{
+						"type": "tabset",
+						"id": "#b97c51f2-7f2c-490d-9cbb-6fcb189c2343",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "wikipedia",
+								"name": "Wikipedia",
+								"component": "multitype",
+								"config": {
+									"type": "url",
+									"data": "https://en.wikipedia.org/wiki/Main_Page"
+								}
+							},
+							{
+								"type": "tab",
+								"id": "mui",
+								"name": "MUI",
+								"component": "mui"
+							},
+							{
+								"type": "tab",
+								"id": "styledcomp",
+								"name": "Styled Components",
+								"component": "styledcomp"
+							}
+						]
+					},
+					{
+						"type": "tabset",
+						"id": "#a1d1e2b2-246c-4116-a616-cb3d186b5743",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "mui_grid",
+								"name": "MUI Grid",
+								"component": "muigrid"
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	"subLayouts": {
+		"sublayout1": {
+			"type": "tab",
+			"layout": {
+				"type": "row",
+				"id": "#48cd26b2-6a7c-4989-bbc7-4f388f80adb1",
+				"children": [
+					{
+						"type": "row",
+						"id": "#b814faf4-d29a-466e-8f79-dade6290ed54",
+						"children": [
+							{
+								"type": "tabset",
+								"id": "#79a74b0b-37ac-43e4-abbf-909acdbc5530",
+								"weight": 50,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#fb86ad2f-54fb-41b4-b24f-746f54fa6c99",
+										"name": "Grid 1",
+										"component": "grid"
+									}
+								],
+								"active": true
+							},
+							{
+								"type": "tabset",
+								"id": "#ed0f8c08-7c6c-46fe-a456-5eb7d3c50212",
+								"weight": 50,
+								"children": [
+									{
+										"type": "tab",
+										"id": "#dd3416a2-8845-49d6-9337-f8ee43a252f8",
+										"name": "Grid 1",
+										"component": "grid"
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		},
+		"sublayout2": {
+			"type": "tab",
+			"layout": {
+				"type": "row",
+				"id": "#50399807-fa1a-4099-be72-ee0b10b14146",
+				"children": [
+					{
+						"type": "tabset",
+						"id": "#bc20e3ec-6560-4e48-a390-a359d5652256",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "#ca4e189e-9e8d-4057-a940-141af42aca36",
+								"name": "Grid 1",
+								"component": "grid"
+							}
+						]
+					},
+					{
+						"type": "tabset",
+						"id": "#5d0e9bcd-7761-4777-9df9-c9a098147e51",
+						"weight": 50,
+						"children": [
+							{
+								"type": "tab",
+								"id": "#11addc10-f0e8-4481-8320-b4c33fdca042",
+								"name": "Grid 2",
+								"component": "grid"
+							}
+						],
+						"active": true
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,202 @@
+{
+	"global": {
+		"tabEnablePopout": true,
+		"tabSetEnableClose": true,
+		"tabSetEnableCloseButton":true,
+		"tabSetEnableTabWrap": true,
+		"tabSetMinWidth": 100,
+		"tabSetMinHeight": 100,
+		"borderMinSize": 100,
+		"borderEnableAutoHide": true
+	},
+	"borders": [
+		{
+			"type": "border",
+			"location": "bottom",
+			"children": [
+				{
+					"type": "tab",
+					"id": "output",
+					"name": "Output",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "terminal",
+					"name": "Terminal",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "layout_json",
+					"name": "Layout JSON",
+					"component": "json",
+					"icon": "images/data_object.svg"
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "left",
+			"children": [
+				{
+					"type": "tab",
+					"id": "navigation",
+					"name": "Navigation",
+					"component": "grid",
+					"enableClose": false
+				},
+				{
+					"type": "tab",
+					"id": "with_border_sizes",
+					"name": "With border sizes",
+					"component": "grid",
+					"enableClose": false,
+					"borderWidth": 500,
+					"borderHeight": 500
+				}
+			]
+		},
+		{
+			"type": "border",
+			"location": "right",
+			"children": [
+				{
+					"type": "tab",
+					"id": "options",
+					"name": "Options",
+					"component": "grid",
+					"enableClose": false
+				}
+			]
+		}
+	],
+	"layout": {
+		"type": "row",
+		"id": "#baeaf63a-7e31-4f5b-836c-6aec43cb228a",
+		"children": [
+			{
+				"type": "tabset",
+				"id": "#8b1bc920-89fb-4fe7-bad3-9cf70d693118",
+				"weight": 42.14932625516559,
+				"children": [
+					{
+						"type": "tab",
+						"id": "new",
+						"name": "New",
+						"helpText": "this tab has helpText defined",
+						"component": "otherfeatures",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "two",
+						"name": "Two",
+						"component": "grid"
+					},
+					{
+						"type": "tab",
+						"id": "#d6a9c27a-701f-4b87-9661-be186dcb567c",
+						"name": "Grid 1",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#4658c30a-e98e-4a2f-9f30-07ebf2944f26",
+						"name": "Grid 2",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#c7c0faea-8593-4cf0-87fe-f4ff14f50bdc",
+						"name": "Grid 3",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#b0ee783e-bb9f-41be-8320-a2bf44490f9f",
+						"name": "Grid 4",
+						"component": "grid",
+						"icon": "images/article.svg"
+					}
+				]
+			},
+			{
+				"type": "tabset",
+				"id": "#79caf830-d0fb-4f02-a579-e3bbe21b6525",
+				"weight": 57.85067374483441,
+				"children": [
+					{
+						"type": "tab",
+						"id": "form",
+						"name": "Form",
+						"component": "simpleform"
+					},
+					{
+						"type": "tab",
+						"id": "five",
+						"name": "Five",
+						"component": "grid",
+						"borderWidth": 500
+					},
+					{
+						"type": "tab",
+						"id": "#12acdbcd-0454-4d47-8d96-fccb645954c8",
+						"name": "Grid 1",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#5c35c619-df7f-4da7-93d7-608c49c5490b",
+						"name": "Grid 2",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#1357abd8-719f-47e0-bcd8-892e91e2248c",
+						"name": "Grid 3",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#9fa5abf6-abe8-40d5-a6d2-c8a3ff4326e5",
+						"name": "Grid 4",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#b73f1f91-2420-4446-9d9d-c7485853caa4",
+						"name": "Grid 5",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#3955e3b7-2c68-4dcf-b028-332984e94909",
+						"name": "Grid 6",
+						"component": "grid",
+						"icon": "images/article.svg"
+					},
+					{
+						"type": "tab",
+						"id": "#4f5a137d-e63b-42dd-a7e9-635e611a5fd4",
+						"name": "Grid 7",
+						"component": "grid",
+						"icon": "images/article.svg"
+					}
+				],
+				"active": true
+			}
+		]
+	},
+	"subLayouts": {}
+}
