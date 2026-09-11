@@ -17,7 +17,9 @@
 <div class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Shows the group pill context menu (rename, color, collapse/expand, ungroup) using the reusable
 <a href="showPopupMenu.html" class="tsd-kind-function">showPopupMenu</a>. Returns an idempotent hide handle. Pass <code>onAction</code> in the options to
-intercept/undo the dispatched actions, and <code>closeMenu</code> is wired automatically.</p>
+intercept/undo the dispatched actions, and <code>closeMenu</code> is wired automatically.
+This is a thin wrapper around <a href="getTabGroupMenuItems.html" class="tsd-kind-function">getTabGroupMenuItems</a>; the same menu is available via
+<code>new ContextMenuBuilder(group).addStandard().build()</code> / <a href="getNodeContextMenuItems.html" class="tsd-kind-function">getNodeContextMenuItems</a>.</p>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>

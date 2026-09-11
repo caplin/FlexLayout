@@ -1,6 +1,7 @@
 {
 	"global": {
 		"tabEnableFloat": true,
+		"tabEnablePopout": true,
 		"tabSetEnableTabScrollbar": true,
 		"borderEnableTabScrollbar": true
 	},
