@@ -60,7 +60,7 @@ export interface IKeyEventLike {
 
 /** @internal */
 export function matchesKey(event: IKeyEventLike, spec: string | undefined): boolean {
-    if (!spec) {
+    if (!spec || typeof event.key !== "string") {
         return false;
     }
     const parts = spec.split("+");

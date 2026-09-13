@@ -1,3 +1,9 @@
+## 0.11.1 - 2026-09-26
+* **Fixed:** `matchesKey` no longer throws on a `keydown` event that carries no `key` (e.g. a synthetic event or browser autofill) ([#529](https://github.com/caplin/FlexLayout/issues/529)).
+* **Fixed:** dragging a tab out of the overflow menu and releasing it outside the layout no longer leaves the drag state set and hijacks the next drag ([#528](https://github.com/caplin/FlexLayout/issues/528)).
+* **Fixed:** dropping non-layout content (e.g. text or files) inside a tab no longer leaves the layout active and suppresses the overlay, drop outline and edge markers on the next tab drag ([#527](https://github.com/caplin/FlexLayout/issues/527)).
+* **Added:** CSS source maps (`style/*.css.map`) are now included in the package, so browser devtools map the theme stylesheets back to their original scss sources.
+
 ## 0.11.0 - 2026-09-11
 * **Breaking Change:** Theme CSS variables are namespaced to avoid collisions: the bare `--color-*`, `--font-*`, `--splitter-*`, etc. variables are now `--fl-*` (e.g. `--color-text` is `--fl-color-text`). Custom CSS referencing the old bare variable names must be updated.
 * **Breaking Change:** New defaults: `realtimeResize` Layout prop is now `true`; `tabEnableRename`, `tabEnablePin` and `tabEnablePopoutIcon` are now `false`. Restore the old behavior via `global` (e.g. `tabEnableRename: true`).

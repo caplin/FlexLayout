@@ -399,6 +399,10 @@ export class DragDropManager {
 
     onDrop = (event: React.DragEvent<HTMLElement>) => {
         if (this._mainController !== DragDropManager.dragState?.mainLayoutController) {
+            // a drop that is not this layout's drag (text/files) still ends the drag here; the browser
+            // sends no dragleave after a drop, so clear the local enter count and active flag or the
+            // next drag will find this layout already active and never create its outline/overlay
+            this.clearDragLocal();
             return;
         }
         if (DragDropManager.dragState?.dockFloatToMain && !this.isDockTarget()) {

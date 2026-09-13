@@ -7,7 +7,6 @@ examples/dist/
 @private/
 .DS_Store
 typedoc/
-style/*.css.map
 
 # Playwright
 /test-results/

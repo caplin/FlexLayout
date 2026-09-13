@@ -3,6 +3,7 @@
 		"tabEnablePin": true,
 		"tabEnableRename": true,
 		"tabEnablePopout": true,
+		"tabEnableFloat": true,
 		"tabSetEnableCloseButton": true,
 		"tabSetMinWidth": 130,
 		"tabSetMinHeight": 100,

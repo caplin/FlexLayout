@@ -390,9 +390,13 @@ export function showOverflowMenu(
                 onDragStart={(event) => {
                     event.stopPropagation(); // prevent starting a tabset drag as well
                     controller.getDragDropManager().setDragNode(event.nativeEvent, it.node);
-                    setTimeout(() => api.close(), 0);
                 }}
-                onDragEnd={() => controller.getDragDropManager().onDragEnded()}
+                // the menu stays open for the duration of the drag: unmounting the drag source would
+                // suppress its dragend, leaving the drag state set and hijacking the next drag
+                onDragEnd={() => {
+                    controller.getDragDropManager().onDragEnded();
+                    api.close();
+                }}
                 title={it.node.getHelpText()}
             >
                 <TabButtonStamp tabNode={it.node} controller={controller} />

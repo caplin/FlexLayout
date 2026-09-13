@@ -182,4 +182,18 @@ describe("Layout render", () => {
         view.rerender(<Layout model={model} factory={countingFactory} invalidateTabContentOnParentRender={false} />);
         expect(countingFactory.mock.calls.length).toEqual(initialCalls);
     });
+
+    it("ignores a keydown event that carries no key", () => {
+        renderLayout();
+        const onError = vi.fn();
+        window.addEventListener("error", onError);
+        try {
+            act(() => {
+                document.body.dispatchEvent(new Event("keydown", { bubbles: true }));
+            });
+        } finally {
+            window.removeEventListener("error", onError);
+        }
+        expect(onError).not.toHaveBeenCalled();
+    });
 });

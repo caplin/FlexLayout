@@ -37,6 +37,12 @@ describe("matchesKey", () => {
         expect(matchesKey(keyEvent("Delete", { ctrlKey: true }), undefined)).toBe(false);
         expect(matchesKey(keyEvent("Escape"), "")).toBe(false);
     });
+
+    it("does not throw when the event carries no key (synthetic keydown)", () => {
+        const event = keyEvent("Escape") as { key?: string };
+        delete event.key;
+        expect(matchesKey(event as IKeyEventLike, "Escape")).toBe(false);
+    });
 });
 
 describe("resolveKeyMap", () => {
