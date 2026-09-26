@@ -1,4 +1,4 @@
-import{_ as e,a as t,f as n,l as r,m as i,n as a,o,p as s,t as c,u as l,v as u,y as d}from"./Header-CKq7r1qR.js";import{t as f}from"./ContextMenuBuilder-Dhu58-li.js";var p=d(u(),1),m=e(),h=`import * as React from "react";
+import{_ as e,a as t,f as n,l as r,m as i,n as a,o,p as s,t as c,u as l,v as u,y as d}from"./Header-DaenXOHN.js";import{t as f}from"./ContextMenuBuilder-CAHTHLCj.js";var p=d(u(),1),m=e(),h=`import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { Actions, BorderNode, ContextMenuBuilder, IJsonModel, Layout, Model, PopupMenuEntry, TabGroupNode, TabNode, TabSetNode, showPopupMenu } from "../../src/index";
 import "../../style/combined.scss";

@@ -1,4 +1,4 @@
-import{_ as e,f as t,n,o as r,t as i}from"./Header-CKq7r1qR.js";var a=e(),o=`import { createRoot } from "react-dom/client";
+import{_ as e,f as t,n,o as r,t as i}from"./Header-DaenXOHN.js";var a=e(),o=`import { createRoot } from "react-dom/client";
 import { IJsonModel, Layout, Model, TabNode } from "../../src/index";
 import "../../style/combined.scss";
 import { ExampleHeader } from "../Header";

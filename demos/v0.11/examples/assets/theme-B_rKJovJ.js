@@ -1,4 +1,4 @@
-import{_ as e,f as t,n,o as r,t as i,v as a,y as o}from"./Header-CKq7r1qR.js";var s=o(a(),1),c=e(),l=`import * as React from "react";
+import{_ as e,f as t,n,o as r,t as i,v as a,y as o}from"./Header-DaenXOHN.js";var s=o(a(),1),c=e(),l=`import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { IJsonModel, Layout, Model, TabNode } from "../../src/index";
 import "../../style/combined.scss";

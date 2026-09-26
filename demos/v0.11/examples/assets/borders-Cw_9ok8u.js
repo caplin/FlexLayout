@@ -1,4 +1,4 @@
-import{_ as e,f as t,m as n,n as r,o as i,t as a,u as o,v as s,y as c}from"./Header-CKq7r1qR.js";var l=c(s(),1),u=e(),d=`import * as React from "react";
+import{_ as e,f as t,m as n,n as r,o as i,t as a,u as o,v as s,y as c}from"./Header-DaenXOHN.js";var l=c(s(),1),u=e(),d=`import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { Actions, BorderNode, ILayoutApi, IJsonModel, Layout, Model, TabNode } from "../../src/index";
 import "../../style/combined.scss";

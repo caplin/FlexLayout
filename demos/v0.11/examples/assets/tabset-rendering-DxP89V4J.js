@@ -1,4 +1,4 @@
-import{_ as e,f as t,i as n,n as r,o as i,t as a,v as o,y as s}from"./Header-CKq7r1qR.js";var c=s(o(),1),l=e(),u=`import * as React from "react";
+import{_ as e,f as t,i as n,n as r,o as i,t as a,v as o,y as s}from"./Header-DaenXOHN.js";var c=s(o(),1),l=e(),u=`import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { ILayoutApi, ITabSetRenderValues, IJsonModel, Layout, Model, TabNode, TabSetNode, BorderNode, MenuIcon } from "../../src/index";
 import "../../style/combined.scss";
