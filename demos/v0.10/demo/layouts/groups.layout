@@ -1,8 +1,7 @@
 {
 	"global": {
         "tabSetEnableTabScrollbar": true,
-        "borderEnableTabScrollbar": true,
-        "tabSetEnableTabGroups": true
+        "borderEnableTabScrollbar": true
 	},
 	"borders": [
 		{

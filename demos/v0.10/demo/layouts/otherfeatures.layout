@@ -2,7 +2,6 @@
 	"global": {
 		"tabEnablePopout": true,
 		"tabSetEnableClose": true,
-		"tabSetEnableCloseButton":true,
 		"tabSetEnableTabWrap": true,
 		"tabSetMinWidth": 100,
 		"tabSetMinHeight": 100,
