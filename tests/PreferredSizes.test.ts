@@ -59,6 +59,17 @@ describe("preferred panel sizes", () => {
         expect(row.calculateSplitAction(1, initials.startPosition + 20, initials).type).toBe(Actions.ADJUST_WEIGHTS);
     });
 
+    it.each([0, 0.05])("preserves an untouched subpixel preference of %s when another splitter moves", (size) => {
+        const model = createModel();
+        model.doAction(Actions.updateNodeAttributes("left", { preferredWidth: size, minWidth: 0 }));
+        model.doAction(Actions.updateNodeAttributes("left-tab", { minWidth: 0 }));
+        measure(model, [size, 300, 300]);
+        const row = model.getRootRow()!;
+        const initials = row.getSplitterInitials(2);
+        model.doAction(row.calculateSplitAction(2, initials.startPosition + 30, initials));
+        expect(getTabset(model, "left").getPreferredWidth()).toBe(size);
+    });
+
     it("derives stacked widths and split heights without persisting derived values", () => {
         const model = Model.fromJson({
             layout: {
@@ -76,6 +87,7 @@ describe("preferred panel sizes", () => {
                 ],
             },
         });
+        model.getRootRow()!.calcMinMaxSize();
         const column = model.getNodeById("column") as RowNode;
         expect(getPreferredSize(column, Orientation.HORZ)).toBe(260);
         expect(getPreferredSize(column, Orientation.VERT)).toBe(250 + model.getSplitterSize()!);
@@ -101,9 +113,11 @@ describe("preferred panel sizes", () => {
         const column = getTabset(model, "left").getParent() as RowNode;
         expect(column.getPreferredWidth()).toBe(240);
         expect(getTabset(model, "left").getPreferredWidth()).toBe(240);
+        model.doAction(Actions.updateNodeAttributes(column.getId(), { preferredWidth: 300 }));
         model.doAction(Actions.deleteTab("right-tab"));
         const restored = Model.fromJson(model.toJson());
-        expect(getPreferredSize(getTabset(restored, "left").getParent() as RowNode, Orientation.HORZ)).toBe(240);
+        expect(getPreferredSize(getTabset(restored, "left").getParent() as RowNode, Orientation.HORZ)).toBe(300);
+        expect(getTabset(restored, "left").getPreferredWidth()).toBe(240);
     });
 
     it("keeps destination preferences when tabsets merge", () => {

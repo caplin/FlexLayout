@@ -8,9 +8,12 @@ export function getFlexStyle(node: RowNode | TabSetNode): CSSProperties {
     const parent = node.getParent();
     const maximized = node.getType() === "tabset" && (node as TabSetNode).isMaximized();
     const preferred = parent && parent.getChildren().length > 1 && !maximized ? getPreferredSize(node, parent.getOrientation()) : undefined;
+    if (preferred === undefined) {
+        return { flexGrow: Math.max(1, node.getWeight() * 1000) };
+    }
     return {
-        flexGrow: preferred === undefined ? Math.max(1, node.getWeight() * 1000) : 0,
+        flexGrow: 0,
         flexShrink: 1,
-        flexBasis: preferred ?? 0,
+        flexBasis: preferred,
     };
 }

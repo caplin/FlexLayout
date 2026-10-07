@@ -184,7 +184,7 @@ export class RowNode extends Node implements IDropTarget {
 
     /** @internal */
     calculateSplitAction(index: number, splitterPos: number, initials: ReturnType<RowNode["getSplitterInitials"]>): Action {
-        const weights = this.calculateSplit(index, splitterPos, initials.initialSizes, initials.sum, initials.startPosition);
+        const { sizes, weights } = this.calculateSplitResult(index, splitterPos, initials.initialSizes, initials.sum, initials.startPosition);
         const action = Actions.adjustWeights(this.getId(), weights);
         if (weights.length === 0 || initials.retainedSizes.every((size) => size === undefined)) {
             return action;
@@ -197,7 +197,7 @@ export class RowNode extends Node implements IDropTarget {
                 continue;
             }
             const child = this.children[i] as RowNode | TabSetNode;
-            const size = (weights[i] * initials.sum) / 100;
+            const size = sizes[i];
             const delta = size - initials.initialSizes[i];
             const h = this.getOrientation() === Orientation.HORZ;
             const min = h ? child.getMinWidth() : child.getMinHeight();
@@ -211,15 +211,19 @@ export class RowNode extends Node implements IDropTarget {
 
     /** @internal */
     calculateSplit(index: number, splitterPos: number, initialSizes: number[], sum: number, startPosition: number) {
+        return this.calculateSplitResult(index, splitterPos, initialSizes, sum, startPosition).weights;
+    }
+
+    private calculateSplitResult(index: number, splitterPos: number, initialSizes: number[], sum: number, startPosition: number) {
         const h = this.getOrientation() === Orientation.HORZ;
         const c = this.getChildren();
 
         const sizes = [...initialSizes];
 
-        // a zero (unmeasured) row would divide by zero and emit Infinity/NaN weights; return an
-        // empty array so the ADJUST_WEIGHTS consumer leaves the current weights untouched
+        // a zero (unmeasured) row would divide by zero and emit Infinity/NaN weights; return
+        // empty sizes and weights so the ADJUST_WEIGHTS consumer leaves the current weights untouched
         if (sum <= 0 || sizes.length === 0) {
-            return [];
+            return { sizes: [], weights: [] };
         }
 
         if (splitterPos < startPosition) {
@@ -300,7 +304,7 @@ export class RowNode extends Node implements IDropTarget {
 
         // console.log(splitterPos, startPosition, "sizes", sizes);
         // console.log("weights",weights);
-        return weights;
+        return { sizes, weights };
     }
 
     /** @internal */

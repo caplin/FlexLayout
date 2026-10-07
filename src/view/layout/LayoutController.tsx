@@ -336,17 +336,20 @@ export class LayoutController {
             return;
         }
         const weights = action.data.weights as number[] | undefined;
-        const nodes = row.getChildren().filter((_child, i) => updatePreferences || (typeof weights?.[i] === "number" && Number.isFinite(weights[i]))) as (RowNode | TabSetNode)[];
+        const nodes = row
+            .getChildren()
+            .map((child, i) => ({ node: child as RowNode | TabSetNode, weight: weights?.[i] }))
+            .filter(({ weight }) => updatePreferences || (typeof weight === "number" && Number.isFinite(weight)));
         if (updatePreferences) {
             // Preferred sizes can change the effective basis of each containing row.
             let ancestor: Node | undefined = row;
             while (ancestor instanceof RowNode) {
-                nodes.push(ancestor);
+                nodes.push({ node: ancestor, weight: undefined });
                 ancestor = ancestor.getParent();
             }
         }
         const elements: HTMLElement[] = [];
-        for (const child of nodes) {
+        for (const { node: child } of nodes) {
             const kind: MeasurableKind = child instanceof RowNode ? "row" : "tabset";
             const element = this._measurables.get(kind + ":" + child.getId())?.element;
             if (!element || !element.isConnected || child.getLayoutId() !== this._layoutId) {
@@ -358,10 +361,13 @@ export class LayoutController {
         }
         for (let i = 0; i < nodes.length; i++) {
             const element = elements[i];
-            const style = getFlexStyle(nodes[i]);
-            element.style.flexGrow = String(style.flexGrow);
-            element.style.flexShrink = String(style.flexShrink);
-            element.style.flexBasis = style.flexBasis + "px";
+            const { node, weight } = nodes[i];
+            const style = getFlexStyle(node);
+            element.style.flexGrow = String(!updatePreferences && style.flexBasis === undefined ? Math.max(1, weight! * 1000) : style.flexGrow);
+            if (updatePreferences || style.flexBasis !== undefined) {
+                element.style.flexShrink = style.flexShrink === undefined ? "" : String(style.flexShrink);
+                element.style.flexBasis = style.flexBasis === undefined ? "" : style.flexBasis + "px";
+            }
         }
 
         this.applyMeasuredGeometry();

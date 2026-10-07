@@ -7,6 +7,7 @@ const initialJson = (): IJsonModel => ({ layout: { type: "row", id: "root", chil
 
 function setup(json = initialJson()) {
     const model = Model.fromJson(json);
+    model.getRootRow()!.calcMinMaxSize();
     const onAction = vi.fn((action: Action): Action | undefined => action);
     const onModelChange = vi.fn();
     const controller = createController(model, { onAction, onModelChange });
@@ -77,7 +78,8 @@ describe("preferred-size live resizing", () => {
         expect(elements.get("column")!.style.flexBasis).toBe("320px");
         expect(elements.get("column")!.style.flexGrow).toBe("0");
         controller.doAction(Actions.group([Actions.adjustWeights("column", [50, 50]), Actions.updateNodeAttributes("top", { preferredWidth: undefined })]).setAdjusting(true));
-        expect(elements.get("column")!.style.flexBasis).toBe("0px");
+        expect(elements.get("column")!.style.flexBasis).toBe("");
+        expect(elements.get("column")!.style.flexShrink).toBe("");
         expect(Number(elements.get("column")!.style.flexGrow)).toBeGreaterThan(0);
         expect(redraw).not.toHaveBeenCalled();
     });

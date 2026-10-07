@@ -17,7 +17,15 @@ export function getPreferredSize(node: RowNode | TabSetNode, orientation: Orient
     if (children.length === 0) {
         return undefined;
     }
-    const sizes = children.map((child) => getPreferredSize(child, orientation));
+    const sizes = children.map((child) => {
+        const size = getPreferredSize(child, orientation);
+        if (size === undefined) {
+            return undefined;
+        }
+        const min = orientation === Orientation.HORZ ? child.getMinWidth() : child.getMinHeight();
+        const max = orientation === Orientation.HORZ ? child.getMaxWidth() : child.getMaxHeight();
+        return Math.max(min, Math.min(max, size));
+    });
     if (sizes.some((size) => size === undefined)) {
         return undefined;
     }

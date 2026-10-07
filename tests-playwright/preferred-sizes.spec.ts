@@ -116,6 +116,61 @@ test("window resizing preserves auxiliary widths and gives the center the differ
     await expectExtent(page, "center", before - 200);
 });
 
+test("weight-only layouts retain CSS sizing overrides before and after live resizing", async ({ page }) => {
+    const json = initialLayout();
+    json.layout.children = [panel("left"), panel("right")];
+    await load(page, json);
+    await page.addStyleTag({ content: ".flexlayout__row, .flexlayout__tabset_container { flex-basis: 200px; flex-shrink: 0; }" });
+    const left = page.locator('.flexlayout__tabset[data-layout-path="/ts0"]').locator("..");
+    await expect(left).toHaveCSS("flex-basis", "200px");
+    await expect(left).toHaveCSS("flex-shrink", "0");
+    await dragBy(page, "/s0", 30);
+    await expect(left).toHaveCSS("flex-basis", "200px");
+    await expect(left).toHaveCSS("flex-shrink", "0");
+    for (const preferredWidth of [300, undefined]) {
+        await page.evaluate((preferredWidth) => {
+            const w = window as any;
+            const update = w.__flexActions.updateNodeAttributes("left", { preferredWidth });
+            w.__flexDispatch(preferredWidth === undefined ? w.__flexActions.group([w.__flexActions.adjustWeights("root", [50, 50]), update]).setAdjusting(true) : update);
+        }, preferredWidth);
+        await expect(left).toHaveCSS("flex-basis", preferredWidth === undefined ? "200px" : "300px");
+        await expect(left).toHaveCSS("flex-shrink", preferredWidth === undefined ? "0" : "1");
+    }
+});
+
+test("nested preferences account for child minimum and maximum sizes", async ({ page }) => {
+    const json = initialLayout();
+    json.layout.children = [
+        {
+            type: "row",
+            id: "column",
+            children: [
+                { type: "row", id: "split", children: [panel("left", { preferredWidth: 100, minWidth: 300 }), panel("right", { preferredWidth: 200 })] },
+                panel("bottom", { preferredWidth: 200 }),
+            ],
+        },
+        panel("center"),
+    ];
+    await load(page, json);
+    await expectExtent(page, "left", 300);
+    await expectExtent(page, "right", 200);
+    const center = await extent(page, "center");
+    await page.evaluate(() => {
+        const w = window as any;
+        w.__flexDispatch(w.__flexActions.updateNodeAttributes("left", { preferredWidth: 400, minWidth: 0, maxWidth: 300 }));
+    });
+    await expectExtent(page, "left", 300);
+    await expectExtent(page, "right", 200);
+    await expectExtent(page, "center", center);
+    await page.evaluate(() => {
+        const w = window as any;
+        w.__flexDispatch(w.__flexActions.updateNodeAttributes("left", { maxWidth: 500 }));
+    });
+    await expectExtent(page, "left", 400);
+    await expectExtent(page, "right", 200);
+    await expectExtent(page, "center", center - 100);
+});
+
 for (const operation of ["close", "float", "merge"] as const) {
     test(`${operation} releases the right allocation to the center and retains the left width`, async ({ page }) => {
         await load(page);
@@ -265,6 +320,32 @@ test("multiple flexible panels share remaining space by weight", async ({ page }
     await expectExtent(page, "left", 240);
     await expectExtent(page, "right", 280);
     await expect.poll(async () => (await extent(page, "second")) / (await extent(page, "center"))).toBeCloseTo(2, 1);
+});
+
+test("splitters preserve unrelated panels while flexible siblings reach their minimums", async ({ page }) => {
+    const json = initialLayout();
+    json.layout.children = [panel("left", { preferredWidth: 240 }), panel("center", { weight: 1 }), panel("second", { weight: 2 }), panel("right", { preferredWidth: 280 })];
+    await load(page, json);
+    const center = await extent(page, "center");
+    const second = await extent(page, "second");
+    await dragBy(page, "/s1", 40);
+    await expectExtent(page, "left", 240);
+    await expectExtent(page, "right", 280);
+    await expectExtent(page, "center", center + 40);
+    await expectExtent(page, "second", second - 40);
+    await dragBy(page, "/s0", 30);
+    await expectExtent(page, "left", 270);
+    await expectExtent(page, "center", center + 10);
+    await expectExtent(page, "second", second - 40);
+    await page.evaluate((minWidth) => {
+        const w = window as any;
+        w.__flexDispatch(w.__flexActions.updateNodeAttributes("center", { minWidth }));
+    }, center + 10);
+    await dragBy(page, "/s0", 30);
+    await expectExtent(page, "left", 300);
+    await expectExtent(page, "right", 280);
+    await expectExtent(page, "center", center + 10);
+    await expectExtent(page, "second", second - 70);
 });
 
 test("maximum sizes clamp allocations while preserving preferences", async ({ page }) => {
