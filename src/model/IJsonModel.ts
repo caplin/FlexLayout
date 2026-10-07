@@ -563,6 +563,20 @@ export interface IRowAttributes {
     id?: string;
 
     /**
+	  preferred outer height in pixels; splitters update it, while passive resizing preserves it
+
+	  Default: undefined
+	 */
+    preferredHeight?: number;
+
+    /**
+	  preferred outer width in pixels; splitters update it, while passive resizing preserves it
+
+	  Default: undefined
+	 */
+    preferredWidth?: number;
+
+    /**
 	  
 
 	  Fixed value: "row"
@@ -730,6 +744,20 @@ export interface ITabSetAttributes {
 	  Default: undefined
 	 */
     name?: string;
+
+    /**
+	  preferred outer height in pixels; splitters update it, while passive resizing preserves it
+
+	  Default: undefined
+	 */
+    preferredHeight?: number;
+
+    /**
+	  preferred outer width in pixels; splitters update it, while passive resizing preserves it
+
+	  Default: undefined
+	 */
+    preferredWidth?: number;
 
     /**
 	  index of selected/visible tab in tabset; -1 means no tab selected

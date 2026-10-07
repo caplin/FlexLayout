@@ -15,6 +15,8 @@ import { RowNode } from "./RowNode";
 import { findStripDrop } from "./StripDrop";
 import { TabNode } from "./TabNode";
 import { adjustSelectedIndex, adjustSelectedIndexAfterInsert, detachDragNode, isInSubtree, restoreSelectionAfterInsert } from "./Utils";
+import { validPreferredSize } from "./Sizing";
+import { Orientation } from "./Orientation";
 
 export class TabSetNode extends Node implements IDraggable, IDropTarget {
     static readonly TYPE = "tabset";
@@ -159,6 +161,16 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
 
     getWeight(): number {
         return this.getAttr("weight") as number;
+    }
+
+    /** Preferred outer width in pixels, independent of the current allocation. */
+    getPreferredWidth(): number | undefined {
+        return validPreferredSize(this.getAttr("preferredWidth"));
+    }
+
+    /** Preferred outer height in pixels, independent of the current allocation. */
+    getPreferredHeight(): number | undefined {
+        return validPreferredSize(this.getAttr("preferredHeight"));
     }
 
     getAttrMinWidth() {
@@ -541,19 +553,26 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
                 parentRow.addChild(moveNode, pos + dockLocation.indexPlus);
             } else {
                 // create a new row to host the new tabset (it will go in the opposite direction)
-                const newRow = new RowNode(this.model, {});
+                const newRow = new RowNode(this.model, parentRow.getOrientation() === Orientation.HORZ ? { preferredWidth: this.getPreferredWidth() } : { preferredHeight: this.getPreferredHeight() });
                 newRow.setWeight(this.getWeight());
                 newRow.addChild(this);
                 this.setWeight(50);
                 if (dragNode instanceof RowNode && dragNode.getChildren().length > 0 && dragNode.getOrientation() !== parentRow.getOrientation()) {
-                    // the new row shares the dragged row's orientation, so flatten its children
-                    // into the new row to keep the dragged layout's orientation
-                    const dragChildren = dragNode.getChildren() as (RowNode | TabSetNode)[];
-                    const total = dragChildren.reduce((sum, c) => sum + c.getWeight(), 0);
-                    let insertIndex = dockLocation.indexPlus;
-                    for (const child of dragChildren) {
-                        child.setWeight(total === 0 ? 50 / dragChildren.length : (50 * child.getWeight()) / total);
-                        newRow.addChild(child, insertIndex++);
+                    if (dragNode.hasPreferredSize()) {
+                        const wrapper = new RowNode(this.model, {});
+                        wrapper.addChild(dragNode);
+                        wrapper.setWeight(50);
+                        newRow.addChild(wrapper, dockLocation.indexPlus);
+                    } else {
+                        // the new row shares the dragged row's orientation, so flatten its children
+                        // into the new row to keep the dragged layout's orientation
+                        const dragChildren = dragNode.getChildren() as (RowNode | TabSetNode)[];
+                        const total = dragChildren.reduce((sum, c) => sum + c.getWeight(), 0);
+                        let insertIndex = dockLocation.indexPlus;
+                        for (const child of dragChildren) {
+                            child.setWeight(total === 0 ? 50 / dragChildren.length : (50 * child.getWeight()) / total);
+                            newRow.addChild(child, insertIndex++);
+                        }
                     }
                 } else {
                     moveNode.setWeight(50);
@@ -592,6 +611,8 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
         attributeDefinitions.add("type", TabSetNode.TYPE, true).setType(Attribute.STRING).setFixed();
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(`the unique id of the tab set, if left undefined a uuid will be assigned`);
         attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(`relative weight for sizing of this tabset in parent row`);
+        attributeDefinitions.add("preferredWidth", undefined).setType(Attribute.NUMBER).setDescription(`preferred outer width in pixels; splitters update it, while passive resizing preserves it`);
+        attributeDefinitions.add("preferredHeight", undefined).setType(Attribute.NUMBER).setDescription(`preferred outer height in pixels; splitters update it, while passive resizing preserves it`);
         attributeDefinitions.add("selected", 0).setType(Attribute.NUMBER).setDescription(`index of selected/visible tab in tabset; -1 means no tab selected`);
         attributeDefinitions.add("name", undefined).setType(Attribute.STRING).setDescription(`an accessible label for the tab strip (used as the tablist's aria-label; not displayed visually)`);
         attributeDefinitions.add("config", undefined).setType("any").setDescription(`a place to hold json config used in your own code`);

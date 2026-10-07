@@ -6,6 +6,7 @@ import { LayoutController } from "./layout/LayoutInternal";
 import { TabSet } from "./TabSet";
 import { Splitter } from "./Splitter";
 import { Orientation } from "../model/Orientation";
+import { getFlexStyle } from "./FlexStyle";
 
 /** @internal */
 export interface IRowProps {
@@ -48,7 +49,7 @@ export const Row = (props: IRowProps) => {
     }
 
     const style: React.CSSProperties = {
-        flexGrow: Math.max(1, rowNode.getWeight() * 1000), // NOTE:  flex-grow cannot have values < 1 otherwise will not fill parent, need to normalize
+        ...getFlexStyle(rowNode),
         minWidth: rowNode.getMinWidth(),
         minHeight: rowNode.getMinHeight(),
         maxWidth: rowNode.getMaxWidth(),

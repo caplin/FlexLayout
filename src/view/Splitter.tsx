@@ -28,7 +28,7 @@ export const Splitter = (props: ISplitterProps) => {
     const handleDiv = React.useRef<HTMLDivElement | undefined>(undefined);
     const dragStartX = React.useRef<number>(0);
     const dragStartY = React.useRef<number>(0);
-    const initalSizes = React.useRef<{ initialSizes: number[]; sum: number; startPosition: number }>({ initialSizes: [], sum: 0, startPosition: 0 });
+    const initalSizes = React.useRef<ReturnType<RowNode["getSplitterInitials"]>>({ initialSizes: [], sum: 0, startPosition: 0, preferredSizes: [], retainedSizes: [] });
     const draggingTimerRef = React.useRef<number | undefined>(undefined);
 
     const onTouchStart = React.useCallback((event: TouchEvent) => {
@@ -122,8 +122,7 @@ export const Splitter = (props: ISplitterProps) => {
                 }
                 const bounds = node.getSplitterBounds(index);
                 const pos = Math.max(bounds[0], Math.min(bounds[1], initials.startPosition + delta));
-                const weights = node.calculateSplit(index, pos, initials.initialSizes, initials.sum, initials.startPosition);
-                controller.doAction(Actions.adjustWeights(node.getId(), weights));
+                controller.doAction(node.calculateSplitAction(index, pos, initials));
             }
             // keep the flag long enough for the ResizeObserver to fire
             setTimeout(() => controller.setSplitterDragging(false), 300);
@@ -201,8 +200,7 @@ export const Splitter = (props: ISplitterProps) => {
                     if (init.sum <= 0) {
                         return;
                     }
-                    const weights = node.calculateSplit(index, value, init.initialSizes, init.sum, init.startPosition);
-                    controller.doAction(Actions.adjustWeights(node.getId(), weights).setAdjusting(adjusting));
+                    controller.doAction(node.calculateSplitAction(index, value, init).setAdjusting(adjusting));
                 }
             }
         };
