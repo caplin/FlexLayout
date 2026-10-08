@@ -563,14 +563,14 @@ export interface IRowAttributes {
     id?: string;
 
     /**
-	  preferred outer height in pixels; splitters update it, while passive resizing preserves it
+	  preferred outer height in pixels; takes precedence over weight in a vertical parent row without removing the weight; splitters update it, while passive resizing preserves it
 
 	  Default: undefined
 	 */
     preferredHeight?: number;
 
     /**
-	  preferred outer width in pixels; splitters update it, while passive resizing preserves it
+	  preferred outer width in pixels; takes precedence over weight in a horizontal parent row without removing the weight; splitters update it, while passive resizing preserves it
 
 	  Default: undefined
 	 */
@@ -584,7 +584,7 @@ export interface IRowAttributes {
     type?: string;
 
     /**
-	  relative weight for sizing of this row in parent row
+	  relative weight for sizing of this row in parent row when no explicit or derived preferred size applies on the parent's split axis; retained and updated by splitters even when a preferred size takes precedence
 
 	  Default: 100
 	 */
@@ -746,14 +746,14 @@ export interface ITabSetAttributes {
     name?: string;
 
     /**
-	  preferred outer height in pixels; splitters update it, while passive resizing preserves it
+	  preferred outer height in pixels; takes precedence over weight in a vertical parent row without removing the weight; splitters update it, while passive resizing preserves it
 
 	  Default: undefined
 	 */
     preferredHeight?: number;
 
     /**
-	  preferred outer width in pixels; splitters update it, while passive resizing preserves it
+	  preferred outer width in pixels; takes precedence over weight in a horizontal parent row without removing the weight; splitters update it, while passive resizing preserves it
 
 	  Default: undefined
 	 */
@@ -781,7 +781,7 @@ export interface ITabSetAttributes {
     type?: string;
 
     /**
-	  relative weight for sizing of this tabset in parent row
+	  relative weight for sizing of this tabset in parent row when no preferred size applies on the parent's split axis; retained and updated by splitters even when a preferred size takes precedence
 
 	  Default: 100
 	 */

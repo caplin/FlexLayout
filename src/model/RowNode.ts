@@ -603,9 +603,24 @@ export class RowNode extends Node implements IDropTarget {
         const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(`the unique id of the row, if left undefined a uuid will be assigned`);
-        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(`relative weight for sizing of this row in parent row`);
-        attributeDefinitions.add("preferredWidth", undefined).setType(Attribute.NUMBER).setDescription(`preferred outer width in pixels; splitters update it, while passive resizing preserves it`);
-        attributeDefinitions.add("preferredHeight", undefined).setType(Attribute.NUMBER).setDescription(`preferred outer height in pixels; splitters update it, while passive resizing preserves it`);
+        attributeDefinitions
+            .add("weight", 100)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `relative weight for sizing of this row in parent row when no explicit or derived preferred size applies on the parent's split axis; retained and updated by splitters even when a preferred size takes precedence`,
+            );
+        attributeDefinitions
+            .add("preferredWidth", undefined)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `preferred outer width in pixels; takes precedence over weight in a horizontal parent row without removing the weight; splitters update it, while passive resizing preserves it`,
+            );
+        attributeDefinitions
+            .add("preferredHeight", undefined)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `preferred outer height in pixels; takes precedence over weight in a vertical parent row without removing the weight; splitters update it, while passive resizing preserves it`,
+            );
 
         return attributeDefinitions;
     }
