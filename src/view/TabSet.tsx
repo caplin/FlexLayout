@@ -15,6 +15,7 @@ import { Orientation } from "../model/Orientation";
 import { CLASSES } from "../CSSClassNames";
 import { isAuxMouseEvent, tabButtonPath, toAriaKeyShortcuts } from "./Utils";
 import { createPortal } from "react-dom";
+import { getFlexStyle } from "./FlexStyle";
 
 /** @internal */
 export interface ITabSetProps {
@@ -620,7 +621,7 @@ export const TabSet = (props: ITabSetProps) => {
     const content = renderContent(tabStrip);
 
     const style: React.CSSProperties = {
-        flexGrow: Math.max(1, tabsetNode.getWeight() * 1000),
+        ...getFlexStyle(tabsetNode),
         minWidth: tabsetNode.getMinWidth(),
         minHeight: tabsetNode.getMinHeight(),
         maxWidth: tabsetNode.getMaxWidth(),

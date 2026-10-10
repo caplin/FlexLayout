@@ -26,7 +26,9 @@ export interface ILayoutProps {
     keyMap?: IKeyMap;
     /** Custom icons for close, pin, maximize, restore, more, popout buttons. */
     icons?: IIcons;
-    /** function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning undefined from the function will halt the action, otherwise return the action to continue */
+    /** function called whenever the layout generates an action to update the model (allows for intercepting actions before they are dispatched to the model, for example, asking the user to confirm a tab close.) Returning undefined from the function will halt the action, otherwise return the action to continue.
+     * Preferred-size row splitters emit a GroupAction containing weight and preference updates;
+     * inspect its actions when detecting splitter changes and accept or cancel the whole group. */
     onAction?: (action: Action) => Action | undefined;
     /** function called when rendering a tab, allows leading (icon), content section, buttons and name used in overflow menu to be customized */
     onRenderTab?: (

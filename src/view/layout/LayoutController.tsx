@@ -15,6 +15,7 @@ import { RowNode } from "../../model/RowNode";
 import { TabNode } from "../../model/TabNode";
 import { TabGroupNode } from "../../model/TabGroupNode";
 import { TabSetNode } from "../../model/TabSetNode";
+import { getFlexStyle } from "../FlexStyle";
 import { AsterickIcon, GripIcon, CloseIcon, EdgeIcon, MaximizeIcon, OverflowIcon, PinIcon, PopoutIcon, PopoutFloatIcon, RestoreIcon } from "../Icons";
 import { Row } from "../Row";
 import { Tab } from "../Tab";
@@ -276,9 +277,10 @@ export class LayoutController {
             }
         }
 
-        if (action.isAdjusting() && (action.type === Actions.ADJUST_WEIGHTS || action.type === Actions.ADJUST_BORDER_SPLIT)) {
-            if (action.type === Actions.ADJUST_WEIGHTS) {
-                this.applyAdjustingWeights(action);
+        const weightsAction = action.type === Actions.ADJUST_WEIGHTS ? action : action instanceof GroupAction ? this.getPreferredResizeWeights(action) : undefined;
+        if (action.isAdjusting() && (weightsAction || action.type === Actions.ADJUST_BORDER_SPLIT)) {
+            if (weightsAction) {
+                this.applyAdjustingWeights(weightsAction, action instanceof GroupAction);
             } else {
                 this.applyAdjustingBorderSplit(action);
             }
@@ -294,6 +296,29 @@ export class LayoutController {
         }
     };
 
+    private getPreferredResizeWeights(action: GroupAction): Action | undefined {
+        const [weights, ...updates] = action.actions;
+        if (weights?.type !== Actions.ADJUST_WEIGHTS || updates.length === 0) {
+            return undefined;
+        }
+        const row = this._props.model.getNodeById(weights.data.nodeId);
+        if (!(row instanceof RowNode)) {
+            return undefined;
+        }
+        const childIds = new Set(row.getChildren().map((child) => child.getId()));
+        const preferredOnly = updates.every((update) => {
+            const attributes = update.data.json;
+            return (
+                update.type === Actions.UPDATE_NODE_ATTRIBUTES &&
+                childIds.has(update.data.node) &&
+                attributes &&
+                Object.keys(attributes).length > 0 &&
+                Object.keys(attributes).every((key) => key === "preferredWidth" || key === "preferredHeight")
+            );
+        });
+        return preferredOnly ? weights : undefined;
+    }
+
     // re-measure, reposition panels, and mount any newly sized content areas
     private applyMeasuredGeometry() {
         this.syncLayoutMetrics();
@@ -304,27 +329,45 @@ export class LayoutController {
         }
     }
 
-    applyAdjustingWeights(action: Action) {
+    applyAdjustingWeights(action: Action, updatePreferences = false) {
         const row = this._props.model.getNodeById(action.data.nodeId);
         if (!(row instanceof RowNode)) {
             this.redrawLayout();
             return;
         }
         const weights = action.data.weights as number[] | undefined;
-        const children = row.getChildren();
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i];
-            if (typeof weights?.[i] !== "number" || !Number.isFinite(weights[i])) {
-                continue;
+        const nodes = row
+            .getChildren()
+            .map((child, i) => ({ node: child as RowNode | TabSetNode, weight: weights?.[i] }))
+            .filter(({ weight }) => updatePreferences || (typeof weight === "number" && Number.isFinite(weight)));
+        if (updatePreferences) {
+            // Preferred sizes can change the effective basis of each containing row.
+            let ancestor: Node | undefined = row;
+            while (ancestor instanceof RowNode) {
+                nodes.push({ node: ancestor, weight: undefined });
+                ancestor = ancestor.getParent();
             }
+        }
+        const elements: HTMLElement[] = [];
+        for (const { node: child } of nodes) {
             const kind: MeasurableKind = child instanceof RowNode ? "row" : "tabset";
             const element = this._measurables.get(kind + ":" + child.getId())?.element;
-            if (!element) {
+            if (!element || !element.isConnected || child.getLayoutId() !== this._layoutId) {
                 // not registered (e.g. row in a popout window): fall back to re-render path
                 this.redrawLayout();
                 return;
             }
-            element.style.flexGrow = String(Math.max(1, weights[i] * 1000));
+            elements.push(element);
+        }
+        for (let i = 0; i < nodes.length; i++) {
+            const element = elements[i];
+            const { node, weight } = nodes[i];
+            const style = getFlexStyle(node);
+            element.style.flexGrow = String(!updatePreferences && style.flexBasis === undefined ? Math.max(1, weight! * 1000) : style.flexGrow);
+            if (updatePreferences || style.flexBasis !== undefined) {
+                element.style.flexShrink = style.flexShrink === undefined ? "" : String(style.flexShrink);
+                element.style.flexBasis = style.flexBasis === undefined ? "" : style.flexBasis + "px";
+            }
         }
 
         this.applyMeasuredGeometry();
