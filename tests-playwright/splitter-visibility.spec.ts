@@ -96,6 +96,6 @@ test.describe("splitter keeps selected tab visible", () => {
         await splitter.focus();
         await page.keyboard.press("ArrowLeft");
 
-        expect(await isSelectedTabVisible(page, "/ts0")).toBe(true);
+        await expect.poll(async () => isSelectedTabVisible(page, "/ts0")).toBe(true);
     });
 });

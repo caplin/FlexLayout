@@ -78,11 +78,9 @@ export interface ILayoutProps {
     tabDragSpeed?: number;
     /** set to constrain floating panels to within the layout control */
     constrainFloatPanels?: boolean;
-    /** boolean value, defaults to true. When true every render of the host <Layout> element
-     * invalidates memoized tab content, so factories capturing host state stay fresh. Set to
-     * false when tab content does not depend on host render scope: content then refreshes only
-     * on model changes or an explicit redraw() call, so unrelated parent renders no longer
-     * re-invoke the factory for every visible tab */
+    /** Defaults to true: every render of the host re-renders all visible tab content. Set to
+     * false to stop this when the factory doesn't use host state; tab content then only
+     * re-renders on undo/redo, window moves or redraw() (not on actions such as rename) */
     invalidateTabContentOnParentRender?: boolean;
     /**
      * Wrap the content rendered into a popout window, e.g. to inject css-in-js styles into the

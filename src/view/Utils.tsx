@@ -121,7 +121,21 @@ export function getElementsByTagName(tag: string, currentDocument: Document): El
 
 export let Utils_dragging: boolean = false;
 
-export function startDrag(doc: Document, event: React.PointerEvent<HTMLElement>, drag: (x: number, y: number) => void, dragEnd: () => void, dragCancel: () => void) {
+/** pointer movement (px) a press must exceed before it counts as a drag rather than a click */
+export const DRAG_THRESHOLD = 3;
+
+/**
+ * Tracks a pointer drag. Moves are only reported once the pointer has moved by `threshold` px on
+ * either axis; dragEnd/dragCancel receive whether that happened, so a click can be ignored.
+ */
+export function startDrag(
+    doc: Document,
+    event: React.PointerEvent<HTMLElement>,
+    drag: (x: number, y: number) => void,
+    dragEnd: (moved: boolean) => void,
+    dragCancel: (moved: boolean) => void,
+    threshold: number = 0,
+) {
     Utils_dragging = true;
     event.preventDefault();
     // capture the pointer so pointerup/pointercancel fire even if the pointer leaves the browser window
@@ -129,8 +143,18 @@ export function startDrag(doc: Document, event: React.PointerEvent<HTMLElement>,
         event.currentTarget.setPointerCapture(event.pointerId);
     }
 
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let moved = false;
+
     const pointerMove = (ev: PointerEvent) => {
         ev.preventDefault();
+        if (!moved) {
+            if (Math.abs(ev.clientX - startX) < threshold && Math.abs(ev.clientY - startY) < threshold) {
+                return;
+            }
+            moved = true;
+        }
         drag(ev.clientX, ev.clientY);
     };
 
@@ -144,12 +168,12 @@ export function startDrag(doc: Document, event: React.PointerEvent<HTMLElement>,
         ev.preventDefault();
         removeListeners();
         Utils_dragging = false;
-        dragCancel();
+        dragCancel(moved);
     };
     const pointerUp = () => {
         removeListeners();
         Utils_dragging = false;
-        dragEnd();
+        dragEnd(moved);
     };
 
     doc.addEventListener("pointermove", pointerMove);

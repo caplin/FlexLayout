@@ -1,3 +1,7 @@
+## 0.11.2 - 2026-11-16
+* **Fixed:** deleting a tab, or a tabset (including tabs in nested sublayouts), now releases the tab's `moveableElement` after the `close` event, so a deleted `TabNode` that is still referenced no longer keeps its rendered content in memory ([#532](https://github.com/caplin/FlexLayout/issues/532)).
+* **Fixed:** Clicking on a splitter would change the model, now it only updates the model if the mouse moves by 3 pixels.
+
 ## 0.11.1 - 2026-09-26
 * **Fixed:** `matchesKey` no longer throws on a `keydown` event that carries no `key` (e.g. a synthetic event or browser autofill) ([#529](https://github.com/caplin/FlexLayout/issues/529)).
 * **Fixed:** dragging a tab out of the overflow menu and releasing it outside the layout no longer leaves the drag state set and hijacks the next drag ([#528](https://github.com/caplin/FlexLayout/issues/528)).

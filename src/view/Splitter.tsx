@@ -7,7 +7,7 @@ import { Orientation } from "../model/Orientation";
 import { CLASSES } from "../CSSClassNames";
 import { I18nLabel } from "./I18nLabel";
 import { LayoutController } from "./layout/LayoutInternal";
-import { enablePointerOnIFrames, hasModifier, isDesktop, startDrag } from "./Utils";
+import { DRAG_THRESHOLD, enablePointerOnIFrames, hasModifier, isDesktop, startDrag } from "./Utils";
 import { Rect } from "../model/Rect";
 
 /** @internal */
@@ -64,7 +64,7 @@ export const Splitter = (props: ISplitterProps) => {
 
         controller.setSplitterDragging(true);
         enablePointerOnIFrames(false, controller.getCurrentDocument()!);
-        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel);
+        startDrag(event.currentTarget.ownerDocument, event, onDragMove, onDragEnd, onDragCancel, DRAG_THRESHOLD);
 
         pBounds.current = node instanceof BorderNode ? node.getSplitterBounds(true) : node.getSplitterBounds(index);
         const rootdiv = controller.getRootDiv();
@@ -130,12 +130,12 @@ export const Splitter = (props: ISplitterProps) => {
         }
     };
 
-    const onDragCancel = () => {
+    const onDragCancel = (moved: boolean) => {
         if (outlineDiv.current) {
             // commit an in-progress realtime resize so the undo snapshot taken at drag start is
             // flushed here rather than leaking into the next action; a non-realtime drag only moved
             // the preview outline, so a cancelled drag leaves the model untouched
-            if (controller.isRealtimeResize()) {
+            if (moved && controller.isRealtimeResize()) {
                 updateLayout(false);
             }
             const rootdiv = controller.getRootDiv();
@@ -166,9 +166,12 @@ export const Splitter = (props: ISplitterProps) => {
         }
     };
 
-    const onDragEnd = () => {
+    const onDragEnd = (moved: boolean) => {
         if (outlineDiv.current) {
-            updateLayout(false);
+            // a click (no drag) leaves the model untouched
+            if (moved) {
+                updateLayout(false);
+            }
 
             const rootdiv = controller.getRootDiv();
             if (rootdiv && outlineDiv.current) {

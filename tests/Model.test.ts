@@ -278,13 +278,49 @@ describe("Tree", function () {
             expect(model.getLayouts().has("L2")).equal(true);
 
             const closed: string[] = [];
+            (model.getNodeById("tA") as TabNode).setEventListener("close", () => closed.push("A"));
             (model.getNodeById("tB") as TabNode).setEventListener("close", () => closed.push("B"));
+            (model.getNodeById("tC") as TabNode).setEventListener("close", () => closed.push("C"));
 
             doAction(Actions.deleteTab("tA"));
 
             expect(model.getLayouts().has("L1")).equal(false);
             expect(model.getLayouts().has("L2")).equal(false);
-            expect(closed).toEqual(["B"]);
+            expect(closed).toEqual(["C", "B", "A"]);
+        });
+
+        it("deleting a tab releases the moveable elements of tabs in its nested sublayouts", function () {
+            model = Model.fromJson({
+                global: {},
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tA", name: "A", subLayoutId: "L1" }] }] },
+                subLayouts: {
+                    L1: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tB", name: "B", subLayoutId: "L2" }] }] } },
+                    L2: { type: "tab", layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "tC", name: "C" }] }] } },
+                },
+            });
+            const tB = model.getNodeById("tB") as TabNode;
+            const tC = model.getNodeById("tC") as TabNode;
+            const elB = tB.getMoveableElement();
+            const elC = tC.getMoveableElement();
+
+            doAction(Actions.deleteTab("tA"));
+
+            expect(tB.getMoveableElement()).not.equal(elB);
+            expect(tC.getMoveableElement()).not.equal(elC);
+        });
+
+        it("a model created from a previous model adopts its tabs' moveable elements", function () {
+            const json: IJsonModel = {
+                global: {},
+                layout: { type: "row", children: [{ type: "tabset", children: [{ type: "tab", id: "t1", name: "One" }] }] },
+            };
+            const previous = Model.fromJson(json);
+            const el = (previous.getNodeById("t1") as TabNode).getMoveableElement();
+
+            model = Model.fromJson(json, previous);
+
+            expect((model.getNodeById("t1") as TabNode).getMoveableElement()).equal(el);
+            expect((previous.getNodeById("t1") as TabNode).getMoveableElement()).not.equal(el);
         });
     });
 
@@ -1274,6 +1310,83 @@ describe("Tree", function () {
             });
             doAction(Actions.deleteTab(tab("/ts0/t0").getId()));
             expect(closed).equals(true);
+        });
+
+        it("close listener can still reach the tab's moveable element", () => {
+            const t = tab("/ts0/t0");
+            const el = t.getMoveableElement();
+            let elInClose: HTMLElement | undefined;
+            t.setEventListener("close", () => {
+                elInClose = t.getMoveableElement();
+            });
+            doAction(Actions.deleteTab(t.getId()));
+            expect(elInClose).equal(el);
+        });
+
+        it("delete tabset closes its closeable tabs and keeps the others", () => {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        {
+                            type: "tabset",
+                            id: "ts",
+                            children: [
+                                { type: "tab", id: "a", name: "A" },
+                                { type: "tab", id: "b", name: "B", enableClose: false },
+                                { type: "tab", id: "c", name: "C" },
+                            ],
+                        },
+                    ],
+                },
+            });
+            const closed: string[] = [];
+            for (const id of ["a", "b", "c"]) {
+                (model.getNodeById(id) as TabNode).setEventListener("close", () => closed.push(id));
+            }
+
+            doAction(Actions.deleteTabset("ts"));
+
+            expect(closed).toEqual(["a", "c"]);
+            expect(model.getNodeById("a")).toBeUndefined();
+            expect(model.getNodeById("b")).toBeInstanceOf(TabNode);
+            expect(model.getNodeById("c")).toBeUndefined();
+        });
+
+        it("delete tab releases its moveable element", () => {
+            const t = tab("/ts0/t0");
+            const el = t.getMoveableElement();
+            doAction(Actions.deleteTab(t.getId()));
+            expect(t.getMoveableElement()).not.equal(el);
+        });
+
+        it("delete tabset releases the moveable elements of the tabs it closes", () => {
+            model = Model.fromJson({
+                global: {},
+                layout: {
+                    type: "row",
+                    children: [
+                        {
+                            type: "tabset",
+                            id: "ts",
+                            children: [
+                                { type: "tab", id: "a", name: "A" },
+                                { type: "tab", id: "b", name: "B", enableClose: false },
+                            ],
+                        },
+                    ],
+                },
+            });
+            const a = model.getNodeById("a") as TabNode;
+            const b = model.getNodeById("b") as TabNode;
+            const elA = a.getMoveableElement();
+            const elB = b.getMoveableElement();
+
+            doAction(Actions.deleteTabset("ts"));
+
+            expect(a.getMoveableElement()).not.equal(elA);
+            expect(b.getMoveableElement()).equal(elB);
         });
 
         it("save tab", () => {

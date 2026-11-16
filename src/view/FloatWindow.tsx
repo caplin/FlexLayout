@@ -3,7 +3,7 @@ import { CLASSES } from "../CSSClassNames";
 import { LayoutController } from "./layout/LayoutInternal";
 import { ModelLayout } from "../model/ModelLayout";
 import { Rect } from "../model/Rect";
-import { startDrag, getPageMetrics } from "./Utils";
+import { DRAG_THRESHOLD, startDrag, getPageMetrics } from "./Utils";
 import { Actions } from "../model/Actions";
 import { I18nLabel } from "./I18nLabel";
 
@@ -150,6 +150,15 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
         };
     }, [controller, layout]);
 
+    // ends a move or resize drag; a click (no drag) leaves the model untouched
+    const onDragEnd = (moved: boolean) => {
+        if (moved) {
+            controller.doAction(Actions.moveFloat(layout.getLayoutId(), latestRect.current).setAdjusting(false));
+        }
+        controller.redrawLayout();
+        controller.showOverlayOnAllWindows(false);
+    };
+
     const onPointerDownHeader = (e: React.PointerEvent<HTMLElement>) => {
         e.stopPropagation();
         const offset = { x: e.clientX - rect.x, y: e.clientY - rect.y };
@@ -169,16 +178,9 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 controller.doAction(Actions.moveFloat(layout.getLayoutId(), clamped).setAdjusting(true));
             },
 
-            () => {
-                controller.doAction(Actions.moveFloat(layout.getLayoutId(), latestRect.current).setAdjusting(false));
-                controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false);
-            },
-            () => {
-                controller.doAction(Actions.moveFloat(layout.getLayoutId(), latestRect.current).setAdjusting(false));
-                controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false);
-            },
+            onDragEnd,
+            onDragEnd,
+            DRAG_THRESHOLD,
         );
     };
 
@@ -250,16 +252,9 @@ export const FloatWindow = (props: React.PropsWithChildren<IFloatWindowProps>) =
                 controller.doAction(Actions.moveFloat(layout.getLayoutId(), clamped).setAdjusting(true));
             },
 
-            () => {
-                controller.doAction(Actions.moveFloat(layout.getLayoutId(), latestRect.current).setAdjusting(false));
-                controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false);
-            },
-            () => {
-                controller.doAction(Actions.moveFloat(layout.getLayoutId(), latestRect.current).setAdjusting(false));
-                controller.redrawLayout();
-                controller.showOverlayOnAllWindows(false);
-            },
+            onDragEnd,
+            onDragEnd,
+            DRAG_THRESHOLD,
         );
         e.stopPropagation();
     };

@@ -461,6 +461,7 @@ Notes:
 - The model can be passed lazily (a function evaluated once), or omitted and loaded later: `const { model, setModel, ... } = useUndo();` then `setModel(Model.fromJson(json))`.
 - `setModel(model)` replaces the model and clears the history; pass `false` as a second argument to keep the history (e.g. for an in-place round-trip of the same model). Use `reset()` to clear the history without replacing the model.
 - Options: `maxBufferSize` (default 100) and `ignoreActionTypes` (default `[Actions.SET_ACTIVE_TABSET]`) - actions whose types are listed do not create undo steps.
+- Each recorded action re-renders the host component, which by default re-renders all visible tab content. To avoid this, set `invalidateTabContentOnParentRender={false}` on the `Layout`. Content then only re-renders on undo/redo or `redraw()`, so call `redraw()` if it shows host state or tab attributes such as the name.
 
 See [Undo / Redo](https://caplin.github.io/FlexLayout/demos/v0.11/examples/undo-redo/) — `examples/undo-redo/UndoRedo.tsx`.
 

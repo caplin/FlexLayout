@@ -56,6 +56,9 @@ export interface IUseUndoResult {
  * <button onClick={undo} disabled={!canUndo}>Undo ({undoCount})</button>
  * <button onClick={redo} disabled={!canRedo}>Redo ({redoCount})</button>
  * ```
+ *
+ * Each recorded action re-renders the host, which by default re-renders all visible tabs; see the
+ * Layout's `invalidateTabContentOnParentRender` prop.
  * @param initialModel the initial model (or null if the model is loaded asynchronously), or a
  * function that lazily returns it (evaluated once, like a `useState` initializer)
  * @param options optional configuration

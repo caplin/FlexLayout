@@ -385,7 +385,14 @@ export class TabNode extends Node implements IDraggable {
     delete() {
         (this.parent as TabSetNode | BorderNode | TabGroupNode).remove(this);
         this.deleteSubLayout();
+        this.close();
+    }
+
+    /** @internal */
+    private close() {
         this.fireEvent("close", {});
+        // release the content element so a deleted node that is still referenced does not retain the tab's content
+        this.moveableElement = null;
     }
 
     /** @internal */
@@ -414,7 +421,7 @@ export class TabNode extends Node implements IDraggable {
                 layout.getRootRow()?.forEachNode((node) => {
                     if (node instanceof TabNode) {
                         node.deleteSubLayout();
-                        node.fireEvent("close", {});
+                        node.close();
                     }
                 }, 0);
             }
