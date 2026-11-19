@@ -14,6 +14,8 @@ import { Node } from "./Node";
 import { TabSetNode } from "./TabSetNode";
 import { isInSubtree } from "./Utils";
 import { ModelLayout } from "./ModelLayout";
+import { Action, Actions } from "./Actions";
+import { getPreferredSize, validPreferredSize } from "./Sizing";
 
 export class RowNode extends Node implements IDropTarget {
     static readonly TYPE = "row";
@@ -68,6 +70,21 @@ export class RowNode extends Node implements IDropTarget {
 
     getWeight() {
         return this.attributes.weight as number;
+    }
+
+    /** Preferred outer width in pixels, independent of the current allocation. */
+    getPreferredWidth(): number | undefined {
+        return validPreferredSize(this.attributes.preferredWidth);
+    }
+
+    /** Preferred outer height in pixels, independent of the current allocation. */
+    getPreferredHeight(): number | undefined {
+        return validPreferredSize(this.attributes.preferredHeight);
+    }
+
+    /** @internal */
+    hasPreferredSize() {
+        return this.getPreferredWidth() !== undefined || this.getPreferredHeight() !== undefined;
     }
 
     toJson(): IJsonRowNode {
@@ -157,20 +174,56 @@ export class RowNode extends Node implements IDropTarget {
         const startRect = c[index].getRect();
         const startPosition = (h ? startRect.x : startRect.y) - ss;
 
-        return { initialSizes, sum, startPosition };
+        const preferredSizes = (c as (RowNode | TabSetNode)[]).map((child) => ({
+            preferredWidth: child.getPreferredWidth(),
+            preferredHeight: child.getPreferredHeight(),
+        }));
+        const retainedSizes = (c as (RowNode | TabSetNode)[]).map((child) => getPreferredSize(child, this.getOrientation()));
+        return { initialSizes, sum, startPosition, preferredSizes, retainedSizes };
+    }
+
+    /** @internal */
+    calculateSplitAction(index: number, splitterPos: number, initials: ReturnType<RowNode["getSplitterInitials"]>): Action {
+        const { sizes, weights } = this.calculateSplitResult(index, splitterPos, initials.initialSizes, initials.sum, initials.startPosition);
+        const action = Actions.adjustWeights(this.getId(), weights);
+        if (weights.length === 0 || initials.retainedSizes.every((size) => size === undefined)) {
+            return action;
+        }
+        const dimension = this.getOrientation() === Orientation.HORZ ? "preferredWidth" : "preferredHeight";
+        const actions = [action];
+        for (let i = 0; i < weights.length; i++) {
+            const retainedSize = initials.retainedSizes[i];
+            if (retainedSize === undefined) {
+                continue;
+            }
+            const child = this.children[i] as RowNode | TabSetNode;
+            const size = sizes[i];
+            const delta = size - initials.initialSizes[i];
+            const h = this.getOrientation() === Orientation.HORZ;
+            const min = h ? child.getMinWidth() : child.getMinHeight();
+            const max = h ? child.getMaxWidth() : child.getMaxHeight();
+            const target = Math.max(min, Math.min(max, retainedSize));
+            const preferred = Math.abs(delta) > 0.01 ? (initials.initialSizes[i] < target - 0.01 ? Math.max(0, target + delta) : size) : initials.preferredSizes[i][dimension];
+            actions.push(Actions.updateNodeAttributes(child.getId(), { [dimension]: preferred }));
+        }
+        return Actions.group(actions);
     }
 
     /** @internal */
     calculateSplit(index: number, splitterPos: number, initialSizes: number[], sum: number, startPosition: number) {
+        return this.calculateSplitResult(index, splitterPos, initialSizes, sum, startPosition).weights;
+    }
+
+    private calculateSplitResult(index: number, splitterPos: number, initialSizes: number[], sum: number, startPosition: number) {
         const h = this.getOrientation() === Orientation.HORZ;
         const c = this.getChildren();
 
         const sizes = [...initialSizes];
 
-        // a zero (unmeasured) row would divide by zero and emit Infinity/NaN weights; return an
-        // empty array so the ADJUST_WEIGHTS consumer leaves the current weights untouched
+        // a zero (unmeasured) row would divide by zero and emit Infinity/NaN weights; return
+        // empty sizes and weights so the ADJUST_WEIGHTS consumer leaves the current weights untouched
         if (sum <= 0 || sizes.length === 0) {
-            return [];
+            return { sizes: [], weights: [] };
         }
 
         if (splitterPos < startPosition) {
@@ -251,7 +304,7 @@ export class RowNode extends Node implements IDropTarget {
 
         // console.log(splitterPos, startPosition, "sizes", sizes);
         // console.log("weights",weights);
-        return weights;
+        return { sizes, weights };
     }
 
     /** @internal */
@@ -325,7 +378,7 @@ export class RowNode extends Node implements IDropTarget {
                 const childChildren = child.getChildren();
                 if (childChildren.length === 0) {
                     this.removeChild(child);
-                } else if (childChildren.length === 1) {
+                } else if (childChildren.length === 1 && !child.hasPreferredSize() && !(childChildren[0] instanceof RowNode && childChildren[0].hasPreferredSize())) {
                     // hoist child/children up to this level
                     const subchild = childChildren[0];
                     this.removeChild(child);
@@ -550,7 +603,24 @@ export class RowNode extends Node implements IDropTarget {
         const attributeDefinitions = new Attributes();
         attributeDefinitions.add("type", RowNode.TYPE, true).setType(Attribute.STRING).setFixed();
         attributeDefinitions.add("id", undefined).setType(Attribute.STRING).setDescription(`the unique id of the row, if left undefined a uuid will be assigned`);
-        attributeDefinitions.add("weight", 100).setType(Attribute.NUMBER).setDescription(`relative weight for sizing of this row in parent row`);
+        attributeDefinitions
+            .add("weight", 100)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `relative weight for sizing of this row in parent row when no explicit or derived preferred size applies on the parent's split axis; retained and updated by splitters even when a preferred size takes precedence`,
+            );
+        attributeDefinitions
+            .add("preferredWidth", undefined)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `preferred outer width in pixels; takes precedence over weight in a horizontal parent row without removing the weight; splitters update it, while passive resizing preserves it`,
+            );
+        attributeDefinitions
+            .add("preferredHeight", undefined)
+            .setType(Attribute.NUMBER)
+            .setDescription(
+                `preferred outer height in pixels; takes precedence over weight in a vertical parent row without removing the weight; splitters update it, while passive resizing preserves it`,
+            );
 
         return attributeDefinitions;
     }

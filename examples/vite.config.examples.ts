@@ -28,6 +28,7 @@ export default defineConfig({
                 "tabset-rendering": fileURLToPath(new URL("tabset-rendering/index.html", import.meta.url)),
                 "context-menu": fileURLToPath(new URL("context-menu/index.html", import.meta.url)),
                 "min-sizes": fileURLToPath(new URL("min-sizes/index.html", import.meta.url)),
+                "preferred-sizes": fileURLToPath(new URL("preferred-sizes/index.html", import.meta.url)),
                 "pinned-tabs": fileURLToPath(new URL("pinned-tabs/index.html", import.meta.url)),
                 "sticky-button": fileURLToPath(new URL("sticky-button/index.html", import.meta.url)),
                 "tab-groups": fileURLToPath(new URL("tab-groups/index.html", import.meta.url)),
